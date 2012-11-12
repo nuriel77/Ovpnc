@@ -8,10 +8,9 @@ use Readonly;
 use strict;
 use warnings;
 use Moose;
+Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
-
-Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 
 
 =head1 NAME
