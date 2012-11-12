@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+
+  <xsd:element name="Nodes">
+    <xsd:complexType>
+      <xsd:sequence>
+		  <!-- Each Node starts like this: -->
+		  <xsd:element maxOccurs="unbounded" ref="Node"/>
+	   </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Has been just defined here above -->
+  <xsd:element name="Node">
+    <xsd:complexType>
+      <xsd:sequence>
+		<!-- Node has config file location (see "simpleType - file" for info of this type restrictions) -->
+        <xsd:element name="Config-File" type="File"/>
+		<!-- The directives, note that "ref" refers to element names -->
+        <xsd:element ref="Directives"/>
+		<!-- Each node can have a unique name -->
+        <xsd:element ref="Name"/>
+      </xsd:sequence>
+	  <!-- A required attribute, see the XML file -->
+      <xsd:attribute name="id" type="xsd:int" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Defined earlier as ref="Directives" -->
+  <xsd:element name="Directives">
+    <xsd:complexType>
+      <xsd:sequence>
+        <!-- Split the config file directives into sections(groups) -->
+        <xsd:element maxOccurs="unbounded" ref="Group"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Defined hereabove as ref="Group" -->	
+  <xsd:element name="Group">
+    <xsd:complexType>
+      <xsd:sequence>
+	    <xsd:element maxOccurs="unbounded" ref="Directive"/>
+      </xsd:sequence>
+	  <!-- Has attribute id -->
+      <xsd:attribute name="id" type="xsd:int" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- A directive element -->
+  <xsd:element name="Directive">
+	<xsd:complexType>
+	  <xsd:sequence>
+		<!-- The name of the directive(for example 'vpnserver' or 'mute', required -->
+        <xsd:element ref="Name"/>
+		<!-- Will define all the parameters, optional -->
+        <xsd:element minOccurs="0" ref="Params"/>
+		<!-- Will quote the parameters, see "simpleType - Bool" for info about the restrictions, optional -->
+        <xsd:element minOccurs="0" name="Quoted" type="Boolean"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="Params">
+    <xsd:complexType>
+      <xsd:sequence minOccurs="1" maxOccurs="unbounded" >
+		<xsd:choice>
+	        <xsd:element minOccurs="0" name="Status-File" type="File" />
+	        <xsd:element minOccurs="0" ref="Int" />
+	        <xsd:element minOccurs="0" name="Verb" type="Verbosity" />
+	        <xsd:element minOccurs="1" name="Status-Sec" type="StatusSec" />
+	        <xsd:element minOccurs="0" name="KeepAlive-Poll" type="KeepAlivePoll" />
+	        <xsd:element minOccurs="0" name="KeepAlive-Dead" type="KeepAliveDead" />
+	        <xsd:element minOccurs="0" name="Connect-Freq-New" type="ConnectFreqNew" />
+	        <xsd:element minOccurs="0" name="Connect-Freq-Sec" type="ConnectFreqSec" />
+	        <xsd:element minOccurs="1" name="Ca" type="File" />
+	        <xsd:element minOccurs="1" name="Key" type="File" />
+	        <xsd:element minOccurs="0" name="Dh" type="File" />
+	        <xsd:element minOccurs="1" name="Certificate" type="File" />
+	        <xsd:element minOccurs="0" name="Mute" type="MuteLog" />
+	        <xsd:element minOccurs="0" name="Bool" type="Boolean" />
+	        <xsd:element minOccurs="1" name="User-Name" type="NameType" />
+	        <xsd:element minOccurs="1" name="Group-Name" type="NameType" />
+	        <xsd:element minOccurs="0" name="Push-String" type="StringType" />
+	        <xsd:element minOccurs="1" name="VPN-Server" type="IpAddress" />
+	        <xsd:element minOccurs="1" name="Server-Port" type="PortNumber" default="8111" />
+	        <xsd:element minOccurs="1" name="Virtual-IP" type="IpAddress" />
+	        <xsd:element minOccurs="1" name="Virtual-Netmask" type="NetmaskAddress" />
+	        <xsd:element minOccurs="1" name="Management-IP" type="IpAddress" />
+			<xsd:element minOccurs="1" name="Management-Port" type="PortNumber" default="7505" /> 
+	        <xsd:element minOccurs="0" name="Cipher" type="CipherType" default="AES-128-CBC" />
+	        <xsd:element minOccurs="1" name="Device" type="DeviceType" default="tun" />
+	        <xsd:element minOccurs="0" name="Comp-Lzo" type="CompLzo" default="on" />
+	        <xsd:element minOccurs="1" name="Protocol" type="Protocolcols" default="udp" />
+	        <xsd:element minOccurs="0" name="Keep-Alive" />
+	        <xsd:element minOccurs="0" name="Tls-Key" type="File" />
+			<xsd:element minOccurs="0" name="Crl-Verify" type="File" />
+	        <xsd:element minOccurs="0" name="Tls-Mode" type="Boolean" default="0"/>
+	        <xsd:element minOccurs="1" name="Max-Clients" type="MaxClients" default="64" />
+		</xsd:choice>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Type: On/Off Switch -->
+  <xsd:simpleType name="simpleSwitch">
+    <xsd:restriction base="xsd:string">
+	    <xsd:enumeration value="on" />
+	    <xsd:enumeration value="off" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Device Types -->
+  <xsd:simpleType name="DeviceType">
+	<xsd:annotation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+	    <xsd:enumeration value="tun" />
+	    <xsd:enumeration value="tap" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Protocolcol Types -->
+  <xsd:simpleType name="Protocolcols">
+    <xsd:restriction base="xsd:string">
+	    <xsd:enumeration value="tcp" />
+	    <xsd:enumeration value="udp" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Compression LZO -->
+  <xsd:simpleType name="CompLzo">
+    <xsd:restriction base="xsd:string">
+	    <xsd:enumeration value="on"  />
+	    <xsd:enumeration value="off" />
+	    <xsd:enumeration value="adaptive" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: File -->
+  <xsd:simpleType name="File">
+	<xsd:restriction base="xsd:string">
+      <xsd:pattern value="[/\-A-Za-z_ \.0-9]*" />
+	</xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Name -->
+  <xsd:element name="Name" type="NameType" />
+  <xsd:simpleType name="NameType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[\-A-Za-z_ \.0-9]*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: String -->
+  <xsd:element name="Push-String" type="StringType" />
+  <xsd:simpleType name="StringType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[\-A-Za-z_ \.0-9]*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: IpAddress -->
+  <xsd:simpleType name="IpAddress">
+	<xsd:restriction base="xsd:string">
+      <xsd:pattern value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: NetmaskAddress -->
+  <xsd:simpleType name="NetmaskAddress">
+	<xsd:restriction base="xsd:string">
+      <xsd:pattern value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: KeepAlivePoll -->
+  <xsd:simpleType name="KeepAlivePoll">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="999" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: KeepAliveDead -->
+  <xsd:simpleType name="KeepAliveDead">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="999" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Status-Sec -->
+  <xsd:simpleType name="StatusSec">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="360" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: ConnectFreqNew -->
+  <xsd:simpleType name="ConnectFreqNew">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="64" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: ConnectFreqSec -->
+  <xsd:simpleType name="ConnectFreqSec">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="120" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Port number -->
+  <xsd:simpleType name="PortNumber">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1024" />
+      <xsd:maxInclusive value="65535" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Max Clients -->
+  <xsd:simpleType name="MaxClients">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="128" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Verbosity level -->
+  <xsd:simpleType name="Verbosity">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="11" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Mute duplicate log msgs -->
+  <xsd:simpleType name="MuteLog">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="100" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Boolean -->
+  <xsd:simpleType name="Boolean">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="1" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Tls-Mode -->
+  <xsd:simpleType name="Tls-Mode">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Simple elements -->
+  <xsd:element name="Int" type="xsd:integer" />
+
+  <!-- NOTICE: Cipher List must be the last in this doc!!! -->
+  
+
+<!-- Type: Cipher List -->
+<xsd:simpleType name="CipherType">
+ <xsd:restriction base="xsd:string">
+  <xsd:enumeration value="DES-CFB" />
+  <xsd:enumeration value="DES-CBC" />
+  <xsd:enumeration value="RC2-CBC" />
+  <xsd:enumeration value="RC2-CFB" />
+  <xsd:enumeration value="RC2-OFB" />
+  <xsd:enumeration value="DES-EDE-CBC" />
+  <xsd:enumeration value="DES-EDE3-CBC" />
+  <xsd:enumeration value="DES-OFB" />
+  <xsd:enumeration value="DES-EDE-CFB" />
+  <xsd:enumeration value="DES-EDE3-CFB" />
+  <xsd:enumeration value="DES-EDE-OFB" />
+  <xsd:enumeration value="DES-EDE3-OFB" />
+  <xsd:enumeration value="DESX-CBC" />
+  <xsd:enumeration value="BF-CBC" />
+  <xsd:enumeration value="BF-CFB" />
+  <xsd:enumeration value="BF-OFB" />
+  <xsd:enumeration value="RC2-40-CBC" />
+  <xsd:enumeration value="CAST5-CBC" />
+  <xsd:enumeration value="CAST5-CFB" />
+  <xsd:enumeration value="CAST5-OFB" />
+  <xsd:enumeration value="RC2-64-CBC" />
+  <xsd:enumeration value="AES-128-CBC" />
+  <xsd:enumeration value="AES-128-OFB" />
+  <xsd:enumeration value="AES-128-CFB" />
+  <xsd:enumeration value="AES-192-CBC" />
+  <xsd:enumeration value="AES-192-OFB" />
+  <xsd:enumeration value="AES-192-CFB" />
+  <xsd:enumeration value="AES-256-CBC" />
+  <xsd:enumeration value="AES-256-OFB" />
+  <xsd:enumeration value="AES-256-CFB" />
+  <xsd:enumeration value="AES-128-CFB1" />
+  <xsd:enumeration value="AES-192-CFB1" />
+  <xsd:enumeration value="AES-256-CFB1" />
+  <xsd:enumeration value="AES-128-CFB8" />
+  <xsd:enumeration value="AES-192-CFB8" />
+  <xsd:enumeration value="AES-256-CFB8" />
+  <xsd:enumeration value="DES-CFB1" />
+  <xsd:enumeration value="DES-CFB8" />
+  <xsd:enumeration value="DES-EDE3-CFB1" />
+  <xsd:enumeration value="DES-EDE3-CFB8" />
+ </xsd:restriction>
+</xsd:simpleType>
+</xsd:schema>
