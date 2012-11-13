@@ -1,0 +1,19 @@
+{
+	"Plugin::Authentication" : {
+    	"default_realm" : "default",
+		"realms" : {
+			"default" : {
+    			"credential" : {
+	        		"class" : "Password",
+            		"password_field" : "password",
+            		"password_type" : "self_check"
+	        	},
+            	"store" : {
+               		"class" : "Htpasswd",
+					"file"  : "config/.htpasswd"
+            	}	
+			}
+    	}
+	}
+}
+

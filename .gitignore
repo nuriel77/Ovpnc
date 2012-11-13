@@ -1,0 +1,3 @@
+# Ovpnc git ignore list
+openvpn.conf.ovpnc_*
+start_dev_server
