@@ -1,4 +1,4 @@
 Ovpnc
 =====
 
-OpenVPN Controller
+OpenVPN Controller Application
