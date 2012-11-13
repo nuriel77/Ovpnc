@@ -42,13 +42,10 @@ Begin method
 
 =cut
 
-sub begin :Private
-{
-	my ( $self, $c ) = @_;
-
-
-
-}
+#sub begin :Private
+#{
+#	my ( $self, $c ) = @_;
+#}
 
 #sub index_GET
 #{

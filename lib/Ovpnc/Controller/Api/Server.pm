@@ -13,36 +13,8 @@ use vars qw/
 	$vpn_dir
 /;
 
-
-=head2 begin
-
-default method, will start connection to mgmt port
-
-
-=head2 status
-
-get openvpn server status
-
-
-=head2 view_log
-
-get openvpn log
-
-
-=head2 restart
-
-restart openvpn
-
-=head2 index
-
-For REST action class
-
-=cut
-
-
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
-sub index :Chained('/') PathPart('api/server/') Args(0) :ActionClass('REST') { }
 
 has 'host' => (
 	isa => 'Str',
@@ -80,6 +52,53 @@ $regex = {
 	verb_line => '^SUCCESS: verb=(\d+)\n',
 };
 
+
+
+=head2 begin
+
+default method, will start connection to mgmt port
+
+
+=head2 status
+
+get openvpn server status
+
+
+=head2 view_log
+
+get openvpn log
+
+
+=head2 restart
+
+restart openvpn
+
+=head2 kill and unkill
+
+Kill or unkill a client
+will also revoke/unrevoke CRL
+One argument (client identification)
+
+
+=head2 base
+
+For chain to login page
+
+=cut
+
+sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
+
+
+=head2 index
+
+For REST action class
+
+=cut
+
+sub index :Chained('/') PathPart('api/server/') Args(0) :ActionClass('REST') { }
+
+
+
 sub begin :Private
 {
     my ( $self, $c ) = @_;
@@ -102,7 +121,7 @@ sub begin :Private
 }
 
 {
-	sub get_status :Path('status') Args(0)
+	sub get_status : Chained('base') PathPart('status') Args(0)
 	{	
 		my ( $self, $c ) = @_;
 
@@ -151,7 +170,7 @@ sub begin :Private
 		$c->stash( $data );
 	}
 	
-	sub set_verb :Path('verb') Args(1)
+	sub set_verb : Chained('base') PathPart('set_verb') Args(1)
 	{
 		my ( $self, $c, $level ) = @_;
 
@@ -166,7 +185,7 @@ sub begin :Private
 		$c->stash( { status => $self->set_verbosity($level) . ' Now at level: ' . $self->get_verbosity() } );
 	}
 
-	sub view_log :Path('log') Args(0)
+	sub view_log : Chained('base') PathPart('log') Args(0)
 	{
 		my ( $self, $c ) = @_;
 	
@@ -205,7 +224,7 @@ sub begin :Private
 		$c->stash( log => $log_object );
 	}
 	
-	sub kill_client :Path('kill') Args(1)
+	sub kill_client : Chained('base') PathPart('kill') Args(1)
 	{
 		my ( $self, $c, $client ) = @_;
 
@@ -231,7 +250,7 @@ sub begin :Private
 		$c->stash( { status => $ret_val } );
 	}
 	
-	sub unkill_client :Path('unkill') Args(1)
+	sub unkill_client : Chained('base') PathPart('unkill') Args(1)
 	{
 		my ( $self, $c, $client ) = @_;
 
@@ -243,7 +262,7 @@ sub begin :Private
 		$c->stash( { status => $ret_val } );
 	}
 
-	sub control_vpn :Path('control') Args(1)
+	sub control_vpn : Chained('base') PathPart('control') Args(1)
 	{
 	    my ( $self, $c, $command ) = @_;
 

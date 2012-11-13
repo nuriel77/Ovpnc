@@ -26,14 +26,23 @@ OpenVPN Config Controller API
 
 =head1 METHODS
 
+=head2 base
 
-=head2 config
+For chain to login page
+
+=cut
+
+sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
+
+
+=head2 index
 
 For REST action class
 
 =cut
 
-sub config : Path('/api/config') : ActionClass('REST') { }
+sub index :Chained('/') PathPart('api/config/') Args(0) :ActionClass('REST') { }
+
 
 # Grouped actions
 =head2 config_GET
@@ -45,7 +54,7 @@ in the conf file manually
 
 =cut
 {
-	sub config_GET
+	sub view_config : Chained('base') PathPart('show') Args(0)
 	{
 	    my ($self, $c) = @_;
 	    $c->response->status(200);	
@@ -99,7 +108,7 @@ of openvpn and the back-end xml
 and run validataions via the xsd schema
 
 =cut
-	sub config_POST
+	sub update_config : Chained('base') PathPart('update') Args(0)
 	{
 	    my ($self, $c) = @_;
 
@@ -120,8 +129,8 @@ and run validataions via the xsd schema
 		# to XML
 		my $xml = $self->create_xml( \%data );
 
-		if ( ref $xml and defined $xml->{error} ){
-			$c->stash( { error => "Error writing back-end xml configuration file '".$c->config->{ovpnc_conf}."':\r\n" . $xml->{error} } );
+		if ( not defined $xml  ){
+			$c->stash( { error => 'Could not generate XML format from posted parameters' } );
 			$c->forward("View::JSON");
 			return;
 		}

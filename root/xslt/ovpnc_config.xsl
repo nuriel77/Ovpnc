@@ -45,7 +45,7 @@
 	   </head>
        <body>
 		<div class="container">
-	     <form name="configuration" id="conf" method="POST" action="/api/config">
+	     <form name="configuration" id="conf" method="POST" action="/api/config/update">
 		   <xsl:for-each select="Nodes/Node">
 		     <p><input type="submit" name="Send" /><input type="reset" /></p>
 	         <table colspacing="0" colspan="0">

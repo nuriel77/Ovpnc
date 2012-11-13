@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-
-#exit 0;
+use vars qw($regex);
+$regex = '^([a-zA-Z0-9\/\._=@\-]+)$';
 
 die "Usage: $0 [CN text file] [depth] [CN string]\n"
 	unless (@ARGV == 3);
 
-verify_syntax($_)
-	for (@ARGV);
+verify_syntax($_) for (@ARGV);
+
 
 {
 
@@ -33,6 +33,5 @@ verify_syntax($_)
 
 sub verify_syntax
 {
-	shift =~ m/^([a-zA-Z0-9\/\._=@\-]+)$/
-		or die "Bad data in argument\n";
+	shift =~ m/$regex/ or die "Bad data in argument\n";
 }
