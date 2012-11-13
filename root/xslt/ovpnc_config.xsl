@@ -22,7 +22,7 @@
 			html, body{ font-family:arial; font-size:12px; }
 			.container { padding:5px; width:900px; margin:0 auto; }
 			.ConfigKeys { font-size:13px; }	
-			.odd { background-color:#EFEFEF; }	
+			.odd { background-color:eeeeff; }	
 			.num { width:45px; border:1px solid lightgray; }	
 			.ip { width:105px; border:1px solid lightgray; }	
 			.file { width:225px; border:1px solid lightgray; }	
@@ -36,7 +36,7 @@
 				padding:0px;
 				text-decoration: none;
 				margin:0px;
-				background-color:#EFEFEF;
+				background-color:#eeeeff;
 				font-size:13px;
 				border:0;
 				text-align:left; 

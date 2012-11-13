@@ -16,36 +16,31 @@ Ovpnc::Controller::Root - Root Controller for Ovpnc
 
 =head1 DESCRIPTION
 
-[enter your description here]
+OpenVPN Controller Application
 
 =head1 METHODS
 
-=head2 index
+=head2 base
 
-The Nuriel Shem-Tov page (/)
+Chain actions to login page
 
 =cut
 
-sub index :Path :Args(0) {
+sub base : Chained('/login/required') PathPart('') CaptureArgs(0) { }
+
+
+=head2 index
+
+The Welcome page (/)
+
+=cut
+
+sub index : Path : Args(0) {
     my ( $self, $c ) = @_;
     # Hello World
     $c->response->body( $c->welcome_message );
 }
 
-=head2 config
-
-Configuration Page
-
-=cut
-
-sub ovpnc_config :Path('config') :Args(0) {
-
-	my ( $self, $c ) = @_;
-	my $req = $c->request;
-	$c->stash->{xml} = $c->config->{ovpnc_conf} || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
-	$c->stash->{title} = 'Ovpnc Configuration';
-	$c->forward('Ovpnc::View::XSLT');
-}
 
 =head2 default
 
@@ -53,11 +48,40 @@ Standard 404 error page
 
 =cut
 
-#sub default :Path {
-#    my ( $self, $c ) = @_;
-#    $c->response->body( 'Page not found' );
-#    $c->response->status(404);
-#}
+sub default : Path
+{
+    my ( $self, $c ) = @_;
+    $c->response->body( 'Page not found' );
+    $c->response->status(404);
+}
+
+=head2 test
+
+test function
+
+=cut
+
+sub test : Chained('/base') PathPart('test') Args(0) {
+    my ( $self, $c ) = @_;
+    $c->res->body('<h2>Hello, user!</h2>');
+}
+
+
+=head2 ovpnc_config
+
+Configuration Page
+
+=cut
+
+sub ovpnc_config : Chained('/base') PathPart('config') Args(0) 
+{
+
+	my ( $self, $c ) = @_;
+	my $req = $c->request;
+	$c->stash->{xml} = $c->config->{ovpnc_conf} || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
+	$c->stash->{title} = 'Ovpnc Configuration';
+	$c->forward('Ovpnc::View::XSLT');
+}
 
 =head2 end
 

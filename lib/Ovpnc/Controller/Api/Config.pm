@@ -35,8 +35,7 @@ For REST action class
 
 sub config : Path('/api/config') : ActionClass('REST') { }
 
-{
-
+# Grouped actions
 =head2 config_GET
 
 Will output the configuration 
@@ -45,12 +44,13 @@ just incase someone makes changes
 in the conf file manually
 
 =cut
+{
 	sub config_GET
 	{
 	    my ($self, $c) = @_;
+	    $c->response->status(200);	
+
 		my $format = $c->request->params->{format} ||= undef;
-
-
 		my $current_conf = $self->get_openvpn_config_file( $c->config->{ovpnc_conf} );
 
 		die "No configuration file specified! " unless $current_conf;
@@ -60,9 +60,11 @@ in the conf file manually
 			$format
 		);
 
-		if ( defined $output->{error} ){
-			$c->response->body( "Error reading configuration: " . $output );
-		    $c->response->status(500);
+		if ( ref $output and defined $output->{error} ){
+	        $c->response->status(200);
+			$c->stash( { error => "Error reading configuration: " . $output->{error} } );
+			$c->forward("View::JSON");
+			return;
 		}
 		else {
 			my $_data = $self->conf_to_xml(
@@ -74,8 +76,9 @@ in the conf file manually
 			);
 
 			my $xml_data = $self->create_xml($_data);			
-			if ( defined $xml_data->{error} ){
-				$c->stash( { error => "Error writing back-end xml configuration '$c->config->{ovpnc_config_schema}':\r\n" . $xml_data->{error} } );
+			if ( ref $xml_data and defined $xml_data->{error} ){
+	   		    $c->response->status(200);
+				$c->stash( { error => "Error writing back-end xml configuration '".$c->config->{ovpnc_conf}."':\r\n" . $xml_data->{error} } );
 				$c->forward("View::JSON");
 				return;
 			}
@@ -99,39 +102,53 @@ and run validataions via the xsd schema
 	sub config_POST
 	{
 	    my ($self, $c) = @_;
-	
+
 	    unless ($c->request->method eq 'POST'){
 	        $c->response->body( 'Not a POST method: ' . $c->request->method );
 	        $c->response->status(500);
+			return;
 	    }
 
-		my %data;
-		tie %data, 'Tie::IxHash';
+		# Set default response
+	    $c->response->status(200);	
 
-	    my $data = $c->request->params;
-		my $xml = $self->create_xml( $data, $c->config->{ovpnc_conf} );
-		if ( defined $xml->{error} ){
-			$c->stash( { error => "Error writing back-end xml configuration file '".$c->config->{ovpnc_config_schema}."':\r\n" . $xml->{error} } );
+		# Dereference
+		my %data = %{$c->request->params};
+
+		# This will only prepare a data
+		# structure which can be serialized
+		# to XML
+		my $xml = $self->create_xml( \%data );
+
+		if ( ref $xml and defined $xml->{error} ){
+			$c->stash( { error => "Error writing back-end xml configuration file '".$c->config->{ovpnc_conf}."':\r\n" . $xml->{error} } );
 			$c->forward("View::JSON");
 			return;
 		}
-		%data = %{$data};
+
+		# Create a string from
+		# the xml object
+		my $xml_string = XMLout(
+			$xml,
+			KeepRoot => 1,
+	        NoSort => 0,
+	        XMLDecl     => "<?xml version='1.0' encoding='UTF-8'?>",
+		) or die "Cannot generate XML data!";
 
 		# Validate the xml against the xsd schema
 		# Will return a message if any error
-		my $message = $self->validate_xml($xml, $c->config->{ovpnc_config_schema});
+		my $message = $self->validate_xml($xml_string, $c->config->{ovpnc_config_schema});
 
 		if ($message){
 			$c->stash({ error => $message });
 		} else {
 			my $st_msg = {};
-			my $config_file = $data->{'null_Config-File'};
+			my $config_file = $data{'null_Config-File'};
 
 			# Pretty fatal, but should not happen here
 			# because we ran validation earlier on xml format
 			unless ($config_file){
 				$st_msg->{error} = "Did not receive any configuration file value!";
-	        	$c->response->status(500);
 				$c->stash( $st_msg );
 				$c->forward("View::JSON");
 				return;
@@ -160,7 +177,7 @@ and run validataions via the xsd schema
 
 			my $FILE;
 			# Open the (new) file for writing
-			unless (defined $st_msg->{error}){
+			unless ( defined $st_msg->{error}){
 				open($FILE, ">", $config_file)
 					or $st_msg->{error} = "Error: Configuration file could not be updated: $!";
 			}
@@ -171,6 +188,23 @@ and run validataions via the xsd schema
 				$output .= $self->prepare_conf_file_data( \%data );
 				print $FILE $output;
 				close $FILE;
+				if ( -e $c->config->{ovpnc_conf} && -w $c->config->{ovpnc_conf} ){
+					XMLout(
+		   		         $xml,
+		   		         KeepRoot => 1,
+		       		     NoSort => 0,
+						 OutputFile => $c->config->{ovpnc_conf},
+		      		     XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
+					) or die "Error generating xml configuration file: " . $!;
+				}
+				else {
+					$st_msg->{error} = "Cannot write xml configuration file " 
+									 . $c->config->{ovpnc_conf} 
+									 . ".\r\nEither it does not exists or is not accessible.";
+					$c->stash( $st_msg );
+					$c->forward("View::JSON");
+					return;
+				}
 				$st_msg->{status} = 'Configuration file updated successfully';
 			}
 
@@ -386,32 +420,8 @@ and return xml string
 			}
 		}
 
-		# Write to file if defined
-		# for viewing we also run
-		# this generator but do
-		# not output to file
-        if ( defined $xml_file ){
-			if ( -e $xml_file && -w $xml_file){
-				XMLout(
-	   		         $xml_obj,
-	   		         KeepRoot => 1,
-	       		     NoSort => 0,
-					 OutputFile => $xml_file,
-	      		     XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
-				) or die "Error generating xml configuration file: " . $!;
-			}
-			else {
-				return { error => "Cannot write xml configuration file! Either it does not exists or is not accessible." };
-			}
-		}
-
 		# Return XML data
-		return XMLout(
-			$xml_obj,
-			KeepRoot => 1,
-	        NoSort => 0,
-	        XMLDecl     => "<?xml version='1.0' encoding='UTF-8'?>",
-		);
+		return $xml_obj;
 	}
 
 =head2 validate_xml 
@@ -513,7 +523,7 @@ Parse the openvpn configuration file
 		my $data = {};
 
 		open ( FILE, "<", $file)
-			or return { error => "Error: Cannot open configuration file for reading: $!" };
+			or return { error => "Cannot open configuration file '$file' for reading: $!" };
 
 		my $_pushed = 0;
 		while (my $line = <FILE>){

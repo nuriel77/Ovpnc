@@ -18,15 +18,37 @@ OpenVPN Controller API
 
 =head1 METHODS
 
+=head2 base
+
+For chain to login page
+
+=cut
+
+sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
+
+
 =head2 index
 
 For REST action class
 
 =cut
 
-#sub index : Local : ActionClass('REST') { }
 sub index :Chained('/') PathPart('api/') Args(0) :ActionClass('REST') { }
-#sub index :Path('/api') CaptureArgs(1) PathPart('') :ActionClass('REST') { }
+
+
+=head2 begin
+
+Begin method
+
+=cut
+
+sub begin :Private
+{
+	my ( $self, $c ) = @_;
+
+
+
+}
 
 #sub index_GET
 #{
@@ -34,8 +56,9 @@ sub index :Chained('/') PathPart('api/') Args(0) :ActionClass('REST') { }
 #
 #}
 
-sub sanity :Path('sanity')
+sub sanity : Chained('base') PathPart('sanity') Args(0)
 {
+
 	my ($self, $c) = @_;
 	my $sanity = Ovpnc::Controller::Sanity->new(
 			ovpnc_user 		=> $c->config->{ovpnc_user} || 'ovpnc',
@@ -60,8 +83,23 @@ sub sanity :Path('sanity')
 sub default :Private
 {
 	my ($self, $c) = @_;
-	$c->response->body( 'Page not found xxx' );
-	$c->response->status(404);
+
+#	$c->response->body( 'Page not found xxx' );
+#	$c->response->status(404);
+
+#	unless ($c->request->method eq 'POST'){
+#            $c->response->body( 'Not a POST method: ' . $c->request->method );
+#            $c->response->status(500);
+#            return;
+#    }
+
+#	if ($c->req->param('username') && $c->req->param('password')){
+	
+#	$c->authenticate({}, "ovpnc");
+#	}
+ #   $c->response->body( 'No username or password' );
+ #   $c->response->status(403);
+    return;
 }
 
 sub end :Private

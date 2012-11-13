@@ -17,11 +17,18 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
+	-Debug
     ConfigLoader
-    -Debug
-    Static
+    Static::Simple
 	Compress::Gzip
 	Compress::Deflate
+	Session
+    Session::Store::File
+    Session::State::Cookie
+	Authentication
+	Authentication::Store::Minimal
+	Authorization::Roles
+	+CatalystX::SimpleLogin
 	StackTrace
 /;
 
@@ -40,18 +47,73 @@ our $VERSION = '0.01';
 
 __PACKAGE__->config(
     name => 'Ovpnc',
+	default_view => 'HTML',
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
-	'Plugin::ConfigLoader' => { file => 'ovpnc.conf', config_local_suffix => 'local' },
+	#
+	# ConfigLoader
+	#
+	'Plugin::ConfigLoader' => {
+		config_local_suffix => 'local'
+	},
+	#
+	# Cache
+	#
+#	'Plugin::Cache' =>
+#	{
+#		backend => 
+#		{
+#			class => "Cache::File",
+#			cache_root => 'tmp/cache',
+#			store => "Minimal",
+#		}
+#	}
+
 );
 
+#
+# Login controller config 
+=comment
+__PACKAGE__->config(
+	'Controller::Login' => {
+        traits => [qw( Logout WithRedirect RenderAsTTTemplate )],
+		actions => {
+			required => {
+				Does => ['ACL'],
+				AllowedRole => ['ovpncadmin', 'ovpnc'], # ANY of these
+				RequiresRole => ['extranet'], # ALL of these
+				ACLDetachTo => 'login',
+				LoginRedirectMessage => 'Please Login to view this Action',
+			},
+		},
+	},
+);
+=cut
+
+
+#
+# Session config
+__PACKAGE__->config(
+    'Plugin::Session' => {
+        flash_to_stash => 1
+    },
+    'Controller::Login' => {
+        traits => [qw(Logout WithRedirect -RenderAsTTTemplate)],
+		login_form_args => {
+           authenticate_args => { active => 'Y' },
+        },
+    },
+);
+
+#
+# Start the application
 __PACKAGE__->setup();
 
 
 =head1 AUTHOR
 
-root
+Nuriel Shem-Tov 2012
 
 =head1 LICENSE
 
