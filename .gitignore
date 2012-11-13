@@ -1,4 +1,6 @@
 # Ovpnc git ignore list
 openvpn.conf.ovpnc_*
+openvpn.conf.ovpnc
 start_dev_server
 .htpasswd
+
