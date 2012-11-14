@@ -4,8 +4,14 @@ use warnings;
 use Test::More;
 use POSIX;
 
-my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
+use strict;
+use warnings;
+use Test::More;
 
-#plan skip_all => '';
 
+use Catalyst::Test 'Ovpnc';
+use Ovpnc::Controller::Api;
+use Ovpnc::Controller::Sanity;
+
+ok( request('/')->is_success, 'Request should succeed' );
 done_testing();
