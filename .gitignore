@@ -7,3 +7,4 @@ ovpnc_create.pl
 ovpnc_cgi.pl
 .htpasswd
 blib/*
+inc/*
