@@ -7,6 +7,7 @@ use Module::Install::Catalyst; # Complain loudly if you don't have
                                # Catalyst::Devel installed or haven't said
                                # 'make dist' to create a standalone tarball.
 
+
 name 'Ovpnc';
 all_from 'lib/Ovpnc.pm';
 
@@ -24,6 +25,8 @@ requires 'Config::General'; # This should reflect the config file format you've 
 test_requires 'Test::More' => '0.88';
 
 license 'eupl';
+
+catalyst_par_options("--verbose=2 -x");
 
 catalyst;
 
