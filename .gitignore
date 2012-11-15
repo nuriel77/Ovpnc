@@ -8,3 +8,5 @@ ovpnc_cgi.pl
 .htpasswd
 blib/*
 inc/*
+MYMETA.*
+META.yml
