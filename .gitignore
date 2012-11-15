@@ -10,3 +10,4 @@ blib/*
 inc/*
 MYMETA.*
 META.yml
+Makefile
