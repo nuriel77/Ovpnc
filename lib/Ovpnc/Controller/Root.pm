@@ -29,6 +29,28 @@ Chain actions to login page
 sub base : Chained('/login/required') PathPart('') CaptureArgs(0) { }
 
 
+=head2 Method modifier
+
+Will run sanity check
+before any of the listed
+methods execute
+
+=cut
+
+around [ qw(ovpnc_config test) ]  => sub { 
+	my( $orig, $self, $c ) = @_;
+	# Sanity check
+    my $err = $c->forward('/api/sanity');
+	if ($err and ref $err eq 'ARRAY'){
+		$c->response->status(500);
+		$c->forward('View::JSON');
+		return;
+	}
+	else {
+		return $self->$orig($c);
+	}
+};
+
 =head2 index
 
 The Welcome page (/)
@@ -73,10 +95,10 @@ Configuration Page
 
 =cut
 
-sub ovpnc_config : Chained('/base') PathPart('config') Args(0) 
+sub ovpnc_config : Chained('/base') PathPart("config") Args(0) 
 {
-
 	my ( $self, $c ) = @_;
+
 	my $req = $c->request;
 	$c->stash->{xml} = $c->config->{ovpnc_conf} || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
 	$c->stash->{title} = 'Ovpnc Configuration';

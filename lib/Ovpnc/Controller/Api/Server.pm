@@ -88,6 +88,36 @@ For chain to login page
 
 sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
 
+=head2 Method modifier
+
+Will run sanity check
+before any of the listed
+methods execute
+
+=cut
+
+around [qw/
+	begin
+	get_status
+	set_verb
+	view_log
+	kill_client
+	unkill_client
+	set_verb
+	control_vpn
+		/]  => sub {
+    my( $orig, $self, $c ) = @_;
+    # Sanity check
+    my $err = $c->forward('/api/sanity');
+    if ($err and ref $err eq 'ARRAY'){
+        $c->response->status(500);
+        $c->forward('View::JSON');
+        return;
+    }
+    else {
+        return $self->$orig($c);
+    }
+};
 
 =head2 index
 
@@ -126,7 +156,7 @@ sub begin :Private
 		my ( $self, $c ) = @_;
 
 		# Sanity check
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 	
 		# Check connection to mgmt port
 		unless ( $self->vpn->connect ){
@@ -175,7 +205,7 @@ sub begin :Private
 		my ( $self, $c, $level ) = @_;
 
 		# Sanity check
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 
 		unless ( $self->vpn->connect ){
 			$c->stash( { status => 'Server seems down' } );
@@ -190,7 +220,7 @@ sub begin :Private
 		my ( $self, $c ) = @_;
 	
 		# Sanity check
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 
 		# Request params
 		my $req = $c->request;
@@ -229,7 +259,7 @@ sub begin :Private
 		my ( $self, $c, $client ) = @_;
 
 		# Sanity check
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 
 		# Check connection to mgmt port
 		unless ( $self->vpn->connect ){
@@ -255,7 +285,7 @@ sub begin :Private
 		my ( $self, $c, $client ) = @_;
 
 		# Sanity check	
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 
 		# Unrevoke a revoked client's certificate
 		my $ret_val = $self->unrevoke_certificate($client);
@@ -267,7 +297,7 @@ sub begin :Private
 	    my ( $self, $c, $command ) = @_;
 
 		# Sanity check	
-		return if $c->forward('/api/sanity');
+		#return if $c->forward('/api/sanity');
 		
 		# Dict of possible commands
 		my $cmds = {

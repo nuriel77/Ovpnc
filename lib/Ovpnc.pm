@@ -22,6 +22,7 @@ use Catalyst qw/
     Static::Simple
 	Compress::Gzip
 	Compress::Deflate
+	Cache
 	Session
     Session::Store::File
     Session::State::Cookie
@@ -60,49 +61,45 @@ __PACKAGE__->config(
 	#
 	# Cache
 	#
-#	'Plugin::Cache' =>
-#	{
-#		backend => 
-#		{
-#			class => "Cache::File",
-#			cache_root => 'tmp/cache',
-#			store => "Minimal",
-#		}
-#	}
+	'Plugin::Cache' =>
+	{
+		backend => 
+		{
+			class => "Cache::File",
+			cache_root => 'tmp/cache',
+			store => "Minimal",
+		}
+	}
 
 );
 
 #
 # Login controller config 
-=comment
 __PACKAGE__->config(
 	'Controller::Login' => {
+		login_form_args => {
+           authenticate_args => { active => 'Y' },
+        },
         traits => [qw( Logout WithRedirect RenderAsTTTemplate )],
-		actions => {
-			required => {
-				Does => ['ACL'],
-				AllowedRole => ['ovpncadmin', 'ovpnc'], # ANY of these
-				RequiresRole => ['extranet'], # ALL of these
-				ACLDetachTo => 'login',
-				LoginRedirectMessage => 'Please Login to view this Action',
-			},
-		},
+#		actions => {
+#			required => {
+#				Does => ['ACL'],
+#				AllowedRole => ['ovpncadmin', 'ovpnc', 'nuriel'], # ANY of these
+#				RequiresRole => ['nuriel'], # ALL of these
+#				ACLDetachTo => 'login',
+#			},
+#		},
 	},
 );
-=cut
+
 
 
 #
 # Session config
 __PACKAGE__->config(
     'Plugin::Session' => {
-        flash_to_stash => 1
-    },
-    'Controller::Login' => {
-        traits => [qw(Logout WithRedirect -RenderAsTTTemplate)],
-		login_form_args => {
-           authenticate_args => { active => 'Y' },
-        },
+        flash_to_stash => 1,
+		storage => 'tmp/session'
     },
 );
 

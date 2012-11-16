@@ -1,5 +1,6 @@
 package Ovpnc::Controller::Sanity;
 use Moose;
+use Fcntl ':mode';
 use vars qw/$errors/;
 use namespace::autoclean;
 
@@ -38,6 +39,12 @@ sub action
 		distro			=> sub { return $self->check_dist },
 		ovpnc_user		=> sub { return $self->check_ovpnc_user },
 		configuration	=> sub { return $self->check_config($config) if $config },
+		check_tmp_dirs	=> sub {
+			return $self->check_temp_directories([
+				( ( $config->{"Plugin::Cache"}->{backend}->{cache_root} =~ /^(.*)\/.*$/ ) ),
+				$config->{"Plugin::Cache"}->{backend}->{cache_root},
+				$config->{"Plugin::Session"}->{storage},
+		])},
 	};
 	
 	for my $check ( keys %{$checks} ){
@@ -130,9 +137,35 @@ sub action
 		elsif ( ! -e $config->{openvpn_conf} || ! -r $config->{openvpn_conf} ){
 			return $config->{openvpn_conf} . " not found or not readable";
 		}
+		elsif ( ! -e $config->{ovpnc_conf} || ! -r $config->{ovpnc_conf} || ! -w $config->{ovpnc_conf} ){
+			return $config->{ovpnc_conf} . " not found or not readable or not writable (should be both)";
+		}
+		elsif ( ! -e $config->{ovpnc_config_schema} || ! -r $config->{ovpnc_config_schema} ){
+			return $config->{ovpnc_config_schema} . " not found or not readable or not writable (should be both)";
+		}
+	
 	}
+
+	sub check_temp_directories
+	{
+		my ( $self, $dirs ) = @_;
+
+		return unless $dirs or ref $dirs ne 'ARRAY';
+
+		for my $dir (@{$dirs}){
+			return "Directory '$dir' does not exists" if ( ! -e $dir );
+			return "Directory '$dir' is not a directory?" if ( ! -d $dir );
+			return "Directory '$dir' is not writable" if ( ! -w $dir );
+			my $mode = sprintf "%04o", S_IMODE( (stat($dir))[2] );
+			return "Directory '$dir' should not be world accessibe ($mode)!"
+				if $mode eq '0777';
+		}
+		
+	}
+
 }
 
+no Moose;
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);
 

@@ -36,6 +36,28 @@ For REST action class
 sub index :Chained('/') PathPart('api/') Args(0) :ActionClass('REST') { }
 
 
+=head2 Method modifier
+
+Will run sanity check
+before any of the listed
+methods execute
+
+=cut
+
+#around index  => sub {
+#    my( $orig, $self, $c ) = @_;
+#    # Sanity check
+#    my $err = $c->forward('/api/sanity');
+#    if ($err and ref $err eq 'ARRAY'){
+#        $c->response->status(500);
+#        $c->forward('View::JSON');
+#        return;
+#    }
+#    else {
+#        return $self->$orig($c);
+#    }
+#};
+
 =head2 begin
 
 Begin method
@@ -81,21 +103,9 @@ sub default :Private
 {
 	my ($self, $c) = @_;
 
-#	$c->response->body( 'Page not found xxx' );
-#	$c->response->status(404);
+	$c->response->body( 'Page not found xxx' );
+	$c->response->status(404);
 
-#	unless ($c->request->method eq 'POST'){
-#            $c->response->body( 'Not a POST method: ' . $c->request->method );
-#            $c->response->status(500);
-#            return;
-#    }
-
-#	if ($c->req->param('username') && $c->req->param('password')){
-	
-#	$c->authenticate({}, "ovpnc");
-#	}
- #   $c->response->body( 'No username or password' );
- #   $c->response->status(403);
     return;
 }
 
@@ -107,8 +117,8 @@ sub end :Private
 	die "forced debug" if $c->req->params->{dump_info}; 
 
 	# Forward to JSON view
-#	$c->forward("View::JSON");
-	$c->forward( $c->view('JSON') );
+	$c->forward("View::JSON");
+
 }
 
 =head1 AUTHOR

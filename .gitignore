@@ -11,3 +11,4 @@ inc/*
 MYMETA.*
 META.yml
 Makefile
+tmp/*
