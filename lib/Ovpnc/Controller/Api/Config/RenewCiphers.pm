@@ -44,7 +44,7 @@ sub removeOldCiphers{
 }
 
 sub getCiphers{
-    my $cmd = shift . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
+    my $cmd = (shift) . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
     my @data = `$cmd`;
 	return "Error" if ( $? >> 8 != 0 );
     map { chomp } @data;

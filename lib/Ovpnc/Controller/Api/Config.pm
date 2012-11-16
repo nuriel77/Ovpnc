@@ -8,9 +8,11 @@ use Readonly;
 use strict;
 use warnings;
 use Moose;
+use aliased 'Ovpnc::Controller::Api::Config::RenewCiphers' => 'RCPHR';
 Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
+
 
 
 =head1 NAME
@@ -233,7 +235,7 @@ XSD schema from openvpn
 		my ($self, $c) = @_;
 
 		# Send openvpn binary and the schema to be updated
-		my $ret_val = Ovpnc::Controller::Api::Config::RenewCiphers->action(
+		my $ret_val = RCPHR->action(
 			$c->config->{ovpnc_config_schema},
 			$c->config->{openvpn_bin}
 		);

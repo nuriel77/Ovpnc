@@ -5,6 +5,8 @@ use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
+__PACKAGE__->config(namespace => 'api');
+
 =head1 NAME
 
 Ovpnc::Controller::Api - Catalyst Controller
