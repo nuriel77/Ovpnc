@@ -12,3 +12,4 @@ MYMETA.*
 META.yml
 Makefile
 tmp/*
+*.old

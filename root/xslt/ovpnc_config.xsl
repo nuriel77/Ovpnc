@@ -9,6 +9,7 @@
      <html>
 	   <head>
 		<title>Ovpnc Configuration</title>
+		<!-- JS and CSS includes -->
 		<script type="text/javascript">
 		  <xsl:attribute name="src">/static/js/jquery-latest.js</xsl:attribute>
 		</script>
@@ -16,39 +17,27 @@
 		  <xsl:attribute name="src">/static/js/json2.js</xsl:attribute>
 		</script>
 		<script type="text/javascript">
-		  <xsl:attribute name="src">/static/js/ovpn.js</xsl:attribute>
+		  <xsl:attribute name="src">/static/js/ovpnc_config.js</xsl:attribute>
 		</script>
-		<style>
-			html, body{ font-family:arial; font-size:12px; }
-			.container { padding:5px; width:900px; margin:0 auto; }
-			.ConfigKeys { font-size:13px; }	
-			.odd { background-color:eeeeff; }	
-			.num { width:45px; border:1px solid lightgray; }	
-			.ip { width:105px; border:1px solid lightgray; }	
-			.file { width:225px; border:1px solid lightgray; }	
-			.msg { font-size:10px; font-style:italic; color:gray; }
-			.disb { cursor:pointer; }
-			.rmv { margin-right:5px; float:right; }
-			.mySelect { border:none; min-width:50px; }
-			.control { min-width:65px; }
-			.input { text-align:right; }
-			.hideme {
-				padding:0px;
-				text-decoration: none;
-				margin:0px;
-				background-color:#eeeeff;
-				font-size:13px;
-				border:0;
-				text-align:left; 
-			}
-		</style>
+		<link rel="stylesheet" type="text/css">
+		  <xsl:attribute name="href">/static/css/ovpnc_config.css</xsl:attribute>
+		</link>
 	   </head>
        <body>
 		<div class="container">
+		 <!-- main form -->
 	     <form name="configuration" id="conf" method="POST" action="/api/config/update">
+		   <!-- loop each node -->
 		   <xsl:for-each select="Nodes/Node">
+			 <!-- submit and reset buttons -->
 		     <p><input type="submit" name="Send" /><input type="reset" /></p>
 	         <table colspacing="0" colspan="0">
+			  <!--
+				   these two are external 
+				   to the .conf file that
+				   will be created with all 
+				   the rest of the params
+			  -->
 		      <tr class="odd">
 		        <td class="ConfigKeys">Node Name:</td>
 		        <td>
@@ -68,7 +57,10 @@
 			  <!-- parse through Directives -->
 		      <xsl:for-each select="Directives/Group/Directive">
   		       <xsl:variable name="configItem" select="Name"/>
-		        <tr class="odd"><xsl:attribute name="id"><xsl:value-of select="Name"/></xsl:attribute>
+		        <tr class="odd">
+				  <xsl:attribute name="id"><xsl:value-of select="Name"/></xsl:attribute>
+				  <!-- get the group id of this param -->
+				  <xsl:attribute name="group"><xsl:value-of select="../@id"/></xsl:attribute>
 				  <!--
 						To this tr we add attrib "alone" if this
 						element has no parameters
@@ -115,7 +107,7 @@
 						  <xsl:choose>
 							<xsl:when test="$local = 'Management-Port' or $local = 'Server-Port'">
                               <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
 								  <!-- Define variables from xsd schema -->
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -128,10 +120,10 @@
 		                              <xsl:attribute name="required"><xsl:value-of select="$required"/></xsl:attribute>
 									</xsl:if>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -139,7 +131,7 @@
                             </xsl:when>
 							<xsl:when test="$local = 'Max-Clients'">
                               <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
 								  <!-- Define variables from xsd schema -->
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -152,10 +144,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -163,7 +155,7 @@
                             </xsl:when>
 						    <xsl:when test="$local = 'KeepAlive-Poll'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -175,10 +167,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -186,7 +178,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'KeepAlive-Dead'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -198,10 +190,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -209,7 +201,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Connect-Freq-New'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -221,10 +213,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -232,7 +224,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Connect-Freq-Sec'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -244,10 +236,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -255,7 +247,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Mute'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -267,10 +259,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -278,7 +270,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Status-Sec'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -290,10 +282,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -301,7 +293,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Verb'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input type="text" class="num">
@@ -313,10 +305,10 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
                                   </input>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
 							        <span class="msg"><xsl:value-of select="."/></span>
                                   </xsl:for-each>
-                                  <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
 							        <span class="msg"> - <xsl:value-of select="."/></span>
                                   </xsl:for-each>
                                 </xsl:for-each>
@@ -324,8 +316,9 @@
 						    </xsl:when>
 						    <xsl:when test="number($current) or $local = 'Tls-Mode'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
+ 						          <xsl:variable name="elementType" select="@type"/>
 								  <input type="text" class="num">
 									<xsl:if test="$required = 0">
                                       <xsl:attribute name="required"><xsl:value-of select="$required"/></xsl:attribute>
@@ -336,13 +329,19 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
 								  </input>
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:minInclusive/@value">
+							        <span class="msg"><xsl:value-of select="."/></span>
+                                  </xsl:for-each>
+                                  <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name=$elementType]/xsd:restriction[@base='xsd:integer']/xsd:maxInclusive/@value">
+							        <span class="msg"> - <xsl:value-of select="."/></span>
+                                  </xsl:for-each>
 								</xsl:for-each>
 							  </td>
 						    </xsl:when>
 
 						    <xsl:when test="$local='Push-String'">	
 						      <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <input type="text" class="file">
 									<xsl:if test="$required = 0">
@@ -359,7 +358,7 @@
 
 						    <xsl:when test="$local='Status-File' or $local='Ca' or $local='Dh' or $local='Key' or $local='Certificate'">
 						      <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <input type="text" class="file">
 									<xsl:if test="$required = 0">
@@ -376,7 +375,7 @@
 
 						    <xsl:when test="$local='Tls-Key'">
 						      <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <input type="text" class="file">
 									<xsl:if test="$required = 0">
@@ -393,7 +392,7 @@
 
 						    <xsl:when test="$local = 'Management-IP' or $local = 'Virtual-Netmask' or $local='VPN-Server' or $local='Virtual-IP'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input>
 									<xsl:if test="$required = 0">
@@ -410,7 +409,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Bool'">
 						      <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
                                   <input>
 									<xsl:if test="$required = 0">
@@ -427,7 +426,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Protocol'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <select class="mySelect">
 									<xsl:if test="$required = 0">
@@ -436,7 +435,7 @@
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
-							        <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name='Protocolcols']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
+							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='Protocolcols']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
 							  	      <option><xsl:value-of select="."/></option>
 							        </xsl:for-each>
 								  </select>
@@ -445,7 +444,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Cipher'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <select class="mySelect">
 									<xsl:if test="$required = 0">
@@ -454,7 +453,7 @@
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
-							        <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name='CipherType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
+							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='CipherType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
 							  	      <option><xsl:value-of select="."/></option>
 							        </xsl:for-each>
 								  </select>
@@ -463,7 +462,7 @@
 						    </xsl:when>
 						    <xsl:when test="$local = 'Comp-Lzo'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <select class="mySelect">
 									<xsl:if test="$required = 0">
@@ -472,7 +471,7 @@
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
-							        <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name='CompLzo']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
+							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='CompLzo']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
 							  	      <option><xsl:value-of select="."/></option>
 							        </xsl:for-each>
 								  </select>
@@ -482,7 +481,7 @@
 
 						    <xsl:when test="$local = 'Device'">
 							  <td>
-                                <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
 								  <select class="mySelect">
 									<xsl:if test="$required = 0">
@@ -491,7 +490,7 @@
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
-							        <xsl:for-each select="document('ovpn.xsd')/xsd:schema/xsd:simpleType[@name='DeviceType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
+							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='DeviceType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
 							  	      <option><xsl:value-of select="."/></option>
 							        </xsl:for-each>
 								  </select>
@@ -527,8 +526,7 @@
 						  <xsl:attribute name="ref"><xsl:value-of select="."/></xsl:attribute>
 						</input>
 						<span class="msg"><xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>disable</span>
--->
-					</xsl:otherwise>
+-->					</xsl:otherwise>
 				</xsl:choose>
 			  </tr>
 		    </xsl:for-each>

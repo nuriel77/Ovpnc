@@ -268,49 +268,10 @@
   <!-- NOTICE: Cipher List must be the last in this doc!!! -->
   
 
+
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">
  <xsd:restriction base="xsd:string">
-  <xsd:enumeration value="DES-CFB" />
-  <xsd:enumeration value="DES-CBC" />
-  <xsd:enumeration value="RC2-CBC" />
-  <xsd:enumeration value="RC2-CFB" />
-  <xsd:enumeration value="RC2-OFB" />
-  <xsd:enumeration value="DES-EDE-CBC" />
-  <xsd:enumeration value="DES-EDE3-CBC" />
-  <xsd:enumeration value="DES-OFB" />
-  <xsd:enumeration value="DES-EDE-CFB" />
-  <xsd:enumeration value="DES-EDE3-CFB" />
-  <xsd:enumeration value="DES-EDE-OFB" />
-  <xsd:enumeration value="DES-EDE3-OFB" />
-  <xsd:enumeration value="DESX-CBC" />
-  <xsd:enumeration value="BF-CBC" />
-  <xsd:enumeration value="BF-CFB" />
-  <xsd:enumeration value="BF-OFB" />
-  <xsd:enumeration value="RC2-40-CBC" />
-  <xsd:enumeration value="CAST5-CBC" />
-  <xsd:enumeration value="CAST5-CFB" />
-  <xsd:enumeration value="CAST5-OFB" />
-  <xsd:enumeration value="RC2-64-CBC" />
-  <xsd:enumeration value="AES-128-CBC" />
-  <xsd:enumeration value="AES-128-OFB" />
-  <xsd:enumeration value="AES-128-CFB" />
-  <xsd:enumeration value="AES-192-CBC" />
-  <xsd:enumeration value="AES-192-OFB" />
-  <xsd:enumeration value="AES-192-CFB" />
-  <xsd:enumeration value="AES-256-CBC" />
-  <xsd:enumeration value="AES-256-OFB" />
-  <xsd:enumeration value="AES-256-CFB" />
-  <xsd:enumeration value="AES-128-CFB1" />
-  <xsd:enumeration value="AES-192-CFB1" />
-  <xsd:enumeration value="AES-256-CFB1" />
-  <xsd:enumeration value="AES-128-CFB8" />
-  <xsd:enumeration value="AES-192-CFB8" />
-  <xsd:enumeration value="AES-256-CFB8" />
-  <xsd:enumeration value="DES-CFB1" />
-  <xsd:enumeration value="DES-CFB8" />
-  <xsd:enumeration value="DES-EDE3-CFB1" />
-  <xsd:enumeration value="DES-EDE3-CFB8" />
  </xsd:restriction>
 </xsd:simpleType>
 </xsd:schema>

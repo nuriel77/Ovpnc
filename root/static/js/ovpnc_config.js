@@ -1,4 +1,4 @@
-/* ovpn js lib */
+/* ovpnc_config js lib */
 $(document).ready(function() {
 	var doneR = new Array();
 
@@ -22,32 +22,58 @@ $(document).ready(function() {
 		// Parse the input fields
 		var appender = Object();
 		var disabled = Array();
+		var collected_errors = Array();
 		inputs.each(function(i,n){
+
 			if (n.type === "checkbox" && n.checked !== false){
-				//console.log("Disabled:"+n.checked);
 				disabled.push(n.name);
+			}
+		
+			if ( ! n.value.match(/\w+/g) && n.name !== 'Send' && n.name !== ''){
+				alert( "Empty value in " + n.name );
+				$(this).css("border","2px dotted red").css('background-color','red').focus().bind("keyup",(function() {
+					$(this).css('border', '0').css('background-color','').unbind("keyup");
+					return false;
+				}));
+				collected_errors.push ( "Empty value in " + n.name );
+				return false;
 			}
 
 			// Make sure its not disabled
-			if ( ! check_disabled(disabled, n.name) && n.type !== "checkbox" && n.value !== "" ){
+			if ( n.type !== "checkbox" && n.value !== "" ){
+
 				// Check if same name exists
 				var c = check_dup(appender, n.name);
 				if ( c !== false ){
 					n.name += '_' + c;
 					//console.log("NEW NAME "+n.name);
 				}
-				var parent = n.getAttribute("parent");
-				appender[ parent + '_' + n.name ] = n.value;	
-				//console.log( "Appender HAS NOW: %o"  , appender);
-			}
+
+				// Get the parent node name
+				var parent = n.getAttribute('parent');
+
+				// Get the group_id name, was attached to the 'tr'
+				var group_id = $("tr#" + n.name).attr('group');
+
+				// Assign 0 to non-group elements
+				if (group_id === undefined) group_id = '-1';
+
+				// Append a disabled flag if disabled
+				var d_flag = check_disabled(disabled, n.name)
+						? '_disabled'
+						: '';
+
+				/* Note the format in which the values are being processed: */
+				appender[ group_id + '_' + parent + '_' + n.name + d_flag  ] = n.value;
+
+			} 
 			else {
-				//console.log("Is disabled");
+				//console.log( n.name + " is disabled");
 			}
 
         });
 
-		//console.log("HERE IS FINAL APPENDER: %o",appender);
-
+		// Define our ajax function
 		$.postCONFIG = function(url, data) {
 		    return jQuery.ajax({	
 			    headers: { 'Accept': 'application/json' },
@@ -66,6 +92,10 @@ $(document).ready(function() {
 		        success: function(response){
 	             	//console.log(response);
 					if (typeof (response.error) !== "undefined"){
+						var element = response.error.replace(/.*<(.*)>.*/gi, "$1");
+						element = element.replace(/(\r\n|\n|\r)/gm,"");
+						//console.log("Element: " + element);
+						mark_span_text(element);
 						alert(response.error);
 						return false;
 					}
@@ -91,8 +121,16 @@ $(document).ready(function() {
 			})
     	};
 
-		$.postCONFIG( $("form#conf").attr('action'), appender );
-	    return false;
+		if ( collected_errors.length == 0 ){
+			// POST
+			$.postCONFIG(
+				$("form#conf").attr('action'), // The location to post to
+				appender // The params
+			);
+		}
+
+		return false;
+
 	});
 
 	function disable_clicked(o){
@@ -206,3 +244,19 @@ function check_disabled(arr, item){
 	}
 	return false;
 }			
+
+function mark_span_text(e){
+	$("span").each(function(index, elem){
+		console.log("compare " + e + " with " + $(this).text());
+		if ( $(this).text() === e ){
+			console.log("Found Match: " + e);
+			$('input[parent="' + e + '"]').css('color', 'red')
+										  .css('border','2px dotted red')
+										  .bind("keyup",(function() {
+				$(this).css('border', '0').css('color','').unbind("keyup");
+				return false;
+			}));
+			return false;
+		}
+	});
+}

@@ -141,7 +141,7 @@ and run validataions via the xsd schema
 			$xml,
 			KeepRoot => 1,
 	        NoSort => 0,
-	        XMLDecl     => "<?xml version='1.0' encoding='UTF-8'?>",
+	        XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
 		) or die "Cannot generate XML data!";
 
 		# Validate the xml against the xsd schema
@@ -152,11 +152,11 @@ and run validataions via the xsd schema
 			$c->stash({ error => $message });
 		} else {
 			my $st_msg = {};
-			my $config_file = $data{'null_Config-File'};
+			my $config_file = $data{'-1_null_Config-File'};
 
 			# Pretty fatal, but should not happen here
 			# because we ran validation earlier on xml format
-			unless ($config_file){
+			unless ( $config_file ){
 				$st_msg->{error} = "Did not receive any configuration file value!";
 				$c->stash( $st_msg );
 				$c->forward("View::JSON");
@@ -221,6 +221,26 @@ and run validataions via the xsd schema
 		}
 	}
 
+=head2 renew_ciphers
+
+Renew the Cipher list into the
+XSD schema from openvpn
+
+=cut
+
+	sub renew_ciphers : Chained('base') PathPart('renew_ciphers') Args(0)
+	{
+		my ($self, $c) = @_;
+
+		# Send openvpn binary and the schema to be updated
+		my $ret_val = Ovpnc::Controller::Api::Config::RenewCiphers->action(
+			$c->config->{ovpnc_config_schema},
+			$c->config->{openvpn_bin}
+		);
+
+		$c->stash( { status => $ret_val } );
+	}
+
 }
 
 =head2 XML example create_xml
@@ -268,11 +288,13 @@ will set attributes etc
 
 		for my $key (keys %data){
 			# Split the key on _
-			my ($parent, $real, $number) = split ('_', $key);
+			my ($group, $parent, $real, $number, $disabled) = split ('_', $key);
 
 			# Skip the two main Directives
+			# They have been assigned group 0
 			# (config filename and servername)
-			next if ($real eq 'Name' or $real eq 'Config-File');
+			#next if ($real eq 'Name' or $real eq 'Config-File');
+			next if ($group == 0);
 
 			# If this is second (or more) value
 			# we need to hold it until we can
@@ -371,65 +393,104 @@ and return xml string
 		my $xml_obj = XMLin('<Nodes></Nodes>',ForceArray => [ 'Nodes', 'Node' ]);
 	
 		my $i = 0;
-	
-		$xml_obj->{Nodes}->{Node}->{Directives}->{Group} = [];
-		$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[0]->{id} = 1;
+
+		# Create first node id
+		$xml_obj->{Nodes}->{Node}->{id} = '0';
+
+		my $last_group = '-1';
 
 		DATA:
-		for my $key (keys %{$data}){
+		for my $key (sort keys %{$data}){
 
-			my ($parent, $real, $number) = split('_',$key);
+			# We shall increment $i only when group changes
+			# we get all elements sorted in this loop
 
-			$xml_obj->{Nodes}->{Node}->{id} = 1;
-	
+			my ($group, $parent, $real, $number, $status) = split('_',$key);
+			
+			$i = 0 if ( $group > $last_group );
+
+			# Only if group is not '-1' which are directives
+			# which do not appear in the conf file itself
+			$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[ $group ]->{id} = $group
+				unless ( $group eq '-1' );
+
 			# Name and Config-File have no
 			# parent because they are not
 			# part of the config file itself
-			if ($parent eq 'null'){
+			if ( $group eq '-1' ){
 				$xml_obj->{Nodes}->{Node}->{$real} = [ $data->{$key} ];
 			}
 			else {
 				# Create the Name node
-
 				my ($z, $skip) = 0;
+
 				if ( $real ne 'push' ){
-				NODES:	for ( @{$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[0]->{Directive}} ){
-						next NODES unless $_->{Name}->[0];
-						if ($real eq $_->{Name}->[0]){
-							#warn "1. Name node already exists: '$real' at loop '$z', now at loop '$i', appending to previous.";
-							push (
-								@{$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[0]->{Directive}->[$z]->{Params}->[0]->{$parent}},
-								$data->{$key}
-							);
+			NODES:	for ( @{$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[ $group ]->{Directive}} ){
+
+						unless ( $_->{Name}->[0] ) {
+							$z++;
+							next NODES;
+						}
+
+						# Check if such a name already exists in the 
+						# hash, if yes, append to its node
+						# Otherwise it creates a new parent node
+						# and not append to the previous similar one
+						if ( $real eq $_->{Name}->[0] ){
+							warn "1. Name node already exists: '$real', now with '".$data->{$key}."' at loop '$z', group '$group', now at loop '$i', appending to previous($z).";
+							$xml_obj->{Nodes}
+									   ->{Node}
+										 ->{Directives}
+										   ->{Group}->[ $group ]
+										     ->{Directive}->[ $z ]
+											   ->{Params}->[0]
+												 ->{$parent} = [ $data->{$key} ];
+							
+							# Give $skip a value for later checks
 							$skip++;
 							last NODES;
 						}
 						$z++;
 					}
 				}
-				unless ($skip){
-					#warn "2. Creating Name node at $i with $real, \$skip is " . ( $skip ? $skip : '0' );
-					$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[0]->{Directive}->[ $i ]->{Name} = [ $real ]
-				}
 
+				# If $skip is not assigned this is a new
+				# parent node, so create a new one
+				if ( ! $skip ){
+					warn "2. Creating Name node at $i with $real and group $group, \$skip is " . ( $skip ? $skip : '0' );
+					$xml_obj->{Nodes}
+							   ->{Node}
+								 ->{Directives}
+								   ->{Group}->[ $group ]
+								     ->{Directive}->[ $i ]
+									   ->{Name} = [ $real ];
+					
+				}
 
 				# Create parameters node only if
 				# the parameters exists, that means
 				# that they are different than the $parent
-				#warn "'" . $real . "' against '" . $data->{$key} . "'";
-				if ( $real ne $data->{$key} && not defined $skip ){
-					#warn "3. Creating Params Node for $parent and value $data->{$key} \$i is $i";
-					push (
-						@{$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[0]->{Directive}->[$i]->{Params}->[0]->{$parent}},
-						$data->{$key}
-					);
+				if ( $real ne $data->{$key} && ! $skip ){
+					warn "3. Creating Params Node for $parent and value $data->{$key} by group $group, \$i is $i";
+					$xml_obj->{Nodes}
+							   ->{Node}
+							     ->{Directives}
+								   ->{Group}->[ $group ]
+								     ->{Directive}->[ $i ]
+									   ->{Params}->[0] = { $parent => [ $data->{$key} ] };
 				}
-				$i++ unless $skip;
+
+				$i++ if ( ! $skip );
 
 			}
-		}
 
-		# Return XML data
+			# Save the group for next loop
+			$last_group = $group;
+
+		}
+		
+		# Note! Returns a PERL data structure
+		# we shall XMLout it soon
 		return $xml_obj;
 	}
 

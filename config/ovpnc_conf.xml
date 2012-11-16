@@ -1,19 +1,33 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Nodes>
-  <Node id="1">
+  <Node id="0">
     <Config-File>/home/ovpnc/Ovpnc/config/openvpn.conf.ovpnc</Config-File>
     <Directives>
+      <Group id="0">
+        <Directive>
+          <Name>port</Name>
+          <Params>
+            <Server-Port>8111</Server-Port>
+          </Params>
+        </Directive>
+        <Directive>
+          <Name>local</Name>
+          <Params>
+            <VPN-Server>192.168.1.250</VPN-Server>
+          </Params>
+        </Directive>
+      </Group>
       <Group id="1">
         <Directive>
-          <Name>crl-verify</Name>
-        </Directive>
-        <Directive>
-          <Name>duplicate-cn</Name>
-        </Directive>
-        <Directive>
-          <Name>cert</Name>
+          <Name>dev</Name>
           <Params>
-            <Certificate>/some/path/serv.crt</Certificate>
+            <Device>tun</Device>
+          </Params>
+        </Directive>
+        <Directive>
+          <Name>proto</Name>
+          <Params>
+            <Protocol>tcp</Protocol>
           </Params>
         </Directive>
         <Directive>
@@ -23,6 +37,20 @@
             <Virtual-Netmask>255.255.255.0</Virtual-Netmask>
           </Params>
         </Directive>
+      </Group>
+      <Group id="2">
+        <Directive>
+          <Name>ca</Name>
+          <Params>
+            <Ca>/some/path/serv.ca</Ca>
+          </Params>
+        </Directive>
+        <Directive>
+          <Name>cert</Name>
+          <Params>
+            <Certificate>/some/path/serv.crt</Certificate>
+          </Params>
+        </Directive>
         <Directive>
           <Name>dh</Name>
           <Params>
@@ -30,15 +58,9 @@
           </Params>
         </Directive>
         <Directive>
-          <Name>group</Name>
+          <Name>key</Name>
           <Params>
-            <Group-Name>openvpn</Group-Name>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>ca</Name>
-          <Params>
-            <Ca>/some/path/serv.ca</Ca>
+            <Key>/some/path/serv.key</Key>
           </Params>
         </Directive>
         <Directive>
@@ -48,10 +70,29 @@
             <Tls-Mode>0</Tls-Mode>
           </Params>
         </Directive>
+      </Group>
+      <Group id="3">
         <Directive>
-          <Name>mute</Name>
+          <Name>max-clients</Name>
           <Params>
-            <Mute>5</Mute>
+            <Max-Clients>64</Max-Clients>
+          </Params>
+        </Directive>
+        <Directive>
+          <Name>client-to-client</Name>
+        </Directive>
+        <Directive>
+          <Name>crl-verify</Name>
+        </Directive>
+        <Directive>
+          <Name>duplicate-cn</Name>
+        </Directive>
+      </Group>
+      <Group id="4">
+        <Directive>
+          <Name>group</Name>
+          <Params>
+            <Group-Name>openvpn</Group-Name>
           </Params>
         </Directive>
         <Directive>
@@ -62,22 +103,29 @@
           </Params>
         </Directive>
         <Directive>
-          <Name>push</Name>
+          <Name>user</Name>
           <Params>
-            <Push-String>route 10.10.10.0 255.255.255.0</Push-String>
+            <User-Name>openvpn</User-Name>
+          </Params>
+        </Directive>
+      </Group>
+      <Group id="5">
+        <Directive>
+          <Name>cipher</Name>
+          <Params>
+            <Cipher>DES-CFB</Cipher>
           </Params>
         </Directive>
         <Directive>
-          <Name>dev</Name>
+          <Name>comp-lzo</Name>
           <Params>
-            <Device>tun</Device>
+            <Comp-Lzo>on</Comp-Lzo>
           </Params>
         </Directive>
         <Directive>
-          <Name>connect-freq</Name>
+          <Name>mute</Name>
           <Params>
-            <Connect-Freq-New>5</Connect-Freq-New>
-            <Connect-Freq-Sec>2</Connect-Freq-Sec>
+            <Mute>5</Mute>
           </Params>
         </Directive>
         <Directive>
@@ -88,12 +136,18 @@
           </Params>
         </Directive>
         <Directive>
-          <Name>persist-tun</Name>
-        </Directive>
-        <Directive>
           <Name>verb</Name>
           <Params>
             <Verb>3</Verb>
+          </Params>
+        </Directive>
+      </Group>
+      <Group id="6">
+        <Directive>
+          <Name>connect-freq</Name>
+          <Params>
+            <Connect-Freq-New>5</Connect-Freq-New>
+            <Connect-Freq-Sec>2</Connect-Freq-Sec>
           </Params>
         </Directive>
         <Directive>
@@ -104,21 +158,17 @@
           </Params>
         </Directive>
         <Directive>
-          <Name>proto</Name>
-          <Params>
-            <Protocol>tcp</Protocol>
-          </Params>
+          <Name>persist-key</Name>
         </Directive>
         <Directive>
-          <Name>comp-lzo</Name>
-          <Params>
-            <Comp-Lzo>on</Comp-Lzo>
-          </Params>
+          <Name>persist-tun</Name>
         </Directive>
+      </Group>
+      <Group id="7">
         <Directive>
-          <Name>local</Name>
+          <Name>push</Name>
           <Params>
-            <VPN-Server>192.168.1.250</VPN-Server>
+            <Push-String>route 10.10.10.0 255.255.255.0</Push-String>
           </Params>
         </Directive>
         <Directive>
@@ -128,46 +178,10 @@
           </Params>
         </Directive>
         <Directive>
-          <Name>cipher</Name>
-          <Params>
-            <Cipher>DES-CFB</Cipher>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>port</Name>
-          <Params>
-            <Server-Port>8111</Server-Port>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>client-to-client</Name>
-        </Directive>
-        <Directive>
           <Name>push</Name>
           <Params>
             <Push-String>route-gateway dhcp</Push-String>
           </Params>
-        </Directive>
-        <Directive>
-          <Name>key</Name>
-          <Params>
-            <Key>/some/path/serv.key</Key>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>user</Name>
-          <Params>
-            <User-Name>openvpn</User-Name>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>max-clients</Name>
-          <Params>
-            <Max-Clients>64</Max-Clients>
-          </Params>
-        </Directive>
-        <Directive>
-          <Name>persist-key</Name>
         </Directive>
       </Group>
     </Directives>
