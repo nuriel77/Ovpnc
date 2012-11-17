@@ -74,6 +74,45 @@ __PACKAGE__->config(
 );
 
 #
+# XSLT View
+__PACKAGE__->config(
+	'View::XSLT' => {
+	    # relative paths to the directories with templates
+   		INCLUDE_PATH => [
+    	  Ovpnc->path_to( 'root', 'xslt' ),
+    	],
+   		TEMPLATE_EXTENSION => '.xsl', # default extension when getting template name from the current action
+    	FORCE_TRANSFORM => 1,
+    	DUMP_CONFIG => 0, # use for Debug. Will dump the final (merged) configuration for XSLT view
+    	LibXSLT => { # XML::LibXSLT specific parameters
+      		register_function => [{
+	        	uri    => 'urn:ovpnc',
+   		      	name   => 'Param',
+          	  	subref => sub { return $_[0] },
+        	}]
+   		}
+	}
+);
+
+#
+# HTML View
+__PACKAGE__->config(
+	'View::HTML' => {
+    	TEMPLATE_EXTENSION => '.tt2',
+     	INCLUDE_PATH => [
+                Ovpnc->path_to( 'root', 'src' ),
+            ],
+     	# Set to 1 for detailed timer stats in your HTML as comments
+    	TIMER              => 1,
+     	# This is your wrapper template located in the 'root/src'
+	    WRAPPER => 'wrapper.tt2',
+     	ENCODING     => 'utf-8',
+     	render_die => 1,
+	}
+);
+
+
+#
 # Login controller config 
 __PACKAGE__->config(
 	'Controller::Login' => {
