@@ -134,20 +134,27 @@ $(document).ready(function() {
 	});
 
 	function disable_clicked(o){
-		//console.log("Got: "+o);
-		if ( $('tr#'+o).attr('ref') !== 'off' ){
-			$('tr#'+o).css('text-decoration','line-through');
-			$('tr#'+o).css('color','gray');
-			$('tr#'+o).attr('ref','off');
-			$('input#'+o).css('color','lightgray');
-			$('input#'+o + '[type="text"]').prop('readonly','on');
+		var this_tr = $('#'+o).closest('tr');
+		if ( this_tr.attr('ref') !== 'off' ){
+			this_tr.css('text-decoration','line-through')
+				   .attr('ref','off')
+				   .css('color','lightgray')
+				   .children('td').css('text-decoration','line-through')
+				   .children('td').css('color','lightgray');
+			$('input[value="' + o + '"]').css('color','lightgray').css('text-decoration','line-through');
+			$('input#'+o + '[type="text"]').prop('readonly','on').css('color','lightgray');
+			$('select#'+o).attr('disabled','disabled');
 			$('input#'+o).attr('checked', true);
 		} else {
-			$('tr#'+o).css('text-decoration','none');
-			$('tr#'+o).css('color','');
-			$('tr#'+o).attr('ref','on');
+			this_tr.css('text-decoration','none')
+				   .attr('ref','on')
+				   .css('color','')
+				   .children('td').css('text-decoration','none')
+				   .children('td').css('color','');
 			$('input#'+o).css('color','');
-			$('input#'+o + '[type="text"]').removeProp('readonly');
+			$('input[value="' + o + '"]').css('color','').css('text-decoration','none');
+			$('input#'+o + '[type="text"]').removeProp('readonly').css('color','');
+			$('select#'+o).removeAttr('disabled');
 			$('input#'+o).attr('checked', false);
 		}
 	}
@@ -180,6 +187,15 @@ $(document).ready(function() {
 				'<span class="rmv msg disb" id="'+op+'" name="'+op+'" >'
 			  + '<input type="checkbox" id="' + op + '" name="'+op+'" />disable</span>');
 			doneR.push(op);
+		});
+
+		// Check boxes which mode is 0 (disabled)
+		$('input[type=checkbox]').each(function () {
+			var this_tr = $(this).closest('tr');
+			if ( this_tr.attr('status') !== "1" ){
+				//this_tr.children('td').css('background-color','red');
+				disable_clicked(this.id);
+			}
 		});
 	}
 

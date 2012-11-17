@@ -8,7 +8,7 @@ use Readonly;
 use strict;
 use warnings;
 use Moose;
-use aliased 'Ovpnc::Controller::Api::Config::RenewCiphers' => 'RCPHR';
+use aliased 'Ovpnc::Controller::Api::Config::RenewCiphers' => 'RenewCiphers';
 Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
@@ -17,11 +17,11 @@ BEGIN { extends 'Catalyst::Controller::REST'; }
 
 =head1 NAME
 
-Ovpnc::Controller::Api::Config - Catalyst Controller
+Ovpnc::Controller::Api::Config - Catalyst Controller 
 
 =head1 DESCRIPTION
 
-Catalyst Controller
+Catalyst Controller for OVPN Configuration
 
 OpenVPN Config Controller API
 
@@ -64,7 +64,8 @@ in the conf file manually
 		my $format = $c->request->params->{format} ||= undef;
 		my $current_conf = $self->get_openvpn_config_file( $c->config->{ovpnc_conf} );
 
-		die "No configuration file specified! " unless $current_conf;
+		die "No configuration file specified! "
+			unless $current_conf;
 
 		my $output = $self->parse_conf_file(
 			$current_conf,
@@ -72,9 +73,7 @@ in the conf file manually
 		);
 
 		if ( ref $output and defined $output->{error} ){
-	        $c->response->status(200);
-			$c->stash( { error => "Error reading configuration: " . $output->{error} } );
-			$c->forward("View::JSON");
+			$self->send_error( $c, "Error reading configuration: " . $output->{error}, 200 );
 			return;
 		}
 		else {
@@ -85,12 +84,9 @@ in the conf file manually
 					file => $current_conf
 				}
 			);
-
 			my $xml_data = $self->create_xml($_data);			
 			if ( ref $xml_data and defined $xml_data->{error} ){
-	   		    $c->response->status(200);
-				$c->stash( { error => "Error writing back-end xml configuration '".$c->config->{ovpnc_conf}."':\r\n" . $xml_data->{error} } );
-				$c->forward("View::JSON");
+				$self->send_error( $c, "Error writing back-end xml configuration '".$c->config->{ovpnc_conf}."':\r\n" . $xml_data->{error}, 200 );
 				return;
 			}
 			if (my $msg = $self->validate_xml($xml_data, $c->config->{ovpnc_config_schema}) ){
@@ -160,8 +156,7 @@ and run validataions via the xsd schema
 			# because we ran validation earlier on xml format
 			unless ( $config_file ){
 				$st_msg->{error} = "Did not receive any configuration file value!";
-				$c->stash( $st_msg );
-				$c->forward("View::JSON");
+				$self->send_error( $c, $st_msg->{error} , 200 );
 				return;
 			}
 
@@ -173,7 +168,7 @@ and run validataions via the xsd schema
 					   . "#\n";
 
 			# Cut out the directory name
-			my ($dir) = $config_file =~ /^(.*)\/(.*)$/g;
+			my ($dir) = $config_file =~ /^(.*)\/.*$/g;
 
 			# Now check if directory is valid
 			unless ( -e $dir and -d $dir and -w $dir ){
@@ -188,14 +183,14 @@ and run validataions via the xsd schema
 
 			my $FILE;
 			# Open the (new) file for writing
-			unless ( defined $st_msg->{error}){
+			unless ( defined $st_msg->{error} ){
 				open($FILE, ">", $config_file)
 					or $st_msg->{error} = "Error: Configuration file could not be updated: $!";
 			}
 		
 			# If no errors so far, proceed
 			# with outputing key/values to file		
-			unless (defined $st_msg->{error}){
+			unless ( defined $st_msg->{error} ){
 				$output .= $self->prepare_conf_file_data( \%data );
 				print $FILE $output;
 				close $FILE;
@@ -206,17 +201,20 @@ and run validataions via the xsd schema
 		       		     NoSort => 0,
 						 OutputFile => $c->config->{ovpnc_conf},
 		      		     XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
-					) or die "Error generating xml configuration file: " . $!;
+					) or $self->send_error($c, "Error generating xml configuration file: " . $!, 200) && return;
 				}
 				else {
 					$st_msg->{error} = "Cannot write xml configuration file " 
 									 . $c->config->{ovpnc_conf} 
 									 . ".\r\nEither it does not exists or is not accessible.";
-					$c->stash( $st_msg );
-					$c->forward("View::JSON");
+					$self->send_error( $c, $st_msg->{error}, 200 );
 					return;
 				}
 				$st_msg->{status} = 'Configuration file updated successfully';
+			}
+			else {
+				$self->send_error( $c, $st_msg->{error}, 200 );
+				return;
 			}
 
 			$c->stash( $st_msg );
@@ -235,12 +233,12 @@ XSD schema from openvpn
 		my ($self, $c) = @_;
 
 		# Send openvpn binary and the schema to be updated
-		my $ret_val = RCPHR->action(
+		my $ret_val = RenewCiphers->action(
 			$c->config->{ovpnc_config_schema},
 			$c->config->{openvpn_bin}
 		);
 
-		$c->stash( { status => $ret_val } );
+		$c->stash( $ret_val );
 	}
 
 }
@@ -250,7 +248,7 @@ XSD schema from openvpn
 <Nodes>
   <Node id="1">
     <Name></Name>
-    <Config-File></Config-File>
+    <Config-File>/etc/openvpn/server.conf</Config-File>
     <Directives>
       <Group id="1">
         <Directive>
@@ -272,6 +270,14 @@ XSD schema from openvpn
 # Private functions
 {
 
+	sub send_error :Private
+	{
+		my ( $self, $c, $error ) = @_;
+		$c->stash( { error => $error } ); 
+		$c->forward("View::JSON");
+		return;
+	}
+
 =head2 prepare_conf_file_data
 
 Will prepare the openvpn
@@ -283,32 +289,39 @@ will set attributes etc
 	{
 		my $self = shift;
 		my %data = %{(shift)};
-
-		my $output = '';
+		my $output = "\n# [ Group id=0 ]\n";
 		my $on_hold = {};
 		my @existing_keys;
+		my $last_group;
+		
+		DATA:
+		for my $key ( sort keys %data ){
+			# Get any disabled
+			my $to_split_key = $key;
+			my $disabled = $to_split_key =~ s/_disabled$//;
 
-		for my $key (keys %data){
 			# Split the key on _
-			my ($group, $parent, $real, $number, $disabled) = split ('_', $key);
+			my ($group, $parent, $real, $number) = split ('_', $to_split_key);
 
 			# Skip the two main Directives
 			# They have been assigned group 0
 			# (config filename and servername)
-			#next if ($real eq 'Name' or $real eq 'Config-File');
-			next if ($group == 0);
+			next DATA if ($group == -1);
+
+			$output .= "\n# [ Group id=" . $group . " ]\n"
+				if $group > $last_group;
 
 			# If this is second (or more) value
 			# we need to hold it until we can
 			# append it to its first value(s)
 			if ( $number && $real ne 'push' ){
 				if ( $self->not_exists(\@existing_keys, $real) ) {
-					#warn "Added $real to on_hold with value "  . $data{$key};
+					warn "Added $real to on_hold with value "  . $data{$key};
 					$on_hold->{$real}  = {
 						value => $data{$key},
 						parent => $parent
 					};
-					next;
+					next DATA;
 				}
 			}
 
@@ -318,47 +331,47 @@ will set attributes etc
 			if ( ! $number && $real ne 'push' ){
 				if ( ref $on_hold eq 'HASH' ){
 					for my $okey ( keys %{$on_hold} ){
-						#warn "Compare $real and $okey while orig was " . $key;
 						if ($okey eq $real){
-							#warn "Matched $okey against $real, while \$on_hold->{$okey} is: " . $on_hold->{$okey}->{value}
-							#. " and \$data{\$key} is " . $data{$key} ;
-							$data{$key} .= ' ' . $on_hold->{$okey}->{value} . ';' . $parent . ';' . $on_hold->{$okey}->{parent};
-							#delete $on_hold->{$okey};
+							$data{$key} .= ' ' . $on_hold->{$okey}->{value} 
+										. ';' . $parent . ';' . $on_hold->{$okey}->{parent};
+
 						}
 					}
 				}	
 			}
-			
+
 			# If key name already found,
 			# append current value to it		
-			if ($output =~ /\n\b$real\b/g && $real ne 'push'){
-				$output =~ s/($real.*)(;.*)\n/$1 $data{$key} $2\n/g;
+			if ($output =~ /\n\b$real\b/g and $real ne 'push'){
+				my ( $val, $p ) = split(';',$data{$key});
+				$output =~ s/($real.*);(.*)\n/$1 $val;$2\n/g;
 				$output =~ s/($real.*)\n/$1;$parent\n/;
 			}
 			else {
 				my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
-				$tab =  "\t" x 4 if (length($real) > 10 );
+				$tab =  "\t" x 4 if ( length($real) > 10 );
 				if ( defined $data{$key} ){
-					# Create new key/value
+
+					# Create new key/value.
 					# output value only if exists
 					# otherwise output only the key
 					if ( $real eq $data{$key} ){
-						$output .= $real . "$tab;" . $parent . "\n";
+						$output .= ($disabled?';':'') . $real . "$tab;" . $parent . "\n";
 					} 
 					else { 
 						unless ( $on_hold->{$real}->{parent} ){
-							$output .= $real . "$tab"  . $data{$key} . ";" . $parent . "\n";
+							$output .= ($disabled?';':'') . $real . "$tab"  . $data{$key} . ";" . $parent . "\n";
 						}
 						else {
-							$output .= $real . "$tab"  . $data{$key} . "\n";
+							$output .= ($disabled?';':'') . $real . "$tab"  . $data{$key} . "\n";
 						}
 
 					}
-					#warn "I just assigned $real to \$output";
-					push (@existing_keys, $real);
+					push ( @existing_keys, $real );
 				}
 			}
-		}
+			$last_group = $group;
+		} # (%DATA)
 		$output .= ";END\n";
 		return $output;
 	}
@@ -404,11 +417,15 @@ and return xml string
 		DATA:
 		for my $key (sort keys %{$data}){
 
+			# Get any disabled
+			my $to_split_key = $key;
+			my $disabled = $to_split_key =~ s/_disabled$//;
+
 			# We shall increment $i only when group changes
 			# we get all elements sorted in this loop
 
-			my ($group, $parent, $real, $number, $status) = split('_',$key);
-			
+			my ($group, $parent, $real, $number) = split('_',$to_split_key);
+
 			$i = 0 if ( $group > $last_group );
 
 			# Only if group is not '-1' which are directives
@@ -439,7 +456,7 @@ and return xml string
 						# Otherwise it creates a new parent node
 						# and not append to the previous similar one
 						if ( $real eq $_->{Name}->[0] ){
-							warn "1. Name node already exists: '$real', now with '".$data->{$key}."' at loop '$z', group '$group', now at loop '$i', appending to previous($z).";
+							#warn "1. Name node already exists: '$real', now with '".$data->{$key}."' at loop '$z', group '$group', now at loop '$i', appending to previous($z).";
 							$xml_obj->{Nodes}
 									   ->{Node}
 										 ->{Directives}
@@ -459,7 +476,12 @@ and return xml string
 				# If $skip is not assigned this is a new
 				# parent node, so create a new one
 				if ( ! $skip ){
-					warn "2. Creating Name node at $i with $real and group $group, \$skip is " . ( $skip ? $skip : '0' );
+					#warn "2. Creating Name node at $i with $real and group $group, \$skip is " . ( $skip ? $skip : '0' );
+					$xml_obj->{Nodes}
+							   ->{Node}
+								 ->{Directives}
+								   ->{Group}->[ $group ]
+								     ->{Directive}->[ $i ]->{status} = ( $disabled ? 0 : 1 );
 					$xml_obj->{Nodes}
 							   ->{Node}
 								 ->{Directives}
@@ -473,7 +495,7 @@ and return xml string
 				# the parameters exists, that means
 				# that they are different than the $parent
 				if ( $real ne $data->{$key} && ! $skip ){
-					warn "3. Creating Params Node for $parent and value $data->{$key} by group $group, \$i is $i";
+					#warn "3. Creating Params Node for $parent and value $data->{$key} by group $group, \$i is $i";
 					$xml_obj->{Nodes}
 							   ->{Node}
 							     ->{Directives}

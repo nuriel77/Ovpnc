@@ -52,15 +52,16 @@
 				  </input>
 			    </td>
 		      </tr>
-			  <tr></tr>
 
 			  <!-- parse through Directives -->
 		      <xsl:for-each select="Directives/Group/Directive">
   		       <xsl:variable name="configItem" select="Name"/>
 		        <tr class="odd">
 				  <xsl:attribute name="id"><xsl:value-of select="Name"/></xsl:attribute>
-				  <!-- get the group id of this param -->
+				  <!-- get/set the group id of this param -->
 				  <xsl:attribute name="group"><xsl:value-of select="../@id"/></xsl:attribute>
+				  <!-- get/set the status of this param -->
+				  <xsl:attribute name="status"><xsl:value-of select="@status"/></xsl:attribute>
 				  <!--
 						To this tr we add attrib "alone" if this
 						element has no parameters

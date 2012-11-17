@@ -4,13 +4,13 @@
     <Config-File>/home/ovpnc/Ovpnc/config/openvpn.conf.ovpnc</Config-File>
     <Directives>
       <Group id="0">
-        <Directive>
+        <Directive status="1">
           <Name>port</Name>
           <Params>
             <Server-Port>8111</Server-Port>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>local</Name>
           <Params>
             <VPN-Server>192.168.1.250</VPN-Server>
@@ -18,19 +18,19 @@
         </Directive>
       </Group>
       <Group id="1">
-        <Directive>
+        <Directive status="1">
           <Name>dev</Name>
           <Params>
             <Device>tun</Device>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>proto</Name>
           <Params>
             <Protocol>tcp</Protocol>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>server</Name>
           <Params>
             <Virtual-IP>10.0.10.0</Virtual-IP>
@@ -39,31 +39,31 @@
         </Directive>
       </Group>
       <Group id="2">
-        <Directive>
+        <Directive status="1">
           <Name>ca</Name>
           <Params>
             <Ca>/some/path/serv.ca</Ca>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>cert</Name>
           <Params>
             <Certificate>/some/path/serv.crt</Certificate>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>dh</Name>
           <Params>
             <Dh>/some/path/dh1024.pem</Dh>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>key</Name>
           <Params>
             <Key>/some/path/serv.key</Key>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>tls-auth</Name>
           <Params>
             <Tls-Key>/var/www/vpn/2.0/keys/ta.key</Tls-Key>
@@ -72,37 +72,37 @@
         </Directive>
       </Group>
       <Group id="3">
-        <Directive>
+        <Directive status="1">
           <Name>max-clients</Name>
           <Params>
             <Max-Clients>64</Max-Clients>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>client-to-client</Name>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>crl-verify</Name>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>duplicate-cn</Name>
         </Directive>
       </Group>
       <Group id="4">
-        <Directive>
+        <Directive status="1">
           <Name>group</Name>
           <Params>
             <Group-Name>openvpn</Group-Name>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>management</Name>
           <Params>
             <Management-IP>127.0.0.1</Management-IP>
             <Management-Port>7505</Management-Port>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>user</Name>
           <Params>
             <User-Name>openvpn</User-Name>
@@ -110,32 +110,32 @@
         </Directive>
       </Group>
       <Group id="5">
-        <Directive>
+        <Directive status="0">
           <Name>cipher</Name>
           <Params>
             <Cipher>DES-CFB</Cipher>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>comp-lzo</Name>
           <Params>
             <Comp-Lzo>on</Comp-Lzo>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>mute</Name>
           <Params>
             <Mute>5</Mute>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>status</Name>
           <Params>
             <Status-File>/var/log/status_vpn.log</Status-File>
             <Status-Sec>3</Status-Sec>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>verb</Name>
           <Params>
             <Verb>3</Verb>
@@ -143,41 +143,41 @@
         </Directive>
       </Group>
       <Group id="6">
-        <Directive>
+        <Directive status="0">
           <Name>connect-freq</Name>
           <Params>
             <Connect-Freq-New>5</Connect-Freq-New>
             <Connect-Freq-Sec>2</Connect-Freq-Sec>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>keepalive</Name>
           <Params>
             <KeepAlive-Dead>30</KeepAlive-Dead>
             <KeepAlive-Poll>10</KeepAlive-Poll>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="0">
           <Name>persist-key</Name>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>persist-tun</Name>
         </Directive>
       </Group>
       <Group id="7">
-        <Directive>
+        <Directive status="1">
           <Name>push</Name>
           <Params>
             <Push-String>route 10.10.10.0 255.255.255.0</Push-String>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>push</Name>
           <Params>
             <Push-String>dhcp-option DNS 208.67.222.222</Push-String>
           </Params>
         </Directive>
-        <Directive>
+        <Directive status="1">
           <Name>push</Name>
           <Params>
             <Push-String>route-gateway dhcp</Push-String>
