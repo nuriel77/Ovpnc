@@ -37,7 +37,7 @@ methods execute
 
 =cut
 
-around [ qw(ovpnc_config test) ]  => sub { 
+around [ qw(ovpnc_config) ]  => sub { 
 	my( $orig, $self, $c ) = @_;
 	# Sanity check
     my $err = $c->forward('/api/sanity');
@@ -53,14 +53,14 @@ around [ qw(ovpnc_config test) ]  => sub {
 
 =head2 index
 
-The Welcome page (/)
+Default main page
 
 =cut
 
-sub index : Path : Args(0) {
+sub index : Chained('/base') Path : Args(0) Does('NeedsLogin')
+{
     my ( $self, $c ) = @_;
-    # Hello World
-    $c->response->body( $c->welcome_message );
+	$c->stash->{output} =  "SDSDSDSD";
 }
 
 
@@ -76,18 +76,6 @@ sub default : Path
     $c->response->body( 'Page not found' );
     $c->response->status(404);
 }
-
-=head2 test
-
-test function
-
-=cut
-
-sub test : Chained('/base') PathPart('test') Args(0) {
-    my ( $self, $c ) = @_;
-    $c->res->body('<h2>Hello, user!</h2>');
-}
-
 
 =head2 ovpnc_config
 

@@ -1,0 +1,9 @@
+<script type="text/javascript" src="[% c.uri_for('/static/js/index.js') %]"></script>
+<div id="main_div">
+	<div id="status">
+	</div>
+	<div id="clients">
+	</div>
+	<p>[% output %]</p>
+	<p>This is a test</p>
+</div>

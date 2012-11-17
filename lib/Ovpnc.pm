@@ -116,10 +116,19 @@ __PACKAGE__->config(
 # Login controller config 
 __PACKAGE__->config(
 	'Controller::Login' => {
+
+		# Force clear session on logout
+		clear_session_on_logout => 1,
+
+		# Redirect to login page after logout
+		redirect_after_logout_uri => '/login',
+
 		login_form_args => {
            authenticate_args => { active => 'Y' },
         },
+
         traits => [qw( Logout WithRedirect RenderAsTTTemplate )],
+
 #		actions => {
 #			required => {
 #				Does => ['ACL'],
