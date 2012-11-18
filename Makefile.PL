@@ -37,6 +37,7 @@ requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Plugin::StackTrace';
 requires 'Catalyst::Plugin::Cache';
 requires 'Catalyst::Controller::REST';
+requires 'Catalyst::Controller::ActionRole';
 requires 'Catalyst::Action::RenderView';
 requires 'Catalyst::View::XML::Simple';
 requires 'Catalyst::Plugin::Session';

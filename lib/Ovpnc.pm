@@ -30,7 +30,6 @@ use Catalyst qw/
   Authentication::Store::Minimal
   Authorization::Roles
   +CatalystX::SimpleLogin
-  StackTrace
   /;
 
 extends 'Catalyst';
