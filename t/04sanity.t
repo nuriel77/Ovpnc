@@ -13,5 +13,5 @@ use Catalyst::Test 'Ovpnc';
 use Ovpnc::Controller::Api;
 use Ovpnc::Controller::Sanity;
 
-ok( request('/')->is_success, 'Request should succeed' );
+ok( request('/login')->is_success, 'Request should succeed' );
 done_testing();
