@@ -81,10 +81,10 @@
         <Directive status="1">
           <Name>client-to-client</Name>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>crl-verify</Name>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>duplicate-cn</Name>
         </Directive>
       </Group>
@@ -110,7 +110,7 @@
         </Directive>
       </Group>
       <Group id="5">
-        <Directive status="0">
+        <Directive status="1">
           <Name>cipher</Name>
           <Params>
             <Cipher>DES-CFB</Cipher>
@@ -122,7 +122,7 @@
             <Comp-Lzo>on</Comp-Lzo>
           </Params>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>mute</Name>
           <Params>
             <Mute>5</Mute>

@@ -60,7 +60,7 @@ Default main page
 sub index : Chained('/base') Path : Args(0) Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
-	$c->stash->{output} =  "SDSDSDSD";
+	$c->stash->{output} =  "Stash output test";
 }
 
 

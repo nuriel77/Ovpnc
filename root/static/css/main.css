@@ -1,3 +1,37 @@
+body, html {
+	font-family: Verdana, helvetica, arial, sans-serif;
+	font-size: 12px;
+	color: #333;
+	height:99%;
+}
+img{
+	-webkit-transition: margin 0.5s ease-out;
+    -moz-transition: margin 0.5s ease-out;
+    -o-transition: margin 0.5s ease-out;
+}
+
+div#outer{
+	overflow:auto;
+	height:100%;
+}
+
+div#main{
+    padding: 0;
+	max-width:1024px;
+	margin: 0 auto;
+	border: 1px dotted #ddd;
+	min-height:99%;
+	/* height:100%; */
+
+}
+
+#top_header{
+	margin:6px;
+	height:25px;
+}
+
+#logout{ float:right; margin-right:10px; }
+
 #header{
 	text-align:center;
 }
@@ -34,3 +68,84 @@
 .error{
 	color:#f00;
 }
+
+.status_div{
+	float:right;
+	max-width:300px;
+}
+
+.server_title{
+	max-width:270px;
+	min-width:270px;
+    float:right;
+    padding:4px;
+    margin:10px;
+	color:#888;
+}
+
+#client_status_container{
+/*	display:none; */
+}
+
+.client_div{
+	max-width:270px;
+	min-width:270px;
+	float:right;
+	padding:4px;
+	margin:5px 10px 5px 10px;
+	display:none;
+}
+
+.box_shadow{
+	-moz-box-shadow: 10px 10px 5px #bbb;
+	-webkit-box-shadow: 10px 10px 5px #bbb;
+	box-shadow: 10px 10px 5px #bbb;
+	border:1px solid gray;
+}
+
+.client_data{
+
+}
+
+.client_action_link {
+	margin:2px;
+	cursor:pointer;
+}
+
+
+.client_values{
+	text-align:right;
+}
+
+.client_keys{
+	float:left;
+	font-weight:bold;
+}
+
+.client_hidden_data{
+	display:none;
+}
+
+#server_version{
+	color: #ccc;
+}
+
+#server_status_content{
+	margin:2px 0px 4px 2px;
+}
+
+#killed_clients_container{
+	max-witdth:270px;
+	min-witdth:270px;
+	float:right;
+    margin:10px;
+	padding:4px;
+	margin-top:30%;
+	display:none;
+}
+
+.unkill_me{
+	cursor:pointer;
+}
+
+.clear { clear:both; }

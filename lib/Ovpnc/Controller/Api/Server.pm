@@ -15,6 +15,7 @@ use vars qw/
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
+__PACKAGE__->config(namespace => 'api/server');
 
 has 'host' => (
 	isa => 'Str',
@@ -80,14 +81,6 @@ will also revoke/unrevoke CRL
 One argument (client identification)
 
 
-=head2 base
-
-For chain to login page
-
-=cut
-
-sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
-
 =head2 Method modifier
 
 Will run sanity check
@@ -98,7 +91,7 @@ methods execute
 
 around [qw/
 	begin
-	get_status
+	status
 	set_verb
 	view_log
 	kill_client
@@ -106,7 +99,10 @@ around [qw/
 	set_verb
 	control_vpn
 		/]  => sub {
-    my( $orig, $self, $c ) = @_;
+	my $orig = shift;
+	my $self = shift;
+	my $c = shift;
+
     # Sanity check
     my $err = $c->forward('/api/sanity');
     if ($err and ref $err eq 'ARRAY'){
@@ -115,7 +111,7 @@ around [qw/
         return;
     }
     else {
-        return $self->$orig($c);
+        return $self->$orig( $c, @_ );
     }
 };
 
@@ -125,11 +121,10 @@ For REST action class
 
 =cut
 
-sub index :Chained('/') PathPart('api/server/') Args(0) :ActionClass('REST') { }
+sub index :Chained('/') PathPart('api/server') Args(0) : ActionClass('REST') { }
 
 
-
-sub begin :Private
+sub begin : Private
 {
     my ( $self, $c ) = @_;
 	
@@ -151,7 +146,7 @@ sub begin :Private
 }
 
 {
-	sub get_status : Chained('base') PathPart('status') Args(0)
+	sub status : Chained('begin') : Path('status') : Args(0) Does('NeedsLogin')
 	{	
 		my ( $self, $c ) = @_;
 
@@ -219,8 +214,6 @@ sub begin :Private
 	{
 		my ( $self, $c ) = @_;
 	
-		# Sanity check
-		#return if $c->forward('/api/sanity');
 
 		# Request params
 		my $req = $c->request;
@@ -253,22 +246,26 @@ sub begin :Private
 
 		$c->stash( log => $log_object );
 	}
-	
-	sub kill_client : Chained('base') PathPart('kill') Args(1)
+
+	sub kill_client :Path('kill') : Args(1) Does('NeedsLogin')
 	{
 		my ( $self, $c, $client ) = @_;
 
-		# Sanity check
-		#return if $c->forward('/api/sanity');
+		unless ($client){
+			$c->stash( { error => 'No client specified at kill_client' } );
+			return;
+		}
 
 		# Check connection to mgmt port
 		unless ( $self->vpn->connect ){
-			$c->stash( { status => 'Server seems down' } );
+			$c->stash( { error => 'Server seems down' } );
 			return;
 		}
 		
 		# Revoke client's certificate
-		my $ret_val = $self->revoke_certificate($client);
+		my $ret_val;
+		$ret_val = $self->revoke_certificate($client)
+			unless ( $c->request->params->{no_revoke} );
 
 		# Kill the connection (just incase client is currently connected)
 		if ( my $str = $self->kill_connection($client) ){
@@ -279,13 +276,9 @@ sub begin :Private
 		}
 		$c->stash( { status => $ret_val } );
 	}
-	
-	sub unkill_client : Chained('base') PathPart('unkill') Args(1)
+	sub unkill_client :Path('unkill') Args(1) Does('NeedsLogin')
 	{
 		my ( $self, $c, $client ) = @_;
-
-		# Sanity check	
-		#return if $c->forward('/api/sanity');
 
 		# Unrevoke a revoked client's certificate
 		my $ret_val = $self->unrevoke_certificate($client);
@@ -295,9 +288,6 @@ sub begin :Private
 	sub control_vpn : Chained('base') PathPart('control') Args(1)
 	{
 	    my ( $self, $c, $command ) = @_;
-
-		# Sanity check	
-		#return if $c->forward('/api/sanity');
 		
 		# Dict of possible commands
 		my $cmds = {

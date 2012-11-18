@@ -1,9 +1,23 @@
 <script type="text/javascript" src="[% c.uri_for('/static/js/index.js') %]"></script>
-<div id="main_div">
-	<div id="status">
+<!-- main div -->
+<div id="main">
+	<div id="top_header">
+		<div id="logout"><a href="[% c.uri_for('/logout') %]">Logout</a></div>
+		<div>[% output %]</div>
 	</div>
-	<div id="clients">
+
+	<!-- status div -->
+	<div class="status_div" id="status_container">
+		<div class="server_title box_shadow" id="title">
+			<div id="server_status_content">Server: <span id="server_status" style="color:red;">offline</span></div>
+			<div id="server_version"></div>
+		</div>
+		<div id="client_status_container">
+        </div>
+	</div><!-- status div -->
+	<div class="clear" />
+	<div id="killed_clients_container" class="box_shadow">
+		<div>Killed clients:</div>
+		<div id="killed_clients"></div>
 	</div>
-	<p>[% output %]</p>
-	<p>This is a test</p>
-</div>
+</div><!-- main div -->
