@@ -38,46 +38,13 @@ For REST action class
 sub index : Chained('/') PathPart('api/') Args(0) : ActionClass('REST') {
 }
 
-=head2 Method modifier
+=head2 sanity
 
-Will run sanity check
-before any of the listed
-methods execute
+A sanity check
 
 =cut
 
-#around index  => sub {
-#    my( $orig, $self, $c ) = @_;
-#    # Sanity check
-#    my $err = $c->forward('/api/sanity');
-#    if ($err and ref $err eq 'ARRAY'){
-#        $c->response->status(500);
-#        $c->forward('View::JSON');
-#        return;
-#    }
-#    else {
-#        return $self->$orig($c);
-#    }
-#};
-
-=head2 begin
-
-Begin method
-
-=cut
-
-#sub begin :Private
-#{
-#	my ( $self, $c ) = @_;
-#}
-
-#sub index_GET
-#{
-#	my ( $self, $c, $r ) = @_;
-#
-#}
-
-sub sanity : Chained('base') PathPart('sanity') Args(0) {
+sub sanity : Chained('base') PathPart('sanity') Args(0) Does('NeedsLogin') {
 
     my ( $self, $c ) = @_;
     my $sanity = Ovpnc::Controller::Sanity->new(

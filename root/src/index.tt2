@@ -15,9 +15,13 @@
 		<div id="client_status_container">
         </div>
 	</div><!-- status div -->
+
 	<div class="clear" />
+
+	<!-- killed_clients_container -->
 	<div id="killed_clients_container" class="box_shadow">
-		<div>Killed clients:</div>
+		<div>Killed clients</div><hr />
 		<div id="killed_clients"></div>
 	</div>
+
 </div><!-- main div -->

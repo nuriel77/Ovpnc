@@ -41,9 +41,9 @@ $(document).ready(function()
 			        }
 
 					if ( $(".client_div").is(":visible") ){
-						$(".client_div").hide(400);
+						$(".client_div").hide(250);
 					}
-					$('#client_status_container').html("<div id='no_data'>No data recieved, possible error: " + thrownError.toString() + "</div>").show(400);
+					$('#client_status_container').html("<div id='no_data'>No data recieved, possible error: " + thrownError.toString() + "</div>").show(250);
 					return false;
 				}
 			})
@@ -89,10 +89,10 @@ function populate_clients(c)
 
 		if ( ! $("#no_clients").is(":visible") ){
 			if ( $(".client_div").is(":visible") ){
-				$(".client_div").hide(600);
+				$(".client_div").hide(300);
 			}
 			$('#client_status_container').html( '<div class="client_div" id="no_clients">No clients connected</div>' );
-			$('#no_clients').show(400);
+			$('#no_clients').show(250);
 		}
 
 		return;
@@ -188,15 +188,33 @@ function populate_clients(c)
 	}
 }
 
+function functionDelay(f,t)
+{
+	ovpnc.timer = setTimeout(f, t);
+}
+
 function extend_client_data(n){
+	
+	// Before expending make sure ajax call is finished updating the div
+	if ( checkPendingRequest() ){
+		console.log( "sleep for 1 sec");
+		functionDelay( extend_client_data(n), 1000 );
+		return;
+	}
+	// If we got here, remove any active timers
+	if ( typeof(ovpnc.timer) !== "undefined") {
+		clearInterval(ovpnc.timer);
+	}
+
 	if ( $('#' + n + '_hidden_data').is(':visible') ){
-		$('#' + n + '_hidden_data').hide(400);
+		$('#' + n + '_hidden_data').hide(250);
 		$('#' + n + '_ext_status').html("<img src='/static/images/Alarm-Plus-icon.png'></img>");
 	}
 	else {
-		$('#' + n + '_hidden_data').show(400);
+		$('#' + n + '_hidden_data').show(250);
 		$('#' + n + '_ext_status').html("<img src='/static/images/Alarm-Minus-icon.png'></img>");
 	}
+
 }
 
 function populate_version(s)
@@ -238,7 +256,7 @@ function unkill_client(c){
 
 	$.getJSON('/api/server/unkill/' + c, function(r){
 		$('#unkill_' + c).remove();
-		if ( $('#killed_clients').text() === '' ) $('#killed_clients_container').hide(400);
+		if ( $('#killed_clients').text() === '' ) $('#killed_clients_container').hide(250);
 		alert("Client '" + c + "' unkilled successfully");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
@@ -259,8 +277,25 @@ function append_dead_client(c){
 	$('#killed_clients').append(output);
 
 	if ( ! $('#killed_clients_container').is(":visible") ){
-		$('#killed_clients_container').show(400);
+		$('#killed_clients_container').show(250);
 		ovpnc.actions.hover_binds();
 	}
+
+}
+
+// Check for pending ajax calls
+function checkPendingRequest() {
+
+	//console.log('Checking for pending ajax calls');
+
+    if ( $.active > 0 ) {
+        //console.log( $.active + " ajax call(s) still active");
+        //window.setTimeout(checkPendingRequest, 1000); // run again
+		return true;
+    }
+    else {
+        //console.log("No pending ajax calls");
+        return false;
+    }
 
 }

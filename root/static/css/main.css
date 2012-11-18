@@ -4,6 +4,7 @@ body, html {
 	color: #333;
 	height:99%;
 }
+
 img{
 	-webkit-transition: margin 0.5s ease-out;
     -moz-transition: margin 0.5s ease-out;
@@ -97,9 +98,9 @@ div#main{
 }
 
 .box_shadow{
-	-moz-box-shadow: 10px 10px 5px #bbb;
-	-webkit-box-shadow: 10px 10px 5px #bbb;
-	box-shadow: 10px 10px 5px #bbb;
+	-moz-box-shadow: 7px 7px 4px #bbb;
+	-webkit-box-shadow: 7px 7px 4px #bbb;
+	box-shadow: 7px 7px 4px #bbb;
 	border:1px solid gray;
 }
 
