@@ -8,7 +8,7 @@ BEGIN { extends 'Catalyst::Controller' }
 # Sets the actions in this controller to be registered with no prefix
 # so they function identically to actions created in MyApp.pm
 #
-__PACKAGE__->config(namespace => '');
+__PACKAGE__->config( namespace => '' );
 
 =head1 NAME
 
@@ -26,8 +26,8 @@ Chain actions to login page
 
 =cut
 
-sub base : Chained('/login/required') PathPart('') CaptureArgs(0) { }
-
+sub base : Chained('/login/required') PathPart('') CaptureArgs(0) {
+}
 
 =head2 Method modifier
 
@@ -37,18 +37,19 @@ methods execute
 
 =cut
 
-around [ qw(ovpnc_config) ]  => sub { 
-	my( $orig, $self, $c ) = @_;
-	# Sanity check
+around [qw(ovpnc_config)] => sub {
+    my ( $orig, $self, $c ) = @_;
+
+    # Sanity check
     my $err = $c->forward('/api/sanity');
-	if ($err and ref $err eq 'ARRAY'){
-		$c->response->status(500);
-		$c->forward('View::JSON');
-		return;
-	}
-	else {
-		return $self->$orig($c);
-	}
+    if ( $err and ref $err eq 'ARRAY' ) {
+        $c->response->status(500);
+        $c->forward('View::JSON');
+        return;
+    }
+    else {
+        return $self->$orig($c);
+    }
 };
 
 =head2 index
@@ -57,12 +58,10 @@ Default main page
 
 =cut
 
-sub index : Chained('/base') Path : Args(0) Does('NeedsLogin')
-{
+sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
     my ( $self, $c ) = @_;
-	$c->stash->{output} =  "Stash output test";
+    $c->stash->{output} = "Stash output test";
 }
-
 
 =head2 default
 
@@ -70,10 +69,9 @@ Standard 404 error page
 
 =cut
 
-sub default : Path
-{
+sub default : Path {
     my ( $self, $c ) = @_;
-    $c->response->body( 'Page not found' );
+    $c->response->body('Page not found');
     $c->response->status(404);
 }
 
@@ -83,14 +81,14 @@ Configuration Page
 
 =cut
 
-sub ovpnc_config : Chained('/base') PathPart("config") Args(0) 
-{
-	my ( $self, $c ) = @_;
+sub ovpnc_config : Chained('/base') PathPart("config") Args(0) {
+    my ( $self, $c ) = @_;
 
-	my $req = $c->request;
-	$c->stash->{xml} = $c->config->{ovpnc_conf} || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
-	$c->stash->{title} = 'Ovpnc Configuration';
-	$c->forward('Ovpnc::View::XSLT');
+    my $req = $c->request;
+    $c->stash->{xml} = $c->config->{ovpnc_conf}
+      || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
+    $c->stash->{title} = 'Ovpnc Configuration';
+    $c->forward('Ovpnc::View::XSLT');
 }
 
 =head2 end
@@ -99,7 +97,8 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {}
+sub end : ActionClass('RenderView') {
+}
 
 =head1 AUTHOR
 

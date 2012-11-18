@@ -16,12 +16,11 @@ Catalyst Controller.
 
 =cut
 
-
 =head2 index
 
 =cut
 
-sub index :Path :Args(0) {
+sub index : Path : Args(0) {
     my ( $self, $c ) = @_;
 
     $c->response->body('Matched Ovpnc::Controller::Static in Static.');
@@ -33,16 +32,16 @@ Server static on /static path
 
 =cut
 
-sub default : Path('/static')
-{
+sub default : Path('/static') {
     my ( $self, $c ) = @_;
 
     # Optional, allow the browser to cache the content
-    $c->res->headers->header( 'Cache-Control' => 'max-age=86400');
+    $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
 
-    if ($c->req->path =~ /css$/i) {
-        $c->serve_static( "text/css" );
-    } else {
+    if ( $c->req->path =~ /css$/i ) {
+        $c->serve_static("text/css");
+    }
+    else {
         $c->serve_static;
     }
 }
@@ -50,8 +49,8 @@ sub default : Path('/static')
 # also handle requests for /favicon.ico
 sub favicon : Path('/favicon.ico') {
     my ( $self, $c ) = @_;
-	$c->res->content_type("image/x-icon");
-	$c->serve_static("image/x-icon");
+    $c->res->content_type("image/x-icon");
+    $c->serve_static("image/x-icon");
 }
 
 =head1 AUTHOR

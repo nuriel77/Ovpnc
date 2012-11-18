@@ -9,11 +9,9 @@ use strict;
 use warnings;
 use Moose;
 use aliased 'Ovpnc::Controller::Api::Config::RenewCiphers' => 'RenewCiphers';
-Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
+Readonly::Scalar my $SKIP_LINE                             => '^[;|#].*|^$';
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
-
-
 
 =head1 NAME
 
@@ -34,8 +32,8 @@ For chain to login page
 
 =cut
 
-sub base : Chained('/base') PathPrefix CaptureArgs(0) {}
-
+sub base : Chained('/base') PathPrefix CaptureArgs(0) {
+}
 
 =head2 index
 
@@ -43,10 +41,11 @@ For REST action class
 
 =cut
 
-sub index :Chained('/') PathPart('api/config/') Args(0) :ActionClass('REST') { }
-
+sub index : Chained('/') PathPart('api/config/') Args(0) : ActionClass('REST') {
+}
 
 # Grouped actions
+
 =head2 config_GET
 
 Will output the configuration 
@@ -55,48 +54,61 @@ just incase someone makes changes
 in the conf file manually
 
 =cut
+
 {
-	sub view_config : Chained('base') PathPart('show') Args(0)
-	{
-	    my ($self, $c) = @_;
-	    $c->response->status(200);	
 
-		my $format = $c->request->params->{format} ||= undef;
-		my $current_conf = $self->get_openvpn_config_file( $c->config->{ovpnc_conf} );
+    sub view_config : Chained('base') PathPart('show') Args(0) {
+        my ( $self, $c ) = @_;
+        $c->response->status(200);
 
-		die "No configuration file specified! "
-			unless $current_conf;
+        my $format = $c->request->params->{format} ||= undef;
+        my $current_conf =
+          $self->get_openvpn_config_file( $c->config->{ovpnc_conf} );
 
-		my $output = $self->parse_conf_file(
-			$current_conf,
-			$format
-		);
+        die "No configuration file specified! "
+          unless $current_conf;
 
-		if ( ref $output and defined $output->{error} ){
-			$self->send_error( $c, "Error reading configuration: " . $output->{error}, 200 );
-			return;
-		}
-		else {
-			my $_data = $self->conf_to_xml(
-				$output,
-				{
-					name => $self->get_openvpn_node_name( $c->config->{ovpnc_conf} ),
-					file => $current_conf
-				}
-			);
-			my $xml_data = $self->create_xml($_data);			
-			if ( ref $xml_data and defined $xml_data->{error} ){
-				$self->send_error( $c, "Error writing back-end xml configuration '".$c->config->{ovpnc_conf}."':\r\n" . $xml_data->{error}, 200 );
-				return;
-			}
-			if (my $msg = $self->validate_xml($xml_data, $c->config->{ovpnc_config_schema}) ){
-				$c->stash( { error => $msg } );
-			}
-			else {
-				$c->stash( { status => $_data } );
-			}
-		}
-	}
+        my $output = $self->parse_conf_file( $current_conf, $format );
+
+        if ( ref $output and defined $output->{error} ) {
+            $self->send_error( $c,
+                "Error reading configuration: " . $output->{error}, 200 );
+            return;
+        }
+        else {
+            my $_data = $self->conf_to_xml(
+                $output,
+                {
+                    name =>
+                      $self->get_openvpn_node_name( $c->config->{ovpnc_conf} ),
+                    file => $current_conf
+                }
+            );
+            my $xml_data = $self->create_xml($_data);
+            if ( ref $xml_data and defined $xml_data->{error} ) {
+                $self->send_error(
+                    $c,
+                    "Error writing back-end xml configuration '"
+                      . $c->config->{ovpnc_conf}
+                      . "':\r\n"
+                      . $xml_data->{error},
+                    200
+                );
+                return;
+            }
+            if (
+                my $msg = $self->validate_xml(
+                    $xml_data, $c->config->{ovpnc_config_schema}
+                )
+              )
+            {
+                $c->stash( { error => $msg } );
+            }
+            else {
+                $c->stash( { status => $_data } );
+            }
+        }
+    }
 
 =head2 config_POST
 
@@ -106,120 +118,140 @@ of openvpn and the back-end xml
 and run validataions via the xsd schema
 
 =cut
-	sub update_config : Chained('base') PathPart('update') Args(0)
-	{
-	    my ($self, $c) = @_;
 
-	    unless ($c->request->method eq 'POST'){
-	        $c->response->body( 'Not a POST method: ' . $c->request->method );
-	        $c->response->status(500);
-			return;
-	    }
+    sub update_config : Chained('base') PathPart('update') Args(0) {
+        my ( $self, $c ) = @_;
 
-		# Set default response
-	    $c->response->status(200);	
+        unless ( $c->request->method eq 'POST' ) {
+            $c->response->body( 'Not a POST method: ' . $c->request->method );
+            $c->response->status(500);
+            return;
+        }
 
-		# Dereference
-		my %data = %{$c->request->params};
+        # Set default response
+        $c->response->status(200);
 
-		# This will only prepare a data
-		# structure which can be serialized
-		# to XML
-		my $xml = $self->create_xml( \%data );
+        # Dereference
+        my %data = %{ $c->request->params };
 
-		if ( not defined $xml  ){
-			$c->stash( { error => 'Could not generate XML format from posted parameters' } );
-			$c->forward("View::JSON");
-			return;
-		}
+        # This will only prepare a data
+        # structure which can be serialized
+        # to XML
+        my $xml = $self->create_xml( \%data );
 
-		# Create a string from
-		# the xml object
-		my $xml_string = XMLout(
-			$xml,
-			KeepRoot => 1,
-	        NoSort => 0,
-	        XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
-		) or die "Cannot generate XML data!";
+        if ( not defined $xml ) {
+            $c->stash(
+                {
+                    error =>
+                      'Could not generate XML format from posted parameters'
+                }
+            );
+            $c->forward("View::JSON");
+            return;
+        }
 
-		# Validate the xml against the xsd schema
-		# Will return a message if any error
-		my $message = $self->validate_xml($xml_string, $c->config->{ovpnc_config_schema});
+        # Create a string from
+        # the xml object
+        my $xml_string = XMLout(
+            $xml,
+            KeepRoot => 1,
+            NoSort   => 0,
+            XMLDecl  => "<?xml version='1.0' encoding='UTF-8'?>",
+        ) or die "Cannot generate XML data!";
 
-		if ($message){
-			$c->stash({ error => $message });
-		} else {
-			my $st_msg = {};
-			my $config_file = $data{'-1_null_Config-File'};
+        # Validate the xml against the xsd schema
+        # Will return a message if any error
+        my $message =
+          $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
 
-			# Pretty fatal, but should not happen here
-			# because we ran validation earlier on xml format
-			unless ( $config_file ){
-				$st_msg->{error} = "Did not receive any configuration file value!";
-				$self->send_error( $c, $st_msg->{error} , 200 );
-				return;
-			}
+        if ($message) {
+            $c->stash( { error => $message } );
+        }
+        else {
+            my $st_msg      = {};
+            my $config_file = $data{'-1_null_Config-File'};
 
-			# Prepare configuration file header
-			my $output = "#\n# OpenVPN Configuration file\n"
-					   . "# Generated by " . __PACKAGE__ . "\n"
-					   . "# Created: " . scalar localtime() . "\n"
-					   . "# Do not modify by hand!\n"
-					   . "#\n";
+            # Pretty fatal, but should not happen here
+            # because we ran validation earlier on xml format
+            unless ($config_file) {
+                $st_msg->{error} =
+                  "Did not receive any configuration file value!";
+                $self->send_error( $c, $st_msg->{error}, 200 );
+                return;
+            }
 
-			# Cut out the directory name
-			my ($dir) = $config_file =~ /^(.*)\/.*$/g;
+            # Prepare configuration file header
+            my $output =
+                "#\n# OpenVPN Configuration file\n"
+              . "# Generated by "
+              . __PACKAGE__ . "\n"
+              . "# Created: "
+              . scalar localtime() . "\n"
+              . "# Do not modify by hand!\n" . "#\n";
 
-			# Now check if directory is valid
-			unless ( -e $dir and -d $dir and -w $dir ){
-				$st_msg->{error} = "Error: Directory of configuration file is invalid: $!";
-			}
+            # Cut out the directory name
+            my ($dir) = $config_file =~ /^(.*)\/.*$/g;
 
-			# Create backup for existing configuration file
-			if ( -e $config_file ){
-				copy($config_file, $config_file . '_' .time() .'_backup')
-					or $st_msg->{error} = "Error: Cannot backup existing configuration file: $!";
-			}
+            # Now check if directory is valid
+            unless ( -e $dir and -d $dir and -w $dir ) {
+                $st_msg->{error} =
+                  "Error: Directory of configuration file is invalid: $!";
+            }
 
-			my $FILE;
-			# Open the (new) file for writing
-			unless ( defined $st_msg->{error} ){
-				open($FILE, ">", $config_file)
-					or $st_msg->{error} = "Error: Configuration file could not be updated: $!";
-			}
-		
-			# If no errors so far, proceed
-			# with outputing key/values to file		
-			unless ( defined $st_msg->{error} ){
-				$output .= $self->prepare_conf_file_data( \%data );
-				print $FILE $output;
-				close $FILE;
-				if ( -e $c->config->{ovpnc_conf} && -w $c->config->{ovpnc_conf} ){
-					XMLout(
-		   		         $xml,
-		   		         KeepRoot => 1,
-		       		     NoSort => 0,
-						 OutputFile => $c->config->{ovpnc_conf},
-		      		     XMLDecl => "<?xml version='1.0' encoding='UTF-8'?>",
-					) or $self->send_error($c, "Error generating xml configuration file: " . $!, 200) && return;
-				}
-				else {
-					$st_msg->{error} = "Cannot write xml configuration file " 
-									 . $c->config->{ovpnc_conf} 
-									 . ".\r\nEither it does not exists or is not accessible.";
-					$self->send_error( $c, $st_msg->{error}, 200 );
-					return;
-				}
-				$st_msg->{status} = 'Configuration file updated successfully';
-			}
-			else {
-				$self->send_error( $c, $st_msg->{error}, 200 );
-				return;
-			}
+            # Create backup for existing configuration file
+            if ( -e $config_file ) {
+                copy( $config_file, $config_file . '_' . time() . '_backup' )
+                  or $st_msg->{error} =
+                  "Error: Cannot backup existing configuration file: $!";
+            }
 
-			$c->stash( $st_msg );
-		}
-	}
+            my $FILE;
+
+            # Open the (new) file for writing
+            unless ( defined $st_msg->{error} ) {
+                open( $FILE, ">", $config_file )
+                  or $st_msg->{error} =
+                  "Error: Configuration file could not be updated: $!";
+            }
+
+            # If no errors so far, proceed
+            # with outputing key/values to file
+            unless ( defined $st_msg->{error} ) {
+                $output .= $self->prepare_conf_file_data( \%data );
+                print $FILE $output;
+                close $FILE;
+                if (   -e $c->config->{ovpnc_conf}
+                    && -w $c->config->{ovpnc_conf} )
+                {
+                    XMLout(
+                        $xml,
+                        KeepRoot   => 1,
+                        NoSort     => 0,
+                        OutputFile => $c->config->{ovpnc_conf},
+                        XMLDecl    => "<?xml version='1.0' encoding='UTF-8'?>",
+                      )
+                      or $self->send_error( $c,
+                        "Error generating xml configuration file: " . $!, 200 )
+                      && return;
+                }
+                else {
+                    $st_msg->{error} =
+                        "Cannot write xml configuration file "
+                      . $c->config->{ovpnc_conf}
+                      . ".\r\nEither it does not exists or is not accessible.";
+                    $self->send_error( $c, $st_msg->{error}, 200 );
+                    return;
+                }
+                $st_msg->{status} = 'Configuration file updated successfully';
+            }
+            else {
+                $self->send_error( $c, $st_msg->{error}, 200 );
+                return;
+            }
+
+            $c->stash($st_msg);
+        }
+    }
 
 =head2 renew_ciphers
 
@@ -228,18 +260,15 @@ XSD schema from openvpn
 
 =cut
 
-	sub renew_ciphers : Chained('base') PathPart('renew_ciphers') Args(0)
-	{
-		my ($self, $c) = @_;
+    sub renew_ciphers : Chained('base') PathPart('renew_ciphers') Args(0) {
+        my ( $self, $c ) = @_;
 
-		# Send openvpn binary and the schema to be updated
-		my $ret_val = RenewCiphers->action(
-			$c->config->{ovpnc_config_schema},
-			$c->config->{openvpn_bin}
-		);
+        # Send openvpn binary and the schema to be updated
+        my $ret_val = RenewCiphers->action( $c->config->{ovpnc_config_schema},
+            $c->config->{openvpn_bin} );
 
-		$c->stash( $ret_val );
-	}
+        $c->stash($ret_val);
+    }
 
 }
 
@@ -270,13 +299,12 @@ XSD schema from openvpn
 # Private functions
 {
 
-	sub send_error :Private
-	{
-		my ( $self, $c, $error ) = @_;
-		$c->stash( { error => $error } ); 
-		$c->forward("View::JSON");
-		return;
-	}
+    sub send_error : Private {
+        my ( $self, $c, $error ) = @_;
+        $c->stash( { error => $error } );
+        $c->forward("View::JSON");
+        return;
+    }
 
 =head2 prepare_conf_file_data
 
@@ -285,96 +313,110 @@ configuration file
 will set attributes etc
 
 =cut
-	sub prepare_conf_file_data :Private
-	{
-		my $self = shift;
-		my %data = %{(shift)};
-		my $output = "\n# [ Group id=0 ]\n";
-		my $on_hold = {};
-		my @existing_keys;
-		my $last_group;
-		
-		DATA:
-		for my $key ( sort keys %data ){
-			# Get any disabled
-			my $to_split_key = $key;
-			my $disabled = $to_split_key =~ s/_disabled$//;
 
-			# Split the key on _
-			my ($group, $parent, $real, $number) = split ('_', $to_split_key);
+    sub prepare_conf_file_data : Private {
+        my $self    = shift;
+        my %data    = %{ (shift) };
+        my $output  = "\n# [ Group id=0 ]\n";
+        my $on_hold = {};
+        my @existing_keys;
+        my $last_group;
 
-			# Skip the two main Directives
-			# They have been assigned group 0
-			# (config filename and servername)
-			next DATA if ($group == -1);
+      DATA:
+        for my $key ( sort keys %data ) {
 
-			$output .= "\n# [ Group id=" . $group . " ]\n"
-				if $group > $last_group;
+            # Get any disabled
+            my $to_split_key = $key;
+            my $disabled = $to_split_key =~ s/_disabled$//;
 
-			# If this is second (or more) value
-			# we need to hold it until we can
-			# append it to its first value(s)
-			if ( $number && $real ne 'push' ){
-				if ( $self->not_exists(\@existing_keys, $real) ) {
-					warn "Added $real to on_hold with value "  . $data{$key};
-					$on_hold->{$real}  = {
-						value => $data{$key},
-						parent => $parent
-					};
-					next DATA;
-				}
-			}
+            # Split the key on _
+            my ( $group, $parent, $real, $number ) =
+              split( '_', $to_split_key );
 
-			# If this one has no number defined
-			# check if we have pending values
-			# to append from the $on_hold hashref
-			if ( ! $number && $real ne 'push' ){
-				if ( ref $on_hold eq 'HASH' ){
-					for my $okey ( keys %{$on_hold} ){
-						if ($okey eq $real){
-							$data{$key} .= ' ' . $on_hold->{$okey}->{value} 
-										. ';' . $parent . ';' . $on_hold->{$okey}->{parent};
+            # Skip the two main Directives
+            # They have been assigned group 0
+            # (config filename and servername)
+            next DATA if ( $group == -1 );
 
-						}
-					}
-				}	
-			}
+            $output .= "\n# [ Group id=" . $group . " ]\n"
+              if $group > $last_group;
 
-			# If key name already found,
-			# append current value to it		
-			if ($output =~ /\n\b$real\b/g and $real ne 'push'){
-				my ( $val, $p ) = split(';',$data{$key});
-				$output =~ s/($real.*);(.*)\n/$1 $val;$2\n/g;
-				$output =~ s/($real.*)\n/$1;$parent\n/;
-			}
-			else {
-				my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
-				$tab =  "\t" x 4 if ( length($real) > 10 );
-				if ( defined $data{$key} ){
+            # If this is second (or more) value
+            # we need to hold it until we can
+            # append it to its first value(s)
+            if ( $number && $real ne 'push' ) {
+                if ( $self->not_exists( \@existing_keys, $real ) ) {
+                    warn "Added $real to on_hold with value " . $data{$key};
+                    $on_hold->{$real} = {
+                        value  => $data{$key},
+                        parent => $parent
+                    };
+                    next DATA;
+                }
+            }
 
-					# Create new key/value.
-					# output value only if exists
-					# otherwise output only the key
-					if ( $real eq $data{$key} ){
-						$output .= ($disabled?';':'') . $real . "$tab;" . $parent . "\n";
-					} 
-					else { 
-						unless ( $on_hold->{$real}->{parent} ){
-							$output .= ($disabled?';':'') . $real . "$tab"  . $data{$key} . ";" . $parent . "\n";
-						}
-						else {
-							$output .= ($disabled?';':'') . $real . "$tab"  . $data{$key} . "\n";
-						}
+            # If this one has no number defined
+            # check if we have pending values
+            # to append from the $on_hold hashref
+            if ( !$number && $real ne 'push' ) {
+                if ( ref $on_hold eq 'HASH' ) {
+                    for my $okey ( keys %{$on_hold} ) {
+                        if ( $okey eq $real ) {
+                            $data{$key} .= ' '
+                              . $on_hold->{$okey}->{value} . ';'
+                              . $parent . ';'
+                              . $on_hold->{$okey}->{parent};
 
-					}
-					push ( @existing_keys, $real );
-				}
-			}
-			$last_group = $group;
-		} # (%DATA)
-		$output .= ";END\n";
-		return $output;
-	}
+                        }
+                    }
+                }
+            }
+
+            # If key name already found,
+            # append current value to it
+            if ( $output =~ /\n\b$real\b/g and $real ne 'push' ) {
+                my ( $val, $p ) = split( ';', $data{$key} );
+                $output =~ s/($real.*);(.*)\n/$1 $val;$2\n/g;
+                $output =~ s/($real.*)\n/$1;$parent\n/;
+            }
+            else {
+                my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
+                $tab = "\t" x 4 if ( length($real) > 10 );
+                if ( defined $data{$key} ) {
+
+                    # Create new key/value.
+                    # output value only if exists
+                    # otherwise output only the key
+                    if ( $real eq $data{$key} ) {
+                        $output .=
+                            ( $disabled ? ';' : '' ) 
+                          . $real . "$tab;" 
+                          . $parent . "\n";
+                    }
+                    else {
+                        unless ( $on_hold->{$real}->{parent} ) {
+                            $output .=
+                                ( $disabled ? ';' : '' ) 
+                              . $real . "$tab"
+                              . $data{$key} . ";"
+                              . $parent . "\n";
+                        }
+                        else {
+                            $output .=
+                                ( $disabled ? ';' : '' ) 
+                              . $real . "$tab"
+                              . $data{$key} . "\n";
+                        }
+
+                    }
+                    push( @existing_keys, $real );
+                }
+            }
+            $last_group = $group;
+        }    # (%DATA)
+        $output .= ";END\n";
+        return $output;
+    }
 
 =head2 not_exists
 
@@ -383,16 +425,17 @@ in the array, if yes, it returns
 false so it will not be put into hold
 
 =cut
-	sub not_exists :Private
-	{
-		my ($self, $keys, $real) = @_;
-		return 1 unless ref $keys eq 'ARRAY';
-		if ($real ~~ @{$keys}){
-			#warn "Do not hold: $real";
-			return 0;
-		}
-		return 1;
-	}
+
+    sub not_exists : Private {
+        my ( $self, $keys, $real ) = @_;
+        return 1 unless ref $keys eq 'ARRAY';
+        if ( $real ~~ @{$keys} ) {
+
+            #warn "Do not hold: $real";
+            return 0;
+        }
+        return 1;
+    }
 
 =head2 create_xml
 
@@ -401,122 +444,122 @@ xml file (conditional)
 and return xml string
 
 =cut
-	sub create_xml :Private
-	{
-		my ( $self, $data, $xml_file ) = @_;
 
-		my $xml_obj = XMLin('<Nodes></Nodes>',ForceArray => [ 'Nodes', 'Node' ]);
-	
-		my $i = 0;
+    sub create_xml : Private {
+        my ( $self, $data, $xml_file ) = @_;
 
-		# Create first node id
-		$xml_obj->{Nodes}->{Node}->{id} = '0';
+        my $xml_obj =
+          XMLin( '<Nodes></Nodes>', ForceArray => [ 'Nodes', 'Node' ] );
 
-		my $last_group = '-1';
+        my $i = 0;
 
-		DATA:
-		for my $key (sort keys %{$data}){
+        # Create first node id
+        $xml_obj->{Nodes}->{Node}->{id} = '0';
 
-			# Get any disabled
-			my $to_split_key = $key;
-			my $disabled = $to_split_key =~ s/_disabled$//;
+        my $last_group = '-1';
 
-			# We shall increment $i only when group changes
-			# we get all elements sorted in this loop
+      DATA:
+        for my $key ( sort keys %{$data} ) {
 
-			my ($group, $parent, $real, $number) = split('_',$to_split_key);
+            # Get any disabled
+            my $to_split_key = $key;
+            my $disabled = $to_split_key =~ s/_disabled$//;
 
-			$i = 0 if ( $group > $last_group );
+            # We shall increment $i only when group changes
+            # we get all elements sorted in this loop
 
-			# Only if group is not '-1' which are directives
-			# which do not appear in the conf file itself
-			$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[ $group ]->{id} = $group
-				unless ( $group eq '-1' );
+            my ( $group, $parent, $real, $number ) =
+              split( '_', $to_split_key );
 
-			# Name and Config-File have no
-			# parent because they are not
-			# part of the config file itself
-			if ( $group eq '-1' ){
-				$xml_obj->{Nodes}->{Node}->{$real} = [ $data->{$key} ];
-			}
-			else {
-				# Create the Name node
-				my ($z, $skip) = 0;
+            $i = 0 if ( $group > $last_group );
 
-				if ( $real ne 'push' ){
-			NODES:	for ( @{$xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[ $group ]->{Directive}} ){
+            # Only if group is not '-1' which are directives
+            # which do not appear in the conf file itself
+            $xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[$group]->{id} =
+              $group
+              unless ( $group eq '-1' );
 
-						unless ( $_->{Name}->[0] ) {
-							$z++;
-							next NODES;
-						}
+            # Name and Config-File have no
+            # parent because they are not
+            # part of the config file itself
+            if ( $group eq '-1' ) {
+                $xml_obj->{Nodes}->{Node}->{$real} = [ $data->{$key} ];
+            }
+            else {
 
-						# Check if such a name already exists in the 
-						# hash, if yes, append to its node
-						# Otherwise it creates a new parent node
-						# and not append to the previous similar one
-						if ( $real eq $_->{Name}->[0] ){
-							#warn "1. Name node already exists: '$real', now with '".$data->{$key}."' at loop '$z', group '$group', now at loop '$i', appending to previous($z).";
-							$xml_obj->{Nodes}
-									   ->{Node}
-										 ->{Directives}
-										   ->{Group}->[ $group ]
-										     ->{Directive}->[ $z ]
-											   ->{Params}->[0]
-												 ->{$parent} = [ $data->{$key} ];
-							
-							# Give $skip a value for later checks
-							$skip++;
-							last NODES;
-						}
-						$z++;
-					}
-				}
+                # Create the Name node
+                my ( $z, $skip ) = 0;
 
-				# If $skip is not assigned this is a new
-				# parent node, so create a new one
-				if ( ! $skip ){
-					#warn "2. Creating Name node at $i with $real and group $group, \$skip is " . ( $skip ? $skip : '0' );
-					$xml_obj->{Nodes}
-							   ->{Node}
-								 ->{Directives}
-								   ->{Group}->[ $group ]
-								     ->{Directive}->[ $i ]->{status} = ( $disabled ? 0 : 1 );
-					$xml_obj->{Nodes}
-							   ->{Node}
-								 ->{Directives}
-								   ->{Group}->[ $group ]
-								     ->{Directive}->[ $i ]
-									   ->{Name} = [ $real ];
-					
-				}
+                if ( $real ne 'push' ) {
+                  NODES:
+                    for (
+                        @{
+                            $xml_obj->{Nodes}->{Node}->{Directives}->{Group}
+                              ->[$group]->{Directive}
+                        }
+                      )
+                    {
 
-				# Create parameters node only if
-				# the parameters exists, that means
-				# that they are different than the $parent
-				if ( $real ne $data->{$key} && ! $skip ){
-					#warn "3. Creating Params Node for $parent and value $data->{$key} by group $group, \$i is $i";
-					$xml_obj->{Nodes}
-							   ->{Node}
-							     ->{Directives}
-								   ->{Group}->[ $group ]
-								     ->{Directive}->[ $i ]
-									   ->{Params}->[0] = { $parent => [ $data->{$key} ] };
-				}
+                        unless ( $_->{Name}->[0] ) {
+                            $z++;
+                            next NODES;
+                        }
 
-				$i++ if ( ! $skip );
+                        # Check if such a name already exists in the
+                        # hash, if yes, append to its node
+                        # Otherwise it creates a new parent node
+                        # and not append to the previous similar one
+                        if ( $real eq $_->{Name}->[0] ) {
 
-			}
+#warn "1. Name node already exists: '$real', now with '".$data->{$key}."' at loop '$z', group '$group', now at loop '$i', appending to previous($z).";
+                            $xml_obj->{Nodes}->{Node}->{Directives}->{Group}
+                              ->[$group]->{Directive}->[$z]->{Params}->[0]
+                              ->{$parent} = [ $data->{$key} ];
 
-			# Save the group for next loop
-			$last_group = $group;
+                            # Give $skip a value for later checks
+                            $skip++;
+                            last NODES;
+                        }
+                        $z++;
+                    }
+                }
 
-		}
-		
-		# Note! Returns a PERL data structure
-		# we shall XMLout it soon
-		return $xml_obj;
-	}
+                # If $skip is not assigned this is a new
+                # parent node, so create a new one
+                if ( !$skip ) {
+
+#warn "2. Creating Name node at $i with $real and group $group, \$skip is " . ( $skip ? $skip : '0' );
+                    $xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[$group]
+                      ->{Directive}->[$i]->{status} = ( $disabled ? 0 : 1 );
+                    $xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[$group]
+                      ->{Directive}->[$i]->{Name} = [$real];
+
+                }
+
+                # Create parameters node only if
+                # the parameters exists, that means
+                # that they are different than the $parent
+                if ( $real ne $data->{$key} && !$skip ) {
+
+#warn "3. Creating Params Node for $parent and value $data->{$key} by group $group, \$i is $i";
+                    $xml_obj->{Nodes}->{Node}->{Directives}->{Group}->[$group]
+                      ->{Directive}->[$i]->{Params}->[0] =
+                      { $parent => [ $data->{$key} ] };
+                }
+
+                $i++ if ( !$skip );
+
+            }
+
+            # Save the group for next loop
+            $last_group = $group;
+
+        }
+
+        # Note! Returns a PERL data structure
+        # we shall XMLout it soon
+        return $xml_obj;
+    }
 
 =head2 validate_xml 
 
@@ -524,26 +567,26 @@ Validate the xml against a xsd schema
 returns the errors if any
 
 =cut
-	sub validate_xml :Private
-	{
-		my ($self, $xml, $schema) = @_;
-		my $validator = XML::Validator::Schema->new(file => $schema);
-		my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
-		eval { $parser->parse_string($xml) };
-		return "Form validation error: $@" if $@;
-	}
+
+    sub validate_xml : Private {
+        my ( $self, $xml, $schema ) = @_;
+        my $validator = XML::Validator::Schema->new( file => $schema );
+        my $parser = XML::SAX::ParserFactory->parser( Handler => $validator );
+        eval { $parser->parse_string($xml) };
+        return "Form validation error: $@" if $@;
+    }
 
 =head2 get_openvpn_config_file
 
 Reads the back-end xml configuration
 
 =cut
-	sub get_openvpn_config_file :Private
-	{
-		my ($self, $file) = @_;
-		my $xml_obj = XMLin($file) or die  "Cannot read xml file $file: $!";
-		return $xml_obj->{Node}->{'Config-File'};
-	}
+
+    sub get_openvpn_config_file : Private {
+        my ( $self, $file ) = @_;
+        my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
+        return $xml_obj->{Node}->{'Config-File'};
+    }
 
 =head2 get_openvpn_node_name
 
@@ -551,12 +594,12 @@ Reads the openvpn node name from
 the back-end xml configuration
 
 =cut
-	sub get_openvpn_node_name :Private
-	{
-		my ($self, $file) = @_;
-		my $xml_obj = XMLin($file) or die  "Cannot read xml file $file: $!";
-		return $xml_obj->{Node}->{'Name'};
-	}
+
+    sub get_openvpn_node_name : Private {
+        my ( $self, $file ) = @_;
+        my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
+        return $xml_obj->{Node}->{'Name'};
+    }
 
 =head2 conf_to_xml
 
@@ -564,121 +607,125 @@ Parse the configuration (keys/values)
 into a xml ready to parse format
 
 =cut
-	sub conf_to_xml :Private
-	{
-		my ($self, $data, $conf_params) = @_;
-		my $xml;
 
-		for my $key ( keys %{$data} ){
-			my $check_key = $data->{$key};
-			my ($parents_full) = $data->{$key} =~ /;(.*)$/g;
-			my @parents = split(';', $parents_full);
-			$check_key =~ s/;.*$//;
+    sub conf_to_xml : Private {
+        my ( $self, $data, $conf_params ) = @_;
+        my $xml;
 
-			my @dirs = split (' ',$check_key);
-			if ( $key !~ /push.*/ ){
-				if ( @dirs > 1 ){
-					if ($check_key){
-						$xml->{$parents[0] . '_' . $key} = $dirs[0];
-						for (my $i = 1; $i < @dirs; $i++){
-							$xml->{$parents[$i] . '_' . $key . '_' . $i} = $dirs[$i]; 		
-						}
-					}
-					else {
-						$xml->{$parents[0] . '_' . $key} = $check_key;
-					}
-				}
-				else {
-					$xml->{$parents[0] . '_' . $key} = $dirs[0] ? $dirs[0] : $key;
-				}
-			}
-			else {
-				$xml->{$parents[0] . '_' . $key} = join " ", @dirs;
-			}
+        for my $key ( keys %{$data} ) {
+            my $check_key = $data->{$key};
+            my ($parents_full) = $data->{$key} =~ /;(.*)$/g;
+            my @parents = split( ';', $parents_full );
+            $check_key =~ s/;.*$//;
 
-		}
-		
-		# Append two last directives
-		# for validation xslt
-		$xml->{'null_Name'} = $conf_params->{name};
-		$xml->{'null_Config-File'} = $conf_params->{file};
+            my @dirs = split( ' ', $check_key );
+            if ( $key !~ /push.*/ ) {
+                if ( @dirs > 1 ) {
+                    if ($check_key) {
+                        $xml->{ $parents[0] . '_' . $key } = $dirs[0];
+                        for ( my $i = 1 ; $i < @dirs ; $i++ ) {
+                            $xml->{ $parents[$i] . '_' . $key . '_' . $i } =
+                              $dirs[$i];
+                        }
+                    }
+                    else {
+                        $xml->{ $parents[0] . '_' . $key } = $check_key;
+                    }
+                }
+                else {
+                    $xml->{ $parents[0] . '_' . $key } =
+                      $dirs[0] ? $dirs[0] : $key;
+                }
+            }
+            else {
+                $xml->{ $parents[0] . '_' . $key } = join " ", @dirs;
+            }
 
-		return $xml;
-	}
+        }
+
+        # Append two last directives
+        # for validation xslt
+        $xml->{'null_Name'}        = $conf_params->{name};
+        $xml->{'null_Config-File'} = $conf_params->{file};
+
+        return $xml;
+    }
 
 =head2 parse_conf_file
 
 Parse the openvpn configuration file
 
 =cut
-	sub parse_conf_file :Private
-	{
-		my ($self, $file, $format) = @_;
-		my $data = {};
 
-		open ( FILE, "<", $file)
-			or return { error => "Cannot open configuration file '$file' for reading: $!" };
+    sub parse_conf_file : Private {
+        my ( $self, $file, $format ) = @_;
+        my $data = {};
 
-		my $_pushed = 0;
-		while (my $line = <FILE>){
-			# Skip comments and empty lines
-			next if ($line =~ /$SKIP_LINE/);
+        open( FILE, "<", $file )
+          or return {
+            error => "Cannot open configuration file '$file' for reading: $!" };
 
-			# Get parent definition(s)
-			#my (undef, @parents) = split(';', $line);
-			
-			# Remove end-of-line comments
-			#$line =~ s/#.*$|;.*$//;
-			$line =~ s/#.*$//;
+        my $_pushed = 0;
+        while ( my $line = <FILE> ) {
 
-			# Split by space into an array
-			my (@arr) = split (' ', $line);
-			next unless @arr;
+            # Skip comments and empty lines
+            next if ( $line =~ /$SKIP_LINE/ );
 
-			if ($arr[0] ne 'push'){
-				# If only a key, set value to be the same
-				if ( @arr == 1 ) {
-					$data->{$arr[0]} = $arr[0];
-				}
-				else {
-					my $k = shift @arr;
-					$data->{$k} = join " ", @arr;
-				}
-			}
-			else {
+            # Get parent definition(s)
+            #my (undef, @parents) = split(';', $line);
+
+            # Remove end-of-line comments
+            #$line =~ s/#.*$|;.*$//;
+            $line =~ s/#.*$//;
+
+            # Split by space into an array
+            my (@arr) = split( ' ', $line );
+            next unless @arr;
+
+            if ( $arr[0] ne 'push' ) {
+
+                # If only a key, set value to be the same
+                if ( @arr == 1 ) {
+                    $data->{ $arr[0] } = $arr[0];
+                }
+                else {
+                    my $k = shift @arr;
+                    $data->{$k} = join " ", @arr;
+                }
+            }
+            else {
                 my $k = shift @arr;
-				if ($_pushed > 0){
-	                $data->{$k.'_'.$_pushed} = join " ", @arr;
-				}
-				else {
-	                $data->{$k} = join " ", @arr;
-				}
-				$_pushed++;
-   			}
-		}
-		close FILE;
-		return $data;
-	}
+                if ( $_pushed > 0 ) {
+                    $data->{ $k . '_' . $_pushed } = join " ", @arr;
+                }
+                else {
+                    $data->{$k} = join " ", @arr;
+                }
+                $_pushed++;
+            }
+        }
+        close FILE;
+        return $data;
+    }
 
-}	
+}
 
 # Default functions
-sub default :Private
-{
-    my ($self, $c) = @_;
+sub default : Private {
+    my ( $self, $c ) = @_;
     $c->stash( { status => 'Control action not found' } );
     $c->response->status(404);
 }
 
-sub end :Private
-{
-    my ($self, $c) = @_;
+sub end : Private {
+    my ( $self, $c ) = @_;
 
     # Debug if requested
     die "forced debug" if $c->req->params->{dump_info};
 
     # Forward to JSON view
-	$c->forward( ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
+    $c->forward(
+        ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }
 
 =head1 AUTHOR
@@ -692,6 +739,6 @@ it under the same terms as Perl itself.
 
 =cut
 
-__PACKAGE__->meta->make_immutable(inline_constructor => 0);
+__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 1;

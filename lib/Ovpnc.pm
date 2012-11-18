@@ -17,21 +17,21 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
-	-Debug
-    ConfigLoader
-    Static::Simple
-	Compress::Gzip
-	Compress::Deflate
-	Cache
-	Session
-    Session::Store::File
-    Session::State::Cookie
-	Authentication
-	Authentication::Store::Minimal
-	Authorization::Roles
-	+CatalystX::SimpleLogin
-	StackTrace
-/;
+  -Debug
+  ConfigLoader
+  Static::Simple
+  Compress::Gzip
+  Compress::Deflate
+  Cache
+  Session
+  Session::Store::File
+  Session::State::Cookie
+  Authentication
+  Authentication::Store::Minimal
+  Authorization::Roles
+  +CatalystX::SimpleLogin
+  StackTrace
+  /;
 
 extends 'Catalyst';
 
@@ -47,114 +47,109 @@ our $VERSION = '0.01';
 # local deployment.
 
 __PACKAGE__->config(
-    name => 'Ovpnc',
-	default_view => 'HTML',
+    name         => 'Ovpnc',
+    default_view => 'HTML',
+
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
-    enable_catalyst_header => 1, # Send X-Catalyst header
-	#
-	# ConfigLoader
-	#
-	'Plugin::ConfigLoader' => {
-		config_local_suffix => 'local'
-	},
-	#
-	# Cache
-	#
-	'Plugin::Cache' =>
-	{
-		backend => 
-		{
-			class => "Cache::File",
-			cache_root => 'tmp/cache',
-			store => "Minimal",
-		}
-	}
+    enable_catalyst_header                      => 1,   # Send X-Catalyst header
+                                                        #
+                                                        # ConfigLoader
+                                                        #
+    'Plugin::ConfigLoader' => { config_local_suffix => 'local' },
+
+    #
+    # Cache
+    #
+    'Plugin::Cache' => {
+        backend => {
+            class      => "Cache::File",
+            cache_root => 'tmp/cache',
+            store      => "Minimal",
+        }
+      }
 
 );
 
 #
 # XSLT View
 __PACKAGE__->config(
-	'View::XSLT' => {
-	    # relative paths to the directories with templates
-   		INCLUDE_PATH => [
-    	  Ovpnc->path_to( 'root', 'xslt' ),
-    	],
-   		TEMPLATE_EXTENSION => '.xsl', # default extension when getting template name from the current action
-    	FORCE_TRANSFORM => 1,
-    	DUMP_CONFIG => 0, # use for Debug. Will dump the final (merged) configuration for XSLT view
-    	LibXSLT => { # XML::LibXSLT specific parameters
-      		register_function => [{
-	        	uri    => 'urn:ovpnc',
-   		      	name   => 'Param',
-          	  	subref => sub { return $_[0] },
-        	}]
-   		}
-	}
+    'View::XSLT' => {
+
+        # relative paths to the directories with templates
+        INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'xslt' ), ],
+        TEMPLATE_EXTENSION => '.xsl'
+        , # default extension when getting template name from the current action
+        FORCE_TRANSFORM => 1,
+        DUMP_CONFIG     => 0
+        , # use for Debug. Will dump the final (merged) configuration for XSLT view
+        LibXSLT => {    # XML::LibXSLT specific parameters
+            register_function => [
+                {
+                    uri    => 'urn:ovpnc',
+                    name   => 'Param',
+                    subref => sub { return $_[0] },
+                }
+            ]
+        }
+    }
 );
 
 #
 # HTML View
 __PACKAGE__->config(
-	'View::HTML' => {
-    	TEMPLATE_EXTENSION => '.tt2',
-     	INCLUDE_PATH => [
-                Ovpnc->path_to( 'root', 'src' ),
-            ],
-     	# Set to 1 for detailed timer stats in your HTML as comments
-    	TIMER              => 1,
-     	# This is your wrapper template located in the 'root/src'
-	    WRAPPER => 'wrapper.tt2',
-     	ENCODING     => 'utf-8',
-     	render_die => 1,
-	}
+    'View::HTML' => {
+        TEMPLATE_EXTENSION => '.tt2',
+        INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'src' ), ],
+
+        # Set to 1 for detailed timer stats in your HTML as comments
+        TIMER => 1,
+
+        # This is your wrapper template located in the 'root/src'
+        WRAPPER    => 'wrapper.tt2',
+        ENCODING   => 'utf-8',
+        render_die => 1,
+    }
 );
 
-
 #
-# Login controller config 
+# Login controller config
 __PACKAGE__->config(
-	'Controller::Login' => {
+    'Controller::Login' => {
 
-		# Force clear session on logout
-		clear_session_on_logout => 1,
+        # Force clear session on logout
+        clear_session_on_logout => 1,
 
-		# Redirect to login page after logout
-		redirect_after_logout_uri => '/login',
+        # Redirect to login page after logout
+        redirect_after_logout_uri => '/login',
 
-		login_form_args => {
-           authenticate_args => { active => 'Y' },
-        },
+        login_form_args => { authenticate_args => { active => 'Y' }, },
 
         traits => [qw( Logout WithRedirect RenderAsTTTemplate )],
 
-#		actions => {
-#			required => {
-#				Does => ['ACL'],
-#				AllowedRole => ['ovpncadmin', 'ovpnc', 'nuriel'], # ANY of these
-#				RequiresRole => ['nuriel'], # ALL of these
-#				ACLDetachTo => 'login',
-#			},
-#		},
-	},
+        #		actions => {
+        #			required => {
+        #				Does => ['ACL'],
+        #				AllowedRole => ['ovpncadmin', 'ovpnc', 'nuriel'], # ANY of these
+        #				RequiresRole => ['nuriel'], # ALL of these
+        #				ACLDetachTo => 'login',
+        #			},
+        #		},
+    },
 );
-
-
 
 #
 # Session config
 __PACKAGE__->config(
     'Plugin::Session' => {
         flash_to_stash => 1,
-		storage => 'tmp/session'
+        storage        => 'tmp/session'
     },
 );
 
 #
 # Start the application
 __PACKAGE__->setup();
-
 
 =head1 AUTHOR
 
