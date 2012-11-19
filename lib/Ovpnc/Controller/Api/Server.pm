@@ -52,6 +52,7 @@ $regex = {
       'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
     log_line  => '^([0-9]+),(.*)\n',
     verb_line => '^SUCCESS: verb=(\d+)\n',
+	client_crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*',
 };
 
 =head2 begin
@@ -171,7 +172,7 @@ sub begin : Private {
 
         # If method returned false, return error message.
         unless ($status) {
-            $c->stash( { status => $self->vpn->{error_msg} } );
+            $c->stash( { error => $self->vpn->{error_msg} } );
             return;
         }
 
@@ -331,11 +332,54 @@ sub begin : Private {
         }
     }
 
+	sub get_killed : Path('get_killed') : Args(0) Does('NeedsLogin')
+	{
+		my ( $self, $c ) = @_;
+
+		my $crl_index = $c->config->{openvpn_dir} . 'keys/index.txt';
+
+		unless ( -r $crl_index ){
+			$c->stash( { error => 'Cannot read ' . $crl_index . ', file does not exists or is not readable' } );
+            return;
+		}
+
+		my $revoked_clients = $self->read_crl_index_file( $crl_index );
+
+		if ( $revoked_clients and ref $revoked_clients eq 'ARRAY' and @{$revoked_clients} > 0 ){
+			$c->stash( { status => $revoked_clients } );
+		}
+		else {
+			$c->stash( { status => 'none' } );
+		}
+	}
+
 }
 
 # Private methods
 # ===============
 {
+
+	sub read_crl_index_file : Private
+	{
+		my ( $self, $crl_index ) = @_;
+		my ($Y,$M,$D,$h,$m,$s);
+		my $obj = [];
+	
+		open ( FH, "<", $crl_index )
+			or die "Cannot read $crl_index: $!";
+	
+		while (my $line = <FH>){
+			my ($revoke_time, $name) = $line =~ /$regex->{client_crl}/g;
+			if ($revoke_time and $name){ 
+				($Y,$M,$D,$h,$m,$s) = $revoke_time =~ /(..)/g;
+				my $kill_time =  $D.'-'.$M.'-'.($Y+2000) . ' ' . $h.':'.$m.':'.$s;
+				push ( @{$obj}, { name => $name, kill_time => $kill_time } );
+			}
+		}
+	
+		close FH;
+		return $obj;
+	}
 
     sub mgt_connect : Private {
         my $c = shift;

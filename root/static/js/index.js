@@ -5,6 +5,7 @@
 var ovpnc = new Object();
 ovpnc.mem = new Object();
 ovpnc.actions = new Object();
+ovpnc.ajax_lock = 0;
 
 // Actions
 ovpnc.actions = {
@@ -16,6 +17,7 @@ ovpnc.actions = {
 $(document).ready(function()
 {
 
+
 		$.getDATA = function(url) {
         	return jQuery.ajax({
         		headers: { 'Accept': 'application/json' },
@@ -25,6 +27,8 @@ $(document).ready(function()
 		        retryLimit : 3,
 		        cache: false,
 			    url: url,
+				beforeSend : function(){ ovpnc.ajax_lock = 1; },
+				complete : function() { ovpnc.ajax_lock = 0; },
 		        success : function(r){
 					$('#server_status').text('online').css('color','green');
 					if (typeof(r.title) !== "undefined") populate_version(r.title);
@@ -51,7 +55,7 @@ $(document).ready(function()
 
 	// Get status (loop)
 	ovpnc.actions.poll_status();
-
+	
 });
 
 
@@ -91,7 +95,7 @@ function populate_clients(c)
 			if ( $(".client_div").is(":visible") ){
 				$(".client_div").hide(300);
 			}
-			$('#client_status_container').html( '<div class="client_div" id="no_clients">No clients connected</div>' );
+			$('#client_status_container').html( '<div class="right_div client_div" id="no_clients">No clients connected</div>' );
 			$('#no_clients').show(250);
 		}
 
@@ -196,13 +200,23 @@ function functionDelay(f,t)
 function extend_client_data(n){
 	
 	// Before expending make sure ajax call is finished updating the div
-	if ( checkPendingRequest() ){
+
+/*	if ( checkPendingRequest() ){
 		console.log( "sleep for 1 sec");
 		functionDelay( extend_client_data(n), 1000 );
 		return;
 	}
 	// If we got here, remove any active timers
 	if ( typeof(ovpnc.timer) !== "undefined") {
+		clearInterval(ovpnc.timer);
+	}
+*/
+	if ( ovpnc.ajax_lock === 1 ){
+		console.log( "sleep for 1 sec");
+        functionDelay( extend_client_data(n), 500 );
+        return;
+	}
+	else {
 		clearInterval(ovpnc.timer);
 	}
 
@@ -256,7 +270,7 @@ function unkill_client(c){
 
 	$.getJSON('/api/server/unkill/' + c, function(r){
 		$('#unkill_' + c).remove();
-		if ( $('#killed_clients').text() === '' ) $('#killed_clients_container').hide(250);
+		if ( ! $('#killed_clients').text().match(/\w+/) ) $('#killed_clients_container').hide(250);
 		alert("Client '" + c + "' unkilled successfully");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
@@ -269,16 +283,23 @@ function unkill_client(c){
 
 function append_dead_client(c){
 
-	var output = '<div class="unkill_me" title="Click to unkill"'
-				+ ' onClick="unkill_client(\'' + c +'\');" id="unkill_' + c +'">'
-				+ c + ' - unkill'
+	var now = get_date();
+	var output = '<div class="unkill_me" id="unkill_' + c +'">'
+				+ ' <b>' + c + '</b> killed ' + now
+				+ ' <hr />'
+                + ' <img style="float:right;margin-top:-2px"'
+				+ '  class="client_action_link"'
+				+ '  title="Click to unkill"'
+				+ '  onClick="unkill_client(\'' + c +'\');"'
+				+ '  src="/static/images/approve.png">' 
+				+ ' </img>'
 				+ '</div>';
 
 	$('#killed_clients').append(output);
 
 	if ( ! $('#killed_clients_container').is(":visible") ){
 		$('#killed_clients_container').show(250);
-		ovpnc.actions.hover_binds();
+		//ovpnc.actions.hover_binds();
 	}
 
 }
@@ -299,3 +320,10 @@ function checkPendingRequest() {
     }
 
 }
+
+function get_date() { 
+	var now = new Date(); 
+	var then = now.getDay() + '-' + ( now.getMonth() + 1 ) + '-' + now.getFullYear()
+			   + ' ' + now.getHours() + ':' +now.getMinutes() + ':' +now.getSeconds(); 
+	return then;
+} 

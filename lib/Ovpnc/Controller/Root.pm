@@ -60,6 +60,23 @@ Default main page
 
 sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
     my ( $self, $c ) = @_;
+
+	# Get all killed clients
+	my $obj = $c->forward('/api/server/get_killed');
+	die $c->{error} if ( $c->{error} );
+
+	if ( ref $obj eq 'HASH' ){
+		if ( $obj->{status} and ref $obj->{status} eq 'ARRAY'){
+			$c->stash->{killed_clients} = $obj->{status};
+		}
+		else {
+			warn map { $_ . " - " . $obj->{$_} } keys %{$obj};
+		}
+	}
+	else {
+		die "Killed clients read error?!";
+	}
+
     $c->stash->{output} = "Stash output test";
 }
 

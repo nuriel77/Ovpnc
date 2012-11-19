@@ -8,20 +8,32 @@
 
 	<!-- status div -->
 	<div class="status_div" id="status_container">
-		<div class="server_title box_shadow" id="title">
+
+		<div class="right_div server_title box_shadow" id="title">
 			<div id="server_status_content">Server: <span id="server_status" style="color:red;">offline</span></div>
 			<div id="server_version"></div>
-		</div>
-		<div id="client_status_container">
-        </div>
+		</div><!-- title -->
+		<div class="clear"></div>
+		<div id="client_status_container" class="right_div"></div><!-- client_status_container -->
+
+		<!-- killed_clients_container -->
+		<div id="killed_clients_container" class="right_div">
+			<div id="killed_clients">
+			[% FOREACH client IN killed_clients -%]
+				<div class="unkill_me" id="unkill_[% client.name %]">
+					<b>[% client.name %]</b><span style="float:right">killed [% client.kill_time %]</span>
+					<hr />
+					<img style="float:right;margin-top:-2px" class="client_action_link"
+						 src="[% c.uri_for('/static/images/approve.png') %]"
+						 title="Click to unkill"
+						 onClick="unkill_client('[% client.name %]')" >
+					</img>
+				</div>
+			[% END %]
+			</div>
+		</div><!-- killed_clients_container -->
+
 	</div><!-- status div -->
 
-	<div class="clear" />
-
-	<!-- killed_clients_container -->
-	<div id="killed_clients_container" class="box_shadow">
-		<div>Killed clients</div><hr />
-		<div id="killed_clients"></div>
-	</div>
-
+	<div class="clear"></div>
 </div><!-- main div -->

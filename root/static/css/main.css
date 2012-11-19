@@ -5,6 +5,10 @@ body, html {
 	height:99%;
 }
 
+.hand_pointer{
+	cursor:pointer;
+}
+
 img{
 	-webkit-transition: margin 0.5s ease-out;
     -moz-transition: margin 0.5s ease-out;
@@ -76,24 +80,22 @@ div#main{
 }
 
 .server_title{
-	max-width:270px;
-	min-width:270px;
+/*	max-width:265px;
+	min-width:265px;
     float:right;
-    padding:4px;
-    margin:10px;
+    padding:4px; */
+    margin:10px 10px 50px 10px;
 	color:#888;
 }
 
 #client_status_container{
+	margin-bottom:20px;
 /*	display:none; */
 }
 
 .client_div{
-	max-width:270px;
-	min-width:270px;
-	float:right;
-	padding:4px;
-	margin:5px 10px 5px 10px;
+/*	margin:5px 10px 20px 10px; */
+	margin-bottom:20px;
 	display:none;
 }
 
@@ -111,6 +113,7 @@ div#main{
 .client_action_link {
 	margin:2px;
 	cursor:pointer;
+	max-width:24px;
 }
 
 
@@ -135,18 +138,17 @@ div#main{
 	margin:2px 0px 4px 2px;
 }
 
-#killed_clients_container{
-	max-witdth:270px;
-	min-witdth:270px;
+.right_div{
+	min-width:265px;
+	max-width:265px;
 	float:right;
     margin:10px;
 	padding:4px;
-	margin-top:30%;
-	display:none;
 }
 
 .unkill_me{
-	cursor:pointer;
+/*	margin-left:10px; */
 }
 
 .clear { clear:both; }
+
