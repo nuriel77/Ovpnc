@@ -1,0 +1,297 @@
+jQuery.validator.setDefaults({
+	debug: true,
+	success: "valid"
+});
+
+/*
+
+ovpnc definitions
+
+*/
+var ovpnc = new Object();
+ovpnc.ajax_lock = 0;
+ovpnc.ajax_loader = '<img src="/static/images/ajax-loader.gif"></img>';
+ovpnc.edit_country = 0;
+ovpnc.elems = new Array ('country', 'state', 'city');
+ovpnc.html_mem = new Array();
+
+/* jQuery begin document */
+$(document).ready(function()
+{
+	// On window unload
+	window.onbeforeunload = confirmExit;
+
+	// Preload cookie
+	ovpnc.cookie = $.cookie('Ovpnc_Form_Settings');
+
+	// Global getJsonData function
+	$.getDATA = function(url, data) {
+    	return jQuery.ajax({
+                    headers: { 'Accept': 'application/json' },
+                    async : true,
+                    timeout: 3000,
+                    tryCount : 0,
+                    retryLimit : 3,
+                    cache: false,
+					data : data,
+                    url: url,
+                    beforeSend : function(){ ovpnc.ajax_lock = 1; },
+                    complete : function() { ovpnc.ajax_lock = 0; },
+                    success : function(r){
+						console.log("o: %o",r);
+                    },
+                    error : function(xhr, ajaxOptions, thrownError) {
+                    	console.debug("Error getting status: " + xhr.status + ", " + thrownError.toString())
+                        this.tryCount++;
+                        if (this.tryCount <= this.retryLimit) {
+                            console.log( "Going to retry connection to host loop: " + this.tryCount);
+                            //try again
+                            $.ajax(this);
+                            return;
+                        }
+                        return false;
+                    }
+				})
+        };
+
+	set_form_from_cookie();
+	set_form_validation();
+	set_select_bind();
+	set_click_bind();
+
+//	get_user_geolocation();
+
+});
+
+function set_form_from_cookie(){
+	if ( typeof(ovpnc.cookie) !== "undefined" ){
+		var data = jQuery.parseJSON( ovpnc.cookie );
+
+		if ( data.name !== '' ){
+			$('#name').attr('value', data.name);
+		}
+		if ( data.email !== '' ){
+			$('#data').attr('value', data.email);
+		}
+		if ( data.country !== '' ){
+	
+		}
+	}
+}
+
+function set_form_validation(){
+	// Form validation rules
+	$("#main_form").validate({
+	 	rules: {
+		    email: {
+		    	required: true,
+	      		email: true
+			},
+			name: {
+				required: true,
+				rangelength: [3, 36]
+			}
+	    }
+	 });
+}
+
+function confirmExit(){
+	var data = new Object();
+
+	data = {
+		name : $('#name').attr('value'),
+		email : $('#email').attr('value'),
+		country : ( ovpnc.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
+		state :  ( ovpnc.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
+		city :   ( ovpnc.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') )
+	}
+
+	var Settings = JSON.stringify( data );
+	$.cookie( "Ovpnc_Form_Settings", Settings, { expires: 30, path: '/' } );
+
+    return "Unsaved modifications";
+}
+
+function set_click_bind(){
+
+	$('#edit_country').click(function(){
+		if ( ovpnc.edit_country === 0 ){
+			ovpnc.edit_country = 1;
+
+			$('.r_auto').each(function(f,g){
+				ovpnc.html_mem.push(g);
+			});
+			build_location_inputs();
+		}
+ 		else {
+			ovpnc.edit_country = 0;
+			build_location_selects();
+		}
+	});
+
+}
+
+function build_location_selects(){
+	var inn = ovpnc.elems;
+	for ( var i in ovpnc.html_mem ){
+		$('#s_' + inn[i]).html( ovpnc.html_mem[i] );
+	}
+	set_select_bind();
+}
+
+function build_location_inputs(){
+	var inn = ovpnc.elems;
+	for (var i in inn){
+		$('#s_' + inn[i]).html(
+			'<input name="'+inn[i]+'" id="'+inn[i]+'" placeholder="'+inn[i]+' name" />'
+		);
+	}
+}
+
+function set_select_bind(){
+
+	$('select#country').change(function(){	
+		// Ajax loader
+		$('#t_state').html( ovpnc.ajax_loader );	
+		var geonameId = $("select#country option:selected").attr('value');
+		get_state_list( geonameId );
+	});
+
+	$('select#state').change(function(){
+		// Ajax loader
+		$('#t_city').html( ovpnc.ajax_loader );
+		var geonameId = $("select#state option:selected").attr('value');
+		get_city_list( geonameId );
+	});
+
+}
+
+function get_state_list(geonameId){
+
+	$.getJSON('http://api.geonames.org/childrenJSON?geonameId='
+			  + geonameId + '&username=nuriel77', function(o){
+		var states = o.geonames;
+		
+		// If list return empty, put a default option and return
+		if ( states.length === 0 ){
+			$('select#state').html('<option value="">-</option>');
+			return false;
+		}
+
+		// Empty previous list
+		$('select#state').empty();
+
+		// Append the options list
+		populate_states(states);
+
+		// Remove ajax-loader
+		$('#t_state').empty();	
+
+		var geoId = $("select#state option:selected").attr('value');
+		// Update city list	
+		$('#t_city').html( ovpnc.ajax_loader );
+		get_city_list( geoId );
+		$('#t_city').empty();	
+	}).error(function(xhr, ajaxOptions, thrownError) {
+		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+		// Remove ajax loader
+		$('#t_state').empty();	
+		return false;
+	});
+}
+
+
+function get_city_list( geonameId ){
+
+	$.getJSON('http://api.geonames.org/childrenJSON?geonameId='
+			  + geonameId + '&username=nuriel77', function(o){
+		var cities = o.geonames;
+		
+		// If list return empty, put a default option and return
+		if ( cities.length === 0 ){
+			$('select#city').html('<option value="">-</option>');
+			return false;
+		}
+
+		// Empty previous list
+		$('select#city').empty();
+
+		// Append the options list
+		populate_cities(cities);
+
+		// Remove ajax-loader
+		$('#t_city').empty();	
+
+	}).error(function(xhr, ajaxOptions, thrownError) {
+		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+		// Remove ajax loader
+		$('#t_city').empty();	
+		return false;
+	});
+}
+
+function populate_cities(cities){
+	for (var i=0;i<cities.length;i++){
+		$('select#city').append(
+			'<option value="' + cities[i].geonameId + '">'
+		  + cities[i].name
+		  + '</option>'
+		);		
+	}
+}
+
+function populate_states(states){
+	for (var i=0;i<states.length;i++){
+		$('select#state').append(
+			'<option value="' + states[i].geonameId + '">'
+		  + states[i].name
+		  + '</option>'
+		);		
+	}
+}
+
+function get_user_geolocation(){
+
+	if ( navigator.geolocation ) {
+	    navigator.geolocation.getCurrentPosition(function(position) {
+			$('#t_country').html( ovpnc.ajax_loader );	
+	        $.getJSON('http://ws.geonames.org/countryCode', {
+	            lat: position.coords.latitude,
+	            lng: position.coords.longitude,
+	            type: 'JSON'
+	        }, function( result ) {
+
+				$('#t_country').empty();
+				set_select_country_geonameId( result.countryName )		
+
+	        }).error(function(xhr, ajaxOptions, thrownError) {
+				console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+				$('#t_country').empty();
+				return false;
+		    })
+		})
+	}
+	else {
+		console.log( "Failed to get the navigator geolocation, cannot set default country" );
+		return false;
+	}
+}
+
+// Provide a name and get a geonameId
+// will set the select option automatically
+function set_select_country_geonameId( country ){
+	$.getJSON('http://api.geonames.org/searchJSON', {
+		name: country,
+		maxRows : 1,
+		username : 'nuriel77'
+	}, function( result ) {		
+
+		$('#t_state').html( ovpnc.ajax_loader );
+		$("select#country option[value='" + result.geonames[0].geonameId + "']").prop('selected',true);
+		get_state_list( result.geonames[0].geonameId );
+		
+	}).error(function(xhr, ajaxOptions, thrownError) {
+    	console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+        return false;
+    });	
+}

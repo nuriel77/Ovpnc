@@ -1,0 +1,95 @@
+<script type="text/javascript" src="[% c.uri_for('/static/js/jquery.validate.js') %]"></script>
+<script type="text/javascript" src="[% c.uri_for('/static/js/certificates/index.js') %]"></script>
+<style>
+	#form_container { margin: 25px; }
+	table.t_form { margin:10px 0px 10px 20px; }
+	table.t_form tr	{ height:50px; }
+	table.t_form td.left { min-width:165px; }
+	table.t_form input { min-width:335px; }
+	table.t_form select { max-width:340px; min-width:340px; }
+</style>
+<!-- main div -->
+<div id="main">
+	<!-- logout link -->
+	<div id="logout"><a href="[% c.uri_for('/logout') %]">Logout</a></div>
+	
+	<!-- form -->
+	<div id="form_container">
+		<form action="/api/certificates/set_vars" method="POST" name="main_form" id="main_form">
+			<fieldset style="max-width:590px;" class="box_shadow">
+
+				<legend>Set CA Authority Details</legend>
+	
+				<table class="t_form" border=0 colspan=0>
+
+					<!-- name -->
+					<tr>
+						<td class="left"><label for="name">Name</label></td>
+						<td style="min-width:20px;" id="t_name"></td>
+						<td><input id="name" name="name" type="text" placeholder="First and last name" required autofocus></span>
+						<td style="min-width:20px;"></td>
+					</tr>
+	
+					<!-- email -->
+					<tr>
+						<td class="left"><label for="email">Email</label></td>
+						<td id="t_email"></td>
+						<td><input id="email" name="email" type="email" placeholder="example@domain.com" required></td>
+						<td id="r_email"></td>
+					</tr>
+	
+					<!-- select country -->
+					<tr>
+						<td class="left"><label for="country">Country</label></td>
+						<td id="t_country"></td>
+						<td id="s_country">
+							<select id="country" class="r_auto" name="country" required>
+								<option value="">-</option>
+							[% FOREACH country = countries -%]
+								[% FOREACH cc = country -%]
+									<option
+									 [% FOREACH cn = cc.value -%]
+										[% IF cn.key == 'id' %]
+											value="[% cn.value %]"
+										[% END %]
+									[% END %]
+	>[% cc.key %] - [% FOREACH cn = cc.value -%][% IF cn.key == 'code' %][% cn.value %][% END %][% END %]</option>
+								[% END %]
+							[% END %]
+							</select>
+						</td>
+						<td id="edit_country" title="Edit manually" style="cursor:pointer">
+							<img src="[% c.uri_for('/static/images/edit-icon.png') %]"></img>
+						</td>
+					</tr>
+	
+					<!-- select state/province -->
+					<tr id="state_row">
+						<td class="left"><label for="state">State/Province</label></td>
+						<td id="t_state"></td>
+						<td id="s_state">
+							<select class="r_auto" id="state" name="state" required>
+								<option value="">-</option>
+							</select>
+						</td>
+						<td></td>
+					</tr>
+	
+					<!-- select city -->
+					<tr id="state_row">
+						<td class="left"><label for="city">City</label></td>
+						<td id="t_city"></td>
+						<td id="s_city">
+							<select class="r_auto" id="city" name="city" required>
+								<option value="">-</option>
+							</select>
+						</td>
+						<td></td>
+					</tr>
+	
+				</table>
+			</fieldset>
+		</div><!-- form_container -->
+	</form>
+	<input id="geo_username" type="hidden" value="[% geo_username %]" />
+</div>
