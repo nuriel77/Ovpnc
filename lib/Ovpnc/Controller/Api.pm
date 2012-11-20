@@ -66,6 +66,10 @@ sub sanity : Chained('base') PathPart('sanity') Args(0) Does('NeedsLogin') {
       if ( $c->request->path =~ /sanity/ );
 }
 
+=head2 default
+
+=cut
+
 sub default : Private {
     my ( $self, $c ) = @_;
 

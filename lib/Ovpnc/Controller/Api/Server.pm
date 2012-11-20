@@ -89,6 +89,8 @@ methods execute
 
 =cut
 
+
+=comment DISABLED
 around [
     qw/
       begin
@@ -105,6 +107,14 @@ around [
     my $self = shift;
     my $c    = shift;
 
+
+	if ( $c->request->path eq '/' ){
+	    return $self->$orig( $c, @_ );
+	}
+
+	## NOTE! Temporary, please add a caller check
+    return $self->$orig( $c, @_ );
+
     # Sanity check
     my $err = $c->forward('/api/sanity');
     if ( $err and ref $err eq 'ARRAY' ) {
@@ -115,7 +125,9 @@ around [
     else {
         return $self->$orig( $c, @_ );
     }
-  };
+};
+=cut
+
 
 =head2 index
 
@@ -155,9 +167,6 @@ sub begin : Private {
     sub status : Chained('begin') : Path('status') : Args(0) Does('NeedsLogin')
     {
         my ( $self, $c ) = @_;
-
-        # Sanity check
-        #return if $c->forward('/api/sanity');
 
         # Check connection to mgmt port
         unless ( $self->vpn->connect ) {
@@ -206,9 +215,6 @@ sub begin : Private {
 
     sub set_verb : Chained('base') PathPart('set_verb') Args(1) {
         my ( $self, $c, $level ) = @_;
-
-        # Sanity check
-        #return if $c->forward('/api/sanity');
 
         unless ( $self->vpn->connect ) {
             $c->stash( { status => 'Server seems down' } );

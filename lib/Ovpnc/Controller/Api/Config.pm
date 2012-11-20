@@ -46,7 +46,7 @@ sub index : Chained('/') PathPart('api/config/') Args(0) : ActionClass('REST') {
 
 # Grouped actions
 
-=head2 config_GET
+=head2 view_config
 
 Will output the configuration 
 of openvpn and will run validation

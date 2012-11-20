@@ -38,6 +38,7 @@ sub action {
         distro        => sub { return $self->check_dist },
         ovpnc_user    => sub { return $self->check_ovpnc_user },
         configuration => sub { return $self->check_config($config) if $config },
+		check_scripts => sub { return $self->check_openvpn_scripts($config) if $config },
         check_tmp_dirs => sub {
             return $self->check_temp_directories(
                 [
@@ -174,6 +175,11 @@ sub action {
             return $config->{openvpn_dir} . " not found or not readable";
         }
 
+		# check openssl conf
+		elsif ( !-e $config->{openssl_conf} || !-r $config->{openssl_conf} ) {
+            return $config->{openssl_conf} . " not found or not readable";
+        }
+
         # check openvpn conf
         elsif ( !-e $config->{openvpn_conf} || !-r $config->{openvpn_conf} ) {
             return $config->{openvpn_conf} . " not found or not readable";
@@ -193,6 +199,35 @@ sub action {
         }
 
     }
+
+	sub check_openvpn_scripts {
+
+        my ( $self, $config ) = @_;
+		# check openvpn scripts
+		for ( qw/
+				vars
+				whichopensslcnf
+				pkitool
+				sign-req
+				clean-all
+				build-req-pass
+				build-req
+				build-key-server
+				build-key-pkcs12
+				build-key-pass
+				build-key
+				build-ca
+				build-dh
+				build-inter
+				revoke-full
+				build-key-automatic     
+			/ )
+		{
+			if ( !-r $config->{openvpn_dir} . $_ ){
+	            return "'" . $config->{openvpn_dir}. $_ . "' not found or not readable";
+			}
+        }
+	}
 
     sub check_temp_directories {
         my ( $self, $dirs ) = @_;

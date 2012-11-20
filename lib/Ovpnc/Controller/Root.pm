@@ -37,7 +37,7 @@ methods execute
 
 =cut
 
-around [qw(ovpnc_config)] => sub {
+around [qw(ovpnc_config index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
     # Sanity check

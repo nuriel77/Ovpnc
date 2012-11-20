@@ -13,8 +13,10 @@ all_from 'lib/Ovpnc.pm';
 
 requires 'boolean';
 requires 'fields';
+requires 'Module::Locate';
 requires 'Moose';
 requires 'namespace::autoclean';
+requires 'Geo::GeoNames';
 requires 'Config::General';
 requires 'XML::LibXML';
 requires 'XML::LibXSLT';
