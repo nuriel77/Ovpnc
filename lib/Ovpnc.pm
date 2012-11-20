@@ -102,7 +102,7 @@ __PACKAGE__->config(
         INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'src' ), ],
 
         # Set to 1 for detailed timer stats in your HTML as comments
-        TIMER => 1,
+        TIMER => 0,
 
         # This is your wrapper template located in the 'root/src'
         WRAPPER    => 'wrapper.tt2',
@@ -122,9 +122,11 @@ __PACKAGE__->config(
         # Redirect to login page after logout
         redirect_after_logout_uri => '/login',
 
+#		render_login_form	=> 'login/index.tt2',
+
         login_form_args => { authenticate_args => { active => 'Y' }, },
 
-        traits => [qw( Logout WithRedirect RenderAsTTTemplate )],
+        traits => [ 'Logout', 'WithRedirect', '-RenderAsTTTemplate' ],
 
         #		actions => {
         #			required => {

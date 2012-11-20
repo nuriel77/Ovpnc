@@ -1,12 +1,63 @@
+/* Main CSS for Ovpnc */
 body, html {
 	font-family: Verdana, helvetica, arial, sans-serif;
 	font-size: 12px;
 	color: #333;
-	height:99%;
+/*	height:99%; */
 }
 
-.hand_pointer{
-	cursor:pointer;
+div#outer{
+	min-width:1105px;
+	height:100%;
+}
+
+/* Main Devision Divs */
+#top_header{
+	min-height:60px;
+}
+
+#left_frame{
+	width:18%;
+	float:left;
+}
+
+#middle_frame{
+	padding-top:10px;
+	min-width:565px;
+	width:55%;
+	float:left;
+}
+
+#right_frame{
+	width:20%;
+	float:left;
+}
+
+#header_title{
+	font-size:3em;
+	top:25px;
+	margin-left:25px;
+	color:lightgray;
+}
+
+/* Global Definitions */
+.hand_pointer{ cursor:pointer; }
+
+.clear { clear:both; }
+
+.message {
+	display:none;
+/*	position:relative; */
+	top:10px;
+	margin:0px 15px 0px 25px;
+	padding:8px 15px 8px 15px;
+/*	max-width:325px; */
+}
+
+#message_close{
+	float:right;
+/*	margin: 6px -15px 0px 0px; */
+	margin: -4px -26px 0px 0px;
 }
 
 img{
@@ -15,27 +66,7 @@ img{
     -o-transition: margin 0.5s ease-out;
 }
 
-div#outer{
-	overflow:auto;
-	height:100%;
-}
-
-div#main{
-    padding: 0;
-	max-width:1024px;
-	margin: 0 auto;
-	border: 1px dotted #ddd;
-	min-height:99%;
-	/* height:100%; */
-
-}
-
-#top_header{
-	margin:6px;
-	height:25px;
-}
-
-#logout{ float:right; margin-right:10px; }
+.login_box { max-width:400px;margin:90px 0px 0px 150px; }
 
 #header{
 	text-align:center;
@@ -46,37 +77,24 @@ div#main{
 #headerimg{
 	float:right;
 }
+
 #footer{
 	text-align:center;
 	font-style:italic;
 	padding-top:20px;
 }
-#menu{
-	font-weight:bold;
-	background-color:#ddd;
-}
-#menuul{
-	list-style:none;
-	float:left;
-	margin:0;
-	padding:0050%5px;
-	font-weight:normal;
-	background-color:#ddd;
-	width:100px;
-}
-#content{
-	margin-left:120px;
-}
-.message{
+
+div#message{
 	color:#390;
 }
+
 .error{
 	color:#f00;
 }
 
 .status_div{
-	float:right;
-	max-width:300px;
+/*	float:right;
+	max-width:300px; */
 }
 
 .server_title{
@@ -95,6 +113,7 @@ div#main{
 
 .client_div{
 /*	margin:5px 10px 20px 10px; */
+	font-size: .85em;
 	margin-bottom:20px;
 	display:none;
 }
@@ -106,16 +125,12 @@ div#main{
 	border:1px solid gray;
 }
 
-.client_data{
-
-}
-
+/* Client class */
 .client_action_link {
 	margin:2px;
 	cursor:pointer;
 	max-width:24px;
 }
-
 
 .client_values{
 	text-align:right;
@@ -130,25 +145,27 @@ div#main{
 	display:none;
 }
 
+/* Server class */
 #server_version{
 	color: #ccc;
 }
 
+#server_status{
+	color:red;
+}
+
 #server_status_content{
 	margin:2px 0px 4px 2px;
+	float:left;
 }
 
 .right_div{
 	min-width:265px;
 	max-width:265px;
-	float:right;
-    margin:10px;
+    margin:10px 10px 30px 10px;
 	padding:4px;
 }
 
-.unkill_me{
-/*	margin-left:10px; */
+#server_on_off{
+	float:right;
 }
-
-.clear { clear:both; }
-

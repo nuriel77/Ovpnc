@@ -1,0 +1,10 @@
+<div id="navigation-block">
+    <ul id="sliding-navigation">
+		<li class="sliding-element"><h3>Ovpnc Navigation Menu</h3></li>
+        <li class="sliding-element"><a href="[% c.uri_for('/') %]">Main</a></li>
+        <li class="sliding-element"><a href="#">Configuration</a></li>
+        <li class="sliding-element"><a href="[% c.uri_for('/certificates') %]">Certificates</a></li>
+        <li class="sliding-element"><a href="#">Link 4</a></li>
+        <li class="sliding-element"><a href="[% c.uri_for('/logout') %]">Logout</a></li>
+    </ul>
+</div>

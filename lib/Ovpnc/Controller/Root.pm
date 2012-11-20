@@ -77,7 +77,9 @@ sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
 		die "Killed clients read error?!";
 	}
 
-    $c->stash->{output} = "Stash output test";
+	$c->stash->{geo_username} = $c->config->{geo_username};
+	$c->stash->{this_link} = 'root';
+    $c->stash->{logged_in} = 1;
 }
 
 =head2 default

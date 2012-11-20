@@ -1,0 +1,6 @@
+#form_container { margin: 25px; }
+table.t_form { margin:10px 0px 10px 20px; }
+table.t_form tr { height:50px; }
+table.t_form td.left { min-width:165px; }
+table.t_form input { min-width:295px; }
+table.t_form select { max-width:310px; min-width:310px; }

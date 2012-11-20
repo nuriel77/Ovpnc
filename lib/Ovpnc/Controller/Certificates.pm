@@ -54,6 +54,8 @@ sub index :Path :Args(0) : Does('NeedsLogin') {
 	my @clist =	@{$self->get_country_list( $c->config->{country_list} )};
 
 	$c->stash->{title} = 'Ovpnc Certificates';
+	$c->stash->{this_link} = 'certificates';
+	$c->stash->{logged_in} = 1;
 	$c->stash->{geo_username} = $c->config->{geo_username};
 	$c->stash->{countries} = [ sort { $a cmp $b } @clist ];
 }

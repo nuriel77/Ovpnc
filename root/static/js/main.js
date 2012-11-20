@@ -1,36 +1,80 @@
 /* index js lib */
 "use strict";
 
-/* Declare namespace */
-var ovpnc = new Object();
-ovpnc.mem = new Object();
-ovpnc.actions = new Object();
-ovpnc.ajax_lock = 0;
+/* Declare Ovpnc namespace */
+;(function($) {
 
-// Actions
-ovpnc.actions = {
-	poll_status : function() { return init_loop_get_status(); },
-	hover_binds : function() { return init_hover_binds(); }
-};
+    // declare var in global scope
+    window.Ovpnc = {};
+
+    Ovpnc = {
+		geo_username : function(){ 
+			return $('#geo_username').attr('name');
+		},
+		actions : {
+			poll_status : function() { return init_loop_get_status(); },
+			hover_binds : function() { return init_hover_binds(); },
+			click_binds : function() { return init_click_binds(); }
+		},
+		ajax_lock : 0
+	}; 
+})(jQuery);
+
+
 
 /* jQuery begin document */
 $(document).ready(function()
 {
 
+	// Set custom alert functionality
+	window.alert = function (message) {
+			// Check if message is already visible,
+			// If yes, save current content and append
+			if ( $('#message').is(':visible') ){
+				// Remove first welcome message.
+				if ( $('#msg_content').text().match(/Welcome/g) ){
+					$('#msg_content').empty();
+				}
+				message += "<br/>" + $('#msg_content').html();
+			}
+			// Write
+			$('#message').html(
+					    '<div id="msg_content">'
+					  + message
+					  + '</div>'
+					  + '<img id="message_close"'
+					  + ' src="/static/images/close-gray.png"'
+					  + ' class="hand_pointer"></img>')
+				.slideDown(300);
+			$('#message_close').click(function(){ $('#message').hide(300).empty(); });
+			return false;
+	};
 
-		$.getDATA = function(url) {
+
+	// Set up the navigation class
+	slide("#sliding-navigation", 25, 15, 150, .8);
+
+	// Set actions for clicks
+	Ovpnc.actions.click_binds();	
+
+	// display welcome message
+	alert('Welcome!');
+
+	$.getDATA = function(url) {
         	return jQuery.ajax({
         		headers: { 'Accept': 'application/json' },
-		        async : true,
+		        async : false,
 		        timeout: 3000,
 		        tryCount : 0,
 		        retryLimit : 3,
 		        cache: false,
 			    url: url,
-				beforeSend : function(){ ovpnc.ajax_lock = 1; },
-				complete : function() { ovpnc.ajax_lock = 0; },
+				beforeSend : function(){ Ovpnc.ajax_lock = 1; },
+				complete : function() { Ovpnc.ajax_lock = 0; },
 		        success : function(r){
 					$('#server_status').text('online').css('color','green');
+					$('#server_on_off').attr('title', 'Shutdown OpenVPN server')
+									   .attr('ref', 'on');
 					if (typeof(r.title) !== "undefined") populate_version(r.title);
 					populate_clients(r.clients);		
 				},
@@ -51,10 +95,10 @@ $(document).ready(function()
 					return false;
 				}
 			})
-		};
+	};
 
 	// Get status (loop)
-	ovpnc.actions.poll_status();
+	Ovpnc.actions.poll_status();
 	
 });
 
@@ -194,7 +238,7 @@ function populate_clients(c)
 
 function functionDelay(f,t)
 {
-	ovpnc.timer = setTimeout(f, t);
+	Ovpnc.timer = setTimeout(f, t);
 }
 
 function extend_client_data(n){
@@ -207,17 +251,17 @@ function extend_client_data(n){
 		return;
 	}
 	// If we got here, remove any active timers
-	if ( typeof(ovpnc.timer) !== "undefined") {
-		clearInterval(ovpnc.timer);
+	if ( typeof(Ovpnc.timer) !== "undefined") {
+		clearInterval(Ovpnc.timer);
 	}
 */
-	if ( ovpnc.ajax_lock === 1 ){
+	if ( Ovpnc.ajax_lock === 1 ){
 		console.log( "sleep for 1 sec");
         functionDelay( extend_client_data(n), 500 );
         return;
 	}
 	else {
-		clearInterval(ovpnc.timer);
+		clearInterval(Ovpnc.timer);
 	}
 
 	if ( $('#' + n + '_hidden_data').is(':visible') ){
@@ -234,6 +278,17 @@ function extend_client_data(n){
 function populate_version(s)
 {
 	$('#server_version').text( s ? s : '' );
+}
+
+function init_click_binds(){
+	$('#server_on_off').click(function(){
+		if ( $(this).attr('ref') === 'on' ){
+			alert("This would shut the server down, still not implemented");
+		}
+		else {
+			alert("This would power the server up, still not implemented");
+		}
+	});
 }
 
 function init_hover_binds(){
@@ -299,7 +354,7 @@ function append_dead_client(c){
 
 	if ( ! $('#killed_clients_container').is(":visible") ){
 		$('#killed_clients_container').show(250);
-		//ovpnc.actions.hover_binds();
+		//Ovpnc.actions.hover_binds();
 	}
 
 }
