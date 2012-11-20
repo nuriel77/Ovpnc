@@ -13,3 +13,4 @@ META.yml
 Makefile
 tmp/*
 *.old
+*.save
