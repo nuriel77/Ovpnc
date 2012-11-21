@@ -3,12 +3,11 @@
 	
 	<!-- server info -->
 	<div class="right_div server_title box_shadow" id="title">
-		<div id="server_status_content">Server: <span id="server_status">offline</span></div>
+		<div id="server_status_content" >Server status: <span id="server_status">offline</span></div>
 		<div id="server_on_off" class="hand_pointer" ref="off" title="Powerup OpenVPN server">
 			<img src="[% c.uri_for('/static/images/off.png') %]"></img>
 		</div>
 		<div class="clear"></div>
-		<div id="server_version"></div>
 	</div><!-- server info -->
 
 	<!-- client_status_container -->

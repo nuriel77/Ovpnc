@@ -9,6 +9,7 @@
     	<title>[% template.title or "Ovpnc" %]</title>
 
 		<!-- JS and CSS -->
+		<link rel="stylesheet" href="[% c.uri_for('/static/css/normalize.css') %]" />
 	    <link rel="stylesheet" href="[% c.uri_for('/static/css/main.css') %]" />
 		<script type="text/javascript" src="[% c.uri_for('/static/js/jquery-latest.js') %]"></script>
 

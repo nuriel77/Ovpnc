@@ -32,7 +32,9 @@ $(document).ready(function()
 			// If yes, save current content and append
 			if ( $('#message').is(':visible') ){
 				// Remove first welcome message.
-				if ( $('#msg_content').text().match(/Welcome/g) ){
+				if ( $('#msg_content').text().match(/Welcome/g)
+				  || $('#msg_content').text() === message
+				){
 					$('#msg_content').empty();
 				}
 				message += "<br/>" + $('#msg_content').html();
@@ -216,7 +218,6 @@ function populate_clients(c)
 					+ ' <div class="client_data" id="data_client_name_' + client_obj['name'] + '">'
 					+ output
 					+ ' </div><!-- client_data -->'
-					+ ' <hr />' 
 			  		+ ' <div class="client_actions">'
 					+ '  <div class="client_action_link" title="Kill client" style="float:right" id="' + client_obj['name'] + '_kill" onClick="kill_client(\'' + client_obj['name'] +'\');" >' 
 					+ '   <img src="/static/images/kill_client.png" style="margin-top:-3px"></img></div>'
@@ -277,7 +278,7 @@ function extend_client_data(n){
 
 function populate_version(s)
 {
-	$('#server_version').text( s ? s : '' );
+	$('#server_status_content').attr( 'title', s ? s : '' );
 }
 
 function init_click_binds(){

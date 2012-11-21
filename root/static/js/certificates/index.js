@@ -19,6 +19,8 @@ $(document).ready(function(){
 // Main function
 function cert_exec_actions(){
 
+	$('#name').focus();
+
 	// Preload cookie
 	if ( $.cookie('Ovpnc_Form_Settings') !== null ){
 		//console.log('Found user settings cookie');
