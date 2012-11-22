@@ -15,4 +15,5 @@ tmp/*
 *.old
 *.save
 root/static/built/*
-config/server.*
+config/server.key
+config/server.crt
