@@ -2,8 +2,6 @@ package Ovpnc::Controller::Login;
 use Moose;
 use namespace::autoclean;
 
-use parent qw/Catalyst::Controller::ActionRole/;
-
 BEGIN { extends 'CatalystX::SimpleLogin::Controller::Login'; }
 
 =head1 NAME

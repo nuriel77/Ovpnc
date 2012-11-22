@@ -98,17 +98,19 @@ sub include_default_links : Private {
 			 js/jquery.cookie.js
 			 js/jquery.validate.js
 			 js/main.js
-			 js/slider.js| );
+			 js/slider.js|
+		);
 
 	# Include according to pathname
     my $c_name = $c->req->path || return;
     $c_name =~ s/\/$//;
 
     for my $type ( qw/ css js / ){
-		warn "Including: " . $type . '/' . $c_name . '.' . $type;
-        # example: 'css/certificates.css'
-        $c->assets->include( $type . '/' . $c_name . '.' . $type )
-			if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type );
+		if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ){
+    	    # example: 'css/certificates.css'
+			$c->log->debug("Including: " . $type . '/' . $c_name . '.' . $type);
+       		$c->assets->include( $type . '/' . $c_name . '.' . $type );
+		}
     }
 
 }

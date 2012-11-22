@@ -12,7 +12,14 @@
 	                    <td><label class="label" for="password">Password:</label></td>
 	                    <td><input id="password" style="min-width:200px" type="password" name="password" value="" /></td>
 	                </tr>
-					<tr><td>&nbsp;</td></tr>
+					<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<!--
+					<tr>
+						<td style="font-size:0.85em;">Remember me</td>
+						<td><input type="checkbox" name="remember" id="remember" />
+						</td>
+					</tr>
+				-->
 	            </table>
 				<div class="submit_button"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
 	        </fieldset>
