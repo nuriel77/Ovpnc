@@ -2,6 +2,8 @@ package Ovpnc::Controller::Login;
 use Moose;
 use namespace::autoclean;
 
+use parent qw/Catalyst::Controller::ActionRole/;
+
 BEGIN { extends 'CatalystX::SimpleLogin::Controller::Login'; }
 
 =head1 NAME
@@ -26,14 +28,33 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
 	my ( $orig, $self, $c ) = @_;
-	
+
+	# Redirect to https if user specified 
+	# a port in config under 'redirect_https_port'
+	if ( $c->config->{redirect_https_port} && ! $c->req->secure ){
+		$c->redirect(
+			'https://'
+			. $c->req->uri->host
+			. ':' 
+			. $c->config->{redirect_https_port} 
+			. '/' 
+			. $c->req->path
+		);
+	}
+
+	unless ( $c->req->secure ){
+		$c->stash->{warning} =
+			"Warning: It is recommended to serve this page under HTTPS."
+		  .	" Check the configuration manual on how to set this up.";
+	}
+
+
 	# Will load any js or css
     Ovpnc::Controller::Root->include_default_links($c);
 
     return $self->$orig($c);
 
 };
-
 
 
 =head1 AUTHOR

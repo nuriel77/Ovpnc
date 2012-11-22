@@ -1,0 +1,19 @@
+.warning {
+	margin:100px 0px 0px 100px;
+	color:orange;
+	font-size:0.85em;
+	overflow:visible;
+	position:absolute;
+	display:none;
+}
+.errors{
+	margin:25px 0px 0px 170px;
+}
+.submit_button {
+	float:right;
+	margin:4px 4px 0 0;
+}
+.w_img {
+	float:left;
+	margin:-18px 11px 0 0;
+}

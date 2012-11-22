@@ -30,6 +30,7 @@ use Catalyst qw/
   Authentication
   Authentication::Store::Minimal
   Authorization::Roles
+  Redirect
   +CatalystX::SimpleLogin
   /;
 

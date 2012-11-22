@@ -1,29 +1,35 @@
 <fieldset class="login_box box_shadow">
 	<legend>Login Ovpnc</legend>
-
 	<div style="padding:20px 0 0 5px;">
 	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="off">
 	        <fieldset style="border: 0;">
 	            <table>
 	                <tr>
 	                    <td style="min-width:80px"><label class="label" for="username">Username:</label></td>
-	                    <td><input style="min-width:200px;" type="text" name="username" value="" /></td>
+	                    <td><input id="username" style="min-width:200px;" type="text" name="username" value="" autofocus="autofocus" /></td>
 	                </tr>
 	                <tr>
 	                    <td><label class="label" for="password">Password:</label></td>
-	                    <td><input style="min-width:200px" type="password" name="password" value="" /></td>
+	                    <td><input id="password" style="min-width:200px" type="password" name="password" value="" /></td>
 	                </tr>
 					<tr><td>&nbsp;</td></tr>
 	            </table>
-				<div style="float:right;margin:4px 4px 0 0;"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
+				<div class="submit_button"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
 	        </fieldset>
 	    </form>
 	</div>
 </fieldset>
-<div style="margin:25px 0px 0px 170px;">
+<div class="errors">
     [% FOR field IN login_form.error_fields %]
         [% FOR error IN field.errors %]
             <p><span style="color: red;">[% error %]</span></p>
         [% END %]
     [% END %]
+</div>
+<div class="warning">
+	<div class="w_img">
+		<img src="[% c.uri_for('/static/images/alert_icon.png') %]" />
+	</div>
+	<div style="float:left" id="warnings">[% warning %]</div>
+	<div class="clear"></div>
 </div>

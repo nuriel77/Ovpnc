@@ -144,7 +144,7 @@ function confirmExit(){
 	}
 
 	if ( $.cookie( "Ovpnc_Form_Settings" ) !== null ){
-		console.log('removed old cookie');
+		//console.log('removed old cookie');
 		$.removeCookie("Ovpnc_Form_Settings");
 	}
 	var Settings = JSON.stringify( data );
@@ -192,11 +192,11 @@ function NASort(a, b) {
 
 function check_changes(){
 	$('input').bind('keyup',function(){
-		console.log('input detected');
+		//console.log('input detected');
 		set_confirm_exit();
 	});
 	$('select').change(function(){
-		console.log('change detected');
+		//console.log('change detected');
 		set_confirm_exit();
 	});
 }

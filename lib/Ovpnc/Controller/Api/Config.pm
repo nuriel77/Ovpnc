@@ -302,8 +302,7 @@ XSD schema from openvpn
     sub send_error : Private {
         my ( $self, $c, $error ) = @_;
         $c->stash( { error => $error } );
-        $c->forward("View::JSON");
-        return;
+		$c->detach;
     }
 
 =head2 prepare_conf_file_data

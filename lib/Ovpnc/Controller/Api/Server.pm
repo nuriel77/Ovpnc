@@ -182,7 +182,7 @@ sub begin : Private {
         # If method returned false, return error message.
         unless ($status) {
             $c->stash( { error => $self->vpn->{error_msg} } );
-            return;
+			$c->detach;
         }
 
         # Start assigning data for stashing
@@ -274,13 +274,13 @@ sub begin : Private {
 
         unless ($client) {
             $c->stash( { error => 'No client specified at kill_client' } );
-            return;
+			$c->detach;
         }
 
         # Check connection to mgmt port
         unless ( $self->vpn->connect ) {
             $c->stash( { error => 'Server seems down' } );
-            return;
+			$c->detach;
         }
 
         # Revoke client's certificate
@@ -346,7 +346,7 @@ sub begin : Private {
 
 		unless ( -r $crl_index ){
 			$c->stash( { error => 'Cannot read ' . $crl_index . ', file does not exists or is not readable' } );
-            return;
+            $c->detach;
 		}
 
 		my $revoked_clients = $self->read_crl_index_file( $crl_index );

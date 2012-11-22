@@ -41,6 +41,7 @@ requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Plugin::StackTrace';
 requires 'Catalyst::Plugin::Cache';
 requires 'Catalyst::Plugin::Assets';
+requires 'Catalyst::Plugin::Redirect';
 requires 'Catalyst::Controller::REST';
 requires 'Catalyst::Controller::ActionRole';
 requires 'Catalyst::Action::RenderView';
