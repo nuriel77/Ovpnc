@@ -13,6 +13,10 @@
     <body>
 		<div id="top_header">
 			<div id="top_header_content">OvpnController</div>
+			<div id="message_container">
+				<div id="message" class="message box_shadow"></div>
+			</div>
+			<div class="clear"></div>
 		</div>
     	<div id="outer">
 			<!-- left frame -->
@@ -24,7 +28,6 @@
 			</div>
 			<!-- middle frame -->
 			<div id="middle_frame">
-				<div id="message" class="message box_shadow"></div>
 				[% IF this_link != 'root' %]
 					[% content %]
 				[% END %]

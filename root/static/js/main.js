@@ -9,7 +9,7 @@
 
     Ovpnc = {
 		alert_icon : '<img width=18 height=18 src="/static/images/alert_icon.png" />',
-		poll_freq : 10000, // Get server status from api every n milliseconds
+		poll_freq : 5000, // Get server status from api every n milliseconds
 		pathname :  window.location.pathname,
 		geo_username : function(){ 
 			return $('#geo_username').attr('name');
@@ -28,10 +28,15 @@
 /* jQuery begin document */
 $(document).ready(function()
 {
+	// Todo: Split this large js file
+	// to match controllers like clients.js
+	// and certificates.js ...
+	// That way no need to do this check here
 	if (Ovpnc.pathname === '/login') return;
 
 	// Set custom alert functionality
 	window.alert = function (message) {
+			console.log('Alert called with ' + message);
 			// Check if message is already visible,
 			// If yes, save current content and append
 			if ( $('#message').is(':visible') ){
@@ -67,7 +72,8 @@ $(document).ready(function()
 	Ovpnc.actions.click_binds();	
 
 	// display welcome message
-//	alert('Welcome!');
+	if ( $.cookie( 'Ovpnc_User_Settings' ) === null )
+		alert('Welcome!');
 
 	$.getDATA = function(url) {
         	return jQuery.ajax({
@@ -81,16 +87,27 @@ $(document).ready(function()
 				beforeSend : function(){ Ovpnc.ajax_lock = 1; },
 				complete : function() { Ovpnc.ajax_lock = 0; },
 		        success : function(r){
-					$('#server_status').text('online').css('color','green');
-					$('#server_on_off').attr('title', 'Shutdown OpenVPN server')
-									   .attr('ref', 'on');
+					//console.log("Status returns: %o",r);
+					// If we get status back, display
+					if ( r.status !== undefined ){
+						$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
+						$('#server_on_off').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+									   .attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
+					}
 
-					$('#online_clients_number').text( r.clients.length !== undefined ? r.clients.length : 0 );
+					// Show number of connected clients
+					$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
 
-					if (typeof(r.title) !== "undefined")
-						populate_version(r.title);
-					if ( Ovpnc.pathname === '/clients' )
-						populate_clients(r.clients);
+					if ( r.clients !== undefined ){
+
+						if (typeof(r.title) !== "undefined")
+							populate_version(r.title);
+						if ( Ovpnc.pathname === '/clients' )
+							populate_clients(r.clients);
+
+					}
+		
+					return false;
 				},
 				error : function(xhr, ajaxOptions, thrownError) {
 			        //console.debug("Error getting status: " + xhr.status + ", " + thrownError)
@@ -148,15 +165,16 @@ function get_server_status()
 function populate_clients(c)
 {
 	if (c.length === 0){
-
+/*
 		if ( ! $("#no_clients").is(":visible") ){
 			if ( $(".client_div").is(":visible") ){
 				$(".client_div").hide(300);
 			}
+
 			$('#client_status_container').html( '<div class="right_div client_div" id="no_clients">No clients connected</div>' );
 			$('#no_clients').show(250);
 		}
-
+*/
 		return;
 	}
 	else {
@@ -307,19 +325,69 @@ function populate_version(s)
 
 function init_click_binds(){
 
-	$('#server_on_off').mousedown(function(){
-		$('.server_title').animate({ marginLeft: "1" }, 100);
-	}).mouseup(function(){
-		$('.server_title').animate({ marginLeft: "" }, 100);
-	}).click(function(){
-		if ( $(this).attr('ref') === 'on' ){
-			alert(Ovpnc.alert_icon + " This would shut the server down, still not implemented");
+	$('#server_on_off').click(function(){
+		server_on_off();
+	});
+
+}
+
+function server_ajax_control(command){
+
+	$.getJSON('/api/server/control/' + command, function(r){
+		if ( r !== undefined && r.status !== undefined){
+
+			console.log( "reply: %o", r.status);
+			// Check returned /started/
+            if ( command == 'start' ) {
+				if ( r.status.match(/started/) ){
+    	            alert(Ovpnc.okay_icon + " " + r.status );
+					return;
+				} else {
+                	alert( 'Server did not start? ' + r.status );
+					return;
+    	        }
+			// Check returned /stopped/
+			} else if ( command == 'stop' ){
+				if ( r.status.match(/stopped/) ){
+					alert(Ovpnc.okay_icon + " Server stopped.");
+					return;
+				} else {
+					alert( 'Server did not stop? ' + r.status );
+					return
+				}
+			}
 		}
 		else {
-			alert(Ovpnc.alert_icon + " This would power the server up, still not implemented");
+			alert("Server control did not reply to action '" + command + "'");
+			console.log("Server control did not reply");
+			return false;
 		}
-	});
+	}).error(function(xhr, ajaxOptions, thrownError) {
+        console.log("Error executing command " + + " server '" + c + "': " + thrownError.toString());
+        alert( Ovpnc.error_icon + " Error executing command " + + " server '" + c + "': " + thrownError.toString());
+        return false;
+    });
+
 }
+
+function server_on_off(){
+	// Turn off:
+	if ( $('#server_on_off').attr('ref') == 'on' ){
+
+		// Ask confirmation
+		var cr = confirm("Are you sure you want to turn the server off?");
+		if ( cr != true ) return;
+
+		// Stop
+		server_ajax_control('stop');
+		return;
+	} else {
+		// Turn on:
+		server_ajax_control('start');
+		return;
+	}
+}
+
 
 function init_hover_binds(){
 

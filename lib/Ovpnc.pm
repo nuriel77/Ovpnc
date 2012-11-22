@@ -48,6 +48,7 @@ our $VERSION = '0.01';
 # local deployment.
 
 __PACKAGE__->config(
+
     name         => 'Ovpnc',
     default_view => 'HTML',
 
@@ -61,7 +62,6 @@ __PACKAGE__->config(
 
     #
     # Cache
-    #
     'Plugin::Cache' => {
         backend => {
             class      => "Cache::File",
@@ -70,6 +70,30 @@ __PACKAGE__->config(
         }
       }
 
+);
+
+#
+# Static::Simple
+__PACKAGE__->config(
+    'Static::Simple' => {	
+		static => {
+			expires => 86400, # Default expire value (24hrs)
+			ignore_extensions => [ qw/xhtml shtml phtml tmpl tt2 tt asp php/ ],
+	        dirs => [
+	            'static',
+	            qr/^(images|css|js)/,
+	        ],
+			mime_types => {
+				js  => 'application/javascript',
+				json => 'application/json',
+				css => 'text/css',
+				xml => 'text/xml',
+                jpg => 'image/jpg',
+                png => 'image/png',
+                ico => 'image/x-icon',
+            },
+	    }
+	}
 );
 
 #
@@ -120,7 +144,7 @@ __PACKAGE__->config(
     'Plugin::Assets' => {
             path => "/static",
             output_path => "built/",
-            minify => 1,
+            minify => 0,
             stash_var => "assets", # This is the default setting
         },
 );

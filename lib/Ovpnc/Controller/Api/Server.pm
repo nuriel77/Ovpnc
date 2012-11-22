@@ -170,7 +170,8 @@ sub begin : Private {
 
         # Check connection to mgmt port
         unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server seems down' } );
+            $c->stash( { status => 'Server offline' } );
+			$c->detach;
             return;
         }
 
@@ -189,6 +190,7 @@ sub begin : Private {
         my $data = { clients => [] };
         $data->{verbosity} = $self->get_verbosity;
         $data->{title}     = $self->vpn->version();
+		$data->{status}	   = "Server online";
 
         # Parse the status output
         for my $line (@$status) {
@@ -217,7 +219,8 @@ sub begin : Private {
         my ( $self, $c, $level ) = @_;
 
         unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server seems down' } );
+            $c->stash( { status => 'Server offline' } );
+			$c->detach;
             return;
         }
 
@@ -239,7 +242,8 @@ sub begin : Private {
 
         # Check connected with mgmt port
         unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server seems down' } );
+            $c->stash( { status => 'Server offline' } );
+			$c->detach;
             return;
         }
 
@@ -279,7 +283,7 @@ sub begin : Private {
 
         # Check connection to mgmt port
         unless ( $self->vpn->connect ) {
-            $c->stash( { error => 'Server seems down' } );
+            $c->stash( { status => 'Server offline' } );
 			$c->detach;
         }
 
@@ -306,7 +310,7 @@ sub begin : Private {
         $c->stash( { status => $ret_val } );
     }
 
-    sub control_vpn : Chained('base') PathPart('control') Args(1) {
+    sub control_vpn : Path('control') Args(1) Does('NeedsLogin') {
         my ( $self, $c, $command ) = @_;
 
         # Dict of possible commands
@@ -549,7 +553,7 @@ sub begin : Private {
         else {
 
             # Build command
-            my $command = 'sudo '
+            my $command = '/usr/bin/sudo '
               . $openvpn_bin
               . ' --writepid '
               . $pid_file
@@ -559,8 +563,10 @@ sub begin : Private {
               . ' --config '
               . $openvpn_config;
 
+			warn 'Executing command: "' . $command . '"';
+
             # Run command
-            my $output = `$command`;
+            my $output = `$command 2>&1`;
 
             # Check exit staatus
             if ( $? >> 8 != 0 ) {

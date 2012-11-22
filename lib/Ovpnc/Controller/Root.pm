@@ -101,6 +101,10 @@ sub include_default_links : Private {
 			 js/slider.js|
 		);
 
+	# Optional :
+	#js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
+	#js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
+
 	# Include according to pathname
     my $c_name = $c->req->path || return;
     $c_name =~ s/\/$//;

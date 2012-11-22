@@ -357,7 +357,7 @@
 						      </td>
 						    </xsl:when>
 
-						    <xsl:when test="$local='Status-File' or $local='Ca' or $local='Dh' or $local='Key' or $local='Certificate'">
+						    <xsl:when test="$local='Status-File' or $local='Crl-File' or $local='Log-File' or $local='Ca' or $local='Dh' or $local='Key' or $local='Certificate'">
 						      <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -437,7 +437,14 @@
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='Protocolcols']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
-							  	      <option><xsl:value-of select="."/></option>
+									  <xsl:variable name="selectedItem" select="."/>
+                                      <option>
+                                        <xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>
+                                        <xsl:if test="$current = $selectedItem">
+                                          <xsl:attribute name="selected"></xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:value-of select="."/>
+                                      </option>
 							        </xsl:for-each>
 								  </select>
 								</xsl:for-each>
@@ -454,8 +461,16 @@
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
+									<xsl:attribute name="test"><xsl:value-of select="$current"/></xsl:attribute>
 							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='CipherType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
-							  	      <option><xsl:value-of select="."/></option>
+									  <xsl:variable name="selectedItem" select="."/>
+							  	      <option>
+										<xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>
+										<xsl:if test="$current = $selectedItem">
+										  <xsl:attribute name="selected"></xsl:attribute>
+										</xsl:if>
+										<xsl:value-of select="$selectedItem"/>
+									  </option>
 							        </xsl:for-each>
 								  </select>
 							    </xsl:for-each>
@@ -473,7 +488,14 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
 							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='CompLzo']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
-							  	      <option><xsl:value-of select="."/></option>
+									  <xsl:variable name="selectedItem" select="."/>
+							  	      <option>
+										<xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>
+										<xsl:if test="$current = $selectedItem">
+                                          <xsl:attribute name="selected"></xsl:attribute>
+                                        </xsl:if>
+										<xsl:value-of select="."/>
+									  </option>
 							        </xsl:for-each>
 								  </select>
 							    </xsl:for-each>
@@ -492,7 +514,14 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='DeviceType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
-							  	      <option><xsl:value-of select="."/></option>
+									  <xsl:variable name="selectedItem" select="."/>
+							  	      <option>
+										<xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>
+                                        <xsl:if test="$current = $selectedItem">
+                                          <xsl:attribute name="selected"></xsl:attribute>
+                                        </xsl:if>
+										<xsl:value-of select="."/>
+									  </option>
 							        </xsl:for-each>
 								  </select>
 							    </xsl:for-each>
@@ -522,12 +551,7 @@
 			  	      </xsl:for-each>
 					</xsl:when>
 					<xsl:otherwise>
-<!--						<input type="checkbox" class="checkBox" ref="off">
-						  <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
-						  <xsl:attribute name="ref"><xsl:value-of select="."/></xsl:attribute>
-						</input>
-						<span class="msg"><xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>disable</span>
--->					</xsl:otherwise>
+					</xsl:otherwise>
 				</xsl:choose>
 			  </tr>
 		    </xsl:for-each>

@@ -3,11 +3,9 @@ body, html {
 	font-family: Verdana, helvetica, arial, sans-serif;
 	font-size: 12px;
 	color: #333;
-/*	height:99%; */
 }
 
 div#outer{
-/*	border:1px dotted black; */
 	min-width:1024px;
 	height:100%;
 }
@@ -19,34 +17,26 @@ div#outer{
 }
 
 #top_header_content{
-/*	margin:0 auto; */
 	margin-left:10px;
 	color:lightgray;
 	padding:20px;
 	max-width:20%;
 	font-size:3em;
+	float:left;
 }
 
 #left_frame{
-/*	border: 1px dotted green; */
-	/* margin-left:5%; */
-/*	width:18%; */
 	float:left;
 }
 
 #middle_frame{
-/*	border: 1px dotted red; */
 	padding-top:10px;
 	min-width:565px;
 	max-width:565px;
-/*	width:55%; */
 	float:left;
 }
 
 #right_frame{
-/*	border: 1px dotted blue; */
-/*	width:20%; */
-/*	margin-right:5%; */
 	float:left;
 	padding-top:10px;
 	max-width:255px;
@@ -69,9 +59,13 @@ legend {
 .message {
 	display:none;
 	top:10px;
-	margin:0px 20px 0px 25px;
-	padding:10px 15px 10px 15px;
+	margin:20px 0 0 0;
+	padding:10px 10px 10px 15px;
 	font-size: 0.85em;
+}
+#message_container {
+	float:left;
+	margin-left:50px;
 }
 
 input:-webkit-autofill { color: #ffffff !important; }
@@ -124,13 +118,12 @@ img{
 	background: -moz-linear-gradient(top,  #ddd,  #aaa); /* for firefox 3.6+ */
 }
 
-.ok_icon{ margin: 3px 2px 0 0 ; }
+/* .ok_icon{ margin: 3px 2px 0 0 ; } */
 .err_icon{ margin: 5px 2px 0 0 ; }
 
 /* Server class */
 #server_status_content{ margin:8px 0px 4px 10px; float:left; }
 .server_title{ margin:10px 10px 50px 0px; padding:13px 10px 10px 10px;}
 #server_version{ color: #ccc; }
-#server_status{	color:red; }
 #server_on_off{ float:right; }
 

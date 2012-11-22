@@ -68,6 +68,7 @@
       <xsd:sequence minOccurs="1" maxOccurs="unbounded" >
 		<xsd:choice>
 	        <xsd:element minOccurs="0" name="Status-File" type="File" />
+			<xsd:element minOccurs="0" name="Log-File" type="File" />
 	        <xsd:element minOccurs="0" ref="Int" />
 	        <xsd:element minOccurs="0" name="Verb" type="Verbosity" />
 	        <xsd:element minOccurs="1" name="Status-Sec" type="StatusSec" />
@@ -85,6 +86,7 @@
 	        <xsd:element minOccurs="1" name="Group-Name" type="NameType" />
 	        <xsd:element minOccurs="0" name="Push-String" type="StringType" />
 	        <xsd:element minOccurs="1" name="VPN-Server" type="IpAddress" />
+	        <xsd:element minOccurs="1" name="Crl-File" type="File" />
 	        <xsd:element minOccurs="1" name="Server-Port" type="PortNumber" default="8111" />
 	        <xsd:element minOccurs="1" name="Virtual-IP" type="IpAddress" />
 	        <xsd:element minOccurs="1" name="Virtual-Netmask" type="NetmaskAddress" />
@@ -92,11 +94,10 @@
 			<xsd:element minOccurs="1" name="Management-Port" type="PortNumber" default="7505" /> 
 	        <xsd:element minOccurs="0" name="Cipher" type="CipherType" default="AES-128-CBC" />
 	        <xsd:element minOccurs="1" name="Device" type="DeviceType" default="tun" />
-	        <xsd:element minOccurs="0" name="Comp-Lzo" type="CompLzo" default="on" />
+	        <xsd:element minOccurs="0" name="Comp-Lzo" type="CompLzo" default="yes" />
 	        <xsd:element minOccurs="1" name="Protocol" type="Protocolcols" default="udp" />
 	        <xsd:element minOccurs="0" name="Keep-Alive" />
 	        <xsd:element minOccurs="0" name="Tls-Key" type="File" />
-			<xsd:element minOccurs="0" name="Crl-Verify" type="File" />
 	        <xsd:element minOccurs="0" name="Tls-Mode" type="Boolean" default="0"/>
 	        <xsd:element minOccurs="1" name="Max-Clients" type="MaxClients" default="64" />
 		</xsd:choice>
@@ -133,8 +134,8 @@
   <!-- Type: Compression LZO -->
   <xsd:simpleType name="CompLzo">
     <xsd:restriction base="xsd:string">
-	    <xsd:enumeration value="on"  />
-	    <xsd:enumeration value="off" />
+	    <xsd:enumeration value="yes"  />
+	    <xsd:enumeration value="no" />
 	    <xsd:enumeration value="adaptive" />
     </xsd:restriction>
   </xsd:simpleType>

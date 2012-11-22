@@ -2,8 +2,8 @@ package Ovpnc::Controller::Api::Config;
 use XML::Simple;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema;
-use Tie::IxHash;
 use File::Copy;
+use File::Slurp;
 use Readonly;
 use strict;
 use warnings;
@@ -59,55 +59,34 @@ in the conf file manually
 
     sub view_config : Chained('base') PathPart('show') Args(0) {
         my ( $self, $c ) = @_;
-        $c->response->status(200);
 
-        my $format = $c->request->params->{format} ||= undef;
-        my $current_conf =
-          $self->get_openvpn_config_file( $c->config->{ovpnc_conf} );
+        #$c->response->status(200);
 
-        die "No configuration file specified! "
-          unless $current_conf;
+		my $_xml_lines = read_file( $c->config->{ovpnc_conf}, array_ref => 1 )
+			or die "Cannot read '" . $c->config->{ovpnc_conf} . "': $!";
 
-        my $output = $self->parse_conf_file( $current_conf, $format );
+		# Remove first line for validation
+		my $_first_line = shift @{$_xml_lines};
+		my $_xml_data = join "", @{$_xml_lines};
 
-        if ( ref $output and defined $output->{error} ) {
-            $self->send_error( $c,
-                "Error reading configuration: " . $output->{error}, 200 );
-            return;
+        if (  my $_msg = $self->validate_xml( $_xml_data, $c->config->{ovpnc_config_schema} ) )
+        {
+             $c->stash( { error => $_msg } );
+			 $c->res->header('Content-Type' => 'text/xml');
+			 $c->request->params->{xml} = 1;
+			 $c->forward('View::XML::Simple');
+			 $c->detach;
         }
         else {
-            my $_data = $self->conf_to_xml(
-                $output,
-                {
-                    name =>
-                      $self->get_openvpn_node_name( $c->config->{ovpnc_conf} ),
-                    file => $current_conf
-                }
-            );
-            my $xml_data = $self->create_xml($_data);
-            if ( ref $xml_data and defined $xml_data->{error} ) {
-                $self->send_error(
-                    $c,
-                    "Error writing back-end xml configuration '"
-                      . $c->config->{ovpnc_conf}
-                      . "':\r\n"
-                      . $xml_data->{error},
-                    200
-                );
-                return;
-            }
-            if (
-                my $msg = $self->validate_xml(
-                    $xml_data, $c->config->{ovpnc_config_schema}
-                )
-              )
-            {
-                $c->stash( { error => $msg } );
-            }
-            else {
-                $c->stash( { status => $_data } );
-            }
+			 unshift @{$_xml_lines}, $_first_line;
+			 $_xml_data = join "", @{$_xml_lines};
+			 $c->res->header('Content-Type' => 'text/xml');
+			 # force XML
+			 $c->res->header('Content-Type' => 'text/xml');
+			 $c->request->params->{xml} = 1;
+			 $c->response->body($_xml_data);			 
         }
+
     }
 
 =head2 config_POST
@@ -152,12 +131,7 @@ and run validataions via the xsd schema
 
         # Create a string from
         # the xml object
-        my $xml_string = XMLout(
-            $xml,
-            KeepRoot => 1,
-            NoSort   => 0,
-            XMLDecl  => "<?xml version='1.0' encoding='UTF-8'?>",
-        ) or die "Cannot generate XML data!";
+        my $xml_string = $self->perl_to_xml($xml);
 
         # Validate the xml against the xsd schema
         # Will return a message if any error
@@ -362,8 +336,8 @@ will set attributes etc
                     for my $okey ( keys %{$on_hold} ) {
                         if ( $okey eq $real ) {
                             $data{$key} .= ' '
-                              . $on_hold->{$okey}->{value} . ';'
-                              . $parent . ';'
+                              . $on_hold->{$okey}->{value} . ' ;'
+                              . $parent . ' ;'
                               . $on_hold->{$okey}->{parent};
 
                         }
@@ -375,8 +349,8 @@ will set attributes etc
             # append current value to it
             if ( $output =~ /\n\b$real\b/g and $real ne 'push' ) {
                 my ( $val, $p ) = split( ';', $data{$key} );
-                $output =~ s/($real.*);(.*)\n/$1 $val;$2\n/g;
-                $output =~ s/($real.*)\n/$1;$parent\n/;
+                $output =~ s/($real.*) ;(.*)\n/$1 $val ;$2\n/g;
+                $output =~ s/($real.*)\n/$1 ;$parent\n/;
             }
             else {
                 my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
@@ -388,21 +362,21 @@ will set attributes etc
                     # otherwise output only the key
                     if ( $real eq $data{$key} ) {
                         $output .=
-                            ( $disabled ? ';' : '' ) 
+                            ( $disabled ? ' ;' : '' ) 
                           . $real . "$tab;" 
                           . $parent . "\n";
                     }
                     else {
                         unless ( $on_hold->{$real}->{parent} ) {
                             $output .=
-                                ( $disabled ? ';' : '' ) 
+                                ( $disabled ? ' ;' : '' ) 
                               . $real . "$tab"
-                              . $data{$key} . ";"
+                              . $data{$key} . ' ;'
                               . $parent . "\n";
                         }
                         else {
                             $output .=
-                                ( $disabled ? ';' : '' ) 
+                                ( $disabled ? ' ;' : '' ) 
                               . $real . "$tab"
                               . $data{$key} . "\n";
                         }
@@ -577,15 +551,15 @@ returns the errors if any
 
 =head2 get_openvpn_config_file
 
-Reads the back-end xml configuration
+Reads the name of openvpn config file
 
 =cut
-
     sub get_openvpn_config_file : Private {
         my ( $self, $file ) = @_;
         my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
         return $xml_obj->{Node}->{'Config-File'};
     }
+
 
 =head2 get_openvpn_node_name
 
@@ -612,16 +586,29 @@ into a xml ready to parse format
         my $xml;
 
         for my $key ( keys %{$data} ) {
+			# Get key name
             my $check_key = $data->{$key};
+
+			# Get the 'parent' directive name(s)
             my ($parents_full) = $data->{$key} =~ /;(.*)$/g;
+			$parents_full =~ s/\s//;
+
+			# split if more than one,
+			# assign to array
             my @parents = split( ';', $parents_full );
+
+			# Remove the 'parents' directive(s)
             $check_key =~ s/;.*$//;
 
+			# split the key into its directives
             my @dirs = split( ' ', $check_key );
+
             if ( $key !~ /push.*/ ) {
                 if ( @dirs > 1 ) {
-                    if ($check_key) {
+                    if ( $check_key ) {
+						# get the first element
                         $xml->{ $parents[0] . '_' . $key } = $dirs[0];
+
                         for ( my $i = 1 ; $i < @dirs ; $i++ ) {
                             $xml->{ $parents[$i] . '_' . $key . '_' . $i } =
                               $dirs[$i];
@@ -632,6 +619,7 @@ into a xml ready to parse format
                     }
                 }
                 else {
+					# This might be a 'standalone' directive, no params
                     $xml->{ $parents[0] . '_' . $key } =
                       $dirs[0] ? $dirs[0] : $key;
                 }
@@ -707,6 +695,20 @@ Parse the openvpn configuration file
         return $data;
     }
 
+}
+
+=head2 perl_to_xml
+
+Convert a perl datastructure to xml
+
+=cut
+sub perl_to_xml : Private {
+	return XMLout(
+        $_[1],
+        KeepRoot => 1,
+        NoSort   => 0,
+        XMLDecl  => "<?xml version='1.0' encoding='UTF-8'?>",
+    ) or die "Cannot generate XML data!";
 }
 
 # Default functions

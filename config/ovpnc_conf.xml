@@ -13,7 +13,7 @@
         <Directive status="1">
           <Name>local</Name>
           <Params>
-            <VPN-Server>192.168.1.250</VPN-Server>
+            <VPN-Server>0.0.0.0</VPN-Server>
           </Params>
         </Directive>
       </Group>
@@ -27,13 +27,13 @@
         <Directive status="1">
           <Name>proto</Name>
           <Params>
-            <Protocol>tcp</Protocol>
+            <Protocol>udp</Protocol>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>server</Name>
           <Params>
-            <Virtual-IP>10.0.10.0</Virtual-IP>
+            <Virtual-IP>10.10.10.0</Virtual-IP>
             <Virtual-Netmask>255.255.255.0</Virtual-Netmask>
           </Params>
         </Directive>
@@ -42,25 +42,25 @@
         <Directive status="1">
           <Name>ca</Name>
           <Params>
-            <Ca>/some/path/serv.ca</Ca>
+            <Ca>/var/www/vpn/2.0/keys/ca.crt</Ca>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>cert</Name>
           <Params>
-            <Certificate>/some/path/serv.crt</Certificate>
+            <Certificate>/var/www/vpn/2.0/keys/server.crt</Certificate>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>dh</Name>
           <Params>
-            <Dh>/some/path/dh1024.pem</Dh>
+            <Dh>/var/www/vpn/2.0/keys/dh1024.pem</Dh>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>key</Name>
           <Params>
-            <Key>/some/path/serv.key</Key>
+            <Key>/var/www/vpn/2.0/keys/server.key</Key>
           </Params>
         </Directive>
         <Directive status="1">
@@ -73,16 +73,19 @@
       </Group>
       <Group id="3">
         <Directive status="1">
+          <Name>crl-verify</Name>
+          <Params>
+            <Crl-File>/var/www/vpn/2.0/keys/crl.pem</Crl-File>
+          </Params>
+        </Directive>
+        <Directive status="1">
           <Name>max-clients</Name>
           <Params>
-            <Max-Clients>64</Max-Clients>
+            <Max-Clients>24</Max-Clients>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>client-to-client</Name>
-        </Directive>
-        <Directive status="1">
-          <Name>crl-verify</Name>
         </Directive>
         <Directive status="1">
           <Name>duplicate-cn</Name>
@@ -113,13 +116,19 @@
         <Directive status="1">
           <Name>cipher</Name>
           <Params>
-            <Cipher>DES-CFB</Cipher>
+            <Cipher>AES-256-CBC</Cipher>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>comp-lzo</Name>
           <Params>
-            <Comp-Lzo>on</Comp-Lzo>
+            <Comp-Lzo>yes</Comp-Lzo>
+          </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>log-append</Name>
+          <Params>
+            <Log-File>/var/www/vpn/openvpn.log</Log-File>
           </Params>
         </Directive>
         <Directive status="1">
@@ -128,17 +137,17 @@
             <Mute>5</Mute>
           </Params>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>status</Name>
           <Params>
-            <Status-File>/var/log/status_vpn.log</Status-File>
+            <Status-File>/var/www/vpn/openvpn-status.log</Status-File>
             <Status-Sec>3</Status-Sec>
           </Params>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>verb</Name>
           <Params>
-            <Verb>3</Verb>
+            <Verb>6</Verb>
           </Params>
         </Directive>
       </Group>
@@ -150,14 +159,14 @@
             <Connect-Freq-Sec>2</Connect-Freq-Sec>
           </Params>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>keepalive</Name>
           <Params>
-            <KeepAlive-Dead>30</KeepAlive-Dead>
-            <KeepAlive-Poll>10</KeepAlive-Poll>
+            <KeepAlive-Dead>3</KeepAlive-Dead>
+            <KeepAlive-Poll>9</KeepAlive-Poll>
           </Params>
         </Directive>
-        <Directive status="0">
+        <Directive status="1">
           <Name>persist-key</Name>
         </Directive>
         <Directive status="1">
@@ -174,7 +183,7 @@
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>dhcp-option DNS 208.67.222.222</Push-String>
+            <Push-String>dhcp-option DNS 8.8.8.8</Push-String>
           </Params>
         </Directive>
         <Directive status="1">
@@ -183,8 +192,20 @@
             <Push-String>route-gateway dhcp</Push-String>
           </Params>
         </Directive>
+        <Directive status="1">
+          <Name>push</Name>
+          <Params>
+            <Push-String>comp-lzo yes</Push-String>
+          </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>push</Name>
+          <Params>
+            <Push-String>keepalive 2 8</Push-String>
+          </Params>
+        </Directive>
       </Group>
     </Directives>
-    <Name>some node</Name>
+    <Name>x-vps</Name>
   </Node>
 </Nodes>
