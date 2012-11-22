@@ -1,11 +1,11 @@
 table { font-size: 0.9em; }
-#form_container { margin: 25px; }
+#form_container { margin: 0 25px 0 25px; }
 table.t_form { margin:10px 0px 10px 20px; }
 table.t_form tr { height:50px; }
-table.t_form td.left { min-width:150px; }
+table.t_form td.left { min-width:120px; }
 table.t_form input { min-width:295px; }
 table.t_form select { max-width:35px; min-width:305px; }
-#certificate_set { max-width: 540px; }
+#certificate_set { width:97%; }
 select {
     -moz-border-radius: 5px;
     border-radius: 5px;

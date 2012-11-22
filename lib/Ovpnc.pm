@@ -19,6 +19,7 @@ use Catalyst::Runtime 5.80;
 use Catalyst qw/
   -Debug
   ConfigLoader
+  Assets
   Static::Simple
   Compress::Gzip
   Compress::Deflate
@@ -112,6 +113,18 @@ __PACKAGE__->config(
 );
 
 #
+# Assets Plugin
+
+__PACKAGE__->config(    
+    'Plugin::Assets' => {
+            path => "/static",
+            output_path => "built/",
+            minify => 1,
+            stash_var => "assets", # This is the default setting
+        },
+);
+
+#
 # Login controller config
 __PACKAGE__->config(
     'Controller::Login' => {
@@ -121,8 +134,6 @@ __PACKAGE__->config(
 
         # Redirect to login page after logout
         redirect_after_logout_uri => '/login',
-
-#		render_login_form	=> 'login/index.tt2',
 
         login_form_args => { authenticate_args => { active => 'Y' }, },
 

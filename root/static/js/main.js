@@ -8,6 +8,9 @@
     window.Ovpnc = {};
 
     Ovpnc = {
+		alert_icon : '<img width=18 height=18 src="/static/images/alert_icon.png" />',
+		poll_freq : 10000, // Get server status from api every n milliseconds
+		pathname :  window.location.pathname,
 		geo_username : function(){ 
 			return $('#geo_username').attr('name');
 		},
@@ -25,6 +28,7 @@
 /* jQuery begin document */
 $(document).ready(function()
 {
+	if (Ovpnc.pathname === '/login') return;
 
 	// Set custom alert functionality
 	window.alert = function (message) {
@@ -32,8 +36,10 @@ $(document).ready(function()
 			// If yes, save current content and append
 			if ( $('#message').is(':visible') ){
 				// Remove first welcome message.
-				if ( $('#msg_content').text().match(/Welcome/g)
-				  || $('#msg_content').text() === message
+				var old_content = $('#msg_content').html();
+				old_content = old_content.replace('<br>','');
+				if ( old_content.match(/Welcome/g)
+			  		|| old_content === message
 				){
 					$('#msg_content').empty();
 				}
@@ -53,14 +59,15 @@ $(document).ready(function()
 	};
 
 
-	// Set up the navigation class
-	slide("#sliding-navigation", 25, 15, 150, .8);
+	// Set up the navigation class (not on login)
+	if (Ovpnc.pathname !== '/login')
+		slide("#sliding-navigation", 25, 15, 150, .8);
 
 	// Set actions for clicks
 	Ovpnc.actions.click_binds();	
 
 	// display welcome message
-	alert('Welcome!');
+//	alert('Welcome!');
 
 	$.getDATA = function(url) {
         	return jQuery.ajax({
@@ -77,14 +84,19 @@ $(document).ready(function()
 					$('#server_status').text('online').css('color','green');
 					$('#server_on_off').attr('title', 'Shutdown OpenVPN server')
 									   .attr('ref', 'on');
-					if (typeof(r.title) !== "undefined") populate_version(r.title);
-					populate_clients(r.clients);		
+
+					$('#online_clients_number').text( r.clients.length !== undefined ? r.clients.length : 0 );
+
+					if (typeof(r.title) !== "undefined")
+						populate_version(r.title);
+					if ( Ovpnc.pathname === '/clients' )
+						populate_clients(r.clients);
 				},
 				error : function(xhr, ajaxOptions, thrownError) {
-			        console.debug("Error getting status: " + xhr.status + ", " + thrownError)
+			        //console.debug("Error getting status: " + xhr.status + ", " + thrownError)
 					this.tryCount++;
 			        if (this.tryCount <= this.retryLimit) {
-			            console.log( "Going to retry connection to host loop: " + this.tryCount);
+			            //console.log( "Going to retry connection to host loop: " + this.tryCount);
 			            //try again
 			            $.ajax(this);
 			            return;
@@ -119,7 +131,7 @@ function init_loop_get_status()
 	// Then loop even n miliseconds
 	setInterval(function() {
 		get_server_status();
-	}, 5000);
+	}, Ovpnc.poll_freq );
 }
 
 function get_server_status()
@@ -185,6 +197,7 @@ function populate_clients(c)
 			if ( $('#' + client_obj['name'] + '_hidden_data').is(':visible') ){
 				disp_client = 'block';
 			}
+	
 			var output = '<div class="client_keys">' + client_obj['name'] + '</div>'
 				    + '<div class="client_values">'
 					+ ' <span style="float:right;margin-left:4px">'
@@ -193,13 +206,18 @@ function populate_clients(c)
 					+ '</div><!-- client_name -->' 
 					+ '<br/>'
 					+ '<div style="display:' + disp_client + '" class="client_hidden_data" id="' + client_obj['name'] + '_hidden_data">';
-	
+
+			Ovpnc.tfc.in = client_obj['bytes_recv'];
+			Ovpnc.tfc.out = client_obj['bytes_sent'];
+
 			// for each client's data
 			for (var obj in client_obj){
 				if ( obj !== 'name' && !obj.match(/epoc_since|virtual_ip/) ) {
-					if ( ! isNaN(client_obj[obj]) && obj !== 'remote_port' ){
+
+					// If numbers, add commas
+					if ( ! isNaN(client_obj[obj]) && obj !== 'remote_port' )
 						client_obj[obj] = numberWithCommas(client_obj[obj]);
-					}
+
 					output += '<div class="client_keys">'
 							+ obj
 							+ ':</div><!-- client_keys -->' 
@@ -220,12 +238,14 @@ function populate_clients(c)
 					+ ' </div><!-- client_data -->'
 			  		+ ' <div class="client_actions">'
 					+ '  <div class="client_action_link" title="Kill client" style="float:right" id="' + client_obj['name'] + '_kill" onClick="kill_client(\'' + client_obj['name'] +'\');" >' 
-					+ '   <img src="/static/images/kill_client.png" style="margin-top:-3px"></img></div>'
+					+ '   <img style="margin-top:-2px;" src="/static/images/kill_client.png" style="margin-top:-3px"></img></div>'
 					+ '  </div>'
 					+ '  <div class="client_action_link" title="Extend status" id="' + client_obj['name'] + '_ext_status" onClick="extend_client_data(\'' + client_obj['name'] + '\');" >'
-					+ '   <img src="/static/images/Alarm-Plus-icon.png"></img></div>'
+					+ '   <img style="margin-top:-2px;" src="/static/images/arrow_down.png"></img>' 
+					+ '  </div>'
+					+ ' <div class="client_tfc" title="Bandwidth usage" id="in_out_' + client_obj['name'] + '"></div>'
 					+ ' </div><!-- client_actions -->'
-					+ '</div><!-- client_div -->'
+					+ '</div><!-- client_div --><div class="clear"></div><br><br>'
 				);
 
 				$('#client_name_' + client_obj['name']).show(500);
@@ -233,6 +253,8 @@ function populate_clients(c)
 			else {
 				$("#data_client_name_" + client_obj["name"] ).html(output);
 			}
+
+			get_client_network_usage( client_obj['name'] );
 		}
 	}
 }
@@ -267,11 +289,13 @@ function extend_client_data(n){
 
 	if ( $('#' + n + '_hidden_data').is(':visible') ){
 		$('#' + n + '_hidden_data').hide(250);
-		$('#' + n + '_ext_status').html("<img src='/static/images/Alarm-Plus-icon.png'></img>");
+		$('#' + n + '_ext_status').html("<img src='/static/images/arrow_down.png'></img>")
+								  .attr('title','Extend status');
 	}
 	else {
 		$('#' + n + '_hidden_data').show(250);
-		$('#' + n + '_ext_status').html("<img src='/static/images/Alarm-Minus-icon.png'></img>");
+		$('#' + n + '_ext_status').html("<img style='margin-left:-10px;' src='/static/images/arrow_up.png'></img>")
+								  .attr('title','Hide status');
 	}
 
 }
@@ -282,12 +306,17 @@ function populate_version(s)
 }
 
 function init_click_binds(){
-	$('#server_on_off').click(function(){
+
+	$('#server_on_off').mousedown(function(){
+		$('.server_title').animate({ marginLeft: "1" }, 100);
+	}).mouseup(function(){
+		$('.server_title').animate({ marginLeft: "" }, 100);
+	}).click(function(){
 		if ( $(this).attr('ref') === 'on' ){
-			alert("This would shut the server down, still not implemented");
+			alert(Ovpnc.alert_icon + " This would shut the server down, still not implemented");
 		}
 		else {
-			alert("This would power the server up, still not implemented");
+			alert(Ovpnc.alert_icon + " This would power the server up, still not implemented");
 		}
 	});
 }
@@ -308,15 +337,17 @@ function numberWithCommas(n) {
     return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
 }
 
+Ovpnc.okay_icon = '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />';
+Ovpnc.error_icon = '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />';
 function kill_client(c){
 
 	$.getJSON('/api/server/kill/' + c, function(r){
 		append_dead_client(c);
-		alert("Client '" + c + "' killed successfully");
+		alert(Ovpnc.okay_icon + " Client '" + c + "' killed successfully.");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
 		console.log("Error killing client '" + c + "': " + thrownError.toString());
-		alert("Error killing client '" + c + "': " + thrownError.toString());
+		alert( Ovpnc.error_icon + " Error killing client '" + c + "': " + thrownError.toString());
 		return false;
 	});
 
@@ -327,11 +358,11 @@ function unkill_client(c){
 	$.getJSON('/api/server/unkill/' + c, function(r){
 		$('#unkill_' + c).remove();
 		if ( ! $('#killed_clients').text().match(/\w+/) ) $('#killed_clients_container').hide(250);
-		alert("Client '" + c + "' unkilled successfully");
+		alert(Ovpnc.okay_icon + " Client '" + c + "' unkilled successfully");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
 		console.log("Error unkilling client '" + c + "': " + thrownError.toString());
-		alert("Error unkilling client '" + c + "': " + thrownError.toString());
+		alert(Ovpnc.error_icon + " Error unkilling client '" + c + "': " + thrownError.toString());
 		return false;
 	});
 
@@ -342,12 +373,12 @@ function append_dead_client(c){
 	var now = get_date();
 	var output = '<div class="unkill_me" id="unkill_' + c +'">'
 				+ ' <b>' + c + '</b> killed ' + now
-				+ ' <hr />'
+				+ '<hr />' 
                 + ' <img style="float:right;margin-top:-2px"'
 				+ '  class="client_action_link"'
 				+ '  title="Click to unkill"'
 				+ '  onClick="unkill_client(\'' + c +'\');"'
-				+ '  src="/static/images/approve.png">' 
+				+ '  src="/static/images/okay_icon.png">' 
 				+ ' </img>'
 				+ '</div>';
 
@@ -383,3 +414,95 @@ function get_date() {
 			   + ' ' + now.getHours() + ':' +now.getMinutes() + ':' +now.getSeconds(); 
 	return then;
 } 
+
+Ovpnc.tfc = new Object();
+Ovpnc.tfc = {
+	in	: 0,
+	out : 0,
+	old_in : 0,
+	old_out : 0
+};
+
+function get_client_network_usage( name ){
+
+	//console.debug('In: ' + Ovpnc.tfc.in + ', Out: ' + Ovpnc.tfc.out );
+
+	// Build client's traffic div container if it never existed
+	// Here we record the values for next loop to pick them up
+	// and calculate the delta
+	if ( ! $('#tfc_' + name).is(':visible') ){
+		//console.log( 'Build client traffic div first record for '  + name);
+
+		// build for this client a traffic div
+		$('#traffic').append('<div class="client_tfc" id="tfc_' + name + '"></div>');
+
+		// Record the in/out packets, use as a starting point for delta calculation
+		$('#tfc_'+name).html(
+			'<input style="opacity:0" id="rec_in_'+name+'" value="' + Ovpnc.tfc.in + '" />'
+		  + '<input style="opacity:0" id="rec_out_'+name+'" value="' + Ovpnc.tfc.out + '" />'
+		);
+		// This is the first loop because we created the 
+		// tfc_+name div, second loop will already
+		// see this div is created.
+		return;
+	}
+	else {
+		// If the tfc_+name is already created, get
+		// the values (these have been recorded from the previous cycle)
+		Ovpnc.tfc.old_in = $('#rec_in_' + name ).val();
+		Ovpnc.tfc.old_out = $('#rec_out_' + name ).val();
+		$('#rec_in_' + name ).val(Ovpnc.tfc.in);
+		$('#rec_out_' + name ).val(Ovpnc.tfc.out);
+	}
+
+	var fixDeltaOut; var fixDeltaIn;
+
+	if ( Ovpnc.tfc.old_in !== '' || Ovpnc.tfc.old_in !== 0 ){
+		var real_deltaIn = Ovpnc.tfc.in - Ovpnc.tfc.old_in;
+		var real_deltaOut= Ovpnc.tfc.out - Ovpnc.tfc.old_out;
+
+		var bytes_in_avg = real_deltaIn / ( Ovpnc.poll_freq / 1000 );
+		var bytes_out_avg = real_deltaOut / ( Ovpnc.poll_freq / 1000 );
+
+		var output = '';		
+		var in_setter = 'KB/s';
+		var out_setter = 'KB/s';
+		if ( bytes_in_avg > 0 ){
+			var flDIn = bytes_in_avg / 1024;
+			if ( flDIn > 1000 ){ in_setter = 'MB/s'; flDIn = flDIn / 1024; }
+			fixDeltaIn = flDIn.toFixed(2);
+			output += '<div style="float:left" id="tfc_in_' + name + '">' 
+					+ '<img src="/static/images/red_down.png" />'
+					+ '<span style="margin-left:3px;" id="inner_in_' + name + '">'
+					+ fixDeltaIn 
+					+ '</span>'
+					+ '<span id="din_setter_'+name+'">' + in_setter + '</span>'
+					+ '</div>';
+		}
+		if ( bytes_out_avg > 0){
+			var flDOut = bytes_out_avg / 1024;
+			if ( flDOut > 1000 ){ out_setter = 'MB/s'; flDOut = flDOut / 1024; }
+			fixDeltaOut = flDOut.toFixed(2);
+			output += '<div style="float:left;margin-left:5px;" id="tfc_out_' + name + '">'
+					+ '<img src="/static/images/green_up.png" />'
+					+ '<span style="margin-left:3px;" id="inner_out_' + name + '">'
+					+ fixDeltaOut
+					+ '</span>'
+					+ '<span id="dout_setter_'+name+'">' + out_setter + '</span>'
+					+ '</div>';
+		}
+
+		Ovpnc.tfc.old_in = Ovpnc.tfc.in;
+		Ovpnc.tfc.old_out = Ovpnc.tfc.out;
+		if ( $('#inner_in_'+name).is(':visible') && $('#inner_out_'+name).is(':visible') ){
+			$('#inner_in_'+name).text(fixDeltaIn);
+			$('#inner_out_'+name).text(fixDeltaOut);
+			$('#din_setter_'+name).text(in_setter);
+			$('#dout_setter_'+name).text(out_setter);
+		}
+		else {
+			$('#in_out_' + name ).html( output );
+		}
+	}
+
+}

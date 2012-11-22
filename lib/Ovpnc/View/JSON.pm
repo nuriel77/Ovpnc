@@ -1,23 +1,39 @@
 package Ovpnc::View::JSON;
-
+use warnings;
 use strict;
 use Moose;
 use JSON::XS();
 
 extends 'Catalyst::View::JSON';
 
-my $encoder = JSON::XS->new->utf8->pretty( 1 )->indent( 1 )->allow_nonref( 1 );
+has 'encoder' => (
+	isa => 'Object',
+	lazy => 1,
+	is => 'ro',
+	default => sub {
+		return JSON::XS
+				->new
+				->utf8
+				->pretty(1)
+				->indent(1)
+				->allow_nonref(1)
+				->allow_blessed(1)
+				->convert_blessed(1)
+	}
+);
 
 sub encode_json 
 {
+	# Todo: See how to get rid of the
+	# defaulting $c-assets
 	my( $self, $c, $data ) = @_;
-	$encoder->encode( $data );
+	$self->encoder->encode( $data );
 }
 
 sub to_json
 {
 	my( $self, $c, $data ) = @_;
-	$encoder->encode( $data );
+	$self->encoder->encode( $data );
 }
 
 =head1 NAME 

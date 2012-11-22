@@ -1,16 +1,8 @@
 <fieldset class="login_box box_shadow">
 	<legend>Login Ovpnc</legend>
 
-	<div>
-	    [% FOR field IN login_form.error_fields %]
-	        [% FOR error IN field.errors %]
-	            <p><span style="color: red;">[% field.label _ ': ' _ error %]</span></p>
-	        [% END %]
-	    [% END %]
-	</div>
- 
-	<div>
-	    <form id="login_form" method="post" action="[% c.req.uri %]">
+	<div style="padding:20px 0 0 5px;">
+	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="off">
 	        <fieldset style="border: 0;">
 	            <table>
 	                <tr>
@@ -19,14 +11,19 @@
 	                </tr>
 	                <tr>
 	                    <td><label class="label" for="password">Password:</label></td>
-	                    <td><input style="min-width:200px;" type="password" name="password" value="" /></td>
+	                    <td><input style="min-width:200px" type="password" name="password" value="" /></td>
 	                </tr>
 					<tr><td>&nbsp;</td></tr>
-	                <tr>
-						<td><input type="submit" name="submit" value="Login" /></td>
-					</tr>
 	            </table>
+				<div style="float:right;margin:4px 4px 0 0;"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
 	        </fieldset>
 	    </form>
 	</div>
 </fieldset>
+<div style="margin:25px 0px 0px 170px;">
+    [% FOR field IN login_form.error_fields %]
+        [% FOR error IN field.errors %]
+            <p><span style="color: red;">[% error %]</span></p>
+        [% END %]
+    [% END %]
+</div>

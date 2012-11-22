@@ -6,56 +6,40 @@
     %]"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
-    	<title>[% template.title or "Ovpnc" %]</title>
-
+    	<title>Ovpnc[% IF title %] - [% title %][% END %]</title>
 		<!-- JS and CSS -->
-		<link rel="stylesheet" href="[% c.uri_for('/static/css/normalize.css') %]" />
-	    <link rel="stylesheet" href="[% c.uri_for('/static/css/main.css') %]" />
-		<script type="text/javascript" src="[% c.uri_for('/static/js/jquery-latest.js') %]"></script>
-
-		[% IF logged_in %]
-			<script type="text/javascript" src="[% c.uri_for('/static/js/jquery.cookie.js') %]"></script>
-			<script type="text/javascript" src="[% c.uri_for('/static/js/jquery.validate.js') %]"></script>
-			<!-- menu slider js/css -->
-		    <link rel="stylesheet" href="[% c.uri_for('/static/css/slider.css') %]" />
-			<script type="text/javascript" src="[% c.uri_for('/static/js/slider.js') %]" ></script>
-		[% END %]
-			<script type="text/javascript" src="[% c.uri_for('/static/js/main.js') %]"></script>
-		[% SWITCH this_link %]
-		[% CASE 'certificates' %]
-		    <link rel="stylesheet" href="[% c.uri_for('/static/css/certificates.css') %]" />
-			<script type="text/javascript" src="[% c.uri_for('/static/js/certificates/index.js') %]"></script>
-		[% CASE 'root' %]
-			<!-- temp -->
-		[% END %]
+		[% assets.export %]
     </head>
     <body>
+		<div id="top_header">
+			<div id="top_header_content">OvpnController</div>
+		</div>
     	<div id="outer">
-				<div id="top_header">
-					<span id="header_title">Ovpnc Controller</span>
-				</div>
-				<div id="left_frame">
-					<!-- navigation slider menu -->			
+			<!-- left frame -->
+			<div id="left_frame">
+				<!-- navigation slider menu -->			
+				[% IF logged_in %]
+					[% INCLUDE menu.tt2 %]
+				[% END %]
+			</div>
+			<!-- middle frame -->
+			<div id="middle_frame">
+				<div id="message" class="message box_shadow"></div>
+				[% IF this_link != 'root' %]
+					[% content %]
+				[% END %]
+			</div>
+			<!-- right frame -->
+			<div id="right_frame">
+				[% IF this_link == 'root' %]
+					[% content %]
+				[% ELSE %]
 					[% IF logged_in %]
-						[% INCLUDE menu.tt2 %]
+						[% INCLUDE 'index.tt2' %]
 					[% END %]
-				</div>
-				<div id="middle_frame">
-					<div id="message" class="message box_shadow"></div>
-					[% IF this_link != 'root' %]
-						[% content %]
-					[% END %]
-				</div>
-				<div id="right_frame">
-					[% IF this_link == 'root' %]
-						[% content %]
-					[% ELSE %]
-						[% IF logged_in %]
-							[% INCLUDE 'index.tt2' %]
-						[% END %]
-					[% END %]
-				</div>
-				<div class="clear"></div>
+				[% END %]
+			</div>
+			<div class="clear"></div>
     	</div><!-- outer -->
 		<input id="geo_username" type="hidden" name="[% geo_username %]" />
 	</body>

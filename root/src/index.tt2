@@ -2,32 +2,24 @@
 <div class="status_div" id="status_container">
 	
 	<!-- server info -->
-	<div class="right_div server_title box_shadow" id="title">
-		<div id="server_status_content" >Server status: <span id="server_status">offline</span></div>
+	<fieldset id="title" class="box_shadow">
+        <legend>Server Status</legend>
+		<div id="server_status_content" >
+			<span id="server_status">offline</span>
+		</div>
 		<div id="server_on_off" class="hand_pointer" ref="off" title="Powerup OpenVPN server">
 			<img src="[% c.uri_for('/static/images/off.png') %]"></img>
 		</div>
 		<div class="clear"></div>
-	</div><!-- server info -->
+	</fieldset><!-- server info -->
 
-	<!-- client_status_container -->
-	<div id="client_status_container" class="right_div"></div>
-
-	<!-- killed_clients_container -->
-	<div id="killed_clients_container" class="right_div">
-		<div id="killed_clients">
-		[% FOREACH client IN killed_clients -%]
-			<div class="unkill_me" id="unkill_[% client.name %]">
-				<b>[% client.name %]</b><span style="float:right">killed [% client.kill_time %]</span>
-				<hr />
-				<img style="float:right;margin-top:-2px" class="client_action_link"
-					 src="[% c.uri_for('/static/images/approve.png') %]"
-					 title="Click to unkill"
-					 onClick="unkill_client('[% client.name %]')" >
-				</img>
-			</div>
-		[% END %]
+	<!-- online clients -->
+	<fieldset id="online_clients" class="box_shadow" style="margin-top:30px;">
+		<div style="font-size:0.85em;margin:20px 0 15px 20px;">
+			Connected clients: <span id="online_clients_number">0</span>
+			<span style="margin-left:15px;"><a href="#">List</a></span>
 		</div>
-	</div><!-- killed_clients_container -->
+	</fieldset><!-- online clients -->
+
 </div><!-- status div -->
 
