@@ -19,7 +19,6 @@ requires 'Net::SSLeay';
 requires 'Gepok';
 requires 'Plack::Handler::Gepok';
 requires 'namespace::autoclean';
-requires 'Geo::GeoNames';
 requires 'Config::General';
 requires 'XML::LibXML';
 requires 'XML::LibXSLT';
