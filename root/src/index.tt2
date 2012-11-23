@@ -17,7 +17,7 @@
 	</fieldset><!-- server info -->
 
 	<!-- online clients -->
-	<fieldset id="online_clients" class="box_shadow" style="margin-top:30px;">
+	<fieldset id="online_clients" class="box_shadow">
 		<div style="font-size:0.85em;margin:20px 0 15px 20px;">
 			Connected clients: <span id="online_clients_number">0</span>
 			<span style="margin-left:15px;"><a href="#">List</a></span>

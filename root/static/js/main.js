@@ -13,8 +13,8 @@
 				 + '<div style="float:left;margin:5px 0 0 6px;"></div>',
 		alert_err : '<div style="float:left;"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div>'
 				  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
-		poll_freq : 5000, // Get server status from api every n milliseconds
-		opacity_effect : 4000, // Sets the timing of the opacity fadein/out effect
+		poll_freq : 5000, 			// Get server status from api every n milliseconds
+		opacity_effect : 3000, 		// Sets the timing of the opacity fadein/out effect
 		pathname :  window.location.pathname,
 		geo_username : function(){ 
 			return $('#geo_username').attr('name');
@@ -47,9 +47,9 @@ $(document).ready(function()
 			if ( $('#message').is(':visible') ){
 				// Remove first welcome message.
 				var old_content = $('#msg_content').html();
-				console.log('old: ' + old_content);
+				//console.log('old: ' + old_content);
 				old_content = old_content.replace('<br>','');
-				if ( old_content.match(/Welcome/g)
+				if ( old_content.match(/Hello/g)
 			  		|| old_content === message
 				){
 					$('#msg_content').empty();
@@ -72,6 +72,8 @@ $(document).ready(function()
 
 
 	// Set up the navigation class (not on login)
+	// TODO: Control via Root controller so this can
+	// optionally be include into other js files
 	if (Ovpnc.pathname !== '/login')
 		slide("#sliding-navigation", 25, 15, 150, .8);
 
@@ -79,8 +81,10 @@ $(document).ready(function()
 	Ovpnc.actions.click_binds();	
 
 	// display welcome message
-//	if ( $.cookie( 'Ovpnc_User_Settings' ) === null )
-		alert( Ovpnc.alert_ok + ' Welcome ' + $('#username').attr('name') + '!' );
+//	if ( $.cookie( 'Ovpnc_User_Settings' ) === null ){
+		Ovpnc.username = ucfirst( $('#username').attr('name') );
+		alert( Ovpnc.alert_ok + 'Hello ' + Ovpnc.username + ', welcome to OpenVPN Controller!' );
+//	}
 
 	$.getDATA = function(url) {
         	return jQuery.ajax({
@@ -343,7 +347,7 @@ function server_ajax_control(command){
 			// Check returned /started/
             if ( command == 'start' ) {
 				if ( r.status.match(/started/) ){
-    	            alert( Ovpnc.alert_ok + r.status + "</div>" 
+    	            alert( Ovpnc.alert_ok + r.status + " at " + get_date() + ".</div>" 
 						+ '<div class="clear">'
 					);
 					$('#on_icon').animate({ opacity: 1 }, Ovpnc.opacity_effect );
@@ -355,7 +359,7 @@ function server_ajax_control(command){
 			// Check returned /stopped/
 			} else if ( command == 'stop' ){
 				if ( r.status.match(/stopped/) ){
-					alert( Ovpnc.alert_err + "Server stopped.</div>"
+					alert( Ovpnc.alert_err + "Server stopped at " + get_date() + ".</div>"
 						+ '<div class="clear">'
 					);
 					$('#on_icon').animate({ opacity: 0 }, Ovpnc.opacity_effect );
@@ -585,3 +589,8 @@ function get_client_network_usage( name ){
 	}
 
 }
+
+function ucfirst(str) {
+	var f = str.charAt(0).toUpperCase();
+	return f + str.substr(1);
+}       

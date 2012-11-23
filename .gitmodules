@@ -1,0 +1,3 @@
+[submodule "root/static/js/Flexigrid"]
+	path = root/static/js/Flexigrid
+	url = https://github.com/paulopmx/Flexigrid.git
