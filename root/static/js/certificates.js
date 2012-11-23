@@ -13,6 +13,7 @@ Ovpnc.form_modified = 0;
 
 // Document ready
 $(document).ready(function(){
+	$('#form_container').slideDown(600);
 	cert_exec_actions();
 });
 

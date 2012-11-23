@@ -147,7 +147,7 @@
         <Directive status="1">
           <Name>verb</Name>
           <Params>
-            <Verb>6</Verb>
+            <Verb>4</Verb>
           </Params>
         </Directive>
       </Group>

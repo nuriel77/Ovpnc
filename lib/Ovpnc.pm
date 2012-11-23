@@ -37,6 +37,7 @@ use Catalyst qw/
 extends 'Catalyst';
 
 our $VERSION = '0.01';
+sub get_version{ return $VERSION; }
 
 # Configure the application.
 #
@@ -183,6 +184,7 @@ __PACKAGE__->config(
         storage        => 'tmp/session'
     },
 );
+
 
 #
 # Start the application

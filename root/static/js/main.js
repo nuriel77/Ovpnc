@@ -81,10 +81,10 @@ $(document).ready(function()
 	Ovpnc.actions.click_binds();	
 
 	// display welcome message
-//	if ( $.cookie( 'Ovpnc_User_Settings' ) === null ){
+	if ( $.cookie( 'Ovpnc_User_Settings' ) === null ){
 		Ovpnc.username = ucfirst( $('#username').attr('name') );
 		alert( Ovpnc.alert_ok + 'Hello ' + Ovpnc.username + ', welcome to OpenVPN Controller!' );
-//	}
+	}
 
 	$.getDATA = function(url) {
         	return jQuery.ajax({
@@ -109,7 +109,6 @@ $(document).ready(function()
 						$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
 					}
 				
-
 					// Show number of connected clients
 					$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
 
@@ -117,8 +116,9 @@ $(document).ready(function()
 
 						if (typeof(r.title) !== "undefined")
 							populate_version(r.title);
-						if ( Ovpnc.pathname === '/clients' )
-							populate_clients(r.clients);
+
+						//if ( Ovpnc.pathname === '/clients' )
+						//	populate_clients(r.clients);
 
 					}
 		
@@ -143,8 +143,11 @@ $(document).ready(function()
 			})
 	};
 
-	// Get status (loop)
-	Ovpnc.actions.poll_status();
+	// clients.js will load own status
+	if ( Ovpnc.pathname !== '/clients' ) {
+		// Get status (loop)
+		Ovpnc.actions.poll_status();
+	}
 	
 });
 

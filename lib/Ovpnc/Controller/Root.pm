@@ -89,12 +89,17 @@ Include static files, dynamically
 sub include_default_links : Private {
 	my ( $self, $c ) = @_;
 
+	# Stash version
+	$c->stash->{version} = $c->get_version;
+
 	# Include defaults	
 	$c->assets->include( $_ )
 		for ( qw|css/normalize.css
 			 css/main.css
 	 		 css/slider.css
+			 js/Flexigrid/css/flexigrid.pack.css
 			 js/jquery-latest.js
+			 js/Flexigrid/js/flexigrid.pack.js
 			 js/jquery.cookie.js
 			 js/jquery.validate.js
 			 js/main.js
@@ -116,7 +121,6 @@ sub include_default_links : Private {
        		$c->assets->include( $type . '/' . $c_name . '.' . $type );
 		}
     }
-
 }
 
 sub get_killed_clients : Private {

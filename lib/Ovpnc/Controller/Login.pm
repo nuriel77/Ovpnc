@@ -58,16 +58,24 @@ around 'login' => sub {
 			path 	=> '/',
 		}
 	} else {
-		$c->response->cookies->{Ovpnc_C} = {
-            value   => '',
-            domain  => $c->request->uri->host,
-            expires => '-1d',
-        } if $c->request->cookies->{Ovpnc_C};
+		$self->remove_cookies( $c, [ qw( Ovpnc_C ovpnc_session Ovpnc_User_Settings ) ] );
 	}
 
     return $self->$orig($c);
 
 };
+
+sub remove_cookies : Private {
+	my ($self, $c, $cookies) = @_;
+
+	for ( @{$cookies} ){
+		$c->log->debug("Removing cookie $_");
+		$c->response->cookies->{$_} = {
+	        value   => '',
+	        expires => '-1d',
+	    } if $c->request->cookies->{$_};
+	}
+}
 
 =head1 AUTHOR
 

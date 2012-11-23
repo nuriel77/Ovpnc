@@ -6,6 +6,7 @@
     %]"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     	<title>Ovpnc[% IF title %] - [% title %][% END %]</title>
 	
 		[% IF force_no_cache %]	
@@ -22,39 +23,46 @@
     <body>
 		<div id="top_header">
 			<div id="top_header_centered">
-				<div id="top_header_content">OvpnController</div>
+				<div id="top_header_content">
+					<div style="float:left">OvpnController</div>
+					<div class="version">v[% version %]</div>
+					<div class="clear"></div>
+				</div>
 				<div id="message_container">
 					<div id="message" class="message box_shadow"></div>
 				</div>
 			</div>
 		</div><!-- top header -->
     	<div id="outer">
-		<div id="outer_centered">
-			<!-- left frame -->
-			<div id="left_frame">
-				<!-- navigation slider menu -->			
-				[% IF logged_in %]
-					[% INCLUDE menu.tt2 %]
-				[% END %]
-			</div>
-			<!-- middle frame -->
-			<div id="middle_frame">
-				[% IF this_link != 'root' %]
-					[% content %]
-				[% END %]
-			</div>
-			<!-- right frame -->
-			<div id="right_frame">
-				[% IF this_link == 'root' %]
-					[% content %]
-				[% ELSE %]
+			<div id="outer_centered">
+
+				<!-- left frame -->
+				<div id="left_frame">
+					<!-- navigation slider menu -->			
 					[% IF logged_in %]
-						[% INCLUDE 'index.tt2' %]
+						[% INCLUDE menu.tt2 %]
 					[% END %]
-				[% END %]
-			</div>
-			<div class="clear"></div>
-		</div><!-- centered -->
+				</div>
+
+				<!-- middle frame -->
+				<div id="middle_frame">
+					[% IF this_link != 'root' %]
+						[% content %]
+					[% END %]
+				</div>
+	
+				<!-- right frame -->
+				<div id="right_frame">
+					[% IF this_link == 'root' %]
+						[% content %]
+					[% ELSE %]
+						[% IF logged_in %]
+							[% INCLUDE 'index.tt2' %]
+						[% END %]
+					[% END %]
+				</div>
+				<div class="clear"></div>
+			</div><!-- outer_centered -->
     	</div><!-- outer -->
 		<input id="username" type="hidden" name="[% username %]" />
 		<input id="geo_username" type="hidden" name="[% geo_username %]" />

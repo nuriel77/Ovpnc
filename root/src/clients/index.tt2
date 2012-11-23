@@ -1,23 +1,9 @@
 <div id="client_wrapper">
-	<!-- client_status_container -->
-	<div id="client_status_container"></div>
+	<!-- client_table -->
+	<div id="client_table" style="margin:10px 15px 0 15px;">
+	  <table id="flexme" style="" cellpadding="0" cellspacing="0" border="0">
+	  </table> 
+	</div><!-- client_table -->
 
-	<!-- killed_clients_container -->
-	<div id="killed_clients_container">
-	    <div id="killed_clients">
-	    [% FOREACH client IN killed_clients -%]
-	        <div class="unkill_me" id="unkill_[% client.name %]">
-	            <b>[% client.name %]</b><span style="float:right">killed [% client.kill_time %]</span>
-	            <hr />
-	            <img style="float:right;margin:-2px 2px 0 0" class="client_action_link"
-	                 src="[% c.uri_for('/static/images/okay_icon.png') %]"
-	                 title="Click to unkill"
-	                 onClick="unkill_client('[% client.name %]')" >
-	            </img>
-	        </div>
-	    [% END %]
-	    </div>
-	</div><!-- killed_clients_container -->
-	<div class="clear"></div>
-</div>
+</div><!-- client_wrapper -->
 <div id="traffic"></div>
