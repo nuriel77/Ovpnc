@@ -3,6 +3,7 @@ use Moose;
 use namespace::autoclean;
 
 BEGIN { extends 'CatalystX::SimpleLogin::Controller::Login'; }
+	
 
 =head1 NAME
 
@@ -26,7 +27,7 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
 	my ( $orig, $self, $c ) = @_;
-
+	
 	# Redirect to https if user specified 
 	# a port in config under 'redirect_https_port'
 	if ( $c->config->{redirect_https_port} && ! $c->req->secure ){
@@ -46,14 +47,27 @@ around 'login' => sub {
 		  .	" Check the configuration manual on how to set this up.";
 	}
 
-
 	# Will load any js or css
     Ovpnc::Controller::Root->include_default_links($c);
+
+	# Only sets the name in this cookie.
+	if ( defined $c->request->params->{username} ){
+		$c->response->cookies->{Ovpnc_C} = {
+			value 	=> $c->request->params->{username},
+			domain 	=> $c->request->uri->host,
+			path 	=> '/',
+		}
+	} else {
+		$c->response->cookies->{Ovpnc_C} = {
+            value   => '',
+            domain  => $c->request->uri->host,
+            expires => '-1d',
+        } if $c->request->cookies->{Ovpnc_C};
+	}
 
     return $self->$orig($c);
 
 };
-
 
 =head1 AUTHOR
 

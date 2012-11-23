@@ -56,7 +56,10 @@ sub index :Path :Args(0) : Does('NeedsLogin') {
 	$c->stash->{title} = 'Certificates';
 	$c->stash->{this_link} = 'certificates';
 	$c->stash->{logged_in} = 1;
+
+	# Get geo username
 	$c->stash->{geo_username} = $c->config->{geo_username};
+	# stash country list
 	$c->stash->{countries} = [ sort { $a cmp $b } @clist ];
 }
 
@@ -93,8 +96,14 @@ Attempt to render a view, if needed.
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
+
     # Will load any js or css
     Ovpnc::Controller::Root->include_default_links($c);
+
+	# stash username
+	$c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
+        if $c->request->cookies->{Ovpnc_C};
+
 }
 
 
@@ -109,6 +118,6 @@ it under the same terms as Perl itself.
 
 =cut
 
-__PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 1;

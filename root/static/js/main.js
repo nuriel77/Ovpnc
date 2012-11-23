@@ -9,7 +9,12 @@
 
     Ovpnc = {
 		alert_icon : '<img width=18 height=18 src="/static/images/alert_icon.png" />',
+		alert_ok : '<div style="float:left;"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div>' 
+				 + '<div style="float:left;margin:5px 0 0 6px;"></div>',
+		alert_err : '<div style="float:left;"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div>'
+				  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
 		poll_freq : 5000, // Get server status from api every n milliseconds
+		opacity_effect : 4000, // Sets the timing of the opacity fadein/out effect
 		pathname :  window.location.pathname,
 		geo_username : function(){ 
 			return $('#geo_username').attr('name');
@@ -36,19 +41,21 @@ $(document).ready(function()
 
 	// Set custom alert functionality
 	window.alert = function (message) {
-			console.log('Alert called with ' + message);
+			//console.log('Alert called with ' + message);
 			// Check if message is already visible,
 			// If yes, save current content and append
 			if ( $('#message').is(':visible') ){
 				// Remove first welcome message.
 				var old_content = $('#msg_content').html();
+				console.log('old: ' + old_content);
 				old_content = old_content.replace('<br>','');
 				if ( old_content.match(/Welcome/g)
 			  		|| old_content === message
 				){
 					$('#msg_content').empty();
+				} else {
+					message += "<br/>" + $('#msg_content').html();
 				}
-				message += "<br/>" + $('#msg_content').html();
 			}
 			// Write
 			$('#message').html(
@@ -72,8 +79,8 @@ $(document).ready(function()
 	Ovpnc.actions.click_binds();	
 
 	// display welcome message
-	if ( $.cookie( 'Ovpnc_User_Settings' ) === null )
-		alert('Welcome!');
+//	if ( $.cookie( 'Ovpnc_User_Settings' ) === null )
+		alert( Ovpnc.alert_ok + ' Welcome ' + $('#username').attr('name') + '!' );
 
 	$.getDATA = function(url) {
         	return jQuery.ajax({
@@ -91,9 +98,13 @@ $(document).ready(function()
 					// If we get status back, display
 					if ( r.status !== undefined ){
 						$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
-						$('#server_on_off').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
-									   .attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
+						$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+						$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
+
+						// Show or dont show the green on icon
+						$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
 					}
+				
 
 					// Show number of connected clients
 					$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
@@ -165,22 +176,13 @@ function get_server_status()
 function populate_clients(c)
 {
 	if (c.length === 0){
-/*
-		if ( ! $("#no_clients").is(":visible") ){
-			if ( $(".client_div").is(":visible") ){
-				$(".client_div").hide(300);
-			}
-
-			$('#client_status_container').html( '<div class="right_div client_div" id="no_clients">No clients connected</div>' );
-			$('#no_clients').show(250);
-		}
-*/
 		return;
 	}
 	else {
 		// Clean up the no_clients div if it exists
-		if ( $("#no_clients").is(":visible") ) 		$("#no_clients").hide();
-		if ( $("#no_data").is(":visible") ) 		$("#no_data").hide();
+		if ( $("#no_clients").is(":visible") ) 				$("#no_clients").hide();
+		if ( $("#no_data").is(":visible") ) 				$("#no_data").hide();
+		if ( $('#client_status_container').is(':hidden') ) 	$('#client_status_container').show();
 	}
 
 	$('.client_div').each(function(){
@@ -325,7 +327,7 @@ function populate_version(s)
 
 function init_click_binds(){
 
-	$('#server_on_off').click(function(){
+	$('#on_off_click_area').click(function(){
 		server_on_off();
 	});
 
@@ -337,10 +339,14 @@ function server_ajax_control(command){
 		if ( r !== undefined && r.status !== undefined){
 
 			console.log( "reply: %o", r.status);
+
 			// Check returned /started/
             if ( command == 'start' ) {
 				if ( r.status.match(/started/) ){
-    	            alert(Ovpnc.okay_icon + " " + r.status );
+    	            alert( Ovpnc.alert_ok + r.status + "</div>" 
+						+ '<div class="clear">'
+					);
+					$('#on_icon').animate({ opacity: 1 }, Ovpnc.opacity_effect );
 					return;
 				} else {
                 	alert( 'Server did not start? ' + r.status );
@@ -349,7 +355,12 @@ function server_ajax_control(command){
 			// Check returned /stopped/
 			} else if ( command == 'stop' ){
 				if ( r.status.match(/stopped/) ){
-					alert(Ovpnc.okay_icon + " Server stopped.");
+					alert( Ovpnc.alert_err + "Server stopped.</div>"
+						+ '<div class="clear">'
+					);
+					$('#on_icon').animate({ opacity: 0 }, Ovpnc.opacity_effect );
+					if ( $('#client_status_container').is(':visible') )
+						$('#client_status_container').hide(300).empty();
 					return;
 				} else {
 					alert( 'Server did not stop? ' + r.status );

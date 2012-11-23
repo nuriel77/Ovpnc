@@ -55,18 +55,20 @@ legend {
 	font-size: 1em;
 	font-family: Verdana, helvetica, arial, sans-serif;
 }
-#message_close{ float:right; margin: -2px -26px 0px 0px; }
+#message_close{ float:right; margin: -4px -22px 0px 0px; }
 .message {
 	display:none;
 	top:10px;
-	margin:20px 0 0 0;
-	padding:10px 10px 10px 15px;
+	margin:23px 0 0 0;
+	padding:10px 10px 7px 15px;
 	font-size: 0.85em;
+	min-height:15px;
 }
 #message_container {
 	float:left;
 	margin-left:50px;
 }
+#msg_content{ margin-right:5px; }
 
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }
@@ -127,3 +129,5 @@ img{
 #server_version{ color: #ccc; }
 #server_on_off{ float:right; }
 
+#off_icon { float:right; }
+#on_icon { position:absolute;margin-right: 5px; opacity: 0; }

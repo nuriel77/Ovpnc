@@ -174,6 +174,11 @@ Attempt to render a view, if needed.
 =cut
 
 sub end : ActionClass('RenderView') {
+	my ( $self, $c ) = @_;
+
+	$c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
+		if $c->request->cookies->{Ovpnc_C};
+
 }
 
 =head1 AUTHOR

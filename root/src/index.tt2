@@ -4,13 +4,16 @@
 	<!-- server info -->
 	<fieldset id="title" class="box_shadow">
         <legend>Server Status</legend>
-		<div id="server_status_content" >
-			<span id="server_status">offline</span>
+		<div id="on_off_click_area" class="hand_pointer" title="Powerup OpenVPN server">
+			<div id="server_status_content" >
+				<span id="server_status">offline</span>
+			</div>
+			<div id="server_on_off" ref="off">
+				<img id="off_icon" src="[% c.uri_for('/static/images/off.png') %]"></img>
+				<img id="on_icon" src="[% c.uri_for('/static/images/on.png') %]"></img>
+			</div>
+			<div class="clear"></div>
 		</div>
-		<div id="server_on_off" class="hand_pointer" ref="off" title="Powerup OpenVPN server">
-			<img src="[% c.uri_for('/static/images/off.png') %]"></img>
-		</div>
-		<div class="clear"></div>
 	</fieldset><!-- server info -->
 
 	<!-- online clients -->

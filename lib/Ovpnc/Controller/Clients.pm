@@ -52,7 +52,6 @@ sub index :Path :Args(0) : Does('NeedsLogin') {
     $c->stash->{killed_clients} = $killed_clients
         if ref $killed_clients;
 
-
 	$c->stash->{title} = 'Clients';
     $c->stash->{this_link} = 'clients';
     $c->stash->{logged_in} = 1;
@@ -69,6 +68,10 @@ sub end : ActionClass('RenderView') {
 	my ($self, $c) = @_;
 	# Will load any js or css
 	Ovpnc::Controller::Root->include_default_links($c);
+
+	$c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
+        if $c->request->cookies->{Ovpnc_C};
+
 }
 
 =head1 AUTHOR
@@ -82,6 +85,6 @@ it under the same terms as Perl itself.
 
 =cut
 
-__PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 1;
