@@ -10,8 +10,10 @@ use vars qw/
   $pid_file
   $openvpn_bin
   $openvpn_config
+  $openvpn_tmpdir
   $vpn_dir
-  /;
+  $app_root
+/;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -153,13 +155,31 @@ sub begin : Private {
         )
     );
 
+	# Remove trailing /
+	$c->config->{openvpn_dir} =~ s/\/$//;
+	$c->config->{application_root} =~ s/\/$//;
+
     # Assign from config file
-    $pid_file    = $c->config->{openvpn_pid} || '/var/run/openvpn.server.pid';
+	$app_root	 = $c->config->{application_root} or die "No application root?!";
+	
+	# Pid file, if only a dir part has been given, prepand
+	# the application root to it (for example ovpnc/somedir/..., will prepand to it)
+    $pid_file    = $c->config->{openvpn_pid} || $c->config->{application_root} . '/openpvpn/var/run/openvpn.server.pid';
+	$pid_file = $c->config->{application_root} . '/' . $pid_file if ( $pid_file !~ /^\// );
+
+	# OpenVPN main binary
     $openvpn_bin = $c->config->{openvpn_bin} || '/usr/sbin/openvpn';
+
+	# OpenVPN tmp dir
+	$openvpn_tmpdir = $c->config->{application_root} . '/openvpn/tmp';
+	
+	# OpenVPN main config
     $openvpn_config = Ovpnc::Controller::Api::Config->get_openvpn_config_file(
         $c->config->{ovpnc_conf} )
-      || '/etc/openvpn/server.conf';
-    $vpn_dir = $c->config->{openvpn_dir} || '/var/www/vpn/2.0/';
+      || $c->config->{application_root} . '/openvpn/conf/openvpn.ovpnc.conf';
+
+	# OpenVPN dir
+    $vpn_dir = $c->config->{openvpn_dir} || $c->config->{application_root} . '/openvpn';
 }
 
 {
@@ -346,7 +366,7 @@ sub begin : Private {
 	{
 		my ( $self, $c ) = @_;
 
-		my $crl_index = $c->config->{openvpn_dir} . 'keys/index.txt';
+		my $crl_index = $c->config->{openvpn_dir} . '/keys/index.txt';
 
 		unless ( -r $crl_index ){
 			$c->stash( { error => 'Cannot read ' . $crl_index . ', file does not exists or is not readable' } );
@@ -431,13 +451,13 @@ sub begin : Private {
         my $ret_val;
 
         # vars script location
-        my $vars = $vpn_dir . 'vars';
+        my $vars = $vpn_dir . '/vars';
 
         # build command
-        my $command = $vpn_dir . 'revoke-full';
+        my $command = $vpn_dir . '/revoke-full';
 
         # Check if can run
-        if ( -e $vpn_dir . 'vars' and -e $command and -x $command ) {
+        if ( -e $vpn_dir . '/vars' and -e $command and -x $command ) {
 
             # Run command
             $ret_val =
@@ -465,7 +485,7 @@ sub begin : Private {
     sub unrevoke_certificate : Private {
         my ( $self, $client ) = @_;
         my $ret_val;
-        my $index_file = $vpn_dir . 'keys/index.txt';
+        my $index_file = $vpn_dir . '/keys/index.txt';
         if ( -e $index_file and -w $index_file ) {
 
             # Change the revocation in the index.txt
@@ -487,7 +507,7 @@ sub begin : Private {
 '/usr/bin/openssl ca -gencrl -config openssl.cnf -out keys/crl.pem';
 
             # vars script location
-            my $vars = $vpn_dir . 'vars';
+            my $vars = $vpn_dir . '/vars';
 
             # Run command
             $ret_val = `cd $vpn_dir && . $vars >/dev/null && $command 2>&1`;
@@ -535,6 +555,7 @@ sub begin : Private {
                 }
             }
             else {
+				$self->_disconnect_vpn;
                 return "OpenVPN is stopped";
             }
         }
@@ -547,7 +568,7 @@ sub begin : Private {
         my $self = shift;
 
         # Check connected or not to mgmt port
-        if ( $self->vpn and $self->vpn->connect() ) {
+        if ( $self->vpn && $self->vpn->connect() ) {
             return 'Server already started';
         }
         else {
@@ -555,13 +576,15 @@ sub begin : Private {
             # Build command
             my $command = '/usr/bin/sudo '
               . $openvpn_bin
-              . ' --writepid '
-              . $pid_file
+              . ' --writepid ' 			. $pid_file
               . ' --daemon ovpn-server'
-              . ' --script-security 2'
-              . ' --cd /etc/openvpn'
-              . ' --config '
-              . $openvpn_config;
+              . ' --script-security 2'	
+			  . ' --client-connect ' 	. $app_root . '/openvpn/bin/client_connect'	# Optional checker script
+			  . ' --echo \'on all\''								# For management log
+			  . ' --tmp-dir ' 			. $openvpn_tmpdir			# tmp files for openvpn ipc
+			  . ' --ccd-exclusive'									# Force client-config-dir usage
+              . ' --cd '				. $app_root . '/openvpn'	# Cd to dir after startup
+              . ' --config '	        . $openvpn_config;			# The main openvpn server config
 
 			warn 'Executing command: "' . $command . '"';
 

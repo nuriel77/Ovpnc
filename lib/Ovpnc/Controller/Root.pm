@@ -97,9 +97,9 @@ sub include_default_links : Private {
 		for ( qw|css/normalize.css
 			 css/main.css
 	 		 css/slider.css
-			 js/Flexigrid/css/flexigrid.pack.css
+			 js/Flexigrid/css/flexigrid.css
 			 js/jquery-latest.js
-			 js/Flexigrid/js/flexigrid.pack.js
+			 js/Flexigrid/js/flexigrid.js
 			 js/jquery.cookie.js
 			 js/jquery.validate.js
 			 js/main.js

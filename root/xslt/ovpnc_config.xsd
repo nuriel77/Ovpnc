@@ -15,7 +15,7 @@
     <xsd:complexType>
       <xsd:sequence>
 		<!-- Node has config file location (see "simpleType - file" for info of this type restrictions) -->
-        <xsd:element name="Config-File" type="File"/>
+        <xsd:element name="ConfigFile" type="File"/>
 		<!-- The directives, note that "ref" refers to element names -->
         <xsd:element ref="Directives"/>
 		<!-- Each node can have a unique name -->
@@ -67,39 +67,48 @@
     <xsd:complexType>
       <xsd:sequence minOccurs="1" maxOccurs="unbounded" >
 		<xsd:choice>
-	        <xsd:element minOccurs="0" name="Status-File" type="File" />
-			<xsd:element minOccurs="0" name="Log-File" type="File" />
+	        <xsd:element minOccurs="0" name="StatusFile" type="File" />
+			<xsd:element minOccurs="0" name="LogFile" type="File" />
+			<xsd:element minOccurs="0" name="ChrootDir" type="File" />
+			<xsd:element minOccurs="1" name="ClientDir" type="File" />
+			<!-- NOTE: ifconfig-pool-persist will not work with duplicate-cn, try to eliminate here by validation -->
+			<xsd:element minOccurs="1" name="PoolFile" type="File" />
 	        <xsd:element minOccurs="0" ref="Int" />
 	        <xsd:element minOccurs="0" name="Verb" type="Verbosity" />
-	        <xsd:element minOccurs="1" name="Status-Sec" type="StatusSec" />
-	        <xsd:element minOccurs="0" name="KeepAlive-Poll" type="KeepAlivePoll" />
-	        <xsd:element minOccurs="0" name="KeepAlive-Dead" type="KeepAliveDead" />
-	        <xsd:element minOccurs="0" name="Connect-Freq-New" type="ConnectFreqNew" />
-	        <xsd:element minOccurs="0" name="Connect-Freq-Sec" type="ConnectFreqSec" />
+			<xsd:element minOccurs="0" name="RefreshPoolFile" type="PoolFileRefresh" />
+			<xsd:element minOccurs="0" name="ProcessPrio" type="Nice" />
+	        <xsd:element minOccurs="1" name="StatusSec" type="StatusSec" />
+	        <xsd:element minOccurs="0" name="KeepAlivePoll" type="KeepAlivePoll" />
+	        <xsd:element minOccurs="0" name="KeepAliveDead" type="KeepAliveDead" />
+	        <xsd:element minOccurs="0" name="ConnectFreqNew" type="ConnectFreqNew" />
+	        <xsd:element minOccurs="0" name="ConnectFreqSec" type="ConnectFreqSec" />
 	        <xsd:element minOccurs="1" name="Ca" type="File" />
 	        <xsd:element minOccurs="1" name="Key" type="File" />
 	        <xsd:element minOccurs="0" name="Dh" type="File" />
 	        <xsd:element minOccurs="1" name="Certificate" type="File" />
 	        <xsd:element minOccurs="0" name="Mute" type="MuteLog" />
 	        <xsd:element minOccurs="0" name="Bool" type="Boolean" />
-	        <xsd:element minOccurs="1" name="User-Name" type="NameType" />
-	        <xsd:element minOccurs="1" name="Group-Name" type="NameType" />
-	        <xsd:element minOccurs="0" name="Push-String" type="StringType" />
-	        <xsd:element minOccurs="1" name="VPN-Server" type="IpAddress" />
-	        <xsd:element minOccurs="1" name="Crl-File" type="File" />
-	        <xsd:element minOccurs="1" name="Server-Port" type="PortNumber" default="8111" />
-	        <xsd:element minOccurs="1" name="Virtual-IP" type="IpAddress" />
-	        <xsd:element minOccurs="1" name="Virtual-Netmask" type="NetmaskAddress" />
-	        <xsd:element minOccurs="1" name="Management-IP" type="IpAddress" />
-			<xsd:element minOccurs="1" name="Management-Port" type="PortNumber" default="7505" /> 
+	        <xsd:element minOccurs="1" name="UserName" type="NameType" />
+	        <xsd:element minOccurs="1" name="GroupName" type="NameType" />
+	        <xsd:element minOccurs="0" name="PushString" type="StringType" />
+	        <xsd:element minOccurs="1" name="VPNServer" type="IpAddress" />
+			<!-- NOTE: ifconfig-pool (poolend/begin) only when server does not specify it! -->
+	        <xsd:element minOccurs="0" name="PoolEnd" type="IpAddress" />
+	        <xsd:element minOccurs="0" name="PoolBegin" type="IpAddress" />
+	        <xsd:element minOccurs="1" name="CrlFile" type="File" />
+	        <xsd:element minOccurs="1" name="ServerPort" type="PortNumber" default="8111" />
+	        <xsd:element minOccurs="1" name="VirtualIP" type="IpAddress" />
+	        <xsd:element minOccurs="1" name="VirtualNetmask" type="NetmaskAddress" />
+	        <xsd:element minOccurs="1" name="ManagementIP" type="IpAddress" />
+			<xsd:element minOccurs="1" name="ManagementPort" type="PortNumber" default="7505" /> 
 	        <xsd:element minOccurs="0" name="Cipher" type="CipherType" default="AES-128-CBC" />
 	        <xsd:element minOccurs="1" name="Device" type="DeviceType" default="tun" />
-	        <xsd:element minOccurs="0" name="Comp-Lzo" type="CompLzo" default="yes" />
+	        <xsd:element minOccurs="0" name="CompLzo" type="CompLzo" default="yes" />
 	        <xsd:element minOccurs="1" name="Protocol" type="Protocolcols" default="udp" />
-	        <xsd:element minOccurs="0" name="Keep-Alive" />
-	        <xsd:element minOccurs="0" name="Tls-Key" type="File" />
-	        <xsd:element minOccurs="0" name="Tls-Mode" type="Boolean" default="0"/>
-	        <xsd:element minOccurs="1" name="Max-Clients" type="MaxClients" default="64" />
+	        <xsd:element minOccurs="0" name="KeepAlive" />
+	        <xsd:element minOccurs="0" name="TlsKey" type="File" />
+	        <xsd:element minOccurs="0" name="TlsMode" type="Boolean" default="0"/>
+	        <xsd:element minOccurs="1" name="MaxClients" type="MaxClients" default="64" />
 		</xsd:choice>
       </xsd:sequence>
     </xsd:complexType>
@@ -156,7 +165,7 @@
   </xsd:simpleType>
 
   <!-- Type: String -->
-  <xsd:element name="Push-String" type="StringType" />
+  <xsd:element name="PushString" type="StringType" />
   <xsd:simpleType name="StringType">
     <xsd:restriction base="xsd:string">
       <xsd:pattern value="[\-A-Za-z_ \.0-9]*" />
@@ -174,6 +183,14 @@
   <xsd:simpleType name="NetmaskAddress">
 	<xsd:restriction base="xsd:string">
       <xsd:pattern value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: PoolFileRefresh -->
+  <xsd:simpleType name="PoolFileRefresh">
+    <xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="999" />
     </xsd:restriction>
   </xsd:simpleType>
 
@@ -238,6 +255,14 @@
 	<xsd:restriction base="xsd:integer">
       <xsd:minInclusive value="0" />
       <xsd:maxInclusive value="11" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Nice level -->
+  <xsd:simpleType name="Nice">
+	<xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="-19" />
+      <xsd:maxInclusive value="19" />
     </xsd:restriction>
   </xsd:simpleType>
 

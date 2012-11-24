@@ -1,6 +1,5 @@
 # Ovpnc git ignore list
-openvpn.conf.ovpnc_*
-config/openvpn.conf.ovpnc
+openvpn.conf.ovpnc*
 start_dev_server
 ovpnc_fastcgi.pl
 ovpnc_create.pl
@@ -14,6 +13,11 @@ Makefile
 tmp/*
 *.old
 *.save
+*.key
 root/static/built/*
-config/server.key
-config/server.crt
+openvpn/conf/ccd/*
+openvpn/conf/keys/*
+openvpn/var/run/*
+openvpn/tmp/*
+openvpn/var/log/*
+

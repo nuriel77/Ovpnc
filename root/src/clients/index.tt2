@@ -1,6 +1,7 @@
 <div id="client_wrapper">
+
 	<!-- client_table -->
-	<div id="client_table" style="margin:10px 15px 0 15px;">
+	<div id="client_table" style="margin:10px 15px 0 15px;border-radius:5px;">
 	  <table id="flexme" style="" cellpadding="0" cellspacing="0" border="0">
 	  </table> 
 	</div><!-- client_table -->

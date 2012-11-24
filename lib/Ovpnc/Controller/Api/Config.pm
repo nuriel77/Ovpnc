@@ -143,7 +143,7 @@ and run validataions via the xsd schema
         }
         else {
             my $st_msg      = {};
-            my $config_file = $data{'-1_null_Config-File'};
+            my $config_file = $data{'-1_null_ConfigFile'};
 
             # Pretty fatal, but should not happen here
             # because we ran validation earlier on xml format
@@ -174,9 +174,8 @@ and run validataions via the xsd schema
 
             # Create backup for existing configuration file
             if ( -e $config_file ) {
-                copy( $config_file, $config_file . '_' . time() . '_backup' )
-                  or $st_msg->{error} =
-                  "Error: Cannot backup existing configuration file: $!";
+                $_ = $self->manage_conf_backup( $config_file, $c->config->{keep_n_conf_backup} );
+				$st_msg = $_->{error} if $_->{error};
             }
 
             my $FILE;
@@ -251,7 +250,7 @@ XSD schema from openvpn
 <Nodes>
   <Node id="1">
     <Name></Name>
-    <Config-File>/etc/openvpn/server.conf</Config-File>
+    <ConfigFile>/etc/openvpn/server.conf</ConfigFile>
     <Directives>
       <Group id="1">
         <Directive>
@@ -293,7 +292,7 @@ will set attributes etc
         my $output  = "\n# [ Group id=0 ]\n";
         my $on_hold = {};
         my @existing_keys;
-        my $last_group;
+        my $last_group = 0;
 
       DATA:
         for my $key ( sort keys %data ) {
@@ -334,12 +333,15 @@ will set attributes etc
             if ( !$number && $real ne 'push' ) {
                 if ( ref $on_hold eq 'HASH' ) {
                     for my $okey ( keys %{$on_hold} ) {
-                        if ( $okey eq $real ) {
+                        if ( $okey eq $real && $on_hold->{$okey}->{parent} && $on_hold->{$okey}->{value} ) {
+							warn "Working on: o/r: $okey, $real:" . $on_hold->{$okey}->{value} . ' ;'
+                              . $parent . ' ;'
+                              . $on_hold->{$okey}->{parent};
+
                             $data{$key} .= ' '
                               . $on_hold->{$okey}->{value} . ' ;'
                               . $parent . ' ;'
                               . $on_hold->{$okey}->{parent};
-
                         }
                     }
                 }
@@ -362,7 +364,7 @@ will set attributes etc
                     # otherwise output only the key
                     if ( $real eq $data{$key} ) {
                         $output .=
-                            ( $disabled ? ' ;' : '' ) 
+                            ( $disabled ? ';' : '' ) 
                           . $real . "$tab;" 
                           . $parent . "\n";
                     }
@@ -452,7 +454,7 @@ and return xml string
               $group
               unless ( $group eq '-1' );
 
-            # Name and Config-File have no
+            # Name and ConfigFile have no
             # parent because they are not
             # part of the config file itself
             if ( $group eq '-1' ) {
@@ -557,7 +559,7 @@ Reads the name of openvpn config file
     sub get_openvpn_config_file : Private {
         my ( $self, $file ) = @_;
         my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
-        return $xml_obj->{Node}->{'Config-File'};
+        return $xml_obj->{Node}->{'ConfigFile'};
     }
 
 
@@ -633,7 +635,7 @@ into a xml ready to parse format
         # Append two last directives
         # for validation xslt
         $xml->{'null_Name'}        = $conf_params->{name};
-        $xml->{'null_Config-File'} = $conf_params->{file};
+        $xml->{'null_ConfigFile'} = $conf_params->{file};
 
         return $xml;
     }
@@ -662,7 +664,6 @@ Parse the openvpn configuration file
             #my (undef, @parents) = split(';', $line);
 
             # Remove end-of-line comments
-            #$line =~ s/#.*$|;.*$//;
             $line =~ s/#.*$//;
 
             # Split by space into an array
@@ -711,7 +712,40 @@ sub perl_to_xml : Private {
     ) or die "Cannot generate XML data!";
 }
 
-# Default functions
+=head2 manage_conf_file
+
+Remove old backups
+create backup before save
+
+=cut
+
+sub manage_conf_backup : Private {
+	my ( $self, $config_file, $keep_conf ) = @_;
+
+	# backup conf file
+    copy( $config_file, $config_file . '_' . time() . '_backup' )
+		or return { error => "Error: Cannot backup existing configuration file: $!" };
+
+	my ($_dir) = split (/\/[a-z\._\-]*$/i, $config_file);
+
+	# leave n copies (remove old)
+	opendir(my $DIR, $_dir);
+	my @_files = map { $_ if $_ =~ /^[a-z\.\-_]+_[0-9]+_backup/g } readdir($DIR);
+	close $DIR;
+	my @_to_remove = splice @{[reverse sort @_files]}, ( $keep_conf ? $keep_conf : 1 );
+ 	for ( @_to_remove ){
+		next if $_ eq $_dir.'/';
+		unlink $_dir . '/' . $_;
+	}
+	return;
+}
+
+=head2 default
+
+Default action, not found
+
+=cut
+
 sub default : Private {
     my ( $self, $c ) = @_;
     $c->stash( { status => 'Control action not found' } );

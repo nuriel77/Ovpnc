@@ -31,7 +31,7 @@
 				<div id="message_container">
 					<div id="message" class="message box_shadow"></div>
 				</div>
-			</div>
+			</div><!-- top_header_centered -->
 		</div><!-- top header -->
     	<div id="outer">
 			<div id="outer_centered">

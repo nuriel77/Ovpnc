@@ -19,6 +19,7 @@ html, body{ font-family:arial; font-size:12px; }
 	font-size:13px;
 	border:0;
 	text-align:left;
+	min-width:200px;
 }
 
 td {

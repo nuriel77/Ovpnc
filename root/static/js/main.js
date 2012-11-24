@@ -1,43 +1,88 @@
-/* index js lib */
+/*
+ *
+ * OpenVPN Controller JS lib
+ *
+ */
 "use strict";
 
 /* Declare Ovpnc namespace */
-;(function($) {
+(function($){
 
-    // declare var in global scope
-    window.Ovpnc = {};
+	var mem, config, actions = {};
 
-    Ovpnc = {
+	// Create name space $.Ovpnc
+	$.Ovpnc = function(options){
+		var obj = $.extend({}, mem, actions, config, options);
+		return obj;
+	};
+
+	$.Ovpnc.ajax_lock = 0;
+
+	mem = {
 		alert_icon : '<img width=18 height=18 src="/static/images/alert_icon.png" />',
 		alert_ok : '<div style="float:left;"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div>' 
 				 + '<div style="float:left;margin:5px 0 0 6px;"></div>',
 		alert_err : '<div style="float:left;"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div>'
-				  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
-		poll_freq : 5000, 			// Get server status from api every n milliseconds
+			  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
+	};
+	config = {
+		poll_freq : 10000, 			// Get server status from api every n milliseconds
 		opacity_effect : 3000, 		// Sets the timing of the opacity fadein/out effect
-		pathname :  window.location.pathname,
-		geo_username : function(){ 
-			return $('#geo_username').attr('name');
-		},
-		actions : {
-			poll_status : function() { return init_loop_get_status(); },
-			hover_binds : function() { return init_hover_binds(); },
-			click_binds : function() { return init_click_binds(); }
-		},
-		ajax_lock : 0
-	}; 
+		pathname : window.location.pathname,
+		geo_username : function(){ return $('#geo_username').attr('name'); },
+	};
+	actions = {
+		poll_status : function() { return init_loop_get_status(); },
+		hover_binds : function() { return init_hover_binds(); },
+		click_binds : function() { return init_click_binds(); }
+	};
+
+
+	// Global json get function
+	$.getDATA = function(url) {
+        	return jQuery.ajax({
+        		headers: { 'Accept': 'application/json' },
+		        async : false,
+		        timeout: 3000,
+		        tryCount : 0,
+		        retryLimit : 3,
+		        cache: false,
+			    url: url,
+				beforeSend : function(){ $.Ovpnc.ajax_lock = 1; },
+				complete : function() { $.Ovpnc.ajax_lock = 0; },
+		        success : update_server_status,
+				error : function(xhr, ajaxOptions, thrownError) {
+			        //console.debug("Error getting status: " + xhr.status + ", " + thrownError)
+					this.tryCount++;
+			        if (this.tryCount <= this.retryLimit) {
+			            //console.log( "Going to retry connection to host loop: " + this.tryCount);
+			            //try again
+			            $.ajax(this);
+			            return;
+			        }
+
+					if ( $(".client_div").is(":visible") ){
+						$(".client_div").hide(250);
+					}
+					$('#client_status_container').html("<div id='no_data'>No data recieved, possible error: " + thrownError.toString() + "</div>").show(250);
+					return false;
+				}
+			})
+	};
+
+
 })(jQuery);
 
 
 
 /* jQuery begin document */
-$(document).ready(function()
-{
+$(document).ready(function(){
+
 	// Todo: Split this large js file
 	// to match controllers like clients.js
 	// and certificates.js ...
 	// That way no need to do this check here
-	if (Ovpnc.pathname === '/login') return;
+	if ($.Ovpnc().pathname === '/login') return;
 
 	// Set custom alert functionality
 	window.alert = function (message) {
@@ -74,79 +119,25 @@ $(document).ready(function()
 	// Set up the navigation class (not on login)
 	// TODO: Control via Root controller so this can
 	// optionally be include into other js files
-	if (Ovpnc.pathname !== '/login')
+
+	if ($.Ovpnc().pathname !== '/login')
 		slide("#sliding-navigation", 25, 15, 150, .8);
 
 	// Set actions for clicks
-	Ovpnc.actions.click_binds();	
+	$.Ovpnc().click_binds();	
 
 	// display welcome message
-	if ( $.cookie( 'Ovpnc_User_Settings' ) === null ){
-		Ovpnc.username = ucfirst( $('#username').attr('name') );
-		alert( Ovpnc.alert_ok + 'Hello ' + Ovpnc.username + ', welcome to OpenVPN Controller!' );
+	// Only on main screen
+	// Or if never displayed before
+	if ( $.cookie( 'Ovpnc_User_Settings' ) === null || $.Ovpnc().pathname === '/'){
+		$.Ovpnc.username = ucfirst( $('#username').attr('name') );
+		alert( $.Ovpnc().alert_ok + 'Hello ' + $.Ovpnc.username + ', welcome to OpenVPN Controller!' );
 	}
 
-	$.getDATA = function(url) {
-        	return jQuery.ajax({
-        		headers: { 'Accept': 'application/json' },
-		        async : false,
-		        timeout: 3000,
-		        tryCount : 0,
-		        retryLimit : 3,
-		        cache: false,
-			    url: url,
-				beforeSend : function(){ Ovpnc.ajax_lock = 1; },
-				complete : function() { Ovpnc.ajax_lock = 0; },
-		        success : function(r){
-					//console.log("Status returns: %o",r);
-					// If we get status back, display
-					if ( r.status !== undefined ){
-						$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
-						$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
-						$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
-
-						// Show or dont show the green on icon
-						$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
-					}
-				
-					// Show number of connected clients
-					$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
-
-					if ( r.clients !== undefined ){
-
-						if (typeof(r.title) !== "undefined")
-							populate_version(r.title);
-
-						//if ( Ovpnc.pathname === '/clients' )
-						//	populate_clients(r.clients);
-
-					}
-		
-					return false;
-				},
-				error : function(xhr, ajaxOptions, thrownError) {
-			        //console.debug("Error getting status: " + xhr.status + ", " + thrownError)
-					this.tryCount++;
-			        if (this.tryCount <= this.retryLimit) {
-			            //console.log( "Going to retry connection to host loop: " + this.tryCount);
-			            //try again
-			            $.ajax(this);
-			            return;
-			        }
-
-					if ( $(".client_div").is(":visible") ){
-						$(".client_div").hide(250);
-					}
-					$('#client_status_container').html("<div id='no_data'>No data recieved, possible error: " + thrownError.toString() + "</div>").show(250);
-					return false;
-				}
-			})
-	};
-
 	// clients.js will load own status
-	if ( Ovpnc.pathname !== '/clients' ) {
+	if ( $.Ovpnc().pathname !== '/clients' ) {
 		// Get status (loop)
-		Ovpnc.actions.poll_status();
+		$.Ovpnc().poll_status();
 	}
 	
 });
@@ -156,6 +147,29 @@ $(document).ready(function()
 	- Functions -
 */
 
+function update_server_status(r){
+	//console.log("Status returns: %o",r);
+	// If we get status back, display
+	if ( r.status !== undefined ){
+		$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
+		$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+		$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
+		// Show or dont show the green on icon
+		$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
+	}
+				
+	// Show number of connected clients
+	$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
+
+	if ( r.clients !== undefined ){
+		if (typeof(r.title) !== "undefined")
+			populate_version(r.title);
+		//if ( Ovpnc.pathname === '/clients' )
+		//	populate_clients(r.clients);
+	}
+
+	return false;
+}
 
 function init_loop_get_status()
 {
@@ -163,10 +177,10 @@ function init_loop_get_status()
 	// run first one
 	get_server_status();
 
-	// Then loop even n miliseconds
+	// Then loop every n miliseconds
 	setInterval(function() {
 		get_server_status();
-	}, Ovpnc.poll_freq );
+	}, $.Ovpnc().poll_freq );
 }
 
 function get_server_status()
@@ -234,8 +248,8 @@ function populate_clients(c)
 					+ '<br/>'
 					+ '<div style="display:' + disp_client + '" class="client_hidden_data" id="' + client_obj['name'] + '_hidden_data">';
 
-			Ovpnc.tfc.in = client_obj['bytes_recv'];
-			Ovpnc.tfc.out = client_obj['bytes_sent'];
+			$.Ovpnc().tfc.in = client_obj['bytes_recv'];
+			$.Ovpnc().tfc.out = client_obj['bytes_sent'];
 
 			// for each client's data
 			for (var obj in client_obj){
@@ -288,7 +302,7 @@ function populate_clients(c)
 
 function functionDelay(f,t)
 {
-	Ovpnc.timer = setTimeout(f, t);
+	$.Ovpnc().timer = setTimeout(f, t);
 }
 
 function extend_client_data(n){
@@ -305,13 +319,13 @@ function extend_client_data(n){
 		clearInterval(Ovpnc.timer);
 	}
 */
-	if ( Ovpnc.ajax_lock === 1 ){
+	if ( $.Ovpnc.ajax_lock === 1 ){
 		console.log( "sleep for 1 sec");
         functionDelay( extend_client_data(n), 500 );
         return;
 	}
 	else {
-		clearInterval(Ovpnc.timer);
+		clearInterval($.Ovpnc().timer);
 	}
 
 	if ( $('#' + n + '_hidden_data').is(':visible') ){
@@ -350,10 +364,10 @@ function server_ajax_control(command){
 			// Check returned /started/
             if ( command == 'start' ) {
 				if ( r.status.match(/started/) ){
-    	            alert( Ovpnc.alert_ok + r.status + " at " + get_date() + ".</div>" 
+    	            alert( $.Ovpnc().alert_ok + r.status + " at " + get_date() + ".</div>" 
 						+ '<div class="clear">'
 					);
-					$('#on_icon').animate({ opacity: 1 }, Ovpnc.opacity_effect );
+					$('#on_icon').animate({ opacity: 1 }, $.Ovpnc().opacity_effect );
 					return;
 				} else {
                 	alert( 'Server did not start? ' + r.status );
@@ -362,10 +376,10 @@ function server_ajax_control(command){
 			// Check returned /stopped/
 			} else if ( command == 'stop' ){
 				if ( r.status.match(/stopped/) ){
-					alert( Ovpnc.alert_err + "Server stopped at " + get_date() + ".</div>"
+					alert( $.Ovpnc().alert_err + "Server stopped at " + get_date() + ".</div>"
 						+ '<div class="clear">'
 					);
-					$('#on_icon').animate({ opacity: 0 }, Ovpnc.opacity_effect );
+					$('#on_icon').animate({ opacity: 0 }, $.Ovpnc().opacity_effect );
 					if ( $('#client_status_container').is(':visible') )
 						$('#client_status_container').hide(300).empty();
 					return;
@@ -382,7 +396,7 @@ function server_ajax_control(command){
 		}
 	}).error(function(xhr, ajaxOptions, thrownError) {
         console.log("Error executing command " + + " server '" + c + "': " + thrownError.toString());
-        alert( Ovpnc.error_icon + " Error executing command " + + " server '" + c + "': " + thrownError.toString());
+        alert( $.Ovpnc().error_icon + " Error executing command " + + " server '" + c + "': " + thrownError.toString());
         return false;
     });
 
@@ -423,17 +437,17 @@ function numberWithCommas(n) {
     return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
 }
 
-Ovpnc.okay_icon = '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />';
-Ovpnc.error_icon = '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />';
+$.Ovpnc().okay_icon = '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />';
+$.Ovpnc().error_icon = '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />';
 function kill_client(c){
 
 	$.getJSON('/api/server/kill/' + c, function(r){
 		append_dead_client(c);
-		alert(Ovpnc.okay_icon + " Client '" + c + "' killed successfully.");
+		alert($.Ovpnc().okay_icon + " Client '" + c + "' killed successfully.");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
 		console.log("Error killing client '" + c + "': " + thrownError.toString());
-		alert( Ovpnc.error_icon + " Error killing client '" + c + "': " + thrownError.toString());
+		alert( $.Ovpnc().error_icon + " Error killing client '" + c + "': " + thrownError.toString());
 		return false;
 	});
 
@@ -444,11 +458,11 @@ function unkill_client(c){
 	$.getJSON('/api/server/unkill/' + c, function(r){
 		$('#unkill_' + c).remove();
 		if ( ! $('#killed_clients').text().match(/\w+/) ) $('#killed_clients_container').hide(250);
-		alert(Ovpnc.okay_icon + " Client '" + c + "' unkilled successfully");
+		alert($.Ovpnc().okay_icon + " Client '" + c + "' unkilled successfully");
 		return true;		
 	}).error(function(xhr, ajaxOptions, thrownError) {
 		console.log("Error unkilling client '" + c + "': " + thrownError.toString());
-		alert(Ovpnc.error_icon + " Error unkilling client '" + c + "': " + thrownError.toString());
+		alert($.Ovpnc().error_icon + " Error unkilling client '" + c + "': " + thrownError.toString());
 		return false;
 	});
 
@@ -501,8 +515,8 @@ function get_date() {
 	return then;
 } 
 
-Ovpnc.tfc = new Object();
-Ovpnc.tfc = {
+$.Ovpnc().tfc = new Object();
+$.Ovpnc().tfc = {
 	in	: 0,
 	out : 0,
 	old_in : 0,
@@ -524,8 +538,8 @@ function get_client_network_usage( name ){
 
 		// Record the in/out packets, use as a starting point for delta calculation
 		$('#tfc_'+name).html(
-			'<input style="opacity:0" id="rec_in_'+name+'" value="' + Ovpnc.tfc.in + '" />'
-		  + '<input style="opacity:0" id="rec_out_'+name+'" value="' + Ovpnc.tfc.out + '" />'
+			'<input style="opacity:0" id="rec_in_'+name+'" value="' + $.Ovpnc().tfc.in + '" />'
+		  + '<input style="opacity:0" id="rec_out_'+name+'" value="' + $.Ovpnc().tfc.out + '" />'
 		);
 		// This is the first loop because we created the 
 		// tfc_+name div, second loop will already
@@ -535,20 +549,20 @@ function get_client_network_usage( name ){
 	else {
 		// If the tfc_+name is already created, get
 		// the values (these have been recorded from the previous cycle)
-		Ovpnc.tfc.old_in = $('#rec_in_' + name ).val();
-		Ovpnc.tfc.old_out = $('#rec_out_' + name ).val();
-		$('#rec_in_' + name ).val(Ovpnc.tfc.in);
-		$('#rec_out_' + name ).val(Ovpnc.tfc.out);
+		$.Ovpnc().tfc.old_in = $('#rec_in_' + name ).val();
+		$.Ovpnc().tfc.old_out = $('#rec_out_' + name ).val();
+		$('#rec_in_' + name ).val($.Ovpnc().tfc.in);
+		$('#rec_out_' + name ).val($.Ovpnc().tfc.out);
 	}
 
 	var fixDeltaOut; var fixDeltaIn;
 
-	if ( Ovpnc.tfc.old_in !== '' || Ovpnc.tfc.old_in !== 0 ){
-		var real_deltaIn = Ovpnc.tfc.in - Ovpnc.tfc.old_in;
-		var real_deltaOut= Ovpnc.tfc.out - Ovpnc.tfc.old_out;
+	if ( $.Ovpnc().tfc.old_in !== '' || $.Ovpnc().tfc.old_in !== 0 ){
+		var real_deltaIn = $.Ovpnc().tfc.in - $.Ovpnc().tfc.old_in;
+		var real_deltaOut= $.Ovpnc().tfc.out - $.Ovpnc().tfc.old_out;
 
-		var bytes_in_avg = real_deltaIn / ( Ovpnc.poll_freq / 1000 );
-		var bytes_out_avg = real_deltaOut / ( Ovpnc.poll_freq / 1000 );
+		var bytes_in_avg = real_deltaIn / ( $.Ovpnc().poll_freq / 1000 );
+		var bytes_out_avg = real_deltaOut / ( $.Ovpnc().poll_freq / 1000 );
 
 		var output = '';		
 		var in_setter = 'KB/s';
@@ -578,8 +592,8 @@ function get_client_network_usage( name ){
 					+ '</div>';
 		}
 
-		Ovpnc.tfc.old_in = Ovpnc.tfc.in;
-		Ovpnc.tfc.old_out = Ovpnc.tfc.out;
+		$.Ovpnc().tfc.old_in = $.Ovpnc().tfc.in;
+		$.Ovpnc().tfc.old_out = $.Ovpnc().tfc.out;
 		if ( $('#inner_in_'+name).is(':visible') && $('#inner_out_'+name).is(':visible') ){
 			$('#inner_in_'+name).text(fixDeltaIn);
 			$('#inner_out_'+name).text(fixDeltaOut);

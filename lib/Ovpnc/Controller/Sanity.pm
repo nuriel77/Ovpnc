@@ -31,6 +31,9 @@ has 'os' => (
 sub action {
     my ( $self, $config ) = @_;
 
+	# remove trailing /
+	$config->{openvpn_dir} =~ s/\/$//;
+	
     my $checks = {
         os            => sub { return $self->check_os },
         openvpn_user  => sub { return $self->check_openvpn_user },
@@ -156,6 +159,19 @@ sub action {
     sub check_config {
         my ( $self, $config ) = @_;
 
+        if (!-e $config->{ovpnc_conf}
+            || !-r $config->{ovpnc_conf}
+            || !-w $config->{ovpnc_conf} )
+        {
+            return $config->{ovpnc_conf}
+              . " not found or not readable or not writable (should be both)";
+        }
+
+		# Get the openvpn conf
+		# File from the xml
+		$config->{openvpn_conf} =
+			Ovpnc::Controller::Api::Config->get_openvpn_config_file( $config->{ovpnc_conf} );
+
         # Check binary
         if ( !-e $config->{openvpn_bin} ) {
             return $config->{openvpn_bin} . " is not found";
@@ -174,22 +190,28 @@ sub action {
         {
             return $config->{openvpn_dir} . " not found or not readable";
         }
+	
+		# check openvpn tmpdir
+		 elsif (!-e $config->{openvpn_dir} . '/tmp'
+            || !-d $config->{openvpn_dir} . '/tmp'
+            || !-w $config->{openvpn_dir} . '/tmp' )
+        {
+            return $config->{openvpn_tmpdir} . " not found or not readable";
+        }
 
 		# check openssl conf
 		elsif ( !-e $config->{openssl_conf} || !-r $config->{openssl_conf} ) {
             return $config->{openssl_conf} . " not found or not readable";
         }
 
+		# check application root dir
+		elsif ( !-e $config->{application_root} || !-d $config->{application_root} ) {
+            return $config->{application_root} . " not found or not readable";
+        }
+
         # check openvpn conf
         elsif ( !-e $config->{openvpn_conf} || !-r $config->{openvpn_conf} ) {
             return $config->{openvpn_conf} . " not found or not readable";
-        }
-        elsif (!-e $config->{ovpnc_conf}
-            || !-r $config->{ovpnc_conf}
-            || !-w $config->{ovpnc_conf} )
-        {
-            return $config->{ovpnc_conf}
-              . " not found or not readable or not writable (should be both)";
         }
         elsif (!-e $config->{ovpnc_config_schema}
             || !-r $config->{ovpnc_config_schema} )
@@ -203,6 +225,11 @@ sub action {
 	sub check_openvpn_scripts {
 
         my ( $self, $config ) = @_;
+
+		# Add a trailing / to dir 
+		# it was removed earier
+		$config->{openvpn_dir} .= '/';
+		
 		# check openvpn scripts
 		for ( qw/
 				vars

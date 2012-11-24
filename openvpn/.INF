@@ -1,0 +1,3 @@
+This is the default directory for OpenVPN Files
+Ovpnc and OpenVPN should both have access.
+By default OpenVPN will cd to here after startup.

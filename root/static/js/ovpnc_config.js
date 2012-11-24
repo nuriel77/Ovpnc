@@ -46,14 +46,13 @@ $(document).ready(function() {
 				var c = check_dup(appender, n.name);
 				if ( c !== false ){
 					n.name += '_' + c;
-					//console.log("NEW NAME "+n.name);
 				}
 
 				// Get the parent node name
 				var parent = n.getAttribute('parent');
 
 				// Get the group_id name, was attached to the 'tr'
-				var group_id = $("tr#" + n.name).attr('group');
+				var group_id = $('tr#' + n.name).attr('group');
 
 				// Assign 0 to non-group elements
 				if (group_id === undefined) group_id = '-1';
@@ -65,13 +64,13 @@ $(document).ready(function() {
 
 				/* Note the format in which the values are being processed: */
 				appender[ group_id + '_' + parent + '_' + n.name + d_flag  ] = n.value;
-
 			} 
 			else {
 				//console.log( n.name + " is disabled");
 			}
 
         });
+
 
 		// Define our ajax function
 		$.postCONFIG = function(url, data) {
@@ -90,8 +89,7 @@ $(document).ready(function() {
 				//	console.log( "At retry loop " + this.tryCount );
 				//},
 		        success: function(response){
-	             	//console.log(response);
-					if (typeof (response.error) !== "undefined"){
+					if ( typeof (response.error) !== "undefined" ){
 						var element = response.error.replace(/.*<(.*)>.*/gi, "$1");
 						element = element.replace(/(\r\n|\n|\r)/gm,"");
 						//console.log("Element: " + element);

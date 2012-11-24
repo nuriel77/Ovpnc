@@ -1,20 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Nodes>
   <Node id="0">
-    <Config-File>/home/ovpnc/Ovpnc/config/openvpn.conf.ovpnc</Config-File>
+    <ConfigFile>/home/ovpnc/Ovpnc/openvpn/conf/openvpn.conf.ovpnc</ConfigFile>
     <Directives>
       <Group id="0">
         <Directive status="1">
           <Name>port</Name>
           <Params>
-            <Server-Port>8111</Server-Port>
+            <ServerPort>8111</ServerPort>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>local</Name>
           <Params>
-            <VPN-Server>0.0.0.0</VPN-Server>
+            <VPNServer>0.0.0.0</VPNServer>
           </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>multihome</Name>
         </Directive>
       </Group>
       <Group id="1">
@@ -33,8 +36,8 @@
         <Directive status="1">
           <Name>server</Name>
           <Params>
-            <Virtual-IP>10.10.10.0</Virtual-IP>
-            <Virtual-Netmask>255.255.255.0</Virtual-Netmask>
+            <VirtualIP>10.10.10.0</VirtualIP>
+            <VirtualNetmask>255.255.255.0</VirtualNetmask>
           </Params>
         </Directive>
       </Group>
@@ -42,74 +45,109 @@
         <Directive status="1">
           <Name>ca</Name>
           <Params>
-            <Ca>/var/www/vpn/2.0/keys/ca.crt</Ca>
+            <Ca>/home/ovpnc/Ovpnc/openvpn/conf/keys/ca.crt</Ca>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>cert</Name>
           <Params>
-            <Certificate>/var/www/vpn/2.0/keys/server.crt</Certificate>
+            <Certificate>/home/ovpnc/Ovpnc/openvpn/conf/keys/server.crt</Certificate>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>dh</Name>
           <Params>
-            <Dh>/var/www/vpn/2.0/keys/dh1024.pem</Dh>
+            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/keys/dh1024.pem</Dh>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>key</Name>
           <Params>
-            <Key>/var/www/vpn/2.0/keys/server.key</Key>
+            <Key>/home/ovpnc/Ovpnc/openvpn/conf/keys/server.key</Key>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>tls-auth</Name>
           <Params>
-            <Tls-Key>/var/www/vpn/2.0/keys/ta.key</Tls-Key>
-            <Tls-Mode>0</Tls-Mode>
+            <TlsKey>/home/ovpnc/Ovpnc/openvpn/conf/keys/ta.key</TlsKey>
+            <TlsMode>0</TlsMode>
           </Params>
         </Directive>
       </Group>
       <Group id="3">
         <Directive status="1">
+          <Name>client-config-dir</Name>
+          <Params>
+            <ClientDir>/home/ovpnc/Ovpnc/openvpn/conf/ccd</ClientDir>
+          </Params>
+        </Directive>
+        <Directive status="1">
           <Name>crl-verify</Name>
           <Params>
-            <Crl-File>/var/www/vpn/2.0/keys/crl.pem</Crl-File>
+            <CrlFile>/home/ovpnc/Ovpnc/openvpn/conf/keys/crl.pem</CrlFile>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>max-clients</Name>
           <Params>
-            <Max-Clients>24</Max-Clients>
+            <MaxClients>24</MaxClients>
+          </Params>
+        </Directive>
+        <Directive status="0">
+          <Name>ifconfig-pool</Name>
+          <Params>
+            <PoolBegin>10.10.10.2</PoolBegin>
+            <PoolEnd>10.10.10.24</PoolEnd>
+          </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>ifconfig-pool-persist</Name>
+          <Params>
+            <PoolFile>/home/ovpnc/Ovpnc/openvpn/conf/ipp.txt</PoolFile>
+            <RefreshPoolFile>5</RefreshPoolFile>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>client-to-client</Name>
         </Directive>
-        <Directive status="1">
+        <Directive status="0">
           <Name>duplicate-cn</Name>
         </Directive>
       </Group>
       <Group id="4">
+        <Directive status="0">
+          <Name>chroot</Name>
+          <Params>
+            <ChrootDir>/home/openvpn/Ovpnc/config</ChrootDir>
+          </Params>
+        </Directive>
         <Directive status="1">
           <Name>group</Name>
           <Params>
-            <Group-Name>openvpn</Group-Name>
+            <GroupName>openvpn</GroupName>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>management</Name>
           <Params>
-            <Management-IP>127.0.0.1</Management-IP>
-            <Management-Port>7505</Management-Port>
+            <ManagementIP>127.0.0.1</ManagementIP>
+            <ManagementPort>7505</ManagementPort>
+          </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>nice</Name>
+          <Params>
+            <ProcessPrio>0</ProcessPrio>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>user</Name>
           <Params>
-            <User-Name>openvpn</User-Name>
+            <UserName>openvpn</UserName>
           </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>management-query-passwords</Name>
         </Directive>
       </Group>
       <Group id="5">
@@ -122,13 +160,13 @@
         <Directive status="1">
           <Name>comp-lzo</Name>
           <Params>
-            <Comp-Lzo>yes</Comp-Lzo>
+            <CompLzo>yes</CompLzo>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>log-append</Name>
           <Params>
-            <Log-File>/var/www/vpn/openvpn.log</Log-File>
+            <LogFile>/home/ovpnc/Ovpnc/openvpn/var/log/openvpn.log</LogFile>
           </Params>
         </Directive>
         <Directive status="1">
@@ -140,8 +178,8 @@
         <Directive status="1">
           <Name>status</Name>
           <Params>
-            <Status-File>/var/www/vpn/openvpn-status.log</Status-File>
-            <Status-Sec>3</Status-Sec>
+            <StatusFile>/home/ovpnc/Ovpnc/openvpn/var/log/openvpn-status.log</StatusFile>
+            <StatusSec>3</StatusSec>
           </Params>
         </Directive>
         <Directive status="1">
@@ -155,19 +193,25 @@
         <Directive status="0">
           <Name>connect-freq</Name>
           <Params>
-            <Connect-Freq-New>5</Connect-Freq-New>
-            <Connect-Freq-Sec>2</Connect-Freq-Sec>
+            <ConnectFreqNew>5</ConnectFreqNew>
+            <ConnectFreqSec>2</ConnectFreqSec>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>keepalive</Name>
           <Params>
-            <KeepAlive-Dead>3</KeepAlive-Dead>
-            <KeepAlive-Poll>9</KeepAlive-Poll>
+            <KeepAliveDead>4</KeepAliveDead>
+            <KeepAlivePoll>10</KeepAlivePoll>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>persist-key</Name>
+        </Directive>
+        <Directive status="1">
+          <Name>persist-local-ip</Name>
+        </Directive>
+        <Directive status="1">
+          <Name>persist-remote-ip</Name>
         </Directive>
         <Directive status="1">
           <Name>persist-tun</Name>
@@ -177,31 +221,37 @@
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>route 10.10.10.0 255.255.255.0</Push-String>
+            <PushString>route 10.10.10.0 255.255.255.0</PushString>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>dhcp-option DNS 8.8.8.8</Push-String>
+            <PushString>dhcp-option DNS 8.8.8.8</PushString>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>route-gateway dhcp</Push-String>
+            <PushString>route-gateway dhcp</PushString>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>comp-lzo yes</Push-String>
+            <PushString>comp-lzo yes</PushString>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>push</Name>
           <Params>
-            <Push-String>keepalive 2 8</Push-String>
+            <PushString>keepalive 3 9</PushString>
+          </Params>
+        </Directive>
+        <Directive status="1">
+          <Name>push</Name>
+          <Params>
+            <PushString>echo forget-passwords</PushString>
           </Params>
         </Directive>
       </Group>

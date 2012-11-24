@@ -47,8 +47,8 @@
 		      <tr class="odd">
 		        <td class="ConfigKeys">Config File:</td>
 		        <td>
-				  <input type="text" name="Config-File" class="file">
-                    <xsl:attribute name="value"><xsl:value-of select="Config-File"/></xsl:attribute>
+				  <input type="text" name="ConfigFile" class="file">
+                    <xsl:attribute name="value"><xsl:value-of select="ConfigFile"/></xsl:attribute>
 				  </input>
 			    </td>
 		      </tr>
@@ -103,10 +103,9 @@
 						  <!-- Define variables -->
 						  <xsl:variable name="local" select="local-name()"/>
 						  <xsl:variable name="current" select="."/>
-						  <xsl:variable name="it" select="0"/>
 			       	  	  <td><span class="msg" ><xsl:value-of select="$local"/></span></td>
 						  <xsl:choose>
-							<xsl:when test="$local = 'Management-Port' or $local = 'Server-Port'">
+							<xsl:when test="$local = 'ManagementPort' or $local = 'ServerPort'">
                               <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
 								  <!-- Define variables from xsd schema -->
@@ -130,7 +129,8 @@
                                 </xsl:for-each>
                               </td>
                             </xsl:when>
-							<xsl:when test="$local = 'Max-Clients'">
+							<!-- MaxClients -->
+							<xsl:when test="$local = 'MaxClients'">
                               <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
 								  <!-- Define variables from xsd schema -->
@@ -154,7 +154,8 @@
                                 </xsl:for-each>
                               </td>
                             </xsl:when>
-						    <xsl:when test="$local = 'KeepAlive-Poll'">
+							<!-- KeepAlivePoll -->
+						    <xsl:when test="$local = 'KeepAlivePoll'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -177,7 +178,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'KeepAlive-Dead'">
+							<!-- KeepAliveDead-->
+						    <xsl:when test="$local = 'KeepAliveDead'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -200,7 +202,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Connect-Freq-New'">
+							<!-- ConnectFreqNew -->
+						    <xsl:when test="$local = 'ConnectFreqNew'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -223,7 +226,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Connect-Freq-Sec'">
+							<!-- Connect-Freq-Sec -->
+						    <xsl:when test="$local = 'ConnectFreqSec'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -246,7 +250,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Mute'">
+							<!-- Mute and Process-Prio -->
+						    <xsl:when test="$local = 'Mute' or $local='Process-Prio'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -269,7 +274,7 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Status-Sec'">
+						    <xsl:when test="$local = 'StatusSec'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -292,7 +297,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Verb'">
+							<!-- Verb -->
+						    <xsl:when test="$local = 'Verb' or $local='ProcessPrio'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="elementType" select="@type"/>
@@ -315,7 +321,8 @@
                                 </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="number($current) or $local = 'Tls-Mode'">
+							<!-- TlsMode -->
+						    <xsl:when test="number($current) or $local = 'TlsMode'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -339,8 +346,8 @@
 								</xsl:for-each>
 							  </td>
 						    </xsl:when>
-
-						    <xsl:when test="$local='Push-String'">	
+							<!-- PushString -->
+						    <xsl:when test="$local='PushString'">	
 						      <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -356,8 +363,17 @@
 								</xsl:for-each>
 						      </td>
 						    </xsl:when>
-
-						    <xsl:when test="$local='Status-File' or $local='Crl-File' or $local='Log-File' or $local='Ca' or $local='Dh' or $local='Key' or $local='Certificate'">
+							<!-- Many types... -->
+						    <xsl:when test="$local='StatusFile' 
+										or $local='CrlFile'
+										or $local='ChrootDir'
+										or $local='PoolFile'
+										or $local='ClientDir'
+										or $local='LogFile'
+										or $local='Ca'
+										or $local='Dh'
+										or $local='Key'
+										or $local='Certificate'">
 						      <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -373,8 +389,8 @@
 								</xsl:for-each>
 						      </td>
 						    </xsl:when>
-
-						    <xsl:when test="$local='Tls-Key'">
+							<!-- TlsKey -->
+						    <xsl:when test="$local='TlsKey'">
 						      <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -390,8 +406,29 @@
 								</xsl:for-each>
 						      </td>
 						    </xsl:when>
-
-						    <xsl:when test="$local = 'Management-IP' or $local = 'Virtual-Netmask' or $local='VPN-Server' or $local='Virtual-IP'">
+							<!-- PoolBegin and PoolEnd -->
+							<xsl:when test="$local='PoolEnd' or $local='PoolBegin'">
+							  <td>
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+ 						          <xsl:variable name="required" select="@minOccurs"/>
+								  <input type="text" class="file">
+									<xsl:if test="$required = 0">
+                                      <xsl:attribute name="required"><xsl:value-of select="$required"/></xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:attribute name="class">ip</xsl:attribute>
+								    <xsl:attribute name="value"><xsl:value-of select="$current"/></xsl:attribute>
+								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
+									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
+									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
+							      </input>								
+								</xsl:for-each>
+						      </td>
+						    </xsl:when>
+							<!-- ManagementIP, VirtualNetmask, VPNServer, VirtualIP -->
+						    <xsl:when test="$local = 'ManagementIP'
+										 or $local = 'VirtualNetmask'
+										 or $local='VPNServer'
+										 or $local='VirtualIP'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -450,6 +487,7 @@
 								</xsl:for-each>
 							  </td>  
 						    </xsl:when>
+							<!-- Cipher -->
 						    <xsl:when test="$local = 'Cipher'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
@@ -476,7 +514,8 @@
 							    </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-						    <xsl:when test="$local = 'Comp-Lzo'">
+							<!-- CompLzo -->
+						    <xsl:when test="$local = 'CompLzo'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
  						          <xsl:variable name="required" select="@minOccurs"/>
@@ -501,7 +540,7 @@
 							    </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-
+							<!-- Device -->
 						    <xsl:when test="$local = 'Device'">
 							  <td>
                                 <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
@@ -527,8 +566,8 @@
 							    </xsl:for-each>
 							  </td>  
 						    </xsl:when>
-
-						    <xsl:when test="$local = 'Group-Name' or $local = 'User-Name'">
+							<!-- GroupName, UserName -->
+						    <xsl:when test="$local = 'GroupName' or $local = 'UserName'">
 							  <td>
 							      <input type="text" class="file">
 								    <xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
