@@ -29,7 +29,7 @@ $(document).ready(function() {
 				disabled.push(n.name);
 			}
 		
-			if ( ! n.value.match(/\w+/g) && n.name !== 'Send' && n.name !== ''){
+			if ( ! n.value.match(/[\w+|\/]/g) && n.name !== 'Send' && n.name !== ''){
 				alert( "Empty value in " + n.name );
 				$(this).css("border","2px dotted red").css('background-color','red').focus().bind("keyup",(function() {
 					$(this).css('border', '0').css('background-color','').unbind("keyup");

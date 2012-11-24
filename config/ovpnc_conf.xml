@@ -84,7 +84,7 @@
         <Directive status="1">
           <Name>crl-verify</Name>
           <Params>
-            <CrlFile>/home/ovpnc/Ovpnc/openvpn/conf/keys/crl.pem</CrlFile>
+            <CrlFile>conf/keys/crl.pem</CrlFile>
           </Params>
         </Directive>
         <Directive status="1">
@@ -115,10 +115,10 @@
         </Directive>
       </Group>
       <Group id="4">
-        <Directive status="0">
+        <Directive status="1">
           <Name>chroot</Name>
           <Params>
-            <ChrootDir>/home/openvpn/Ovpnc/config</ChrootDir>
+            <ChrootDir>/</ChrootDir>
           </Params>
         </Directive>
         <Directive status="1">

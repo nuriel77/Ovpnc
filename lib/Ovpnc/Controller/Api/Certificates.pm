@@ -34,14 +34,14 @@ For REST action class
 
 =cut
 
-sub index : Chained('/') PathPart('api/certificates/') Args(0) : ActionClass('REST') {
+sub certificates : Chained('/') PathPart('api/certificates') Args(0) : ActionClass('REST') {
 }
 
 =head2 get_cert
 
 =cut
 
-sub set_vars : Chained('base') Part('set_vars') : Args(0) Does('NeedsLogin') {
+sub certificates_POST : Path('certificates') : Args(0) Does('NeedsLogin') {
 	my ( $self, $c ) = @_;
 
 	# Set openssl environment variables (eq to source ./vars)
@@ -66,10 +66,47 @@ sub set_vars : Chained('base') Part('set_vars') : Args(0) Does('NeedsLogin') {
 
 	$ENV{$_} = $oe->{$_}
 		for ( keys %{$oe} );
-	
-	return 1;
+
+# 	$self->status_ok(
+#       $c,
+#        entity => { test => 'just a test' },
+# 	);
+
 }
 
+=head2 certificates_GET
+
+Get certificate(s) data
+
+=cut
+
+sub certificates_GET : Path('certificates') : Args(0) Does('NeedsLogin'){
+    my ( $self, $c ) = @_;
+	$self->status_ok(
+            $c,
+            entity => {
+                some => 'dsta',
+                foo  => 'is real bar-x',
+            },
+    );
+}
+
+=head2 certificates_GET
+
+Delete certificate(s)
+
+=cut
+
+sub certificates_DELETE : Path('certificates') : Args(0) Does('NeedsLogin'){
+    my ( $self, $c ) = @_;
+	$self->status_ok(
+            $c,
+            entity => {
+                some => 'dsta',
+                foo  => 'is real bar-x',
+            },
+    );
+}
 
 sub default : Private {
     my ( $self, $c ) = @_;

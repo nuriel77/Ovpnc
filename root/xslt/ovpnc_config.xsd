@@ -69,8 +69,8 @@
 		<xsd:choice>
 	        <xsd:element minOccurs="0" name="StatusFile" type="File" />
 			<xsd:element minOccurs="0" name="LogFile" type="File" />
-			<xsd:element minOccurs="0" name="ChrootDir" type="File" />
-			<xsd:element minOccurs="1" name="ClientDir" type="File" />
+			<xsd:element minOccurs="0" name="ChrootDir" type="Dir" />
+			<xsd:element minOccurs="1" name="ClientDir" type="Dir" />
 			<!-- NOTE: ifconfig-pool-persist will not work with duplicate-cn, try to eliminate here by validation -->
 			<xsd:element minOccurs="1" name="PoolFile" type="File" />
 	        <xsd:element minOccurs="0" ref="Int" />
@@ -153,6 +153,13 @@
   <xsd:simpleType name="File">
 	<xsd:restriction base="xsd:string">
       <xsd:pattern value="[/\-A-Za-z_ \.0-9]*" />
+	</xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Type: Dir -->
+  <xsd:simpleType name="Dir">
+	<xsd:restriction base="xsd:string">
+      <xsd:pattern value="[/\-A-Za-z_ \.0-9\/]*" />
 	</xsd:restriction>
   </xsd:simpleType>
 

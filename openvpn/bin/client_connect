@@ -1,8 +1,8 @@
 #!/bin/bash
-
-echo got 1: $1 > /tmp/test.txt
-env >> /tmp/test.txt
-echo "---" >> /tmp/test.txt
-cat $1 >> /tmp/test.txt
+exit 0;
+echo got 1: $1 > ../tmp/test.txt
+env >> ../tmp/test.txt
+echo "---" >> ../tmp/test.txt
+cat $1 >> ../tmp/test.txt
 
 exit 0

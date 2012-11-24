@@ -1,3 +1,14 @@
 This is the default directory for OpenVPN Files
 Ovpnc and OpenVPN should both have access.
 By default OpenVPN will cd to here after startup.
+
+* CHROOT:
+You can create a chroot from this directory
+or create a subdirectory called jail or chroot.
+You need to make sure all the files are accessible
+for OpenVPN after it starts up. Files like crl.pem
+and client configuration scripts, start-up script
+must be present and accessible within the chroot.
+You should also copy /lib into the chroot, in case
+needed you can create a softlink ln -s lib lib64
+

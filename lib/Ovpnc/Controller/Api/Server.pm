@@ -10,7 +10,6 @@ use vars qw/
   $pid_file
   $openvpn_bin
   $openvpn_config
-  $openvpn_tmpdir
   $vpn_dir
   $app_root
 /;
@@ -170,9 +169,6 @@ sub begin : Private {
 	# OpenVPN main binary
     $openvpn_bin = $c->config->{openvpn_bin} || '/usr/sbin/openvpn';
 
-	# OpenVPN tmp dir
-	$openvpn_tmpdir = $c->config->{application_root} . '/openvpn/tmp';
-	
 	# OpenVPN main config
     $openvpn_config = Ovpnc::Controller::Api::Config->get_openvpn_config_file(
         $c->config->{ovpnc_conf} )
@@ -579,11 +575,11 @@ sub begin : Private {
               . ' --writepid ' 			. $pid_file
               . ' --daemon ovpn-server'
               . ' --script-security 2'	
-			  . ' --client-connect ' 	. $app_root . '/openvpn/bin/client_connect'	# Optional checker script
+			  . ' --client-connect ./bin/client_connect'				# Optional checker script
 			  . ' --echo \'on all\''								# For management log
-			  . ' --tmp-dir ' 			. $openvpn_tmpdir			# tmp files for openvpn ipc
+			  . ' --tmp-dir /tmp'									# openvpn tmp directiry
 			  . ' --ccd-exclusive'									# Force client-config-dir usage
-              . ' --cd '				. $app_root . '/openvpn'	# Cd to dir after startup
+              . ' --cd /'											# Cd to dir after startup
               . ' --config '	        . $openvpn_config;			# The main openvpn server config
 
 			warn 'Executing command: "' . $command . '"';
