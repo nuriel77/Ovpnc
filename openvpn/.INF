@@ -3,12 +3,28 @@ Ovpnc and OpenVPN should both have access.
 By default OpenVPN will cd to here after startup.
 
 * CHROOT:
-You can create a chroot from this directory
-or create a subdirectory called jail or chroot.
-You need to make sure all the files are accessible
-for OpenVPN after it starts up. Files like crl.pem
-and client configuration scripts, start-up script
-must be present and accessible within the chroot.
-You should also copy /lib into the chroot, in case
-needed you can create a softlink ln -s lib lib64
+You can create a chroot as a subdirectory called jail
+or chroot.
 
+- exec -
+You need to make sure all the files are accessible
+for OpenVPN after it starts up. Files like 'crl.pem'
+and client configuration scripts, start-up script,
+client-connect scripts etc, must be present and 
+accessible within the chroot.
+
+- lib -
+You should also copy /lib into the chroot, in case
+needed you can create a softlink 'ln -s lib lib64'
+
+- env -
+When 'env' is used it should be copied from '/usr/bin'
+to an accessible bin directory within the chroot.
+If you are using 'md5sum' or any other tool then 
+you should also copy them into the chroot.
+
+- keys -
+
+Generally, server keys should be out of the chroot,
+so does the ta.key, they are all read by openvpn
+before it enters into the chroot.

@@ -574,8 +574,9 @@ sub begin : Private {
               . $openvpn_bin
               . ' --writepid ' 			. $pid_file
               . ' --daemon ovpn-server'
-              . ' --script-security 2'	
-			  . ' --client-connect ./bin/client_connect'				# Optional checker script
+			  . ' --setenv PATH /bin'
+              . ' --script-security 3 system'	
+			  . ' --client-connect /bin/client_connect'				# Optional checker script
 			  . ' --echo \'on all\''								# For management log
 			  . ' --tmp-dir /tmp'									# openvpn tmp directiry
 			  . ' --ccd-exclusive'									# Force client-config-dir usage

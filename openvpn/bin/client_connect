@@ -1,8 +1,9 @@
-#!/bin/bash
-exit 0;
-echo got 1: $1 > ../tmp/test.txt
-env >> ../tmp/test.txt
-echo "---" >> ../tmp/test.txt
-cat $1 >> ../tmp/test.txt
+#!/bin/sh
+export PATH=/bin
 
-exit 0
+realSum=$(grep '^#.*' /conf/ccd/$common_name | sed 's/#//')
+case $(md5sum < $1 | sed 's/[\t +|\-]//g') in
+  ( $realSum ) exit 0 ;;
+esac
+
+exit 1
