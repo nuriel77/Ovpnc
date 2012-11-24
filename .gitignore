@@ -10,7 +10,8 @@ inc/*
 MYMETA.*
 META.yml
 Makefile
-tmp/*
+tmp/session/*
+tmp/cache/*
 *.old
 *.save
 *.key
