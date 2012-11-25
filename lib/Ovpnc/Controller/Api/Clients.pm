@@ -2,6 +2,7 @@ package Ovpnc::Controller::Api::Clients;
 use Ovpnc::Plugins::Connector;
 use Moose;
 use namespace::autoclean;
+use vars qw( $REGEX );
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -9,10 +10,9 @@ __PACKAGE__->config( namespace => 'api' );
 
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
-	# A litte hack in order
-	# to get the correct namespace.
-	# Wanted to keep traits out of
-	# the Controller directory
+	# get the correct namespace.
+	# To keep traits out of
+	# the Controller directory.
 	default => sub {
 		my ($P, $SP) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
 		return $P . '::TraitFor::' . $SP;
@@ -33,6 +33,12 @@ has utils_dir => (
 	predicate => '_has_utils_dir'
 );
 
+$REGEX = {
+    client => {
+		list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
+    	crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*',
+	}
+};
 
 =head2 Method Modifiers
 
@@ -52,6 +58,12 @@ has vpn => (
 	required => 0
 );
 
+around [ qw( clients_UNREVOKE ) ] => sub {
+	my ( $orig, $self, $c, $params ) = @_;
+	$self->set_controller_params( $c );
+	return $self->$orig($c, $params);
+};
+
 around [ qw(
 		clients_REVOKE
 		clients_REMOVE
@@ -61,14 +73,7 @@ around [ qw(
 
 		# Do not process twice
 		if ( ref $c && ! $self->_has_vpn_dir ){
-			# Remove trailing /
-		   	$c->config->{openvpn_dir} =~ s/\/$//;
-		   	$c->config->{application_root} =~ s/\/$//;
-			# Assign OpenVPN dir
-		    $self->vpn_dir ((
-				$c->config->{openvpn_dir} || $c->config->{application_root} . '/openvpn'
-			));
-			$self->utils_dir( $self->vpn_dir . '/' . $c->config->{openvpn_utils} );
+			$self->set_controller_params( $c );
 		}
 
 		# Also here, don't process twice
@@ -84,7 +89,6 @@ around [ qw(
 	            password => $c->config->{password} || '',
 			})
 		);
-
 
 	    # Check connection to mgmt port
 	    unless ( $self->vpn->connect ) {
@@ -126,9 +130,9 @@ of Ovpnc/OpenVPN
 
 =cut
 
-sub clients_GET : Local : Args(0) #Does('NeedsLogin') 
+sub clients_GET : Local : Args(1) #Does('NeedsLogin') 
 {
-	my ( $self, $c ) = @_;
+	my ( $self, $c, $cmd ) = @_;
 
 	$self->status_ok(
         $c,
@@ -181,20 +185,12 @@ sub clients_REVOKE : Local  : Args(1) #Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
-	# Verify that client name was provided
-    unless ($client) {
-        $c->stash( { error => 'No client specified at clients_REVOKE' } );
-		$self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
-    }
+	# Verify that a client name was provided
+	$self->_client_error($c) unless ( $client );
 
 	# Trait names should match request method
 	# (class names in ucfirst)
-	my $role = $self->new_with_traits(
-		traits	=> [ ucfirst( lc($c->request->method) ) ],
-		vpn_dir => $self->vpn_dir,
-		utils_dir => $self->utils_dir
-	);
+	my $role = $self->_get_roles( $c->request->method );
 
 	my $_ret_val;
 
@@ -222,13 +218,203 @@ sub clients_REVOKE : Local  : Args(1) #Does('NeedsLogin')
 }
 
 
-sub kill_connection : Private {
+=head2
+
+Unrevoke a client's certificate
+and remove the appended
+.disabled from the file
+in ccd
+
+=cut
+
+sub clients_UNREVOKE : Path('unkill') Args(1) #Does('NeedsLogin') 
+{
+    my ( $self, $c, $client ) = @_;
+
+	# Verify that a client name was provided
+	$self->_client_error($c) unless ( $client );
+
+	# Check if not aleady revoked
+	my $revoked = $c->forward('list_revoked');
+	unless ( $self->_match_revoked( $revoked, $client ) ){
+		delete $c->stash->{status};
+		delete $c->stash->{assets};
+		$c->stash({ error => "Unrevoke faild: client is not the revoked list" });
+	    $self->_disconnect_vpn if $self->_has_vpn;
+	    $c->detach;
+	}
+
+	# Trait names should match request method
+	my $role = $self->_get_roles( $c->request->method );
+
+    # Unrevoke a revoked client's certificate
+    my $_ret_val = $role->unrevoke_certificate(
+		$client,
+		$c->config->{openssl_conf},
+		$c->config->{openssl_bin}
+	);
+    $c->stash( { status => $_ret_val } );
+	$self->_disconnect_vpn if $self->_has_vpn;
+}
+
+=head2
+
+Get revoked client list
+
+=cut
+
+sub list_revoked : Path('clients/list_revoked') : Args(0) #Does('NeedsLogin')
+{
+    my ( $self, $c ) = @_;
+
+    my $crl_index = $c->config->{openvpn_dir} . '/'
+					. $c->config->{openvpn_utils} . '/keys/index.txt';
+
+    unless ( -r $crl_index ){
+        $c->stash({
+			error => 'Cannot read ' . $crl_index
+			. ', file does not exists or is not readable' 
+		});
+		$self->_disconnect_vpn if $self->_has_vpn;
+        $c->detach;
+    }
+
+    my $revoked_clients = $self->read_crl_index_file( $crl_index );
+
+    if ( $revoked_clients and ref $revoked_clients eq 'ARRAY' and @{$revoked_clients} > 0 ){
+        $c->stash( { status => $revoked_clients } );
+    } else {
+        $c->stash( { status => 'none' } );
+    }
+}
+
+
+# Private methods
+# ===============
+
+=head2 Kill_connection
+
+Kill a connection of a
+given client/ip:port
+
+=cut
+
+sub kill_connection : Private 
+{
     my ( $self, $connection ) = @_;
 	die "No connection?!" unless $self->_has_vpn;
     my $ret_val = $self->vpn->kill( $connection );
     return $ret_val;
 }
 
+
+=head2 read_crl_index_file
+
+This file generated by 
+OpenVPN lists the certificates
+and provides us information
+who is revoked
+
+=cut
+
+sub read_crl_index_file : Private
+{
+    my ( $self, $crl_index ) = @_;
+    my ($Y,$M,$D,$h,$m,$s);
+    my $obj = [];
+
+    open ( FH, "<", $crl_index )
+        or die "Cannot read $crl_index: $!";
+
+    while (my $line = <FH>){
+        my ($revoke_time, $name) = $line =~ /$REGEX->{client}->{crl}/g;
+        if ($revoke_time and $name){
+            ($Y,$M,$D,$h,$m,$s) = $revoke_time =~ /(..)/g;
+            my $kill_time =  $D.'-'.$M.'-'.($Y+2000) . ' ' . $h.':'.$m.':'.$s;
+            push ( @{$obj}, { name => $name, kill_time => $kill_time } );
+        }
+    }
+
+    close FH;
+    return $obj;
+}
+
+=head2 _match_revoked
+
+Will compare the current
+client to the list of revoked
+to see if he is there
+
+=cut
+
+sub _match_revoked : Private {
+	my ( $self, $revoked, $client ) = @_;
+	if ( ref $revoked && $revoked->{status}
+		&& $revoked->{status} ne 'none'
+	){
+		for ( @{$revoked->{status}} ){
+			return 1 if ( $_->{name} eq $client );								
+		}
+	}
+	return 0;
+}
+
+
+=head2 _get_roles
+
+Based on the method name we wish
+to load the corresponding trait(s)
+Notice we ucfirst format the name
+and also sent extra params
+
+=cut
+
+sub _get_roles : Private {
+	my $self = shift;
+	return $self->new_with_traits(
+		traits	=> [ ucfirst( lc(shift) ), @_ ],
+		vpn_dir => $self->vpn_dir,
+		utils_dir => $self->utils_dir
+	);
+}
+
+=head2 _client_error
+
+Detach not before stashing
+the error message
+and disconnect the mgmt port
+
+=cut
+
+sub _client_error : Private {
+    my ( $self, $c ) = @_;
+	$c->stash( { error => 'No client specified at clients_' . $c->request->method } );
+	$self->_disconnect_vpn if $self->_has_vpn;
+    $c->detach;
+}
+
+
+=head2 set_controller_params
+
+Sets parameters
+from config file
+to be used in this controller
+
+=cut
+
+sub set_controller_params : Private {
+	my ( $self, $c ) = @_;
+
+	# Remove trailing /
+   	$c->config->{openvpn_dir} =~ s/\/$//;
+   	$c->config->{application_root} =~ s/\/$//;
+
+	# Assign OpenVPN dir
+    $self->vpn_dir ((
+		$c->config->{openvpn_dir} || $c->config->{application_root} . '/openvpn'
+	));
+	$self->utils_dir( $self->vpn_dir . '/' . $c->config->{openvpn_utils} );
+}
 
 =head2 default
 
@@ -242,6 +428,15 @@ sub default : Private {
     $c->response->status(404);
 }
 
+=head2 end
+
+Last auto-action
+of this controller
+Disconnect the mgmt port
+and forward to the view
+
+=cut
+
 sub end : Private {
     my ( $self, $c ) = @_;
 
@@ -250,6 +445,11 @@ sub end : Private {
 
 	# Disconnect if established
 	$self->_disconnect_vpn if $self->_has_vpn;
+
+	# Clean up the File::Assets
+	# it is set to null but 
+	# is not needed in JSON output
+	delete $c->stash->{assets};
 
     # Forward to JSON view
     $c->forward(

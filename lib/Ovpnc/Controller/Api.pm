@@ -85,6 +85,11 @@ sub end : Private {
     # Debug if requested
     die "forced debug" if $c->req->params->{dump_info};
 
+	# Clean up the File::Assets
+    # it is set to null but
+    # is not needed in JSON output
+    delete $c->stash->{assets};
+
     # Forward to JSON view
     $c->forward("View::JSON");
 

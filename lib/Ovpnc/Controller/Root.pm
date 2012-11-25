@@ -62,7 +62,7 @@ sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
     my ( $self, $c ) = @_;
 
 	# Get all killed clients
-	my $kc = $self->get_killed_clients($c);
+	my $kc = $self->list_revoked_clients($c);
 	$c->stash->{killed_clients} = $kc
 		if ( $kc and ref $kc );
 
@@ -76,7 +76,7 @@ sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
     $c->stash->{logged_in} = 1;
 
 	# Include JS/CSS
-	$self->include_default_links($c);
+	$self->include_default_links( $c );
 
 }
 
@@ -123,10 +123,10 @@ sub include_default_links : Private {
     }
 }
 
-sub get_killed_clients : Private {
+sub list_revoked_clients : Private {
 	my ( $self, $c ) = @_;
 
-	my $obj = $c->forward('/api/server/get_killed');
+	my $obj = $c->forward('/api/list_revoked');
 	die $c->{error} if ( $c->{error} );
 
 	if ( ref $obj eq 'HASH' ){
@@ -138,7 +138,7 @@ sub get_killed_clients : Private {
 		#}
 	}
 	else {
-		die "Killed clients read error?!";
+		die "Killed clients read error?! " . $obj;
 	}
 }
 

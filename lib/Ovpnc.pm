@@ -168,8 +168,8 @@ __PACKAGE__->config(
         #		actions => {
         #			required => {
         #				Does => ['ACL'],
-        #				AllowedRole => ['ovpncadmin', 'ovpnc', 'nuriel'], # ANY of these
-        #				RequiresRole => ['nuriel'], # ALL of these
+        #				AllowedRole => ['ovpncadmin'], # ANY of these
+        #				RequiresRole => ['admin'], # ALL of these
         #				ACLDetachTo => 'login',
         #			},
         #		},

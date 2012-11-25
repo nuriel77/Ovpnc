@@ -1,12 +1,12 @@
 package Ovpnc::Controller::Api::Server;
+use Ovpnc::Plugins::Connector;
 use strict;
 use warnings;
 use Moose;
-use Net::OpenVPN::Manage;
 use File::Slurp;
 
 use vars qw/
-  $regex
+  $REGEX
   $pid_file
   $openvpn_bin
   $openvpn_config
@@ -65,7 +65,7 @@ has 'vpn' => (
 );
 
 # Define global regex(s)
-$regex = {
+$REGEX = {
     client_list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
     log_line  => '^([0-9]+),(.*)\n',
     verb_line => '^SUCCESS: verb=(\d+)\n',
@@ -123,20 +123,9 @@ On start assign
 params to globals
 
 =cut
+
 sub begin : Private {
 	my ( $self, $c ) = @_;
-
-	# Establish connection to management port
-    $self->vpn(
-        $self->mgt_connect(
-            {
-                host     => $c->config->{host}     || '127.0.0.1',
-                port     => $c->config->{port}     || '7505',
-                timeout  => $c->config->{timeout}  || 5,
-                password => $c->config->{password} || '',
-            }
-        )
-    );
 
 	# Remove trailing /
 	$c->config->{openvpn_dir} =~ s/\/$//;
@@ -145,11 +134,8 @@ sub begin : Private {
 	# Assing to global variables
 	$app_root	 = $c->config->{application_root} or die "No application root?!";
 
-	# Set openvpn tmp dir
 	$tmp_dir = $c->config->{application_root} . '/openvpn/tmp/';
 
-	# Pid file, if only a dir part has been given, prepand
-	# the application root to it (for example ovpnc/somedir/..., will prepand to it)
     $pid_file =
 		$c->config->{openvpn_pid}
 			|| $c->config->{application_root} . '/openpvpn/var/run/openvpn.server.pid';
@@ -157,24 +143,19 @@ sub begin : Private {
 	$pid_file =
 		$c->config->{application_root} . '/' . $pid_file if ( $pid_file !~ /^\// );
 
-	# OpenVPN main binary
     $openvpn_bin =
 		$c->config->{openvpn_bin} || '/usr/sbin/openvpn';
 
-	# OpenVPN main config
     $openvpn_config =
 		Ovpnc::Controller::Api::Config->get_openvpn_config_file(
 	        $c->config->{ovpnc_conf} ) 
 		|| $c->config->{application_root} . '/openvpn/conf/openvpn.ovpnc.conf';
 
-	# OpenVPN dir
     $vpn_dir 
 		= $c->config->{openvpn_dir} || $c->config->{application_root} . '/openvpn';
 
-	# OpenVPN Utilities dir
     $utils_dir = $c->config->{openvpn_utils} || 'conf/2.0';
 
-	# OpenSSL config file
 	$ssl_config = $c->config->{openssl_conf};
 
 	return 1;
@@ -193,14 +174,12 @@ before [qw/status control_vpn set_verb/] => sub {
 
     # Establish connection to management port
     $self->vpn(
-        $self->mgt_connect(
-            {
-                host     => $c->config->{host}     || '127.0.0.1',
-                port     => $c->config->{port}     || '7505',
-                timeout  => $c->config->{timeout}  || 5,
-                password => $c->config->{password} || '',
-            }
-        )
+		Ovpnc::Plugins::Connector->new({
+            host     => $c->config->{host}     || '127.0.0.1',
+            port     => $c->config->{port}     || '7505',
+            timeout  => $c->config->{timeout}  || 5,
+            password => $c->config->{password} || '',
+        })
     );
 
 	return 1;
@@ -226,7 +205,7 @@ before [qw/status control_vpn set_verb/] => sub {
     	my $role = $self->new_with_traits(
 	        traits  => [ ucfirst( $fn ) ],
 			vpn 	=> $self->vpn,
-			regex	=> $regex
+			regex	=> $REGEX
 	    ) or die "Could not get role '" . ucfirst( $fn ) . "': $!";
 
 		# Check connection to mgmt port
@@ -244,7 +223,6 @@ before [qw/status control_vpn set_verb/] => sub {
         unless ( $self->vpn->connect ) {
             $c->stash( { status => 'Server offline' } );
 			$c->detach;
-            return;
         }
 
         # Set the verbosity level
@@ -282,7 +260,7 @@ before [qw/status control_vpn set_verb/] => sub {
             for my $line ( @{$_log} ) {
 
                 # Get time and data
-                my ( $_time, $_data ) = $line =~ /$regex->{log_line}/;
+                my ( $_time, $_data ) = $line =~ /$REGEX->{log_line}/;
 
                 # Convert epoc time to human if requested
                 $_time = scalar localtime($_time)
@@ -294,45 +272,6 @@ before [qw/status control_vpn set_verb/] => sub {
         }
 
         $c->stash( log => $log_object );
-    }
-
-=head2
-
-Revoke's client certificate
-using crl.pem
-Appends .disabled to client's 
-file in ccd 
-
-=cut
-
-    sub kill_client : Path('kill') : Args(1) #Does('NeedsLogin')
-	{
-        my ( $self, $c, $client ) = @_;
-
-        unless ($client) {
-            $c->stash( { error => 'No client specified at kill_client' } );
-			$c->detach;
-        }
-
-        # Check connection to mgmt port
-        unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server offline' } );
-			$c->detach;
-        }
-
-        # Revoke client's certificate
-        my $ret_val;
-        $ret_val = $self->revoke_certificate($client)
-          unless ( $c->request->params->{no_revoke} );
-
-        # Kill the connection (just incase client is currently connected)
-        if ( my $str = $self->kill_connection($client) ) {
-            $ret_val .= ';' . $str;
-        }
-        else {
-            $ret_val .= ';Client ' . $client . ' not found online';
-        }
-        $c->stash( { status => $ret_val } );
     }
 
 =head2
@@ -390,54 +329,11 @@ VPN control commands
         }
     }
 
-	sub get_killed : Path('get_killed') : Args(0) Does('NeedsLogin')
-	{
-		my ( $self, $c ) = @_;
-
-		my $crl_index = $c->config->{openvpn_dir} . '/keys/index.txt';
-
-		unless ( -r $crl_index ){
-			$c->stash( { error => 'Cannot read ' . $crl_index . ', file does not exists or is not readable' } );
-            $c->detach;
-		}
-
-		my $revoked_clients = $self->read_crl_index_file( $crl_index );
-
-		if ( $revoked_clients and ref $revoked_clients eq 'ARRAY' and @{$revoked_clients} > 0 ){
-			$c->stash( { status => $revoked_clients } );
-		}
-		else {
-			$c->stash( { status => 'none' } );
-		}
-	}
-
 }
 
 # Private methods
 # ===============
 {
-
-	sub read_crl_index_file : Private
-	{
-		my ( $self, $crl_index ) = @_;
-		my ($Y,$M,$D,$h,$m,$s);
-		my $obj = [];
-	
-		open ( FH, "<", $crl_index )
-			or die "Cannot read $crl_index: $!";
-	
-		while (my $line = <FH>){
-			my ($revoke_time, $name) = $line =~ /$regex->{client_crl}/g;
-			if ($revoke_time and $name){ 
-				($Y,$M,$D,$h,$m,$s) = $revoke_time =~ /(..)/g;
-				my $kill_time =  $D.'-'.$M.'-'.($Y+2000) . ' ' . $h.':'.$m.':'.$s;
-				push ( @{$obj}, { name => $name, kill_time => $kill_time } );
-			}
-		}
-	
-		close FH;
-		return $obj;
-	}
 
     sub mgt_connect : Private {
         my $c = shift;
@@ -458,7 +354,7 @@ VPN control commands
         my $verb = $self->vpn->verb();
 
         # Parse the verb level
-        $verb =~ s/$regex->{verb_line}/$1/;
+        $verb =~ s/$REGEX->{verb_line}/$1/;
         return $verb;
     }
 
@@ -541,7 +437,6 @@ VPN control commands
             # vars script location
             my $vars = $tools . '/vars';
 
-			warn "EXECUTING:  cd $vpn_dir && . $vars >/dev/null && $command 2>&1";
             # Run command
             $ret_val = `cd $tools && . $vars >/dev/null && $command 2>&1`;
 
@@ -675,6 +570,11 @@ sub end : Private {
 
     # Close connection to management port
     $self->_disconnect_vpn;
+
+	# Clean up the File::Assets
+    # it is set to null but
+    # is not needed in JSON output
+	delete $c->stash->{assets};
 
     # Debug if requested
     die "forced debug" if $c->req->params->{dump_info};

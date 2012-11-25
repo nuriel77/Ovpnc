@@ -69,6 +69,9 @@ in the conf file manually
 		my $_first_line = shift @{$_xml_lines};
 		my $_xml_data = join "", @{$_xml_lines};
 
+		# Remove sticky assets
+	    delete $c->stash->{assets};
+
         if (  my $_msg = $self->validate_xml( $_xml_data, $c->config->{ovpnc_config_schema} ) )
         {
              $c->stash( { error => $_msg } );
@@ -274,6 +277,7 @@ XSD schema from openvpn
 
     sub send_error : Private {
         my ( $self, $c, $error ) = @_;
+	    delete $c->stash->{assets};
         $c->stash( { error => $error } );
 		$c->detach;
     }
@@ -757,6 +761,11 @@ sub end : Private {
 
     # Debug if requested
     die "forced debug" if $c->req->params->{dump_info};
+
+	# Clean up the File::Assets
+    # it is set to null but
+    # is not needed in JSON output
+    delete $c->stash->{assets};
 
     # Forward to JSON view
     $c->forward(
