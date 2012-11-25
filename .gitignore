@@ -22,7 +22,7 @@ openvpn/var/run/*
 openvpn/tmp/*
 openvpn/var/log/*
 ipp.txt
-lib/
 openvpn/lib64
+openvpn/lib
 openvpn/bin/
-2.0/*
+openvpn/conf/2.0/*
