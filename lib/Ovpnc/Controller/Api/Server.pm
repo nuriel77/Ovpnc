@@ -2,8 +2,10 @@ package Ovpnc::Controller::Api::Server;
 use Ovpnc::Plugins::Connector;
 use strict;
 use warnings;
+use Module::Locate qw(locate);
+scalar locate('File::Slurp')  ? 0 : do { use File::Slurp; };
 use Moose;
-use File::Slurp;
+use namespace::autoclean;
 
 use vars qw/
   $REGEX
@@ -19,7 +21,7 @@ use vars qw/
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
-__PACKAGE__->config( namespace => 'api/server' );
+__PACKAGE__->config( namespace => 'api' );
 
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
@@ -34,29 +36,6 @@ has '+_trait_namespace' => (
 	#'Ovpnc::TraitFor::Controller::Api::Server'
 );
 
-has 'host' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => '127.0.0.1'
-);
-
-has 'port' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => '7505'
-);
-
-has 'password' => (
-    isa => 'Str',
-    is  => 'rw'
-);
-
-has 'timeout' => (
-    isa     => 'Int',
-    is      => 'rw',
-    default => 5
-);
-
 has 'vpn' => (
     isa       => 'Object',
     is        => 'rw',
@@ -66,10 +45,9 @@ has 'vpn' => (
 
 # Define global regex(s)
 $REGEX = {
-    client_list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
-    log_line  => '^([0-9]+),(.*)\n',
-    verb_line => '^SUCCESS: verb=(\d+)\n',
-	client_crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*',
+	client_list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
+    log_line  	=> '^([0-9]+),(.*)\n',
+    verb_line	=> '^SUCCESS: verb=(\d+)\n',
 };
 
 =head1 NAME
@@ -102,29 +80,57 @@ get openvpn log
 
 restart openvpn
 
-=head2 kill and unkill
 
-Kill or unkill a client
-will also revoke/unrevoke CRL
-One argument (client identification)
 
-=head2 index
+=head2 server
 
 For REST action class
 
 =cut
 
-sub index : Chained('/') PathPart('api/server') Args(0) : ActionClass('REST') {
-}
+sub server : Local : ActionClass('REST') { }
 
-=head2 begin
+
+=head2 before ...
+
+Establish connection
+before accessing any 
+of these actions
+
+=cut
+
+around [qw/status control set_verb/] => sub {
+    my $orig = shift;
+	my $self = shift;
+	my $c = shift;
+
+	$self->assign_params($c)
+		unless $pid_file;
+
+	return $self->$orig($c, @_)
+		if $self->_has_vpn;
+
+    # Establish connection to management port
+    $self->vpn(
+		Ovpnc::Plugins::Connector->new({
+            host     => $c->config->{host}     || '127.0.0.1',
+            port     => $c->config->{port}     || '7505',
+            timeout  => $c->config->{timeout}  || 5,
+            password => $c->config->{password} || '',
+        })
+    );
+
+	return $self->$orig($c, @_);
+};
+
+=head2 assign_params
 
 On start assign
 params to globals
 
 =cut
 
-sub begin : Private {
+sub assign_params : Private {
 	my ( $self, $c ) = @_;
 
 	# Remove trailing /
@@ -140,7 +146,7 @@ sub begin : Private {
 		$c->config->{openvpn_pid}
 			|| $c->config->{application_root} . '/openpvpn/var/run/openvpn.server.pid';
 
-	$pid_file =
+	$pid_file = 
 		$c->config->{application_root} . '/' . $pid_file if ( $pid_file !~ /^\// );
 
     $openvpn_bin =
@@ -161,69 +167,55 @@ sub begin : Private {
 	return 1;
 }
 
-=head2 before ...
-
-Establish connection
-before accessing any 
-of these actions
-
-=cut
-
-before [qw/status control_vpn set_verb/] => sub {
-    my ( $self, $c ) = @_;
-
-    # Establish connection to management port
-    $self->vpn(
-		Ovpnc::Plugins::Connector->new({
-            host     => $c->config->{host}     || '127.0.0.1',
-            port     => $c->config->{port}     || '7505',
-            timeout  => $c->config->{timeout}  || 5,
-            password => $c->config->{password} || '',
-        })
-    );
-
-	return 1;
-};
 
 
 # Main actions
 {
 
-	sub status : Path('status') : Args(0) #Does('NeedsLogin')
+	sub status : Path('server/status') : Args(0) #Does('NeedsLogin')
     {
         my ( $self, $c ) = @_;
 
-        # Check connection to mgmt port
-        unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server offline' } );
-			$c->detach;
-        }
+		# Verify can run
+		$self->sanity( $c, {
+			method 		=> $c->request->method,
+			permitted 	=> 'GET', 
+		});
 
   		# Trait names should match action name
 	    # (class names in ucfirst)
-		my ($fn) = (caller(0))[3] =~ /::(\w+)$/;
-    	my $role = $self->new_with_traits(
-	        traits  => [ ucfirst( $fn ) ],
+		my ($_fn) = (caller(0))[3] =~ /::(\w+)$/;
+    	my $_role = $self->new_with_traits(
+	        traits  => [ ucfirst( $_fn ) ],
 			vpn 	=> $self->vpn,
 			regex	=> $REGEX
-	    ) or die "Could not get role '" . ucfirst( $fn ) . "': $!";
+	    ) or die "Could not get role '" . ucfirst( $_fn ) . "': $!";
 
 		# Check connection to mgmt port
-        if ( my $status = $role->get_status ) {
-	        $c->stash( $status );
+        if ( my $_status = $_role->get_status ) {
+	        $c->stash( $_status );
+			$self->_disconnect_vpn;
         } else {
             $c->stash( { error => 'Did not get status data from management port' } );
+			$self->_disconnect_vpn;
 		}
     }
 
-    sub set_verb : Path('set_verb') Args(0) #Does('NeedsLogin')
+
+=head2 set_verb
+
+Sets the verbosity level live
+
+=cut
+    sub set_verb : Path('server/set_verb') Args(1) #Does('NeedsLogin')
 	{
         my ( $self, $c, $level ) = @_;
 
-        unless ( $self->vpn->connect ) {
-            $c->stash( { status => 'Server offline' } );
-			$c->detach;
-        }
+		# Verify can run
+		$self->sanity( $c, {
+			method 		=> $c->request->method,
+			permitted 	=> 'GET', 
+		});
 
         # Set the verbosity level
         $c->stash(
@@ -233,6 +225,7 @@ before [qw/status control_vpn set_verb/] => sub {
                   . $self->get_verbosity()
             }
         );
+		$self->_disconnect_vpn;
     }
 
     sub view_log : Chained('base') PathPart('log') Args(0) {
@@ -244,8 +237,8 @@ before [qw/status control_vpn set_verb/] => sub {
         # Check connected with mgmt port
         unless ( $self->vpn->connect ) {
             $c->stash( { status => 'Server offline' } );
+			$self->_disconnect_vpn;
 			$c->detach;
-            return;
         }
 
         # Get all or (n) lines of log
@@ -274,59 +267,65 @@ before [qw/status control_vpn set_verb/] => sub {
         $c->stash( log => $log_object );
     }
 
-=head2
-
-Unrevoke a client's certificate
-and remove the appended
-.disabled from the file
-in ccd
-
-=cut
-
-    sub unkill_client : Path('unkill') Args(1) Does('NeedsLogin') {
-        my ( $self, $c, $client ) = @_;
-
-        # Unrevoke a revoked client's certificate
-        my $ret_val = $self->unrevoke_certificate($client);
-        $c->stash( { status => $ret_val } );
-    }
 
 =head2
 
 VPN control commands
+/api/server/[start, stop, restart]
 
 =cut
 
-    sub control_vpn : Path('control') Args(1) Does('NeedsLogin') {
+    sub control : Path('server') Args(1) #Does('NeedsLogin') 
+	{
         my ( $self, $c, $command ) = @_;
 
+		# Verify can run
+        $self->sanity( $c, {
+            method      => $c->request->method,
+            permitted   => 'GET',
+			no_connect	=> 1
+        });
+
+  		# Trait names should match action name
+	    # (class names in ucfirst)
+		my ($_fn) = (caller(0))[3] =~ /::(\w+)$/;
+    	my $_role = $self->new_with_traits
+		(
+	        traits  		=> [ ucfirst( $_fn ) ],
+			vpn 			=> $self->vpn,
+            openvpn_bin 	=> $openvpn_bin,
+            openvpn_pid 	=> $pid_file,
+            openvpn_config 	=> $openvpn_config,
+			openvpn_tmpdir	=> $tmp_dir
+	    ) 
+		or die "Could not get role '" . ucfirst( $_fn ) . "': $!";
+
         # Dict of possible commands
-        my $cmds = {
-            start   => sub { $self->start_vpn; },
-            stop    => sub { $self->stop_vpn },
-            restart => sub { $self->restart_vpn },
+        my $_cmds = {
+            start   => sub { $_role->start },
+            stop    => sub { $_role->stop },
+            restart => sub { $_role->restart }
         };
 
-        my ( $found_command, $ret_val );
+        my ( $_found_command, $_ret_val );
 
         # Run the matched command (closure)
-        for my $cmd ( keys %{$cmds} ) {
-            if ( $cmd eq $command ) {
-                $ret_val       = $cmds->{$cmd}->();
-                $found_command = 1;
+        for my $_cmd ( keys %{$_cmds} ) {
+            if ( $_cmd eq $command ) {
+                $_ret_val       = $_cmds->{$_cmd}->();
+                $_found_command = 1;
             }
         }
 
         # If no command was matched
-        unless ($found_command) {
+        unless ($_found_command) {
             $c->stash( { status => $command . ' is unrecognized' } );
-            return;
+			$self->_disconnect_vpn;
+			$c->detach;
         }
 
-        # If return val is not a ref, stash for output
-        unless ( ref $ret_val ) {
-            $c->stash( { status => $ret_val } );
-        }
+        $c->stash( $_ret_val );
+		$self->_disconnect_vpn;
     }
 
 }
@@ -334,18 +333,6 @@ VPN control commands
 # Private methods
 # ===============
 {
-
-    sub mgt_connect : Private {
-        my $c = shift;
-        return Net::OpenVPN::Manage->new(
-            {
-                host     => $c->{host},
-                port     => $c->{port},
-                password => $c->{password},
-                timeout  => $c->{timeout},
-            }
-        );
-    }
 
     sub get_verbosity : Private {
         my $self = shift;
@@ -364,99 +351,6 @@ VPN control commands
         return $verb;
     }
 
-    sub kill_connection : Private {
-        my ( $self, $connection ) = @_;
-        my $ret_val = $self->vpn->kill($connection);
-        return $ret_val;
-    }
-
-    sub revoke_certificate : Private {
-        my ( $self, $client ) = @_;
-        my $ret_val;
-
-        # vars script location
-        my $vars = $vpn_dir . '/vars';
-
-        # build command
-        my $command = $vpn_dir . '/revoke-full';
-
-        # Check if can run
-        if ( -e $vpn_dir . '/vars' and -e $command and -x $command ) {
-
-            # Run command
-            $ret_val =
-              `cd $vpn_dir && . $vars > /dev/null && $command $client 2>&1`;
-
-            # Check exit status
-            if ( $? >> 8 != 0 or $ret_val =~ /Error opening/g ) {
-                return 'Revocation failure for ' . $client . ': ' . $ret_val;
-            }
-            if ( $ret_val =~ /ERROR:Already revoked/g ) {
-                return 'Revocation failure for ' . $client
-                  . ': Already revoked';
-            }
-            if ( $ret_val =~ /error 23.*certificate revoked\n/g ) {
-                $ret_val = 'ok';
-            }
-        }
-        else {
-            die "Error revoking";
-        }
-
-        return $ret_val;
-    }
-
-    sub unrevoke_certificate : Private {
-        my ( $self, $client ) = @_;
-        my $ret_val;
-
-		my $tools = $vpn_dir . '/' . $utils_dir;
-        my $index_file = $tools . '/keys/index.txt';
-
-        if ( -e $index_file and -w $index_file ) {
-
-            # Change the revocation in the index.txt
-            # ======================================
-            my $command =
-"/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file";
-
-            # Run command
-            my $ret_val = `$command`;
-
-            # Check exit status
-            if ( $? >> 8 != 0 ) {
-                return 'Un-revocation failure for ' . $client . ': ' . $ret_val;
-            }
-
-            # Regenerate the crl.pem
-            # ======================
-            $command =
-				'/usr/bin/openssl ca -gencrl -config ' . $ssl_config 
-			  . ' -out ' . $tools . '/keys/crl.pem';
-
-            # vars script location
-            my $vars = $tools . '/vars';
-
-            # Run command
-            $ret_val = `cd $tools && . $vars >/dev/null && $command 2>&1`;
-
-            # Check exit status
-            if ( $? >> 8 != 0 ) {
-                return
-                    'Un-revocation failure for ' 
-                  . $client
-                  . ' while regenerating crl.pem: '
-                  . $ret_val;
-            }
-            else {
-                return 'Un-revocation success for ' . $client . ': ' . $ret_val;
-            }
-        }
-        else {
-            return 'Un-revocation success for ' . $client
-              . ' as index file does not exists or is unaccessible';
-        }
-    }
 }
 
 {
@@ -557,6 +451,35 @@ VPN control commands
         my $ret_val = $self->start_vpn;
         return $ret_val if $ret_val;
     }
+}
+
+=head2 sanity
+
+Verify parameters
+and state before 
+an action can begin
+
+=cut
+
+sub sanity : Private {
+	my ( $self, $c, $params ) = @_;
+
+	# Check method
+	if ( $params->{method} ne $params->{permitted} ){
+		$c->stash({ 
+			error => 'Method ' . $params->{method} 
+					. ' not permitted, permitted: ' . $params->{permitted} 
+		});
+		$self->_disconnect_vpn;
+        $c->detach;
+	}
+	# Check connection
+    if ( ! $params->{no_connect} && ! $self->vpn->connect ) {
+        $c->stash( { status => 'Server offline' } );
+		$self->_disconnect_vpn;
+		$c->detach;
+    }
+	return 1;
 }
 
 sub default : Private {

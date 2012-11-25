@@ -119,6 +119,7 @@ Catalyst Controller.
 For REST action class
 
 =cut
+
 sub clients : Local : ActionClass('REST') { }
 
 

@@ -356,7 +356,7 @@ function init_click_binds(){
 
 function server_ajax_control(command){
 
-	$.getJSON('/api/server/control/' + command, function(r){
+	$.getJSON('/api/server/' + command, function(r){
 		if ( r !== undefined && r.status !== undefined){
 
 			console.log( "reply: %o", r.status);

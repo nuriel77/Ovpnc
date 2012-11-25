@@ -24,11 +24,11 @@ sub get_status {
 		unless $self->_has_vpn;
 
     # Get the current status table in version 2 format from the process.
-    my $status = $self->vpn->status(2);
+    my $_status = $self->vpn->status(2);
 
     # If method returned false, return error message.
 	return { error => $self->vpn->{error_msg} }
-    	unless ($status);
+    	unless ($_status);
 
     # Start assigning data for stashing
     my $data = { clients => [] };
@@ -39,7 +39,7 @@ sub get_status {
 	my $regex = $self->regex->{client_list};
 
 	# Parse the status output
-    for (@$status) {
+    for (@$_status) {
         chomp;
         if ( /$regex/ ) {
             push(
