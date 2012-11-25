@@ -177,10 +177,7 @@ sub assign_params : Private {
         my ( $self, $c ) = @_;
 
 		# Verify can run
-		$self->sanity( $c, {
-			method 		=> $c->request->method,
-			permitted 	=> 'GET', 
-		});
+		$self->sanity( $c );
 
   		# Trait names should match action name
 	    # (class names in ucfirst)
@@ -465,14 +462,16 @@ sub sanity : Private {
 	my ( $self, $c, $params ) = @_;
 
 	# Check method
-	if ( $params->{method} ne $params->{permitted} ){
-		$c->stash({ 
-			error => 'Method ' . $params->{method} 
-					. ' not permitted, permitted: ' . $params->{permitted} 
-		});
-		$self->_disconnect_vpn;
-        $c->detach;
-	}
+	if ( $params && ref $params ){ 
+		if ( $params->{method} ne $params->{permitted} ){
+			$c->stash({ 
+				error => 'Method ' . $params->{method} 
+						. ' not permitted, permitted: ' . $params->{permitted} 
+			});
+			$self->_disconnect_vpn;
+	        $c->detach;
+		}
+ 	}
 	# Check connection
     if ( ! $params->{no_connect} && ! $self->vpn->connect ) {
         $c->stash( { status => 'Server offline' } );

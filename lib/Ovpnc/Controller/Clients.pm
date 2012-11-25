@@ -47,10 +47,10 @@ around [qw(index)] => sub {
 sub index :Path :Args(0) : Does('NeedsLogin') {
     my ( $self, $c ) = @_;
 
-	# Get any killed clients
-    my $killed_clients = Ovpnc::Controller::Root->get_killed_clients($c);
-    $c->stash->{killed_clients} = $killed_clients
-        if ref $killed_clients;
+	# Get all killed clients
+    my $kc = Ovpnc::Controller::Root->list_revoked_clients($c);
+    $c->stash->{killed_clients} = $kc
+        if ( $kc and ref $kc );
 
 	$c->stash->{title} = 'Clients';
     $c->stash->{this_link} = 'clients';

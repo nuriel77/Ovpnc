@@ -31,12 +31,12 @@ var update = setInterval(function() {
 		]
 	});
 	window.clearInterval(update);
- }, 1000);
+ }, 2000);
 
 });
 
 function set_clients_table(){
-
+	$.ajaxSetup({ cache: false, async: true });
 	$('#flexme').flexigrid({
 	    url: '/api/server/status',
 	    dataType: 'json',
@@ -80,6 +80,7 @@ function set_clients_table(){
 // only the clients array
 function format_results(d){
 
+	console.log( "Got: %o", d );
 	update_server_status(d); // Make sure to update server status div info
 
 	if ( d.clients !== undefined && d.clients.length !== undefined ){
