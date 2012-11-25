@@ -45,31 +45,31 @@
         <Directive status="1">
           <Name>ca</Name>
           <Params>
-            <Ca>/home/ovpnc/Ovpnc/openvpn/conf/keys/ca.crt</Ca>
+            <Ca>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/ca.crt</Ca>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>cert</Name>
           <Params>
-            <Certificate>/home/ovpnc/Ovpnc/openvpn/conf/keys/server.crt</Certificate>
+            <Certificate>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/server.crt</Certificate>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>dh</Name>
           <Params>
-            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/keys/dh1024.pem</Dh>
+            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/dh1024.pem</Dh>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>key</Name>
           <Params>
-            <Key>/home/ovpnc/Ovpnc/openvpn/conf/keys/server.key</Key>
+            <Key>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/server.key</Key>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>tls-auth</Name>
           <Params>
-            <TlsKey>/home/ovpnc/Ovpnc/openvpn/conf/keys/ta.key</TlsKey>
+            <TlsKey>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/ta.key</TlsKey>
             <TlsMode>0</TlsMode>
           </Params>
         </Directive>
@@ -78,13 +78,13 @@
         <Directive status="1">
           <Name>client-config-dir</Name>
           <Params>
-            <ClientDir>/home/ovpnc/Ovpnc/openvpn/conf/ccd</ClientDir>
+            <ClientDir>conf/ccd</ClientDir>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>crl-verify</Name>
           <Params>
-            <CrlFile>conf/keys/crl.pem</CrlFile>
+            <CrlFile>conf/2.0/keys/crl.pem</CrlFile>
           </Params>
         </Directive>
         <Directive status="1">
@@ -118,7 +118,7 @@
         <Directive status="1">
           <Name>chroot</Name>
           <Params>
-            <ChrootDir>/</ChrootDir>
+            <ChrootDir>/home/ovpnc/Ovpnc/openvpn</ChrootDir>
           </Params>
         </Directive>
         <Directive status="1">

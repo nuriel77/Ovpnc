@@ -11,13 +11,13 @@ MYMETA.*
 META.yml
 Makefile
 tmp/session/*
-tmp/cache/*
+tmp/cache/.*
 *.old
 *.save
 *.key
 root/static/built/*
 openvpn/conf/ccd/*
-openvpn/conf/keys/*
+openvpn/conf/2.0/keys/*
 openvpn/var/run/*
 openvpn/tmp/*
 openvpn/var/log/*
@@ -25,3 +25,4 @@ ipp.txt
 lib/
 openvpn/lib64
 openvpn/bin/
+2.0/*

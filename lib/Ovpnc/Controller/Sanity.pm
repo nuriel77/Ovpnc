@@ -188,7 +188,7 @@ sub action {
             || !-d $config->{openvpn_dir}
             || !-r $config->{openvpn_dir} )
         {
-            return $config->{openvpn_dir} . " not found or not readable";
+            return $config->{openvpn_dir} . " not found or not readable(openvpn_dir)";
         }
 	
 		# check openvpn tmpdir
@@ -196,12 +196,12 @@ sub action {
             || !-d $config->{openvpn_dir} . '/tmp'
             || !-w $config->{openvpn_dir} . '/tmp' )
         {
-            return $config->{openvpn_tmpdir} . " not found or not readable";
+            return $config->{openvpn_dir} . "/tmp not found or not readable(openvpn_tmpdir)";
         }
 
 		# check openssl conf
 		elsif ( !-e $config->{openssl_conf} || !-r $config->{openssl_conf} ) {
-            return $config->{openssl_conf} . " not found or not readable";
+            return $config->{openssl_conf} . " not found or not readable(openssl.conf)";
         }
 
 		# check application root dir
@@ -211,7 +211,7 @@ sub action {
 
         # check openvpn conf
         elsif ( !-e $config->{openvpn_conf} || !-r $config->{openvpn_conf} ) {
-            return $config->{openvpn_conf} . " not found or not readable";
+            return $config->{openvpn_conf} . " not found or not readable(openvpn_conf)";
         }
         elsif (!-e $config->{ovpnc_config_schema}
             || !-r $config->{ovpnc_config_schema} )
@@ -227,11 +227,13 @@ sub action {
         my ( $self, $config ) = @_;
 
 		# Add a trailing / to dir 
+		# and append the util dir
 		# it was removed earier
-		$config->{openvpn_dir} .= '/';
+		my $conf_dir = $config->{openvpn_dir} . '/' 
+				  	 . $config->{openvpn_utils} . '/';
 		
 		# check openvpn scripts
-		for ( qw/
+		for ( qw[
 				vars
 				whichopensslcnf
 				pkitool
@@ -248,10 +250,11 @@ sub action {
 				build-inter
 				revoke-full
 				build-key-automatic     
-			/ )
+			    keys/index.txt
+			] )
 		{
-			if ( !-r $config->{openvpn_dir} . $_ ){
-	            return "'" . $config->{openvpn_dir}. $_ . "' not found or not readable";
+			if ( !-r $conf_dir . $_ ){
+	            return "'" . $conf_dir. $_ . "' not found or not readable";
 			}
         }
 	}
