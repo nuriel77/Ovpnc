@@ -3,7 +3,6 @@ use Moose;
 use namespace::autoclean;
 
 BEGIN { extends 'CatalystX::SimpleLogin::Controller::Login'; }
-	
 
 =head1 NAME
 
@@ -26,55 +25,54 @@ from CatalystX::SimpleLogin
 =cut
 
 around 'login' => sub {
-	my ( $orig, $self, $c ) = @_;
-	
-	# Redirect to https if user specified 
-	# a port in config under 'redirect_https_port'
-	if ( $c->config->{redirect_https_port} && ! $c->req->secure ){
-		$c->redirect(
-			'https://'
-			. $c->req->uri->host
-			. ':' 
-			. $c->config->{redirect_https_port} 
-			. '/' 
-			. $c->req->path
-		);
-	}
+    my ( $orig, $self, $c ) = @_;
 
-	unless ( $c->req->secure ){
-		$c->stash->{warning} =
-			"Warning: It is recommended to serve this page under HTTPS."
-		  .	" Check the configuration manual on how to set this up.";
-	}
+    # Redirect to https if user specified
+    # a port in config under 'redirect_https_port'
+    if ( $c->config->{redirect_https_port} && !$c->req->secure ) {
+        $c->redirect( 'https://'
+              . $c->req->uri->host . ':'
+              . $c->config->{redirect_https_port} . '/'
+              . $c->req->path );
+    }
 
-	# Will load any js or css
+    unless ( $c->req->secure ) {
+        $c->stash->{warning} =
+            "Warning: It is recommended to serve this page under HTTPS."
+          . " Check the configuration manual on how to set this up.";
+    }
+
+    # Will load any js or css
     Ovpnc::Controller::Root->include_default_links($c);
 
-	# Only sets the name in this cookie.
-	if ( defined $c->request->params->{username} ){
-		$c->response->cookies->{Ovpnc_C} = {
-			value 	=> $c->request->params->{username},
-			domain 	=> $c->request->uri->host,
-			path 	=> '/',
-		}
-	} else {
-		$self->remove_cookies( $c, [ qw( Ovpnc_C ovpnc_session Ovpnc_User_Settings ) ] );
-	}
+    # Only sets the name in this cookie.
+    if ( defined $c->request->params->{username} ) {
+        $c->response->cookies->{Ovpnc_C} = {
+            value  => $c->request->params->{username},
+            domain => $c->request->uri->host,
+            path   => '/',
+        };
+    }
+    else {
+        $self->remove_cookies( $c,
+            [qw( Ovpnc_C ovpnc_session Ovpnc_User_Settings )] );
+    }
 
     return $self->$orig($c);
 
 };
 
 sub remove_cookies : Private {
-	my ($self, $c, $cookies) = @_;
+    my ( $self, $c, $cookies ) = @_;
 
-	for ( @{$cookies} ){
-		$c->log->debug("Removing cookie $_");
-		$c->response->cookies->{$_} = {
-	        value   => '',
-	        expires => '-1d',
-	    } if $c->request->cookies->{$_};
-	}
+    for ( @{$cookies} ) {
+        $c->log->debug("Removing cookie $_");
+        $c->response->cookies->{$_} = {
+            value   => '',
+            expires => '-1d',
+          }
+          if $c->request->cookies->{$_};
+    }
 }
 
 =head1 AUTHOR
