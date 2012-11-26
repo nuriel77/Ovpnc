@@ -25,8 +25,11 @@ sub unrevoke_certificate {
     $tools = $self->utils_dir;
 
     # vars script location
+	# ====================
     my $vars = $tools . '/vars';
 
+	# OpenVPN index file for crl
+	# ==========================
     my $index_file = $tools . '/keys/index.txt';
 
     if ( -e $index_file and -w $index_file ) {
@@ -37,9 +40,12 @@ sub unrevoke_certificate {
 "/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file";
 
    		# Run command
+		# ===========
 	    $_ret_val = `$command`;
+		chomp( $_ret_val );			
 
         # Check exit status
+		# =================
         if ( $? >> 8 != 0 ) {
             return 'Un-revocation failure for ' . $client . ': ' . $_ret_val;
         }
@@ -51,12 +57,16 @@ sub unrevoke_certificate {
 			. ' -out ' . $tools . '/keys/crl.pem';
 
         # vars script location
+		# ====================
         my $vars = $tools . '/vars';
 
         # Run command
+		# ===========
         $_ret_val = `cd $tools && . $vars >/dev/null && $command && cd - 2>&1`;
+		chomp ($_ret_val);
 
         # Check exit status
+		# =================
         if ( $? >> 8 != 0 ) {
         	return
 				'Un-revocation failure for '
