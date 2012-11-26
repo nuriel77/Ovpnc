@@ -69,7 +69,7 @@ function set_clients_table(){
 	    useRp: true,
 	    rp: 15,
 	    showTableToggleBtn: false,
-	    width: 530,
+	    width: 600,
 	    height: 300
 	});
 

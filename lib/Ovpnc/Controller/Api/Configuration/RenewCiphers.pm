@@ -1,4 +1,4 @@
-package Ovpnc::Controller::Api::Config::RenewCiphers;
+package Ovpnc::Controller::Api::Configuration::RenewCiphers;
 use warnings;
 use strict;
 

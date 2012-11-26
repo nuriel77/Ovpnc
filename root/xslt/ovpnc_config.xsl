@@ -26,7 +26,7 @@
        <body>
 		<div class="container">
 		 <!-- main form -->
-	     <form name="configuration" id="conf" method="POST" action="/api/config/update">
+	     <form name="configuration" id="conf" method="POST" action="/api/configuration">
 		   <!-- loop each node -->
 		   <xsl:for-each select="Nodes/Node">
 			 <!-- submit and reset buttons -->
@@ -370,6 +370,7 @@
 										or $local='PoolFile'
 										or $local='ClientDir'
 										or $local='LogFile'
+										or $local='AuthScript'
 										or $local='Ca'
 										or $local='Dh'
 										or $local='Key'
@@ -553,6 +554,32 @@
 									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
 								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
 							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='DeviceType']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
+									  <xsl:variable name="selectedItem" select="."/>
+							  	      <option>
+										<xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>
+                                        <xsl:if test="$current = $selectedItem">
+                                          <xsl:attribute name="selected"></xsl:attribute>
+                                        </xsl:if>
+										<xsl:value-of select="."/>
+									  </option>
+							        </xsl:for-each>
+								  </select>
+							    </xsl:for-each>
+							  </td>  
+						    </xsl:when>
+							<!-- ScriptMethod -->
+						    <xsl:when test="$local = 'ScriptMethod'">
+							  <td>
+                                <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:element[@name='Params']/xsd:complexType/xsd:sequence/xsd:choice/xsd:element[@name=$local]">
+ 						          <xsl:variable name="required" select="@minOccurs"/>
+								  <select class="mySelect">
+									<xsl:if test="$required = 0">
+                                      <xsl:attribute name="required"><xsl:value-of select="$required"/></xsl:attribute>
+                                    </xsl:if>
+									<xsl:attribute name="name"><xsl:value-of select="$configItem"/></xsl:attribute>
+									<xsl:attribute name="parent"><xsl:value-of select="$local"/></xsl:attribute>
+								    <xsl:attribute name="id"><xsl:value-of select="$configItem"/></xsl:attribute>
+							        <xsl:for-each select="document('ovpnc_config.xsd')/xsd:schema/xsd:simpleType[@name='ScriptMethods']/xsd:restriction[@base='xsd:string']/xsd:enumeration/@value">
 									  <xsl:variable name="selectedItem" select="."/>
 							  	      <option>
 										<xsl:attribute name="value"><xsl:value-of select="$selectedItem"/></xsl:attribute>

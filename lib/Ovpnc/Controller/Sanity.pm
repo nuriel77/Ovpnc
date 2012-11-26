@@ -170,7 +170,7 @@ sub action {
 		# Get the openvpn conf
 		# File from the xml
 		$config->{openvpn_conf} =
-			Ovpnc::Controller::Api::Config->get_openvpn_config_file( $config->{ovpnc_conf} );
+			Ovpnc::Controller::Api::Configuration->get_openvpn_config_file( $config->{ovpnc_conf} );
 
         # Check binary
         if ( !-e $config->{openvpn_bin} ) {

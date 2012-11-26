@@ -18,6 +18,7 @@ p {
 }
 
 #navigation-block {
+	max-width:193px;
 	min-width:193px;
 	float:right;
 }

@@ -1,7 +1,8 @@
 package Ovpnc::TraitFor::Controller::Api::Server::Status;
+use warnings;
+use strict;
 use Moose::Role;
 use namespace::autoclean;
-
 
 has vpn => (
 	is => 'ro',
@@ -16,6 +17,12 @@ has regex => (
 	isa => 'HashRef',
 	required => 1,
 );
+
+=head2
+
+Gets the status
+
+=cut
 
 sub get_status {
 	my $self = shift;
@@ -32,7 +39,6 @@ sub get_status {
 
     # Start assigning data for stashing
     my $data = { clients => [] };
-    $data->{verbosity} = $self->get_verbosity;
     $data->{title}     = $self->vpn->version();
     $data->{status}    = "Server online";
 

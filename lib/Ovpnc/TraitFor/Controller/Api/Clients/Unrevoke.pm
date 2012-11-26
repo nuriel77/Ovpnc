@@ -1,4 +1,6 @@
 package Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke;
+use warnings;
+use strict;
 use Moose::Role;
 use namespace::autoclean;
 use vars qw( $vpn_dir $tools );

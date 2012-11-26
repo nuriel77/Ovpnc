@@ -70,6 +70,8 @@
 	        <xsd:element minOccurs="0" name="StatusFile" type="File" />
 			<xsd:element minOccurs="0" name="LogFile" type="File" />
 			<xsd:element minOccurs="0" name="ChrootDir" type="Dir" />
+			<xsd:element minOccurs="0" name="AuthScript" type="File" />
+			<xsd:element minOccurs="0" name="ScriptMethod" type="ScriptMethods" default="via-file" />
 			<xsd:element minOccurs="1" name="ClientDir" type="Dir" />
 			<!-- NOTE: ifconfig-pool-persist will not work with duplicate-cn, try to eliminate here by validation -->
 			<xsd:element minOccurs="1" name="PoolFile" type="File" />
@@ -140,6 +142,14 @@
     </xsd:restriction>
   </xsd:simpleType>
 
+  <!-- Type: Script Methods -->
+  <xsd:simpleType name="ScriptMethods">
+    <xsd:restriction base="xsd:string">
+	    <xsd:enumeration value="via-env" />
+	    <xsd:enumeration value="via-file" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
   <!-- Type: Compression LZO -->
   <xsd:simpleType name="CompLzo">
     <xsd:restriction base="xsd:string">
@@ -159,7 +169,7 @@
   <!-- Type: Dir -->
   <xsd:simpleType name="Dir">
 	<xsd:restriction base="xsd:string">
-      <xsd:pattern value="[/\-A-Za-z_ \.0-9\/]*" />
+      <xsd:pattern value="[/\-A-Za-z_ \.0-9/]*" />
 	</xsd:restriction>
   </xsd:simpleType>
 
@@ -302,8 +312,6 @@
 
   <!-- NOTICE: Cipher List must be the last in this doc!!! -->
   
-
-
 
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">

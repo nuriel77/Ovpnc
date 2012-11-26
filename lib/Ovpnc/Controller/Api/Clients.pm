@@ -1,4 +1,6 @@
 package Ovpnc::Controller::Api::Clients;
+use warnings;
+use strict;
 use Ovpnc::Plugins::Connector;
 use Moose;
 use namespace::autoclean;
@@ -7,6 +9,20 @@ use vars qw( $REGEX );
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
 __PACKAGE__->config( namespace => 'api' );
+
+
+=head1 NAME
+
+Ovpnc::Controller::Api::Clients - Catalyst Controller
+
+=head1 DESCRIPTION
+
+Catalyst Controller for Clients.
+
+=head1 METHODS
+
+=cut
+
 
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
@@ -58,7 +74,7 @@ has vpn => (
 	required => 0
 );
 
-around [ qw( clients_UNREVOKE ) ] => sub {
+around [ qw( clients_UNREVOKE clients_DISABLE clients_ENABLE ) ] => sub {
 	my ( $orig, $self, $c, $params ) = @_;
 	$self->set_controller_params( $c );
 	return $self->$orig($c, $params);
@@ -101,17 +117,18 @@ around [ qw(
 };
 
 
-=head1 NAME
+=head2 after modifier
 
-Ovpnc::Controller::Api::Clients - Catalyst Controller
-
-=head1 DESCRIPTION
-
-Catalyst Controller.
-
-=head1 METHODS
+Makes sure to disconnect
+and release the mgmt port
 
 =cut
+
+after [qw/
+	clients_REVOKE
+    clients_REMOVE
+    kill_connection
+/] => sub { shift->_disconnect_vpn; };
 
 
 =head2 clients
@@ -173,12 +190,100 @@ sub clients_REMOVE : Local : Args(0) Does('NeedsLogin') {
 	my ( $self, $c ) = @_;
 }
 
+=head2 clients_DISABLE
+
+Disable a client's ccd file
+(having --exclusive-ccd in server run
+options means client cannot connect
+anymore, this is based on CN)
+Will ppends .disabled to client's
+file in ccd. Expects client's CN name and
+optionally provide ?no_kill=1
+to avoid killing any active
+connections of this client.
+(by default it will disconnect a disabled
+client.)
+
+=cut
+
+sub clients_DISABLE : Local : Args(1)
+{
+    my ( $self, $c, $client ) = @_;
+
+	# Verify that a client name was provided
+	$self->_client_error($c)
+		unless $client or $c->req->params->{client};
+	
+	$client = $c->req->params->{client}	if  $c->req->params->{client};
+
+	my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
+
+	if ( -e $_ccd_dir . '/' . $client ){
+		# rename the file so it becomes .disabled
+		rename ($_ccd_dir . '/' . $client, $_ccd_dir . '/' . $client.'.disabled')
+			or die "Cannot rename $client: $!";
+		$c->stash->{status} = "Configuration file for $client disabled ok";
+	} else {
+		if ( -e $_ccd_dir . '/' . $client.'.disabled' ){
+			$c->stash->{error} = "Client is already disabled.";
+		} else {
+			$c->stash->{error} =
+				"Disable failed but should be working "
+				. "because I cannot find client config file:'" 
+				. $_ccd_dir . '/' . $client . "'.";
+		}
+	}
+
+	# kill any active connections of this client
+	# This will even occur if the file above
+	# was not found (in a strange case...)
+	unless ( $c->request->params->{no_kill} ){ 
+		$c->stash->{kill_status} = $self->kill_connection( $c, $client );
+		$self->_disconnect_vpn;
+	}
+
+}
+
+=head2 clients_ENABLE
+
+Re-enable a disabled client
+
+=cut
+
+sub clients_ENABLE : Local : Args(1)
+{
+    my ( $self, $c, $client ) = @_;
+
+	# Verify that a client name was provided
+	# either a single via clients/[client_name]
+	# or via params '?client=client_name&...'
+	$self->_client_error($c)
+		unless $client or $c->req->params->{client};
+
+	# TODO: Make all actions array capable!
+	$client = $c->req->params->{client}	if  $c->req->params->{client};
+
+	my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
+	if ( -e $_ccd_dir . '/' . $client ){
+		$c->stash->{error} = "Client is already enabled.";
+		$c->detach;
+	}
+
+	if ( -e $_ccd_dir . '/' . $client.'.disabled' ){
+		rename (  $_ccd_dir . '/' . $client.'.disabled', $_ccd_dir . '/' . $client )
+			or $c->stash->{error} = "Is this the correct name? I cannot rename $client and got: $!";
+		$c->stash->{status} = "Client $client enabled ok";
+	} else {
+		$c->stash->{error} =
+			"Enable failed, cannot find client's file '"
+			. $_ccd_dir . '/' . $client . ".disabled'.";
+	}
+}
+
 =head2
 
 Revoke's client certificate
 using crl.pem
-Appends .disabled to client's
-file in ccd
 
 =cut
 
@@ -302,7 +407,8 @@ given client/ip:port
 
 sub kill_connection : Private 
 {
-    my ( $self, $connection ) = @_;
+    my ( $self, $connection, $client ) = @_;
+	$connection = $client if ref $connection;
 	die "No connection?!" unless $self->_has_vpn;
     my $ret_val = $self->vpn->kill( $connection );
     return $ret_val;
@@ -443,9 +549,6 @@ sub end : Private {
 
     # Debug if requested
     die "forced debug" if $c->req->params->{dump_info};
-
-	# Disconnect if established
-	$self->_disconnect_vpn if $self->_has_vpn;
 
 	# Clean up the File::Assets
 	# it is set to null but 

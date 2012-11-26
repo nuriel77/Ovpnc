@@ -1,4 +1,6 @@
 package Ovpnc::Controller::Api;
+use warnings;
+use strict;
 use Moose;
 use vars qw/$status/;
 use namespace::autoclean;

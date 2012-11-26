@@ -116,6 +116,13 @@
       </Group>
       <Group id="4">
         <Directive status="1">
+          <Name>auth-user-pass-verify</Name>
+          <Params>
+            <AuthScript>bin/auth-vpn.sh</AuthScript>
+            <ScriptMethod>via-file</ScriptMethod>
+          </Params>
+        </Directive>
+        <Directive status="1">
           <Name>chroot</Name>
           <Params>
             <ChrootDir>/home/ovpnc/Ovpnc/openvpn</ChrootDir>
@@ -148,6 +155,9 @@
         </Directive>
         <Directive status="1">
           <Name>management-query-passwords</Name>
+        </Directive>
+        <Directive status="1">
+          <Name>opt-verify</Name>
         </Directive>
       </Group>
       <Group id="5">

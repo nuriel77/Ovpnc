@@ -1,4 +1,6 @@
 package Ovpnc::Controller::Root;
+use warnings;
+use strict;
 use Moose;
 use namespace::autoclean;
 

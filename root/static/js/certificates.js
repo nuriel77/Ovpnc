@@ -53,9 +53,9 @@ function cert_exec_actions(){
 
 	// If we saved the previous fields in a 
 	// cookie, load from the cookie.
-	if ( cookie_data !== undefined ){
+	if ( cookie_data !== undefined && cookie_data.country !== undefined ){
 		$.Ovpnc.cookie = cookie_data;
-		//console.log("Found country in saved cookie: ", Ovpnc.cookie.country);
+		//console.log("Found country in saved cookie: ", $.Ovpnc.cookie.country);
 		// If these are numbers, it is a geonameId
 		if ( ! isNaN( cookie_data.country) ){
 			get_country_name_from_id( cookie_data.country );
@@ -73,6 +73,7 @@ function cert_exec_actions(){
 	else {
 		// Check user's location
 		// and set it as default
+		//console.log( 'Setting default user location' );
 		get_user_geolocation();
 	}
 
@@ -181,7 +182,7 @@ function set_click_bind(){
 				$.Ovpnc.edit_country = 1;
 	
 				$('.r_auto').each(function(f,g){
-					$.Ovpnc().html_mem.push(g);
+					$.Ovpnc.html_mem.push(g);
 				});
 				build_location_inputs();
 				update_select_rules();
@@ -223,8 +224,8 @@ function check_changes(){
 
 function build_location_selects(){
 	var inn = $.Ovpnc().elems;
-	for ( var i in $.Ovpnc().html_mem ){
-		$('#s_' + inn[i]).html( $.Ovpnc().html_mem[i] );
+	for ( var i in $.Ovpnc.html_mem ){
+		$('#s_' + inn[i]).html( $.Ovpnc.html_mem[i] );
 	}
 	set_select_bind();
 }
@@ -390,6 +391,7 @@ function get_user_geolocation(){
 	        }, function( result ) {
 
 				$('#t_country').empty();
+				//console.log('CountryName: ' + result.countryName );
 				set_select_country_geonameId( result.countryName )		
 
 	        }).error(function(xhr, ajaxOptions, thrownError) {
@@ -419,6 +421,7 @@ function set_select_country_geonameId( country ){
 
 		if ( result === undefined || result.geonames === undefined || result.geonames.length === 0){
 			$('select#country').html('<option value="">Please edit manually</option>');
+			console.log( "No country? %o" + result );
 			return false;
 		}
 
@@ -437,7 +440,7 @@ function set_select_country_geonameId( country ){
 
 function get_country_name_from_id( geonameId ){
 
-	//console.log( 'get country id: ' + geonameId + ' with username ' + Ovpnc.geo_username() );
+	//console.log( 'get country id: ' + geonameId + ' with username ' + $.Ovpnc().geo_username() );
 
 	 $.ajaxSetup({ async: true, cache: true });
 	 $.getJSON('http://api.geonames.org/childrenJSON', {

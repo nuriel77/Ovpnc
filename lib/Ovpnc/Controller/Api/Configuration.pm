@@ -1,17 +1,22 @@
-package Ovpnc::Controller::Api::Config;
+package Ovpnc::Controller::Api::Configuration;
+use warnings;
+use strict;
 use XML::Simple;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema;
 use File::Copy;
-use File::Slurp;
+use Module::Locate qw(locate);
+scalar locate('File::Slurp')  ? 0 : do { use File::Slurp; };
 use Readonly;
-use strict;
-use warnings;
 use Moose;
-use aliased 'Ovpnc::Controller::Api::Config::RenewCiphers' => 'RenewCiphers';
-Readonly::Scalar my $SKIP_LINE                             => '^[;|#].*|^$';
+use aliased 'Ovpnc::Controller::Api::Configuration::RenewCiphers' => 'RenewCiphers';
+Readonly::Scalar my $SKIP_LINE                    		          => '^[;|#].*|^$';
+use namespace::autoclean; 
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
+
+__PACKAGE__->config( namespace => 'api' );
+
 
 =head1 NAME
 
@@ -26,27 +31,18 @@ OpenVPN Config Controller API
 
 =head1 METHODS
 
-=head2 base
-
-For chain to login page
-
-=cut
-
-sub base : Chained('/base') PathPrefix CaptureArgs(0) {
-}
-
-=head2 index
+=head2 config
 
 For REST action class
 
 =cut
 
-sub index : Chained('/') PathPart('api/config/') Args(0) : ActionClass('REST') {
-}
+sub configuration : Local : ActionClass('REST') { }
+
 
 # Grouped actions
 
-=head2 view_config
+=head2 configuration_GET
 
 Will output the configuration 
 of openvpn and will run validation
@@ -55,44 +51,40 @@ in the conf file manually
 
 =cut
 
+sub configuration_GET : Local :  Args(0) # Does('NeedsLogin')
 {
+    my ( $self, $c ) = @_;
 
-    sub view_config : Chained('base') PathPart('show') Args(0) {
-        my ( $self, $c ) = @_;
+	my $_xml_lines = read_file( $c->config->{ovpnc_conf}, array_ref => 1 )
+		or die "Cannot read '" . $c->config->{ovpnc_conf} . "': $!";
 
-        #$c->response->status(200);
+	# Remove first line for validation
+	my $_first_line = shift @{$_xml_lines};
+	my $_xml_data = join "", @{$_xml_lines};
 
-		my $_xml_lines = read_file( $c->config->{ovpnc_conf}, array_ref => 1 )
-			or die "Cannot read '" . $c->config->{ovpnc_conf} . "': $!";
+	# Remove sticky assets
+	delete $c->stash->{assets};
 
-		# Remove first line for validation
-		my $_first_line = shift @{$_xml_lines};
-		my $_xml_data = join "", @{$_xml_lines};
-
-		# Remove sticky assets
-	    delete $c->stash->{assets};
-
-        if (  my $_msg = $self->validate_xml( $_xml_data, $c->config->{ovpnc_config_schema} ) )
-        {
-             $c->stash( { error => $_msg } );
-			 $c->res->header('Content-Type' => 'text/xml');
-			 $c->request->params->{xml} = 1;
-			 $c->forward('View::XML::Simple');
-			 $c->detach;
-        }
-        else {
-			 unshift @{$_xml_lines}, $_first_line;
-			 $_xml_data = join "", @{$_xml_lines};
-			 $c->res->header('Content-Type' => 'text/xml');
-			 # force XML
-			 $c->res->header('Content-Type' => 'text/xml');
-			 $c->request->params->{xml} = 1;
-			 $c->response->body($_xml_data);			 
-        }
-
+    if (  my $_msg = $self->validate_xml( $_xml_data, $c->config->{ovpnc_config_schema} ) )
+    {
+         $c->stash( { error => $_msg } );
+		 $c->res->header('Content-Type' => 'text/xml');
+		 $c->request->params->{xml} = 1;
+		 $c->forward('View::XML::Simple');
+		 $c->detach;
+    } else {
+		 unshift @{$_xml_lines}, $_first_line;
+		 $_xml_data = join "", @{$_xml_lines};
+		 $c->res->header('Content-Type' => 'text/xml');
+		 # force XML
+		 $c->res->header('Content-Type' => 'text/xml');
+		 $c->request->params->{xml} = 1;
+		 $c->response->body($_xml_data);			 
     }
 
-=head2 config_POST
+}
+
+=head2 configuration_POST
 
 When user posts data to this controller
 this will update the configurtion files
@@ -101,152 +93,146 @@ and run validataions via the xsd schema
 
 =cut
 
-    sub update_config : Chained('base') PathPart('update') Args(0) {
-        my ( $self, $c ) = @_;
+sub configuration_POST : Local : Args(0) # Does('NeedsLogin') 
+{
+    my ( $self, $c ) = @_;
 
-        unless ( $c->request->method eq 'POST' ) {
-            $c->response->body( 'Not a POST method: ' . $c->request->method );
-            $c->response->status(500);
-            return;
-        }
+    # Dereference
+    my %data = %{ $c->request->params };
 
-        # Set default response
-        $c->response->status(200);
+    # This will only prepare a data
+    # structure which can be serialized
+    # to XML
+    my $xml = $self->create_xml( \%data );
 
-        # Dereference
-        my %data = %{ $c->request->params };
-
-        # This will only prepare a data
-        # structure which can be serialized
-        # to XML
-        my $xml = $self->create_xml( \%data );
-
-        if ( not defined $xml ) {
-            $c->stash(
-                {
-                    error =>
-                      'Could not generate XML format from posted parameters'
-                }
-            );
-            $c->forward("View::JSON");
-            return;
-        }
-
-        # Create a string from
-        # the xml object
-        my $xml_string = $self->perl_to_xml($xml);
-
-        # Validate the xml against the xsd schema
-        # Will return a message if any error
-        my $message =
-          $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
-
-        if ($message) {
-            $c->stash( { error => $message } );
-        }
-        else {
-            my $st_msg      = {};
-            my $config_file = $data{'-1_null_ConfigFile'};
-
-            # Pretty fatal, but should not happen here
-            # because we ran validation earlier on xml format
-            unless ($config_file) {
-                $st_msg->{error} =
-                  "Did not receive any configuration file value!";
-                $self->send_error( $c, $st_msg->{error}, 200 );
-                return;
+    if ( not defined $xml ) {
+        $c->stash(
+            {
+                error =>
+                  'Could not generate XML format from posted parameters'
             }
+        );
+        $c->forward("View::JSON");
+        return;
+    }
 
-            # Prepare configuration file header
-            my $output =
-                "#\n# OpenVPN Configuration file\n"
+    # Create a string from
+    # the xml object
+    my $xml_string = $self->perl_to_xml($xml);
+
+    # Validate the xml against the xsd schema
+    # Will return a message if any error
+    my $message =
+      $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
+
+    if ($message) {
+        $c->stash( { error => $message } );
+    } else {
+        my $st_msg      = {};
+        my $config_file = $data{'-1_null_ConfigFile'};
+
+        # Pretty fatal, but should not happen here
+        # because we ran validation earlier on xml format
+        unless ($config_file) {
+            $st_msg->{error} =
+              "Did not receive any configuration file value!";
+            $self->send_error( $c, $st_msg->{error}, 200 );
+			$c->detach;
+        }
+
+        # Prepare configuration file header
+        my $output =
+            "#\n# OpenVPN Configuration file\n"
               . "# Generated by "
               . __PACKAGE__ . "\n"
               . "# Created: "
               . scalar localtime() . "\n"
               . "# Do not modify by hand!\n" . "#\n";
 
-            # Cut out the directory name
-            my ($dir) = $config_file =~ /^(.*)\/.*$/g;
+        # Cut out the directory name
+        my ($dir) = $config_file =~ /^(.*)\/.*$/g;
 
-            # Now check if directory is valid
-            unless ( -e $dir and -d $dir and -w $dir ) {
+        # Now check if directory is valid
+        unless ( -e $dir and -d $dir and -w $dir ) {
+            $st_msg->{error} =
+              "Error: Directory of configuration file is invalid: $!";
+        }
+
+        # Create backup for existing configuration file
+        if ( -e $config_file ) {
+            $_ = $self->manage_conf_backup( $config_file, $c->config->{keep_n_conf_backup} );
+			$st_msg = $_->{error} if $_->{error};
+        }
+
+        my $FILE;
+
+        # Open the (new) file for writing
+        unless ( defined $st_msg->{error} ) {
+            open( $FILE, ">", $config_file )
+              or $st_msg->{error} =
+              "Error: Configuration file could not be updated: $!";
+        }
+
+        # If no errors so far, proceed
+        # with outputing key/values to file
+        unless ( defined $st_msg->{error} ) {
+            $output .= $self->prepare_conf_file_data( \%data );
+            print $FILE $output;
+            close $FILE;
+            if (   -e $c->config->{ovpnc_conf}
+                && -w $c->config->{ovpnc_conf} )
+            {
+                XMLout(
+                    $xml,
+                    KeepRoot   => 1,
+                    NoSort     => 0,
+                    OutputFile => $c->config->{ovpnc_conf},
+                    XMLDecl    => "<?xml version='1.0' encoding='UTF-8'?>",
+                  )
+                  or $self->send_error( $c,
+                    "Error generating xml configuration file: " . $!, 200 )
+                  && $c->detach;
+            } else {
                 $st_msg->{error} =
-                  "Error: Directory of configuration file is invalid: $!";
-            }
-
-            # Create backup for existing configuration file
-            if ( -e $config_file ) {
-                $_ = $self->manage_conf_backup( $config_file, $c->config->{keep_n_conf_backup} );
-				$st_msg = $_->{error} if $_->{error};
-            }
-
-            my $FILE;
-
-            # Open the (new) file for writing
-            unless ( defined $st_msg->{error} ) {
-                open( $FILE, ">", $config_file )
-                  or $st_msg->{error} =
-                  "Error: Configuration file could not be updated: $!";
-            }
-
-            # If no errors so far, proceed
-            # with outputing key/values to file
-            unless ( defined $st_msg->{error} ) {
-                $output .= $self->prepare_conf_file_data( \%data );
-                print $FILE $output;
-                close $FILE;
-                if (   -e $c->config->{ovpnc_conf}
-                    && -w $c->config->{ovpnc_conf} )
-                {
-                    XMLout(
-                        $xml,
-                        KeepRoot   => 1,
-                        NoSort     => 0,
-                        OutputFile => $c->config->{ovpnc_conf},
-                        XMLDecl    => "<?xml version='1.0' encoding='UTF-8'?>",
-                      )
-                      or $self->send_error( $c,
-                        "Error generating xml configuration file: " . $!, 200 )
-                      && return;
-                }
-                else {
-                    $st_msg->{error} =
-                        "Cannot write xml configuration file "
-                      . $c->config->{ovpnc_conf}
-                      . ".\r\nEither it does not exists or is not accessible.";
-                    $self->send_error( $c, $st_msg->{error}, 200 );
-                    return;
-                }
-                $st_msg->{status} = 'Configuration file updated successfully';
-            }
-            else {
+                    "Cannot write xml configuration file "
+                  . $c->config->{ovpnc_conf}
+                  . ".\r\nEither it does not exists or is not accessible.";
                 $self->send_error( $c, $st_msg->{error}, 200 );
                 return;
             }
-
-            $c->stash($st_msg);
+            $st_msg->{status} = 'Configuration file updated successfully';
+        } else {
+            $self->send_error( $c, $st_msg->{error}, 200 );
+            return;
         }
+
+        $c->stash($st_msg);
     }
+}
 
-=head2 renew_ciphers
 
-Renew the Cipher list into the
+=head2 configuration_UPDATE
+
+For now all this does is update
+the configuration XSD:
+renew the Cipher list into the
 XSD schema from openvpn
 
 =cut
 
-    sub renew_ciphers : Chained('base') PathPart('renew_ciphers') Args(0) {
-        my ( $self, $c ) = @_;
+sub configuration_UPDATE : Local : Args(0) Does('NeedsLogin') 
+{
+    my ( $self, $c ) = @_;
 
-        # Send openvpn binary and the schema to be updated
-        my $ret_val = RenewCiphers->action( $c->config->{ovpnc_config_schema},
-            $c->config->{openvpn_bin} );
+    # Send openvpn binary and the schema to be updated
+    my $ret_val = RenewCiphers->action( $c->config->{ovpnc_config_schema},
+        $c->config->{openvpn_bin} );
 
-        $c->stash($ret_val);
-    }
-
+    $c->stash($ret_val);
 }
+
+=cut
+
 
 =head2 XML example create_xml
 
@@ -273,14 +259,12 @@ XSD schema from openvpn
 =cut
 
 # Private functions
-{
-
-    sub send_error : Private {
-        my ( $self, $c, $error ) = @_;
-	    delete $c->stash->{assets};
-        $c->stash( { error => $error } );
-		$c->detach;
-    }
+sub send_error : Private {
+    my ( $self, $c, $error ) = @_;
+	delete $c->stash->{assets};
+    $c->stash( { error => $error } );
+	$c->detach;
+}
 
 =head2 prepare_conf_file_data
 
@@ -290,112 +274,106 @@ will set attributes etc
 
 =cut
 
-    sub prepare_conf_file_data : Private {
-        my $self    = shift;
-        my %data    = %{ (shift) };
-        my $output  = "\n# [ Group id=0 ]\n";
-        my $on_hold = {};
-        my @existing_keys;
-        my $last_group = 0;
+sub prepare_conf_file_data : Private {
+    my $self    = shift;
+    my %data    = %{ (shift) };
+    my $output  = "\n# [ Group id=0 ]\n";
+    my $on_hold = {};
+    my @existing_keys;
+    my $last_group = 0;
 
-      DATA:
-        for my $key ( sort keys %data ) {
+  DATA:
+    for my $key ( sort keys %data ) {
 
-            # Get any disabled
-            my $to_split_key = $key;
-            my $disabled = $to_split_key =~ s/_disabled$//;
+        # Get any disabled
+        my $to_split_key = $key;
+        my $disabled = $to_split_key =~ s/_disabled$//;
 
-            # Split the key on _
-            my ( $group, $parent, $real, $number ) =
-              split( '_', $to_split_key );
+        # Split the key on _
+        my ( $group, $parent, $real, $number ) =
+          split( '_', $to_split_key );
+        # Skip the two main Directives
+        # They have been assigned group 0
+        # (config filename and servername)
+        next DATA if ( $group == -1 );
 
-            # Skip the two main Directives
-            # They have been assigned group 0
-            # (config filename and servername)
-            next DATA if ( $group == -1 );
+        $output .= "\n# [ Group id=" . $group . " ]\n"
+          if $group > $last_group;
 
-            $output .= "\n# [ Group id=" . $group . " ]\n"
-              if $group > $last_group;
-
-            # If this is second (or more) value
-            # we need to hold it until we can
-            # append it to its first value(s)
-            if ( $number && $real ne 'push' ) {
-                if ( $self->not_exists( \@existing_keys, $real ) ) {
-                    warn "Added $real to on_hold with value " . $data{$key};
-                    $on_hold->{$real} = {
-                        value  => $data{$key},
-                        parent => $parent
-                    };
-                    next DATA;
-                }
+        # If this is second (or more) value
+        # we need to hold it until we can
+        # append it to its first value(s)
+        if ( $number && $real ne 'push' ) {
+            if ( $self->not_exists( \@existing_keys, $real ) ) {
+                warn "Added $real to on_hold with value " . $data{$key};
+                $on_hold->{$real} = {
+                    value  => $data{$key},
+                    parent => $parent
+                };
+                next DATA;
             }
+        }
 
-            # If this one has no number defined
-            # check if we have pending values
-            # to append from the $on_hold hashref
-            if ( !$number && $real ne 'push' ) {
-                if ( ref $on_hold eq 'HASH' ) {
-                    for my $okey ( keys %{$on_hold} ) {
-                        if ( $okey eq $real && $on_hold->{$okey}->{parent} && $on_hold->{$okey}->{value} ) {
-							warn "Working on: o/r: $okey, $real:" . $on_hold->{$okey}->{value} . ' ;'
-                              . $parent . ' ;'
-                              . $on_hold->{$okey}->{parent};
+        # If this one has no number defined
+        # check if we have pending values
+        # to append from the $on_hold hashref
+        if ( !$number && $real ne 'push' ) {
+            if ( ref $on_hold eq 'HASH' ) {
+                for my $okey ( keys %{$on_hold} ) {
+                    if ( $okey eq $real && $on_hold->{$okey}->{parent} && $on_hold->{$okey}->{value} ) {
+						#warn "Working on: o/r: $okey, $real:" . $on_hold->{$okey}->{value} . ' ;'
+                        #  . $parent . ' ;'
+                        #  . $on_hold->{$okey}->{parent};
 
-                            $data{$key} .= ' '
-                              . $on_hold->{$okey}->{value} . ' ;'
-                              . $parent . ' ;'
-                              . $on_hold->{$okey}->{parent};
-                        }
+                        $data{$key} .= ' '
+                          . $on_hold->{$okey}->{value} . ' ;'
+                          . $parent . ' ;'
+                          . $on_hold->{$okey}->{parent};
                     }
                 }
             }
+        }
 
-            # If key name already found,
-            # append current value to it
-            if ( $output =~ /\n\b$real\b/g and $real ne 'push' ) {
-                my ( $val, $p ) = split( ';', $data{$key} );
-                $output =~ s/($real.*) ;(.*)\n/$1 $val ;$2\n/g;
-                $output =~ s/($real.*)\n/$1 ;$parent\n/;
-            }
-            else {
-                my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
-                $tab = "\t" x 4 if ( length($real) > 10 );
-                if ( defined $data{$key} ) {
-
-                    # Create new key/value.
-                    # output value only if exists
-                    # otherwise output only the key
-                    if ( $real eq $data{$key} ) {
+        # If key name already found,
+        # append current value to it
+        if ( $output =~ /\n\b$real\b/g and $real ne 'push' ) {
+            my ( $val, $p ) = split( ';', $data{$key} );
+            $output =~ s/($real.*) ;(.*)\n/$1 $val ;$2\n/g;
+            $output =~ s/($real.*)\n/$1 ;$parent\n/;
+        } else {
+            my $tab = length($real) >= 5 ? "\t" x 6 : "\t" x 7;
+            $tab = "\t" x 4 if ( length($real) > 10 );
+            if ( defined $data{$key} ) {
+                # Create new key/value.
+                # output value only if exists
+                # otherwise output only the key
+                if ( $real eq $data{$key} ) {
+                    $output .=
+                        ( $disabled ? ';' : '' ) 
+                      . $real . "$tab;" 
+                      . $parent . "\n";
+                } else {
+                    unless ( $on_hold->{$real}->{parent} ) {
                         $output .=
-                            ( $disabled ? ';' : '' ) 
-                          . $real . "$tab;" 
+                            ( $disabled ? ' ;' : '' ) 
+                          . $real . "$tab"
+                          . $data{$key} . ' ;'
                           . $parent . "\n";
+                    } else {
+                        $output .=
+                            ( $disabled ? ' ;' : '' ) 
+                          . $real . "$tab"
+                          . $data{$key} . "\n";
                     }
-                    else {
-                        unless ( $on_hold->{$real}->{parent} ) {
-                            $output .=
-                                ( $disabled ? ' ;' : '' ) 
-                              . $real . "$tab"
-                              . $data{$key} . ' ;'
-                              . $parent . "\n";
-                        }
-                        else {
-                            $output .=
-                                ( $disabled ? ' ;' : '' ) 
-                              . $real . "$tab"
-                              . $data{$key} . "\n";
-                        }
-
-                    }
-                    push( @existing_keys, $real );
                 }
+                push( @existing_keys, $real );
             }
-            $last_group = $group;
-        }    # (%DATA)
-        $output .= ";END\n";
-        return $output;
-    }
+        }
+        $last_group = $group;
+    }    # (%DATA)
+    $output .= ";END\n";
+    return $output;
+}
 
 =head2 not_exists
 
@@ -700,8 +678,6 @@ Parse the openvpn configuration file
         return $data;
     }
 
-}
-
 =head2 perl_to_xml
 
 Convert a perl datastructure to xml
@@ -744,17 +720,11 @@ sub manage_conf_backup : Private {
 	return;
 }
 
-=head2 default
+=head2 end
 
-Default action, not found
+Last auto-action
 
 =cut
-
-sub default : Private {
-    my ( $self, $c ) = @_;
-    $c->stash( { status => 'Control action not found' } );
-    $c->response->status(404);
-}
 
 sub end : Private {
     my ( $self, $c ) = @_;

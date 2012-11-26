@@ -28,13 +28,13 @@ div#top_header_content{
 }
 
 div#outer{
-	min-width:1024px;
+	min-width:1124px;
 	height:100%;
 	margin-top:40px;
 }
 
 div#outer_centered{
-	max-width:1023px;
+	max-width:1123px;
 	margin:0 auto;
 }
 
@@ -44,8 +44,8 @@ div#outer_centered{
 
 #middle_frame{
 	padding-top:10px;
-	min-width:565px;
-	max-width:565px;
+	min-width:635px;
+	max-width:635px;
 	float:left;
 }
 
