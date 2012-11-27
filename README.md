@@ -14,6 +14,22 @@ This application will provide an administrator and user interface to the OpenVPN
 [OpenVPN](http://openvpn.net/index.php/download/community-downloads.html) -- Download page.
 
 
+
+
+Motivation
+----------
+
+I have been using OpenVPN extensively, both for private and commercial use.
+While I find it rather comfortable to administer applications from the commandline,
+I always wanted to create an application which could control most features of OpenVPN
+and provide them under one easy-to-use interface. It would become rather difficult for
+an administrator to control a large number of users, certificates and authorizations.
+I am hoping to combine the feature-rich OpenVPN and a graphical (web) interface, both for
+server administrator and the users.
+
+
+
+
 ### Module 1
 
 - Will provide some basic functionality such as:
