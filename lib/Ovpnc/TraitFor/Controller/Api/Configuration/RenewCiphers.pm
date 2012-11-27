@@ -1,15 +1,28 @@
-package Ovpnc::Controller::Api::Configuration::RenewCiphers;
+package Ovpnc::TraitFor::Controller::Api::Configuration::RenewCiphers;
 use warnings;
 use strict;
-
-use File::Copy;
+use Module::Locate qw(locate);
+scalar locate('File::Copy') ? 0 : do { use File::Copy; };
+use Moose::Role;
 use vars qw/$list $lines/;
 
-sub action {
-    my ( $self, $schema_file, $openvpn ) = @_;
+has 'schema_file' => (
+	is => 'ro',
+	isa => 'Str',
+	required => 1
+);
+
+has 'openvpn' => (
+	is => 'ro',
+	isa => 'Str',
+	required => 1
+);
+
+sub update_cipher_list {
+    my $self = shift;
 
     # Get cipher list from openvpn
-    my $data = $self->getCiphers($openvpn);
+    my $data = $self->getCiphers;
 
     return { error => "Could no produce cipher list from openvpn!" }
       unless ($data);
@@ -27,12 +40,12 @@ sub action {
       unless $list;
 
     # Read current XSD File
-    $lines = $self->readXsdFile($schema_file);
+    $lines = $self->readXsdFile($self->schema_file);
     if ( !$lines ) {
         return { error => "No return from readXsdFile!" };
     }
     elsif ( ref $lines and $lines->{error} ) {
-        return { error => "Error reading $schema_file: "
+        return { error => "Error reading " . $self->schema_file . ": "
               . ( $lines->{error} ? $lines->{error} : '' ) };
     }
 
@@ -41,17 +54,17 @@ sub action {
     $lines .= $list . "</xsd:schema>";
 
     # Backup older file
-    copy( $schema_file, $schema_file . '.old' )
+    copy( $self->schema_file, $self->schema_file . '.old' )
       or return { error => "Copy of backup failed: $!" };
 
     # Create new file
-    open( my $XSD, ">", $schema_file )
-      or return { error => "Cannot open $schema_file for writing: $!" };
+    open( my $XSD, ">", $self->schema_file )
+      or return { error => "Cannot open ". $self->schema_file . " for writing: $!" };
     print $XSD $lines;
     close $XSD;
 
     return {status => 'Cipher list generated ok, backup created: '
-          . $schema_file
+          . $self->schema_file
           . '.old' };
 }
 
@@ -62,9 +75,9 @@ sub removeOldCiphers {
 }
 
 sub getCiphers {
-    my ( $self, $openvpn ) = @_;
+    my $self = shift;
     my $cmd =
-      $openvpn . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
+    	$self->openvpn . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
     my @data = `$cmd`;
     return "Error" if ( $? >> 8 != 0 );
     map { chomp } @data;
@@ -72,8 +85,9 @@ sub getCiphers {
 }
 
 sub readXsdFile {
-    my ( $self, $schema_file ) = @_;
-    open( my $XSD, "<", $schema_file ) or return "Cannot open $schema_file: $!";
+	my $self = shift;
+    open( my $XSD, "<", $self->schema_file )
+		or return "Cannot open " . $self->schema_file . ": " . $!;
     $lines .= $_ while (<$XSD>);
     close $XSD;
     return $lines;
@@ -83,14 +97,14 @@ sub makeXsdList {
     my $self = shift;
     my @data = @{ (shift) };
 
-    my $list = <<_OO_;
+	my $list = <<_OO_;
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">
  <xsd:restriction base="xsd:string">
 _OO_
 
     for (@data) {
-        $list .= '  <xsd:enumeration value="' . $_ . '" />' . "\n";
+        $list .= "  <xsd:enumeration value=\"" . $_ . "\" />\n";
     }
 
     $list .= <<_OO_;

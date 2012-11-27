@@ -2,20 +2,10 @@ package Ovpnc::Controller::Api::Server;
 use warnings;
 use strict;
 use Ovpnc::Plugins::Connector;
+use File::Slurp;
 use Moose;
 use namespace::autoclean;
-
-use vars qw/
-  $REGEX
-  $pid_file
-  $openvpn_bin
-  $openvpn_config
-  $tmp_dir
-  $ssl_config
-  $utils_dir
-  $vpn_dir
-  $app_root
-  /;
+use vars qw/$REGEX/;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -32,8 +22,6 @@ has '+_trait_namespace' => (
         my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
         return $P . '::TraitFor::' . $SP;
       }
-
-      #'Ovpnc::TraitFor::Controller::Api::Server'
 );
 
 has 'vpn' => (
@@ -41,6 +29,12 @@ has 'vpn' => (
     is        => 'rw',
     predicate => '_has_vpn',
     clearer   => '_disconnect_vpn'
+);
+
+has 'cfg' => (
+	is => 'rw',
+	isa => 'HashRef',
+	predicate => '_has_conf'
 );
 
 $REGEX = {
@@ -87,27 +81,18 @@ around [
     my $self = shift;
     my $c    = shift;
 
-    $self->assign_params($c)
-      unless $pid_file;
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
       if $self->_has_vpn;
 
     # Establish connection to management port
     # =======================================
-    $self->vpn(
-        Ovpnc::Plugins::Connector->new(
-            {
-                host     => $c->config->{host}     || '127.0.0.1',
-                port     => $c->config->{port}     || '7505',
-                timeout  => $c->config->{timeout}  || 5,
-                password => $c->config->{password} || '',
-            }
-        )
-    );
+	$self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
 
     return $self->$orig( $c, @_ );
-  };
+};
 
 =head2 after modifier
 
@@ -135,40 +120,54 @@ or 'all':  ?lines=20
 
 =cut
 
-sub logs_GET : Path('server/logs') Args(0)    #Does('NeedsLogin')
+sub logs_GET : Path('server/logs') 
+			 : Args(0) 
+			 : Sitemap(*)
+		#	 : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
-    # Request params
-    my $req = $c->request;
-
+	use constant MAX_LINES => 1000;
+	
     # Verify can run
+	# ==============
     $self->sanity($c);
 
+	my $lines = $c->request->params->{lines} if $c->request->params->{lines};
+
     # Get all or (n) lines of log
-    my $_log = $self->vpn->log( $req->params->{lines} || 'all' );
+	# ===========================
+    my $_log = $self->vpn->log( $lines ? $lines : MAX_LINES );
+    my $_log_object;
 
-    my $log_object;
-
-    # Check if any log is returned (should be array_ref)
+    # Check if any log is returned
+	# (should be array_ref)
+	# ============================
     if ( ref $_log eq 'ARRAY' ) {
 
-        # Read line by line
         for my $line ( @{$_log} ) {
-
             # Get time and data
+			# =================
             my ( $_time, $_data ) = $line =~ /$REGEX->{log_line}/;
 
-            # Convert epoc time to human if requested
+            # Convert epoc time to 
+			# readable if requested
+			# ====================
             $_time = scalar localtime($_time)
-              if ( $req->params->{time} );
+              if ( $c->request->params->{time} );
 
-            # Add log data to new array_ref
-            push( @{$log_object}, { $_time => $_data } );
+            # Add log data
+			# to new array_ref
+			# ================
+            push( @{$_log_object}, { $_time => $_data } );
         }
     }
 
-    $c->stash( status => $log_object );
+	if ( $_log_object && ref $_log_object eq 'ARRAY' && @{$_log_object} > 0 ){
+	    $self->status_ok( $c, entity => $_log_object );
+	} else {
+		$self->status_not_found($c, message => 'No log data found' );
+	}
 }
 
 =head2
@@ -180,15 +179,18 @@ command=[...]
 
 =cut
 
-sub server_POST : Local : Args(1)    #Does('NeedsLogin')
+sub server_POST : Local 
+				: Args(1) 
+				: Sitemap 
+			 	#: Does('NeedsLogin') 
 {
     my ( $self, $c, $command ) = @_;
 
-    unless ( $command || $c->request->params->{command} ) {
+	do {
         $self->status_no_content($c);
         $self->_disconnect_vpn;
         $c->detach;
-    }
+    } unless defined ( $command // $c->request->params->{command} );
 
     # Assign from post parameters
     # will override anything in the path
@@ -198,10 +200,10 @@ sub server_POST : Local : Args(1)    #Does('NeedsLogin')
     my $_role = $self->new_with_traits(
         traits         => ['Control'],
         vpn            => $self->vpn,
-        openvpn_bin    => $openvpn_bin,
-        openvpn_pid    => $pid_file,
-        openvpn_config => $openvpn_config,
-        openvpn_tmpdir => $tmp_dir
+        openvpn_bin    => $self->cfg->{openvpn_bin},
+        openvpn_pid    => $self->cfg->{openvpn_pid},
+        openvpn_config => $self->cfg->{openvpn_config},
+        openvpn_tmpdir => $self->cfg->{tmp_dir}
     ) or die "Could not get role 'Control': $!";
 
     # Dict of possible commands
@@ -247,51 +249,6 @@ sub server_POST : Local : Args(1)    #Does('NeedsLogin')
     $self->_disconnect_vpn;
 }
 
-=head2 assign_params
-
-On start assign
-params to globals
-
-=cut
-
-sub assign_params : Private {
-    my ( $self, $c ) = @_;
-
-    # Remove trailing / if any
-    # ========================
-    $c->config->{openvpn_dir}      =~ s/\/$//;
-    $c->config->{application_root} =~ s/\/$//;
-
-    # Assing configurations to global variables
-    # ==========================================
-    $app_root = $c->config->{application_root} or die "No application root?!";
-
-    $tmp_dir = $c->config->{application_root} . '/openvpn/tmp/';
-
-    $pid_file = $c->config->{openvpn_pid}
-      || $c->config->{application_root}
-      . '/openpvpn/var/run/openvpn.server.pid';
-
-    $pid_file = $c->config->{application_root} . '/' . $pid_file
-      if ( $pid_file !~ /^\// );
-
-    $openvpn_bin = $c->config->{openvpn_bin} || '/usr/sbin/openvpn';
-
-    $openvpn_config =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
-        $c->config->{ovpnc_conf} )
-      || $c->config->{application_root} . '/openvpn/conf/openvpn.ovpnc.conf';
-
-    $vpn_dir = $c->config->{openvpn_dir}
-      || $c->config->{application_root} . '/openvpn';
-
-    $utils_dir = $c->config->{openvpn_utils} || 'conf/2.0';
-
-    $ssl_config = $c->config->{openssl_conf};
-
-    return 1;
-}
-
 =head2 sanity
 
 Check connection state for actions that 
@@ -314,13 +271,13 @@ sub sanity : Private {
         }
         unless ($_flag) {
             $self->_disconnect_vpn;
-            $self->status_forbidden( $c,
-                    message => 'Method '
+            $c->response->status(415);
+			$self->stash->{rest} =
+            	'Method '
                   . $c->request->method
                   . ' not permitted at '
-                  . ( caller(1) )[3] );
+                  . ( caller(1) )[3];
             $c->detach;
-            return;
         }
     }
 
@@ -328,7 +285,7 @@ sub sanity : Private {
     # ================
     if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
         $self->_disconnect_vpn;    # Just to clear the handle
-        $self->status_forbidden( $c, message => 'Server offline' );
+        $self->status_gone( $c, message => 'Server offline' );
         $c->detach;
     }
     return 1;

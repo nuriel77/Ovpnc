@@ -29,6 +29,7 @@ requires 'XML::Validator::Schema';
 requires 'XML::LibXML::Document';
 requires 'XML::Simple';
 requires 'XML::SAX::ParserFactory';
+requires 'HTML::Tree';
 requires 'JSON::XS';
 requires 'File::Slurp';
 requires 'File::Copy';

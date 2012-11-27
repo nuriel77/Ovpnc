@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Root;
 use warnings;
 use strict;
+use Ovpnc::Plugins::Sanity;
 use Moose;
 use namespace::autoclean;
 
@@ -42,12 +43,18 @@ methods execute
 around [qw(ovpnc_config index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+	$c->config->{openvpn_user} = 
+		Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+			$c->config->{ovpnc_conf}, 'UserName' );
+
     # Sanity check
-    my $err = $c->forward('/api/sanity');
+	# ============
+    my $err = Ovpnc::Plugins::Sanity->action( $c->config );
+
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->forward('View::JSON');
-        return;
+		$c->detach;
     }
     else {
         return $self->$orig($c);
@@ -60,13 +67,9 @@ Default main page
 
 =cut
 
-sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') {
+sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') : Sitemap 
+{
     my ( $self, $c ) = @_;
-
-    # Get all killed clients
-    my $kc = $self->list_revoked_clients($c);
-    $c->stash->{killed_clients} = $kc
-      if ( $kc and ref $kc );
 
     # Get username for geoname api service
     $c->stash->{geo_username} = $c->config->{geo_username};
@@ -128,24 +131,11 @@ sub include_default_links : Private {
     }
 }
 
-sub list_revoked_clients : Private {
+sub sitemap : Path('/sitemap') {
     my ( $self, $c ) = @_;
-
-    my $obj = $c->forward('/api/list_revoked');
-    die $c->{error} if ( $c->{error} );
-
-    if ( ref $obj eq 'HASH' ) {
-        if ( $obj->{status} and ref $obj->{status} eq 'ARRAY' ) {
-            return $obj->{status};
-        }
-
-        #else {
-        #	warn map { $_ . " - " . $obj->{$_} } keys %{$obj};
-        #}
-    }
-    else {
-        die "Killed clients read error?! " . $obj;
-    }
+	$c->response->headers->header( 'Content-Type' => 'application/xml' );
+	$c->stash( current_view => 'View::XML::Simple' );
+    $c->response->body( $c->sitemap_as_xml );
 }
 
 =head2 default

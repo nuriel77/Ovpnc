@@ -19,6 +19,8 @@
 	$.Ovpnc.ajax_lock = 0;
 
 	mem = {
+		okay_icon : '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
+		error_icon : '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
 		alert_icon : '<img width=18 height=18 src="/static/images/alert_icon.png" />',
 		alert_ok : '<div style="float:left;"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div>' 
 				 + '<div style="float:left;margin:5px 0 0 6px;"></div>',
@@ -34,7 +36,8 @@
 	actions = {
 		poll_status : function() { return init_loop_get_status(); },
 		hover_binds : function() { return init_hover_binds(); },
-		click_binds : function() { return init_click_binds(); }
+		click_binds : function() { return init_click_binds(); },
+		process_err : function(e,m) { return process_error(e,m); }
 	};
 
 
@@ -52,7 +55,8 @@
 				complete : function() { $.Ovpnc.ajax_lock = 0; },
 		        success : update_server_status,
 				error : function(xhr, ajaxOptions, thrownError) {
-			        //console.debug("Error getting status: " + xhr.status + ", " + thrownError)
+					$.Ovpnc().process_err(xhr.status, xhr.responseText);
+//			        console.debug("Error getting status: " + xhr.status + ", " + thrownError + ", " + xhr.responseText)
 					this.tryCount++;
 			        if (this.tryCount <= this.retryLimit) {
 			            //console.log( "Going to retry connection to host loop: " + this.tryCount);
@@ -146,28 +150,60 @@ $(document).ready(function(){
 /*
 	- Functions -
 */
+function process_error(e,m){
+	if ( m === undefined ) return false;
+	var msg = jQuery.parseJSON(m)
+	// In order for update_server_status to accept
+	// the data structure and display the status
+	// becaue this returned not as status 200
+	// we are handling an error.
+	var obj = new Object();
+	obj.rest = new Object();
+	if ( msg.rest !== undefined ){
+		$.each(msg.rest, function(k,v){
+			if ( k == "error" && v == "Server offline" ){
+				obj.rest.status = v;
+				update_server_status(obj);
+			}
+			console.log( k + " -> " + v );
+		});
+	}
+}
+
+function canJSON(value) {
+    try {
+        JSON.stringify(value);
+        return JSON.stringify(value);
+    } catch (ex) {
+        return false;
+    }
+}
 
 function update_server_status(r){
 	//console.log("Status returns: %o",r);
-	// If we get status back, display
-	if ( r.status !== undefined ){
-		$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
-		$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
-		$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
-		// Show or dont show the green on icon
-		$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
-	}
-				
-	// Show number of connected clients
-	$('#online_clients_number').text( r.clients !== undefined ? r.clients.length : 0 );
+	if ( r.rest !== undefined ){ 
+		// If we get status back, display
+		if ( r.rest.status !== undefined ){
+			r.status = r.rest.status; // Make "more" accessible
+			$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
+			$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+			$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
+			// Show or dont show the green on icon
+			$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
+		}
+	
+		// Show number of connected clients if any
+		$('#online_clients_number').text( r.rest.clients !== undefined ? r.rest.clients.length : 0 );
+	
+		if ( r.rest.title !== undefined){
+			populate_version(r.rest.title);
+		}
 
-	if ( r.clients !== undefined ){
-		if (typeof(r.title) !== "undefined")
-			populate_version(r.title);
-		//if ( Ovpnc.pathname === '/clients' )
-		//	populate_clients(r.clients);
+		if ( r.rest.clients !== undefined ){
+			//if ( Ovpnc.pathname === '/clients' )
+			//	populate_clients(r.clients);
+		}
 	}
-
 	return false;
 }
 
@@ -354,15 +390,16 @@ function init_click_binds(){
 
 }
 
-function server_ajax_control(command){
+function server_ajax_control(cmd){
 
-	$.getJSON('/api/server/' + command, function(r){
-		if ( r !== undefined && r.status !== undefined){
-
+	$.post('/api/server/', { command : cmd }, function(r){
+		if ( r !== undefined && r.rest !== undefined){
+			r.status = new Object();
+			r.status = r.rest.status;
 			console.log( "reply: %o", r.status);
 
 			// Check returned /started/
-            if ( command == 'start' ) {
+            if ( cmd == 'start' ) {
 				if ( r.status.match(/started/) ){
     	            alert( $.Ovpnc().alert_ok + r.status + " at " + get_date() + ".</div>" 
 						+ '<div class="clear">'
@@ -374,7 +411,7 @@ function server_ajax_control(command){
 					return;
     	        }
 			// Check returned /stopped/
-			} else if ( command == 'stop' ){
+			} else if ( cmd == 'stop' ){
 				if ( r.status.match(/stopped/) ){
 					alert( $.Ovpnc().alert_err + "Server stopped at " + get_date() + ".</div>"
 						+ '<div class="clear">'
@@ -390,13 +427,13 @@ function server_ajax_control(command){
 			}
 		}
 		else {
-			alert("Server control did not reply to action '" + command + "'");
+			alert("Server control did not reply to action '" + cmd + "'");
 			console.log("Server control did not reply");
 			return false;
 		}
 	}).error(function(xhr, ajaxOptions, thrownError) {
-        console.log("Error executing command " + + " server '" + c + "': " + thrownError.toString());
-        alert( $.Ovpnc().error_icon + " Error executing command " + + " server '" + c + "': " + thrownError.toString());
+        console.log("Error executing command " + cmd + " server: " + thrownError.toString());
+        alert( $.Ovpnc().error_icon + " Error executing command " + cmd + " server: " + thrownError.toString());
         return false;
     });
 
@@ -437,8 +474,7 @@ function numberWithCommas(n) {
     return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
 }
 
-$.Ovpnc().okay_icon = '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />';
-$.Ovpnc().error_icon = '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />';
+
 function kill_client(c){
 
 	$.getJSON('/api/server/kill/' + c, function(r){

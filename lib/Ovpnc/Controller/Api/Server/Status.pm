@@ -44,6 +44,12 @@ has 'vpn' => (
     clearer   => '_disconnect_vpn'
 );
 
+has 'cfg' => (
+    is => 'rw',
+    isa => 'HashRef',
+    predicate => '_has_conf'
+);
+
 $REGEX = {
     client_list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
     log_line    => '^([0-9]+),(.*)\n',
@@ -62,20 +68,16 @@ around status_GET => sub {
     my $self = shift;
     my $c = shift;
 
+	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_conf;
+
     return $self->$orig($c, @_)
         if $self->_has_vpn;
 
     # Establish connection to management port
     # =======================================
- 	$self->vpn(
-        Ovpnc::Plugins::Connector->new({
-            host     => $c->config->{host}     || '127.0.0.1',
-            port     => $c->config->{port}     || '7505',
-            timeout  => $c->config->{timeout}  || 5,
-            password => $c->config->{password} || '',
-        })
-    );
-
+    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
+  
     return $self->$orig($c, @_);
 };
 
@@ -106,7 +108,9 @@ and title (version)
 
 =cut
 
-sub status_GET : Local : Args(0) #Does('NeedsLogin')
+sub status_GET : Local 
+			   : Args(0) 
+			   : Sitemap #Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

@@ -48,6 +48,12 @@ has utils_dir => (
     predicate => '_has_utils_dir'
 );
 
+has 'cfg' => (
+    is => 'rw',
+    isa => 'HashRef',
+    predicate => '_has_conf'
+);
+
 $REGEX = {
     client => {
         list =>
@@ -101,6 +107,11 @@ around [
         $self->_set_controller_params($c);
     }
 
+	# Get global configuration params
+	# ===============================
+	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_conf;
+
     # Also here, don't process twice
     # ==============================
     return $self->$orig( $c, $params )
@@ -108,16 +119,7 @@ around [
 
     # Instantiate connector
     # =====================
-    $self->vpn(
-        Ovpnc::Plugins::Connector->new(
-            {
-                host     => $c->config->{host}     || '127.0.0.1',
-                port     => $c->config->{port}     || '7505',
-                timeout  => $c->config->{timeout}  || 5,
-                password => $c->config->{password} || '',
-            }
-        )
-    );
+    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
 
     # Check connection to mgmt port
     # =============================
@@ -161,7 +163,10 @@ of Ovpnc/OpenVPN
 
 =cut
 
-sub clients_GET : Local : Args(1)    #Does('NeedsLogin')
+sub clients_GET : Local 
+				: Args(0)    
+				: Sitemap
+				#: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -201,7 +206,10 @@ Add new client(s)
 
 =cut
 
-sub clients_POST : Local : Args(0)    #Does('NeedsLogin')
+sub clients_POST : Local 
+				 : Args(0)    
+				 : Sitemap
+				 #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -212,7 +220,10 @@ Update client(s) data
 
 =cut
 
-sub clients_UPDATE : Local : Args(0)    # Does('NeedsLogin')
+sub clients_UPDATE : Local 
+				   : Args(0)
+				   : Sitemap
+				   #:Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -223,7 +234,10 @@ Delete client(s)
 
 =cut
 
-sub clients_REMOVE : Local : Args(0)    # Does('NeedsLogin')
+sub clients_REMOVE : Local 
+				   : Args(0)    
+				   : Sitemap
+				   #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -244,7 +258,10 @@ client.)
 
 =cut
 
-sub clients_DISABLE : Local : Args(1)    #Does('NeedsLogin')
+sub clients_DISABLE : Local 
+					: Args(1)    
+					: Sitemap
+					#: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -302,7 +319,11 @@ Re-enable a disabled client
 
 =cut
 
-sub clients_ENABLE : Local : Args(1) {
+sub clients_ENABLE : Local 
+				   : Args(1)
+				   : Sitemap
+				   #: Does('NeedsLogin')
+{
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
@@ -348,7 +369,10 @@ using crl.pem
 
 =cut
 
-sub clients_REVOKE : Local : Args(1)    #Does('NeedsLogin')
+sub clients_REVOKE : Local 
+				   : Args(1)    
+				   : Sitemap
+				   #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -377,9 +401,8 @@ sub clients_REVOKE : Local : Args(1)    #Does('NeedsLogin')
     # If error from above don't proceed.
     # =================================
     if ( !$_ret_val || ( ref $_ret_val && $_ret_val->{error} ) ) {
-        $self->status_forbidden( $c, message => $_ret_val->{error} );
         $self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
+        Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} );
     }
 
     # Kill the connection (just incase client
@@ -405,7 +428,10 @@ in ccd
 
 =cut
 
-sub clients_UNREVOKE : Path('unkill') Args(1)    #Does('NeedsLogin')
+sub clients_UNREVOKE : Local 
+					 : Args(1)
+					 : Sitemap
+					 #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -453,7 +479,10 @@ Get revoked client list
 
 =cut
 
-sub list_revoked : Path('clients/list_revoked') : Args(0)    #Does('NeedsLogin')
+sub list_revoked : Path('clients/list_revoked') 
+				 : Args(0)    
+				 : Sitemap
+				 #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -605,14 +634,16 @@ sub _set_controller_params : Private {
     my ( $self, $c ) = @_;
 
     # Remove trailing /
+	# =================
     $c->config->{openvpn_dir}      =~ s/\/$//;
     $c->config->{application_root} =~ s/\/$//;
 
     # Assign OpenVPN dir
+	# ==================
     $self->vpn_dir(
         (
                  $c->config->{openvpn_dir}
-              || $c->config->{application_root} . '/openvpn'
+              // $c->config->{application_root} . '/openvpn'
         )
     );
     $self->utils_dir( $self->vpn_dir . '/' . $c->config->{openvpn_utils} );

@@ -1,38 +1,32 @@
-package Ovpnc::Controller::Sanity;
-use Moose;
+package Ovpnc::Plugins::Sanity;
+use warnings;
+use strict;
 use Fcntl ':mode';
-use vars qw/$errors/;
-use namespace::autoclean;
+use vars qw/$errors $openvpn_user $os $distro/;
 
-has 'ovpnc_user' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => 'ovpnc',
-);
-
-has 'openvpn_user' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => 'openvpn',
-);
-
-has 'dist' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => '/etc/debian_version',
-);
-
-has 'os' => (
-    isa     => 'Str',
-    is      => 'rw',
-    default => 'linux',
-);
+sub cfg{
+	my $self = shift;
+	$self->{_cfg} = shift if @_;
+	return $self->{_cfg};
+}
 
 sub action {
-    my ( $self, $config ) = @_;
+    my ( $inv, $config ) = @_;
+    my $class    = ref($inv) || $inv;
+	my $self = {};
+	bless $self, $class;
+
+	return unless $config;
 
     # remove trailing /
     $config->{openvpn_dir} =~ s/\/$//;
+
+	$openvpn_user = $config->{openvpn_user};
+	$distro = '/etc/debian_version';
+	$os = 'linux';
+
+	# Set in accessor
+	$self->cfg( $config );	
 
     my $checks = {
         os            => sub { return $self->check_os },
@@ -40,9 +34,9 @@ sub action {
         app_user      => sub { return $self->check_app_user },
         distro        => sub { return $self->check_dist },
         ovpnc_user    => sub { return $self->check_ovpnc_user },
-        configuration => sub { return $self->check_config($config) if $config },
+        configuration => sub { return $self->check_config if $config },
         check_scripts =>
-          sub { return $self->check_openvpn_scripts($config) if $config },
+          sub { return $self->check_openvpn_scripts if $config },
         check_tmp_dirs => sub {
             return $self->check_temp_directories(
                 [
@@ -72,15 +66,15 @@ sub action {
     sub check_os {
         my $self = shift;
         return (
-            $^O eq $self->os
+            $^O eq $os
             ? 0
-            : 'Not a ' . $self->os . ' operating system: ' . $^O
+            : 'Not a ' . $os . ' operating system: ' . $^O
         );
     }
 
     sub check_dist {
         my $self = shift;
-        return ( -e $self->dist ? 0 : 'Not a ' . $self->dist . ' distro' );
+        return ( -e $distro ? 0 : 'Not a ' . $distro . ' distro' );
     }
 
     sub check_openvpn_user {
@@ -89,11 +83,11 @@ sub action {
         # Check if user exists
         if (
             my ( undef, $st, undef, undef, undef, undef, undef, undef, $home ) =
-            getpwnam $self->openvpn_user )
+            getpwnam $self->cfg->{openvpn_user} )
         {
 
             # Check if user is diabled
-            return "User " . $self->openvpn_user . " is disabled"
+            return "User " . $self->cfg->{openvpn_user} . " is disabled"
               if ( $st ne 'x' );
 
             # Make sure user does not have a login shell
@@ -105,9 +99,9 @@ sub action {
         else {
             return
                 "User "
-              . $self->openvpn_user
+              . $self->cfg->{openvpn_user}
               . " not found, please add the user by issusing the command: sudo adduser "
-              . $self->openvpn_user;
+              . $self->cfg->{openvpn_user};
         }
     }
 
@@ -121,12 +115,12 @@ sub action {
                 undef, $st,   $user_id, $group_id, undef,
                 undef, undef, undef,    $home
             )
-            = getpwnam $self->ovpnc_user
+            = getpwnam $self->cfg->{ovpnc_user}
           )
         {
 
             # Check if user is diabled
-            return "User " . $self->ovpnc_user . " is disabled"
+            return "User " . $self->cfg->{ovpnc_user} . " is disabled"
               if ( $st ne 'x' );
 
 # Make sure user does not have a login shell
@@ -135,11 +129,11 @@ sub action {
 
             # Check if openvpn user is in the group of ovpnc
             return (
-                ( getgrgid($group_id) )[3] !~ /$self->{openvpn_user}/
+                ( getgrgid($group_id) )[3] !~ /$openvpn_user/
                 ? "You need to add user openvpn to the group "
-                  . $self->ovpnc_user
+                  . $self->cfg->{ovpnc_user}
                   . ": sudo adduser openvpn "
-                  . $self->ovpnc_user
+                  . $self->cfg->{ovpnc_user}
                 : 0
             );
 
@@ -147,9 +141,9 @@ sub action {
         else {
             return
                 "User "
-              . $self->ovpnc_user
+              . $self->cfg->{ovpnc_user}
               . " not found, please add the user by issusing the command: sudo adduser "
-              . $self->ovpnc_user;
+              . $self->cfg->{ovpnc_user};
         }
     }
 
@@ -162,73 +156,73 @@ sub action {
     }
 
     sub check_config {
-        my ( $self, $config ) = @_;
+        my $self = shift;
 
-        if (   !-e $config->{ovpnc_conf}
-            || !-r $config->{ovpnc_conf}
-            || !-w $config->{ovpnc_conf} )
+        if (   !-e $self->cfg->{ovpnc_conf}
+            || !-r $self->cfg->{ovpnc_conf}
+            || !-w $self->cfg->{ovpnc_conf} )
         {
-            return $config->{ovpnc_conf}
+            return $self->cfg->{ovpnc_conf}
               . " not found or not readable or not writable (should be both)";
         }
 
         # Get the openvpn conf
         # File from the xml
-        $config->{openvpn_conf} =
+        $self->cfg->{openvpn_conf} =
           Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
-            $config->{ovpnc_conf} );
+            $self->cfg->{ovpnc_conf} );
 
         # Check binary
-        if ( !-e $config->{openvpn_bin} ) {
-            return $config->{openvpn_bin} . " is not found";
+        if ( !-e $self->cfg->{openvpn_bin} ) {
+            return $self->cfg->{openvpn_bin} . " is not found";
         }
-        elsif ( !-x $config->{openvpn_bin} ) {
+        elsif ( !-x $self->cfg->{openvpn_bin} ) {
             return
-                $config->{openvpn_bin}
+                $self->cfg->{openvpn_bin}
               . " is not executable by current user: "
-              . $self->ovpnc_user;
+              . $self->cfg->{ovpnc_user};
         }
 
         # check openvpn dir
-        elsif (!-e $config->{openvpn_dir}
-            || !-d $config->{openvpn_dir}
-            || !-r $config->{openvpn_dir} )
+        elsif (!-e $self->cfg->{openvpn_dir}
+            || !-d $self->cfg->{openvpn_dir}
+            || !-r $self->cfg->{openvpn_dir} )
         {
-            return $config->{openvpn_dir}
+            return $self->cfg->{openvpn_dir}
               . " not found or not readable(openvpn_dir)";
         }
 
         # check openvpn tmpdir
-        elsif (!-e $config->{openvpn_dir} . '/tmp'
-            || !-d $config->{openvpn_dir} . '/tmp'
-            || !-w $config->{openvpn_dir} . '/tmp' )
+        elsif (!-e $self->cfg->{openvpn_dir} . '/tmp'
+            || !-d $self->cfg->{openvpn_dir} . '/tmp'
+            || !-w $self->cfg->{openvpn_dir} . '/tmp' )
         {
-            return $config->{openvpn_dir}
+            return $self->cfg->{openvpn_dir}
               . "/tmp not found or not readable(openvpn_tmpdir)";
         }
 
         # check openssl conf
-        elsif ( !-e $config->{openssl_conf} || !-r $config->{openssl_conf} ) {
-            return $config->{openssl_conf}
+        elsif ( !-e $self->cfg->{openssl_conf} || !-r $self->cfg->{openssl_conf} ) {
+            return $self->cfg->{openssl_conf}
               . " not found or not readable(openssl.conf)";
         }
 
         # check application root dir
-        elsif (!-e $config->{application_root}
-            || !-d $config->{application_root} )
+        elsif (!-e $self->cfg->{application_root}
+            || !-d $self->cfg->{application_root} )
         {
-            return $config->{application_root} . " not found or not readable";
+            return $self->cfg->{application_root} . " not found or not readable";
         }
 
         # check openvpn conf
-        elsif ( !-e $config->{openvpn_conf} || !-r $config->{openvpn_conf} ) {
-            return $config->{openvpn_conf}
+        elsif ( !-e $self->cfg->{openvpn_conf} || !-r $self->cfg->{openvpn_conf} ) {
+            return $self->cfg->{openvpn_conf}
               . " not found or not readable(openvpn_conf)";
         }
-        elsif (!-e $config->{ovpnc_config_schema}
-            || !-r $config->{ovpnc_config_schema} )
+        elsif (!-e $self->cfg->{ovpnc_config_schema}
+            || !-r $self->cfg->{ovpnc_config_schema} )
         {
-            return $config->{ovpnc_config_schema}
+            return $self->cfg->{ovpnc_config_schema}
               . " not found or not readable or not writable (should be both)";
         }
 
@@ -236,13 +230,13 @@ sub action {
 
     sub check_openvpn_scripts {
 
-        my ( $self, $config ) = @_;
+        my $self = shift;
 
         # Add a trailing / to dir
         # and append the util dir
         # it was removed earier
         my $conf_dir =
-          $config->{openvpn_dir} . '/' . $config->{openvpn_utils} . '/';
+          $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openvpn_utils} . '/';
 
         # check openvpn scripts
         for (
@@ -291,9 +285,5 @@ sub action {
     }
 
 }
-
-no Moose;
-
-__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 1;

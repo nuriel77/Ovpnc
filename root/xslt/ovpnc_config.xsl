@@ -17,10 +17,10 @@
 		  <xsl:attribute name="src">/static/js/json2.js</xsl:attribute>
 		</script>
 		<script type="text/javascript">
-		  <xsl:attribute name="src">/static/js/ovpnc_config.js</xsl:attribute>
+		  <xsl:attribute name="src">/static/js/config.js</xsl:attribute>
 		</script>
 		<link rel="stylesheet" type="text/css">
-		  <xsl:attribute name="href">/static/css/ovpnc_config.css</xsl:attribute>
+		  <xsl:attribute name="href">/static/css/config.css</xsl:attribute>
 		</link>
 	   </head>
        <body>

@@ -50,16 +50,16 @@ sub start {
     if ( $_pid || ( $self->_has_vpn && $self->vpn->{objects} ) ) {
         $self->_disconnect_vpn;
         return { error => 'Server already started with pid ' . $_pid };
-    }
-    else {
-
+    } 
+	else {
         # Build command
         my @cmd = (
             '/usr/bin/sudo',     $self->openvpn_bin,
             '--writepid',        $self->openvpn_pid,
-            '--tls-server',      '--daemon',
-            'ovpn-server',       '--setenv',
-            'PATH',              '/bin',
+			'--management-log-cache',	 2000,
+            '--tls-server',
+		    '--daemon',          'ovpn-server',
+	        '--setenv',          'PATH',              '/bin',
             '--script-security', '2',
             '--client-connect',  '/bin/client_connect',
             '--echo',            'on all',
@@ -69,6 +69,7 @@ sub start {
             $self->openvpn_config
         );
 
+		warn join " ", @cmd;
         # Run a new openvpn process
         # =========================
         my $proc    = Proc::Simple->new();

@@ -32,6 +32,13 @@ has 'vpn' => (
     clearer   => '_disconnect_vpn'
 );
 
+has 'cfg' => (
+    is => 'rw',
+    isa => 'HashRef',
+    predicate => '_has_conf'
+);
+
+
 $REGEX = { verb_line   => '^SUCCESS: verb=(\d+)\n' };
 
 around [qw(verb_GET verb_POST)] => sub {
@@ -39,19 +46,15 @@ around [qw(verb_GET verb_POST)] => sub {
     my $self = shift;
     my $c = shift;
 
+	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_conf;
+
     return $self->$orig($c, @_)
         if $self->_has_vpn;
 
-    # Establish connection to management port
-    # =======================================
-    $self->vpn(
-        Ovpnc::Plugins::Connector->new({
-            host     => $c->config->{host}     || '127.0.0.1',
-            port     => $c->config->{port}     || '7505',
-            timeout  => $c->config->{timeout}  || 5,
-            password => $c->config->{password} || '',
-        })
-    );
+    # Instantiate connector
+    # =====================
+    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
 
     return $self->$orig($c, @_);
 };
@@ -88,17 +91,20 @@ For example:
 
 =cut
 
-sub verb_POST : Local : Args(0) #Does('NeedsLogin')
+sub verb_POST : Local 
+			  : Args(0) 
+			  : Sitemap
+			  #: Does('NeedsLogin')
 {
     my ( $self, $c, $level ) = @_;
 
     # Verify content not empty
     # ========================
-    unless ( $level or $c->request->params->{level} ){
+	do {
 	 	$self->status_no_content($c);
 		$self->_disconnect_vpn;
 		$c->detach;
-	}
+	} unless defined ( $level // $c->request->params->{level} );
 
     # Assign from post params if exists
     # This will override anything in the path
@@ -138,7 +144,9 @@ Gets the verbosity level
 
 =cut
 
-sub verb_GET : Local : Args(0)
+sub verb_GET : Local 
+			 : Sitemap
+			 : Args(0)
 {
     my ( $self, $c ) = @_;
 

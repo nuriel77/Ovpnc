@@ -4,19 +4,30 @@ use strict;
 use XML::Simple;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema;
-use File::Copy;
+use XML::LibXML;
 use Module::Locate qw(locate);
-scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
+scalar locate('File::Slurp') 		? 0 : do { use File::Slurp; };
+scalar locate('File::Copy') 		? 0 : do { use File::Copy; };
 use Readonly;
 use Moose;
-use aliased 'Ovpnc::Controller::Api::Configuration::RenewCiphers' =>
-  'RenewCiphers';
 Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 use namespace::autoclean;
+
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
 __PACKAGE__->config( namespace => 'api' );
+
+with 'MooseX::Traits';
+has '+_trait_namespace' => (
+    # get the correct namespace.
+    # To keep traits out of
+    # the Controller directory.
+    default => sub {
+        my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
+        return $P . '::TraitFor::' . $SP;
+    }
+);
 
 =head1 NAME
 
@@ -51,40 +62,10 @@ in the conf file manually
 
 =cut
 
-sub configuration_GET : Local : Args(0)    # Does('NeedsLogin')
+sub configuration_GET : Local : Args(0) : Sitemap    #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
-
-    my $_xml_lines = read_file( $c->config->{ovpnc_conf}, array_ref => 1 )
-      or die "Cannot read '" . $c->config->{ovpnc_conf} . "': $!";
-
-    # Remove first line for validation
-    my $_first_line = shift @{$_xml_lines};
-    my $_xml_data = join "", @{$_xml_lines};
-
-    # Remove sticky assets
-    delete $c->stash->{assets};
-
-    if ( my $_msg =
-        $self->validate_xml( $_xml_data, $c->config->{ovpnc_config_schema} ) )
-    {
-        $c->stash( { error => $_msg } );
-        $c->res->header( 'Content-Type' => 'text/xml' );
-        $c->request->params->{xml} = 1;
-        $c->forward('View::XML::Simple');
-        $c->detach;
-    }
-    else {
-        unshift @{$_xml_lines}, $_first_line;
-        $_xml_data = join "", @{$_xml_lines};
-        $c->res->header( 'Content-Type' => 'text/xml' );
-
-        # force XML
-        $c->res->header( 'Content-Type' => 'text/xml' );
-        $c->request->params->{xml} = 1;
-        $c->response->body($_xml_data);
-    }
-
+	$self->status_ok($c, entity => { status => 'ok' } );
 }
 
 =head2 configuration_POST
@@ -96,16 +77,18 @@ and run validataions via the xsd schema
 
 =cut
 
-sub configuration_POST : Local : Args(0)    # Does('NeedsLogin')
+sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Dereference
+	# ===========
     my %data = %{ $c->request->params };
 
-    # This will only prepare a data
-    # structure which can be serialized
-    # to XML
+    # This will only prepare a 
+	# data structure which can 
+	# be converted to XML
+	# ========================
     my $xml = $self->create_xml( \%data );
 
     if ( not defined $xml ) {
@@ -116,12 +99,14 @@ sub configuration_POST : Local : Args(0)    # Does('NeedsLogin')
         return;
     }
 
-    # Create a string from
-    # the xml object
+    # Create a string
+    # from the xml object
+	# ===================
     my $xml_string = $self->perl_to_xml($xml);
 
     # Validate the xml against the xsd schema
     # Will return a message if any error
+	# =======================================
     my $message =
       $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
 
@@ -134,9 +119,9 @@ sub configuration_POST : Local : Args(0)    # Does('NeedsLogin')
 
         # Pretty fatal, but should not happen here
         # because we ran validation earlier on xml format
-        unless ($config_file) {
+        unless ( $config_file ) {
             $st_msg->{error} = "Did not receive any configuration file value!";
-            $self->send_error( $c, $st_msg->{error}, 200 );
+            $self->_send_error( $c, $st_msg->{error}, 200 );
             $c->detach;
         }
 
@@ -191,7 +176,7 @@ sub configuration_POST : Local : Args(0)    # Does('NeedsLogin')
                     OutputFile => $c->config->{ovpnc_conf},
                     XMLDecl    => "<?xml version='1.0' encoding='UTF-8'?>",
                   )
-                  or $self->send_error( $c,
+                  or $self->_send_error( $c,
                     "Error generating xml configuration file: " . $!, 200 )
                   && $c->detach;
             }
@@ -200,13 +185,13 @@ sub configuration_POST : Local : Args(0)    # Does('NeedsLogin')
                     "Cannot write xml configuration file "
                   . $c->config->{ovpnc_conf}
                   . ".\r\nEither it does not exists or is not accessible.";
-                $self->send_error( $c, $st_msg->{error}, 200 );
+                $self->_send_error( $c, $st_msg->{error}, 200 );
                 return;
             }
             $st_msg->{status} = 'Configuration file updated successfully';
         }
         else {
-            $self->send_error( $c, $st_msg->{error}, 200 );
+            $self->_send_error( $c, $st_msg->{error}, 200 );
             return;
         }
 
@@ -223,17 +208,29 @@ XSD schema from openvpn
 
 =cut
 
-sub configuration_UPDATE : Local : Args(0) Does('NeedsLogin') {
+sub configuration_UPDATE : Local : Args(0) : Sitemap #Does('NeedsLogin') 
+{
     my ( $self, $c ) = @_;
 
-    # Send openvpn binary and the schema to be updated
-    my $ret_val = RenewCiphers->action( $c->config->{ovpnc_config_schema},
-        $c->config->{openvpn_bin} );
+	# Get action's traits
+	# ===================
+	my $_role = $self->new_with_traits(
+        traits      => [ qw/RenewCiphers/ ],
+		schema_file => $c->config->{ovpnc_config_schema},
+		openvpn		=> $c->config->{openvpn_bin}
+    ) or die "Could not get role: $!";
 
-    $c->stash($ret_val);
+	# Update the cipher list
+	# in the xsd schema file
+	# ======================
+    my $_ret_val = $_role->update_cipher_list;
+	Ovpnc::Controller::Api->detach_error($c) 
+		unless ( $_ret_val );
+	Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} ) 
+		if ( ref $_ret_val && $_ret_val->{error} );
+	$self->status_ok( $c, entity => $_ret_val )
+		if ( ref $_ret_val && ! $_ret_val->{error} ); 
 }
-
-=cut
 
 
 =head2 XML example create_xml
@@ -261,8 +258,10 @@ sub configuration_UPDATE : Local : Args(0) Does('NeedsLogin') {
 =cut
 
 # Private functions
-sub send_error : Private {
+# =================
+sub _send_error : Private {
     my ( $self, $c, $error ) = @_;
+	$c->response->status($error ? $error : 500);
     delete $c->stash->{assets};
     $c->stash( { error => $error } );
     $c->detach;
@@ -543,151 +542,36 @@ sub validate_xml : Private {
     return "Form validation error: $@" if $@;
 }
 
-=head2 get_openvpn_config_file
 
-Reads the name of openvpn config file
+=head2 get_openvpn_[param]
+
+Next methods get
+parameters from the 
+Ovpnc xml conf file
 
 =cut
 
 sub get_openvpn_config_file : Private {
     my ( $self, $file ) = @_;
     my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
-    return $xml_obj->{Node}->{'ConfigFile'};
+    return $xml_obj->{Node}->{ConfigFile};
 }
 
-=head2 get_openvpn_node_name
-
-Reads the openvpn node name from
-the back-end xml configuration
-
-=cut
-
-sub get_openvpn_node_name : Private {
-    my ( $self, $file ) = @_;
-    my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
-    return $xml_obj->{Node}->{'Name'};
-}
-
-=head2 conf_to_xml
-
-Parse the configuration (keys/values)
-into a xml ready to parse format
-
-=cut
-
-sub conf_to_xml : Private {
-    my ( $self, $data, $conf_params ) = @_;
-    my $xml;
-
-    for my $key ( keys %{$data} ) {
-
-        # Get key name
-        my $check_key = $data->{$key};
-
-        # Get the 'parent' directive name(s)
-        my ($parents_full) = $data->{$key} =~ /;(.*)$/g;
-        $parents_full =~ s/\s//;
-
-        # split if more than one,
-        # assign to array
-        my @parents = split( ';', $parents_full );
-
-        # Remove the 'parents' directive(s)
-        $check_key =~ s/;.*$//;
-
-        # split the key into its directives
-        my @dirs = split( ' ', $check_key );
-
-        if ( $key !~ /push.*/ ) {
-            if ( @dirs > 1 ) {
-                if ($check_key) {
-
-                    # get the first element
-                    $xml->{ $parents[0] . '_' . $key } = $dirs[0];
-
-                    for ( my $i = 1 ; $i < @dirs ; $i++ ) {
-                        $xml->{ $parents[$i] . '_' . $key . '_' . $i } =
-                          $dirs[$i];
-                    }
-                }
-                else {
-                    $xml->{ $parents[0] . '_' . $key } = $check_key;
-                }
-            }
-            else {
-
-                # This might be a 'standalone' directive, no params
-                $xml->{ $parents[0] . '_' . $key } = $dirs[0] ? $dirs[0] : $key;
-            }
-        }
-        else {
-            $xml->{ $parents[0] . '_' . $key } = join " ", @dirs;
-        }
-
-    }
-
-    # Append two last directives
-    # for validation xslt
-    $xml->{'null_Name'}       = $conf_params->{name};
-    $xml->{'null_ConfigFile'} = $conf_params->{file};
-
-    return $xml;
-}
-
-=head2 parse_conf_file
-
-Parse the openvpn configuration file
-
-=cut
-
-sub parse_conf_file : Private {
-    my ( $self, $file, $format ) = @_;
-    my $data = {};
-
-    open( FILE, "<", $file )
-      or return {
-        error => "Cannot open configuration file '$file' for reading: $!" };
-
-    my $_pushed = 0;
-    while ( my $line = <FILE> ) {
-
-        # Skip comments and empty lines
-        next if ( $line =~ /$SKIP_LINE/ );
-
-        # Get parent definition(s)
-        #my (undef, @parents) = split(';', $line);
-
-        # Remove end-of-line comments
-        $line =~ s/#.*$//;
-
-        # Split by space into an array
-        my (@arr) = split( ' ', $line );
-        next unless @arr;
-
-        if ( $arr[0] ne 'push' ) {
-
-            # If only a key, set value to be the same
-            if ( @arr == 1 ) {
-                $data->{ $arr[0] } = $arr[0];
-            }
-            else {
-                my $k = shift @arr;
-                $data->{$k} = join " ", @arr;
-            }
-        }
-        else {
-            my $k = shift @arr;
-            if ( $_pushed > 0 ) {
-                $data->{ $k . '_' . $_pushed } = join " ", @arr;
-            }
-            else {
-                $data->{$k} = join " ", @arr;
-            }
-            $_pushed++;
-        }
-    }
-    close FILE;
-    return $data;
+sub get_openvpn_param : Private {
+    my ( $self, $file, $params ) = @_;
+	my $dom = XML::LibXML->load_xml( location => $file );
+	if ( ref $params && ref $params eq 'ARRAY' ){
+		my @arr;
+		for ( @{$params} ){
+			my $value = 
+				$dom->findvalue('/Nodes/Node/Directives/Group/Directive/Params/' . $_ );
+			push ( @arr, $value ) if $value;
+		}
+		return \@arr;
+	} 
+	elsif ( !ref $params ) {
+		return $dom->findvalue('/Nodes/Node/Directives/Group/Directive/Params/' . $params );
+	}
 }
 
 =head2 perl_to_xml
@@ -753,7 +637,6 @@ sub end : Private {
     # is not needed in JSON output
     delete $c->stash->{assets};
 
-    # Forward to JSON view
     $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }

@@ -15,6 +15,7 @@ $(document).ready(function(){
 //   }, $.Ovpnc().poll_freq );
 
 //	$('#flexme').flexigrid({dataType : "json"});
+/*
 var update = setInterval(function() {
 	$('#flexme').flexAddData({
 		clients: [ 
@@ -32,7 +33,7 @@ var update = setInterval(function() {
 	});
 	window.clearInterval(update);
  }, 2000);
-
+*/
 });
 
 function set_clients_table(){
@@ -40,13 +41,14 @@ function set_clients_table(){
 	$('#flexme').flexigrid({
 	    url: '/api/server/status',
 	    dataType: 'json',
+		method: "GET",
 		preProcess: format_results,
 		// TODO: Save table proportions in cookie
 	    colModel : [
 	        { display: 'Name', name : 'name', width : 100, sortable : true, align: 'left'},
-	        { display: 'Virtual IP', name : 'virtual_ip', width : 60, sortable : true, align: 'center'},
-	        { display: 'Remote IP', name : 'remote_ip', width : 100, sortable : true, align: 'left'},
-	        { display: 'Connected Since', name : 'conn_since', width : 120, sortable : true, align: 'left', hide: false},
+	        { display: 'Virtual IP', name : 'virtual_ip', width : 80, sortable : true, align: 'center'},
+	        { display: 'Remote IP', name : 'remote_ip', width : 120, sortable : true, align: 'left'},
+	        { display: 'Connected Since', name : 'conn_since', width : 130, sortable : true, align: 'left', hide: false},
 	        { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'right'},
 	        { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'right'}
 	    ],
@@ -54,6 +56,7 @@ function set_clients_table(){
 	        { name: 'Add', bclass: 'add', onpress : console.log('add') },
 	        { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
 	        { name: 'Block', bclass: 'block', onpress : console.log('block') },
+	        { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
 	        { separator: true}
 	    ],
 	    searchitems : [
@@ -78,10 +81,10 @@ function set_clients_table(){
 // Format the data from
 // server status, processing
 // only the clients array
-function format_results(d){
-
-	console.log( "Got: %o", d );
-	update_server_status(d); // Make sure to update server status div info
+function format_results(obj){
+	var d = new Object();
+	d = obj.rest !== undefined ? obj.rest : obj;
+	update_server_status(obj); // Make sure to update server status div info
 
 	if ( d.clients !== undefined && d.clients.length !== undefined ){
 		var __rows = new Array();
@@ -95,8 +98,8 @@ function format_results(d){
 			});
 		}
 		return {
-//			total: __count,
-			total: $.Ovpnc.count,
+			total: __count,
+//			total: $.Ovpnc.count,
 			page: 1,
 			rows: __rows
 		}
