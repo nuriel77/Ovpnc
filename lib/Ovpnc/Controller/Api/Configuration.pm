@@ -110,8 +110,9 @@ sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
     my $message =
       $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
 
-    if ($message) {
-        $c->stash( { error => $message } );
+    if ( $message ) {
+        $self->status_bad_request( $c, message => $message );
+		$c->detach;
     }
     else {
         my $st_msg      = {};

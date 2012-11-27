@@ -5,6 +5,14 @@
   xmlns:ovpnc="urn:ovpnc"
   version="1.0">
 
+  <!-- 
+		This is the xsl file for the 
+		XML + XSD in order to display
+		the configuration form
+		as HTML for the user to
+		configure
+  -->
+		
   <xsl:template match="/">
      <html>
 	   <head>
@@ -104,6 +112,8 @@
 						  <xsl:variable name="local" select="local-name()"/>
 						  <xsl:variable name="current" select="."/>
 			       	  	  <td><span class="msg" ><xsl:value-of select="$local"/></span></td>
+				
+						  <!-- TODO: Apply templates to make more concise -->
 						  <xsl:choose>
 							<xsl:when test="$local = 'ManagementPort' or $local = 'ServerPort'">
                               <td>

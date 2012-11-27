@@ -102,6 +102,18 @@ $(document).ready(function() {
 	         	},
 			    error : function (xhr, ajaxOptions, thrownError){  
 					var temp = thrownError.toString();
+					if ( xhr.status && xhr.status == "400" ){
+						if ( xhr.responseText ){
+							var err = jQuery.parseJSON(xhr.responseText);
+							if ( err.rest.error !== undefined ){
+								alert( err.rest.error );
+								return false;
+							}
+						}
+						alert("Form submission error: " + xhr.responseText
+							+ ", Code: " + xhr.status + ", " + thrownError.toString());
+						return false;
+					}
 					if ( temp.match(/NETWORK_ERR/) || ajaxOptions == 'timeout' ){
 						this.tryCount++;
 						if (this.tryCount <= this.retryLimit) {
