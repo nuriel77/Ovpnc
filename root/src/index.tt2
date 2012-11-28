@@ -4,7 +4,15 @@
 	<!-- server info -->
 	<fieldset id="title" class="box_shadow">
         <legend>Server Status</legend>
-		<div id="on_off_click_area" class="hand_pointer" title="Powerup OpenVPN server">
+		<div id="on_off_click_area"
+
+			[% IF c.check_any_user_role('can_edit') %]
+				 class="hand_pointer"
+				 title="Powerup OpenVPN server">
+			[% ELSE %]
+				 title="OpenVPN server">
+			[% END %]
+
 			<div id="server_status_content" >
 				<span id="server_status">offline</span>
 			</div>

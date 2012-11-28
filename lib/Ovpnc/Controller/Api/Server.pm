@@ -182,6 +182,7 @@ command=[...]
 sub server_POST : Local 
 				: Args(1) 
 				: Sitemap 
+				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
 			 	#: Does('NeedsLogin') 
 {
     my ( $self, $c, $command ) = @_;
@@ -263,7 +264,6 @@ sub sanity : Private {
 
     # Check permitted method for
     # non Catalyst REST complient
-    # ===========================
     my $_flag = 0;
     if ( $params && ref $params->{permitted} ) {
         for ( @{ $params->{permitted} } ) {
@@ -282,7 +282,6 @@ sub sanity : Private {
     }
 
     # Check connection
-    # ================
     if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
         $self->_disconnect_vpn;    # Just to clear the handle
         $self->status_gone( $c, message => 'Server offline' );
@@ -290,6 +289,20 @@ sub sanity : Private {
     }
     return 1;
 }
+
+=head2 denied
+
+Unauthorized access
+no match for role
+
+=cut
+
+sub denied :Private {
+    my ( $self, $c ) = @_;
+	$self->status_forbidden($c, message => 'Access denied');
+	$c->detach;
+}
+
 
 sub end : Private {
     my ( $self, $c ) = @_;

@@ -128,7 +128,7 @@ $(document).ready(function(){
 		slide("#sliding-navigation", 25, 15, 150, .8);
 
 	// Set actions for clicks
-	$.Ovpnc().click_binds();	
+	$.Ovpnc().click_binds();
 
 	// display welcome message
 	// Only on main screen
@@ -184,7 +184,11 @@ function update_server_status(r){
 		if ( r.rest.status !== undefined ){
 			r.status = r.rest.status; // Make "more" accessible
 			$('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray' );
-			$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+			// hand_pointer is only applied when this user
+			// has ACL to control the server. (in the tt2 template)
+			if ( $('#on_off_click_area').hasClass('hand_pointer') ){
+				$('#on_off_click_area').attr('title', ( r.status.match(/online/i) ? 'Shutdown' : 'Poweron' )  + ' OpenVPN server')
+			}
 			$('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off' );
 			// Show or dont show the green on icon
 			$('#on_icon').css('opacity', ( r.status.match(/online/i) ? '1' : '0' ) );
@@ -431,10 +435,16 @@ function populate_version(s)
 }
 
 function init_click_binds(){
-
-	$('#on_off_click_area').click(function(){
-		server_on_off();
-	});
+	// Only if hand_pointer was assigned
+	// via template, meaning this user
+	// has ACL to do so. In any case
+	// user cannot call api functions
+	// to which he doesnt have rights for.
+	if ( $('#on_off_click_area').hasClass('hand_pointer') ){
+		$('#on_off_click_area').click(function(){
+			server_on_off();
+		});
+	}
 
 }
 
@@ -481,7 +491,9 @@ function server_ajax_control(cmd){
 		}
 	}).error(function(xhr, ajaxOptions, thrownError) {
         console.log("Error executing command " + cmd + " server: " + thrownError.toString());
-        alert( $.Ovpnc().error_icon + " Error executing command " + cmd + " server: " + thrownError.toString());
+		var msg = jQuery.parseJSON(xhr.responseText);
+        alert( $.Ovpnc().error_icon + " Error executing command " + cmd + " server: " 
+				+ thrownError.toString() + ( msg.rest.error !== undefined ? ": " + msg.rest.error : '' ) );
         return false;
     });
 
