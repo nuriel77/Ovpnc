@@ -12,7 +12,7 @@
 					<td><input id="name" name="name" type="text" placeholder="First and last name" required autofocus></span>
 					<td style="min-width:15px;"></td>
 				</tr>
-	
+
 				<!-- email -->
 				<tr>
 					<td class="left"><label for="email">Email:</label></td>

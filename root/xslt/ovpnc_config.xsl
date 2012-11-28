@@ -25,9 +25,6 @@
 		  <xsl:attribute name="src">/static/js/jquery-latest.js</xsl:attribute>
 		</script>
 		<script type="text/javascript">
-		  <xsl:attribute name="src">/static/js/json2.js</xsl:attribute>
-		</script>
-		<script type="text/javascript">
           <xsl:attribute name="src">/static/js/jquery.cookie.js</xsl:attribute>
         </script>
 		<script type="text/javascript">

@@ -1,3 +1,6 @@
 [submodule "root/static/js/Flexigrid"]
 	path = root/static/js/Flexigrid
 	url = https://github.com/paulopmx/Flexigrid.git
+[submodule "/home/ovpnc/Ovpnc/root/static/js/JSON-js"]
+	path = /home/ovpnc/Ovpnc/root/static/js/JSON-js
+	url = https://github.com/douglascrockford/JSON-js.git

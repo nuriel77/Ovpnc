@@ -1,21 +1,21 @@
 {
 	"Plugin::Authentication" : {
     	"default_realm" : "users",
-		"realms" : {
+	   	"realms" : {
 			"users" : {
-    			"credential" : {
-	        		"class" : "Password",
-            		"password_field" : "password",
-            		"password_type" : "self_check"
-	        	},
-            	"store" : {
-               		"class" : "DBIx::Class",
+    	  "credential" : {
+	        "class" : "Password",
+          "password_field" : "password",
+          "password_type" : "self_check"
+	      },
+        "store" : {
+        "class" : "DBIx::Class",
 					"user_model" : "DB::User",
 					"role_relation" : "roles",
 					"role_field" : "name"
-            	}	
+        }	
 			}
-    	}
+    }
 	}
 }
 

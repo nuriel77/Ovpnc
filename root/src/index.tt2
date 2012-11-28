@@ -1,6 +1,6 @@
 <!-- status div -->
 <div class="status_div" id="status_container">
-	
+
 	<!-- server info -->
 	<fieldset id="title" class="box_shadow">
         <legend>Server Status</legend>

@@ -8,8 +8,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     	<title>Ovpnc[% IF title %] - [% title %][% END %]</title>
-	
-		[% IF force_no_cache %]	
+
+		[% IF force_no_cache %]
 			<meta http-equiv="pragma" content="no-cache">
 			<meta http-equiv="expires" content="Tue, 31 Dec 2003 23:00:00 GMT">
 			<meta http-equiv="cache-control" content="no-cache" />
@@ -38,12 +38,11 @@
 				[% IF c.user_exists %]
 					<!-- left frame -->
 					<div id="left_frame">
-						<!-- navigation slider menu -->			
+						<!-- navigation slider menu -->
 						[% INCLUDE menu.tt2 %]
 					</div>
 				[% END %]
-	
-	
+
 				<!-- middle frame -->
 				<div id="middle_frame">
 					[% IF error_message %]

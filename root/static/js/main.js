@@ -50,7 +50,7 @@
 	//
 	actions = {
 		// Get server status
-		poll_status : function() { 
+		poll_status : function() {
 			// run first query to status
 			// before starting the setInterval
 			get_server_status();
@@ -146,7 +146,7 @@
 		        preProcess: format_client_results,
 		        colModel : [
 		        // TODO: Save table proportions in cookie
-		            { display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
+					{ display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
 		            { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
 		            { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left', hide: true },
 		            { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left'},
@@ -190,6 +190,7 @@
 		        height: 300
 		    });
 		},
+		// The navigation menu
 		slide : function (nav_id, pad_out, pad_in, time, multiplier){
 		    var li_elem = nav_id + " li.sliding-element";
 		    var links = li_elem + " a";
@@ -242,11 +243,17 @@
 		        });
 		    }
 		},
+		check_client_match : function(clients, current_client){
+		    for (var i in clients){
+		    	if ( clients[i].name === current_client )
+		        return clients[i];
+			}
+		    return false;
+		}
 
 	};
 
 })(jQuery);
-
 
 
 /* jQuery begin document */
@@ -285,12 +292,8 @@ $(document).ready(function(){
 			return false;
 	};
 
-	// Set up the navigation class (not on login)
-	// TODO: Control via Root controller so this can
-	// optionally be include into other js files
-
-	if ($.Ovpnc().pathname !== '/login')
-		$.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);
+	// Set up the navigation
+	$.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);
 
 	// Set actions for clicks
 	$.Ovpnc().click_binds();
@@ -298,7 +301,9 @@ $(document).ready(function(){
 	// display welcome message
 	// Only on main screen
 	// Or if never displayed before
-	if ( $.cookie( 'Ovpnc_User_Settings' ) === null || $.Ovpnc().pathname === '/'){
+	if ( $.cookie( 'Ovpnc_User_Settings' ) === null 
+		|| $.Ovpnc().pathname === '/'
+	){
 		$.Ovpnc.username = ucfirst( $('#username').attr('name') );
 		alert( $.Ovpnc().alert_ok + 'Hello ' + $.Ovpnc.username + ', welcome to OpenVPN Controller!' );
 	}
@@ -306,17 +311,12 @@ $(document).ready(function(){
 	// Get status (loop)
 	$.Ovpnc().poll_status();
 
-
 });
 
 
 /*
 	- Functions -
 */
-function process_error(e,m){
-
-}
-
 function canJSON(value) {
     try {
         JSON.stringify(value);

@@ -1,6 +1,7 @@
 <fieldset class="login_box box_shadow">
 	<legend>Login Ovpnc</legend>
 	<div style="padding:20px 0 0 5px;">
+		<!-- login form -->
 	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="on">
 	        <fieldset style="border: 0;">
 	            <table>
@@ -16,7 +17,7 @@
 	            </table>
 				<div class="submit_button"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
 	        </fieldset>
-	    </form>
+	    </form><!-- login form -->
 	</div>
 </fieldset>
 <div class="errors">
