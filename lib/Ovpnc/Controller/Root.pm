@@ -48,7 +48,6 @@ around [qw(ovpnc_config index)] => sub {
 			$c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
-	# ============
     my $err = Ovpnc::Plugins::Sanity->action( $c->config );
 
     if ( $err and ref $err eq 'ARRAY' ) {
@@ -69,19 +68,16 @@ Default main page
 
 sub index : Chained('/base') 
 		  : Path 
-		  : Args(0) 
-		  : Sitemap 
+		  : Args(0)
+		  : Does('NeedsLogin') 
+		  : Sitemap
 {
     my ( $self, $c ) = @_;
 
     # Get username for geoname api service
     $c->stash->{geo_username} = $c->config->{geo_username};
 
-    # todo: check how to get current link in .tt2
     $c->stash->{this_link} = 'root';
-
-    # todo: login name from CxSL?
-    $c->stash->{logged_in} = 1;
 
 }
 
@@ -94,25 +90,20 @@ Include static files, dynamically
 sub include_default_links : Private {
     my ( $self, $c ) = @_;
 
-    # Stash version
-	# =============
-    $c->stash->{version} = $c->get_version;
-
     # Include defaults
-	# ================
-    $c->assets->include($_)
-      for (
-        qw|css/normalize.css
-        css/main.css
+	my @_page_assets = qw(
+		css/normalize.css
         css/slider.css
+		css/main.css
         js/Flexigrid/css/flexigrid.css
         js/jquery-latest.js
         js/Flexigrid/js/flexigrid.js
         js/jquery.cookie.js
         js/jquery.validate.js
-        js/main.js
-        js/slider.js|
-      );
+	);
+
+	push @_page_assets, 'js/main.js'
+		if $c->user_exists;
 
     # Optional :
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
@@ -121,20 +112,20 @@ sub include_default_links : Private {
 	return 1 if $c->stash->{no_self};
 
     # Include according to pathname
-	# =============================
-    my $c_name = $c->req->path || return;
-    $c_name =~ s/\/$//;
-
-    for my $type (qw/ css js /) {
-        if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
-
-            # example: 'css/certificates.css'
-            $c->log->debug(
-                "Including: " . $type . '/' . $c_name . '.' . $type );
-            $c->assets->include( $type . '/' . $c_name . '.' . $type );
-        }
-    }
-
+	# not incase of 'main' ( path is undef )
+	if ( my $c_name = $c->req->path){ 
+	    $c_name =~ s/\/$//;
+	    for my $type (qw/ css js /) {
+	        if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
+	
+	            # example: 'css/certificates.css'
+	            $c->log->debug(
+	                "Including: " . $type . '/' . $c_name . '.' . $type );
+	            push( @_page_assets, $type . '/' . $c_name . '.' . $type );
+	        }
+	    }
+	}
+    $c->assets->include( $_ ) for @_page_assets;
 }
 
 sub sitemap : Path('/sitemap') {

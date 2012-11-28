@@ -43,25 +43,10 @@ around 'login' => sub {
     }
 
     # Add js / css
-	# ============
-    Ovpnc::Controller::Root->include_default_links($c);
+    Ovpnc::Controller::Root->include_default_links( $c );
 	
-#	$c->stash->{username} = $c->user->get("username")
-#		if $c->user_exists;
-=comment
-    # Only sets the name in this cookie.
-    if ( defined $c->request->params->{username} ) {
-        $c->response->cookies->{Ovpnc_C} = {
-            value  => $c->request->params->{username},
-            domain => $c->request->uri->host,
-            path   => '/',
-        };
-    }
-    else {
-        $self->remove_cookies( $c,
-            [qw( Ovpnc_C ovpnc_session Ovpnc_User_Settings )] );
-    }
-=cut
+	$c->stash->{logged_in} = $c->user_exists ? 1 : 0;
+
     return $self->$orig($c);
 
 };

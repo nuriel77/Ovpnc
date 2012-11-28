@@ -59,9 +59,19 @@ sub index : Path
     my ( $self, $c ) = @_;
 	$c->stash->{title} = 'Clients';
     $c->stash->{this_link} = 'clients';
-    $c->stash->{logged_in} = 1;
+
 }
 
+sub denied : Private {
+    my ( $self, $c ) = @_;
+
+	# Add js / css
+    Ovpnc::Controller::Root->include_default_links( $c );
+    $c->stash->{this_link} = 'clients';
+    $c->stash->{title}     = ucfirst( $c->stash->{this_link} );
+    $c->stash->{error_message} = "Access denied";
+    $c->stash->{no_self} = 1;
+}
 
 =head2 end
 

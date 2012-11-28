@@ -64,7 +64,6 @@ sub index : Path
 
     $c->stash->{title}     = 'Certificates';
     $c->stash->{this_link} = 'certificates';
-    $c->stash->{logged_in} = 1;
 
     # Get geo username
     $c->stash->{geo_username} = $c->config->{geo_username};
@@ -106,9 +105,10 @@ no match for role
 sub denied :Private {
 	my ( $self, $c ) = @_; 
 
-	$c->stash->{title}     = 'Certificates';
+    # Add js / css
+    Ovpnc::Controller::Root->include_default_links( $c );
     $c->stash->{this_link} = 'certificates';
-    $c->stash->{logged_in} = 1;
+	$c->stash->{title}     = ucfirst( $c->stash->{this_link} );
 	$c->stash->{error_message} = "Access denied";
 	$c->stash->{no_self} = 1;
 }

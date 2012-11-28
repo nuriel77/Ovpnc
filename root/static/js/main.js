@@ -10,14 +10,23 @@
 
 	var mem, config, actions = {};
 
+	//
 	// Create name space $.Ovpnc
+	//
 	$.Ovpnc = function(options){
 		var obj = $.extend({}, mem, actions, config, options);
 		return obj;
 	};
 
+	//
+	// Global items
+	//
 	$.Ovpnc.ajax_lock = 0;
+	$.Ovpnc.user_data = new Object();
 
+	//
+	// Ovpnc static items
+	//
 	mem = {
 		okay_icon : '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
 		error_icon : '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
@@ -27,53 +36,214 @@
 		alert_err : '<div style="float:left;"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div>'
 			  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
 	};
+	//
+	// Ovnpc config items
+	//
 	config = {
 		poll_freq : 5000, 			// Get server status from api every n milliseconds
 		opacity_effect : 3000, 		// Sets the timing of the opacity fadein/out effect
 		pathname : window.location.pathname,
 		geo_username : function(){ return $('#geo_username').attr('name'); },
 	};
+	//
+	// Ovpnc's js actions
+	//
 	actions = {
-		poll_status : function() { return init_loop_get_status(); },
-		hover_binds : function() { return init_hover_binds(); },
-		click_binds : function() { return init_click_binds(); },
-		process_err : function(e,m) { return process_error(e,m); }
-	};
+		// Get server status
+		poll_status : function() { 
+			// run first query to status
+			// before starting the setInterval
+			get_server_status();
 
+			// Then loop every n miliseconds
+			setInterval(function() {
+				get_server_status();
+			}, $.Ovpnc().poll_freq );
+		},
+		// Init hover events
+		hover_binds : function() {
+			// Client action links hover
+			$('.unkill_me').hover(function(){
+				$(this).css('text-shadow','#999 1px -1px 1px');
+			}, function(){
+				$(this).css('text-shadow','none');
+			});
 
-	// Global json get function
-	$.getDATA = function(url) {
+		},
+		// Init click events
+		click_binds : function() {
+			// Only if hand_pointer was assigned
+		    // via template, this user has
+		    // rights to control. In any case
+		    // user cannot call api functions
+		    // to which he doesnt have rights for.
+		    if ( $('#on_off_click_area').hasClass('hand_pointer') ){
+	        	$('#on_off_click_area').click(function(){
+    	        	server_on_off();
+		        });
+			}
+	    },
+		// Get json data
+		get_data : function(url, data, method, success_func, error_func) {
         	return jQuery.ajax({
         		headers: { 'Accept': 'application/json' },
 		        async : false,
-		        timeout: 3000,
+		        timeout: 3000,	
+				data : data, 
+				type : method ? method : 'GET',
 		        tryCount : 0,
 		        retryLimit : 3,
 		        cache: false,
 			    url: url,
 				beforeSend : function(){ $.Ovpnc.ajax_lock = 1; },
 				complete : function() { $.Ovpnc.ajax_lock = 0; },
-		        success : update_server_status,
-				error : function(xhr, ajaxOptions, thrownError) {
+		        success : success_func ? success_func : function(rest){ console.log("Ajax got back: %o", rest); },
+				error : error_func ? error_func : function(xhr, ajaxOptions, thrownError) {
 					$.Ovpnc().process_err(xhr.status, xhr.responseText);
-//			        console.debug("Error getting status: " + xhr.status + ", " + thrownError + ", " + xhr.responseText)
 					this.tryCount++;
-			        if (this.tryCount <= this.retryLimit) {
-			            //console.log( "Going to retry connection to host loop: " + this.tryCount);
+			        if (this.tryCount <= this.retryLimit){
 			            //try again
 			            $.ajax(this);
 			            return;
 			        }
-
-					if ( $(".client_div").is(":visible") ){
-						$(".client_div").hide(250);
-					}
-					$('#client_status_container').html("<div id='no_data'>No data recieved, possible error: " + thrownError.toString() + "</div>").show(250);
+					if ( $(".client_div").is(":visible") ) $(".client_div").hide(250);
+					$('#client_status_container').html(
+						"<div id='no_data'>" 
+						+ "No data recieved, possible error: " 
+						+ thrownError.toString() + "</div>"
+					).show(250);
 					return false;
 				}
 			})
-	};
+		},
+		// process error message
+		process_err : function(e,m) { 
+			if ( m === undefined ) return false;
+			var msg = jQuery.parseJSON(m)
+			// In order for update_server_status to accept
+			// the data structure and display the status
+			// becaue this returned not as status 200
+			// we are handling an error.
+			var obj = new Object();
+			obj.rest = new Object();
+			if ( msg.rest !== undefined ){
+				$.each(msg.rest, function(k,v){
+					if ( k == "error" && v == "Server offline" ){
+						obj.rest.status = v;
+						update_server_status(obj);
+					}
+					//console.log( k + " -> " + v );
+				});
+			}
+		},
+		// On client page start the flexgrid plugin
+		set_clients_table : function(){
+		    $.ajaxSetup({ cache: false, async: true });
+		    $('#flexme').flexigrid({
+		        url: '/api/clients',
+		        dataType: 'json',
+		        method: "GET",
+		        preProcess: format_client_results,
+		        colModel : [
+		        // TODO: Save table proportions in cookie
+		            { display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
+		            { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
+		            { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left', hide: true },
+		            { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left'},
+		            { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
+		            { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
+		            { display: 'Enabled', name : 'enabled', width: 10, sortable : true, align: 'right', hide: false },
+		            { display: 'Revoked', name : 'revoked', width: 10, sortable : true, align: 'right', hide: false },
+		            { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: true },
+		            { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false },
+		            { display: 'Remote IP', name : 'remote_ip', width : 120, sortable : true, align: 'left'},
+		            { display: 'Virtual IP', name : 'virtual_ip', width : 120, sortable : true, align: 'left'},
+		            { display: 'Connected Since', name : 'conn_since', width : 130, sortable : true, align: 'left', hide: false},
+		            { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'right'},
+		            { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'right'}
+		        ],
+			buttons : [
+		            { name: 'Add', bclass: 'add', onpress : console.log('add') },
+		            { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
+		            { name: 'Block', bclass: 'block', onpress : console.log('block') },
+		            { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
+		            { separator: true}
+		        ],
+		        searchitems : [
+		            { display: 'vIP', name : 'virtual_ip'},
+		            { display: 'rIP', name : 'remote_ip'},
+		            { display: 'created', name : 'created'},
+		            { display: 'modified', name : 'modified'},
+		            { display: 'fullname', name : 'fullname'},
+		            { display: 'email', name : 'email'},
+		            { display: 'since', name : 'conn_since'},
+		            { display: 'username', name : 'username', isdefault: true}
+		        ],
+		        sortname: "name",
+		        sortorder: "asc",
+		        usepager: true,
+		        title: 'Clients',
+		        useRp: true,
+		        rp: 15,
+		        showTableToggleBtn: false,
+		        width: 600,
+		        height: 300
+		    });
+		},
+		slide : function (nav_id, pad_out, pad_in, time, multiplier){
+		    var li_elem = nav_id + " li.sliding-element";
+		    var links = li_elem + " a";
+		    // initiates the timer used
+		    // for the sliding animation
+		    var timer = 0;
+		    if ( $.cookie( 'Ovpnc_User_Settings' ) === null ){
+		        $.Ovpnc.user_data = { already_animated: 1 };
+		        $.cookie( "Ovpnc_User_Settings", JSON.stringify( $.Ovpnc.user_data ), { expires: 30, path: '/' } );
+		        // creates the slide animation for all list elements
+		        $(li_elem).each(function(i){
+		            // Remove earlier tab selections
+		            $(this).css('font-weight','normal');
+		            // margin left = - ([width of element] + [total vertical padding of element])
+		            $(this).css("margin-left","-180px");
+		            // updates timer
+		            timer = (timer*multiplier + time);
+		            $(this).animate({ marginLeft: "0" }, timer);
+		            $(this).animate({ marginLeft: "15px" }, timer);
+		            $(this).animate({ marginLeft: "0" }, timer);
+		        });
+		    }
+		    // creates the hover-slide
+		    // effect for all link elements
+		    $(links).each(function(i){
+		        $(this).hover(
+		        function(){
+		            $(this).animate({ paddingLeft: pad_out }, 150);
+		        }, function() {
+		            $(this).animate({ paddingLeft: pad_in }, 150);
+		        });
+		    });
+		    $.Ovpnc().set_select_tab(li_elem);
+		},
+		set_select_tab : function (l){
+		    // Check which page this is
+		    // then set text bolder on the selected
+		    var pathname = window.location.pathname;
+		    pathname = pathname.replace('/','');
+		    if ( pathname == '' ){
+		        // This is main page
+		        $('a:contains("Main")').css('font-weight','bold');
+		    }
+		    else {
+		        $(l).each(function(i){
+		            if ( pathname === $(this).text().toLowerCase() ){
+		                $(this).css('font-weight','bold');
+		                return;
+		            }
+		        });
+		    }
+		},
 
+	};
 
 })(jQuery);
 
@@ -82,10 +252,6 @@
 /* jQuery begin document */
 $(document).ready(function(){
 
-	// Todo: Split this large js file
-	// to match controllers like clients.js
-	// and certificates.js ...
-	// That way no need to do this check here
 	if ($.Ovpnc().pathname === '/login') return;
 
 	// Set custom alert functionality
@@ -119,13 +285,12 @@ $(document).ready(function(){
 			return false;
 	};
 
-
 	// Set up the navigation class (not on login)
 	// TODO: Control via Root controller so this can
 	// optionally be include into other js files
 
 	if ($.Ovpnc().pathname !== '/login')
-		slide("#sliding-navigation", 25, 15, 150, .8);
+		$.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);
 
 	// Set actions for clicks
 	$.Ovpnc().click_binds();
@@ -149,23 +314,7 @@ $(document).ready(function(){
 	- Functions -
 */
 function process_error(e,m){
-	if ( m === undefined ) return false;
-	var msg = jQuery.parseJSON(m)
-	// In order for update_server_status to accept
-	// the data structure and display the status
-	// becaue this returned not as status 200
-	// we are handling an error.
-	var obj = new Object();
-	obj.rest = new Object();
-	if ( msg.rest !== undefined ){
-		$.each(msg.rest, function(k,v){
-			if ( k == "error" && v == "Server offline" ){
-				obj.rest.status = v;
-				update_server_status(obj);
-			}
-			console.log( k + " -> " + v );
-		});
-	}
+
 }
 
 function canJSON(value) {
@@ -178,7 +327,6 @@ function canJSON(value) {
 }
 
 function update_server_status(r){
-	//console.log("Status returns: %o",r);
 	if ( r !== undefined && r.rest !== undefined ){ 
 		// If we get status back, display
 		if ( r.rest.status !== undefined ){
@@ -260,26 +408,9 @@ function check_client_match(clients,current_client){
 	return false;
 }
 
-function init_loop_get_status()
-{
-
-	// run first one
-	get_server_status();
-
-	// Then loop every n miliseconds
-	setInterval(function() {
-		get_server_status();
-	}, $.Ovpnc().poll_freq );
-}
-
 function get_server_status()
 {
-
-	$.getDATA( "/api/server/status" );
-        //.beforeSend( function(){
-        //  console.log( "At retry loop " + this.tryCount );
-        //},	
-
+	$.Ovpnc().get_data( "/api/server/status", {}, 'GET', update_server_status );
 }
 
 function populate_clients(c)
@@ -434,20 +565,6 @@ function populate_version(s)
 	$('#server_status_content').attr( 'title', s ? s : '' );
 }
 
-function init_click_binds(){
-	// Only if hand_pointer was assigned
-	// via template, meaning this user
-	// has ACL to do so. In any case
-	// user cannot call api functions
-	// to which he doesnt have rights for.
-	if ( $('#on_off_click_area').hasClass('hand_pointer') ){
-		$('#on_off_click_area').click(function(){
-			server_on_off();
-		});
-	}
-
-}
-
 function server_ajax_control(cmd){
 
 	$.post('/api/server/', { command : cmd }, function(r){
@@ -515,18 +632,6 @@ function server_on_off(){
 		server_ajax_control('start');
 		return;
 	}
-}
-
-
-function init_hover_binds(){
-
-	// Client action links hover
-	$('.unkill_me').hover(function(){
-		$(this).css('text-shadow','#999 1px -1px 1px');
-		}, function(){
-		$(this).css('text-shadow','none');
-	});
-
 }
 
 function numberWithCommas(n) {

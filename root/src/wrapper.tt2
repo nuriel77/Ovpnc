@@ -25,7 +25,7 @@
 			<div id="top_header_centered">
 				<div id="top_header_content">
 					<div style="float:left">OvpnController</div>
-					<div class="version">v[% version %]</div>
+					<div class="version">v[% c.get_version %]</div>
 					<div class="clear"></div>
 				</div>
 				<div id="message_container">
@@ -35,7 +35,7 @@
 		</div><!-- top header -->
     	<div id="outer">
 			<div id="outer_centered">
-				[% IF logged_in %]
+				[% IF c.user_exists %]
 					<!-- left frame -->
 					<div id="left_frame">
 						<!-- navigation slider menu -->			
@@ -55,8 +55,7 @@
 					[% END %]
 				</div>
 
-				[% IF logged_in %]
-
+				[% IF c.user_exists %]
 					<!-- right frame -->
 					<div id="right_frame">
 						[% IF this_link == 'root' %]
@@ -66,7 +65,6 @@
 						[% END %]
 					</div>
 					<div class="clear"></div>
-
 				[% END %]
 
 			</div><!-- outer_centered -->
