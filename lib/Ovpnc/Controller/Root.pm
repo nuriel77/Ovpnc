@@ -67,7 +67,10 @@ Default main page
 
 =cut
 
-sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') : Sitemap 
+sub index : Chained('/base') 
+		  : Path 
+		  : Args(0) 
+		  : Sitemap 
 {
     my ( $self, $c ) = @_;
 
@@ -79,9 +82,6 @@ sub index : Chained('/base') Path : Args(0) Does('NeedsLogin') : Sitemap
 
     # todo: login name from CxSL?
     $c->stash->{logged_in} = 1;
-
-    # Include JS/CSS
-    $self->include_default_links($c);
 
 }
 
@@ -95,9 +95,11 @@ sub include_default_links : Private {
     my ( $self, $c ) = @_;
 
     # Stash version
+	# =============
     $c->stash->{version} = $c->get_version;
 
     # Include defaults
+	# ================
     $c->assets->include($_)
       for (
         qw|css/normalize.css
@@ -116,7 +118,10 @@ sub include_default_links : Private {
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
 
+	return 1 if $c->stash->{no_self};
+
     # Include according to pathname
+	# =============================
     my $c_name = $c->req->path || return;
     $c_name =~ s/\/$//;
 
@@ -129,6 +134,7 @@ sub include_default_links : Private {
             $c->assets->include( $type . '/' . $c_name . '.' . $type );
         }
     }
+
 }
 
 sub sitemap : Path('/sitemap') {
@@ -175,9 +181,11 @@ Attempt to render a view, if needed.
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
-    $c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
-      if $c->request->cookies->{Ovpnc_C};
+	# Include JS/CSS
+    $self->include_default_links($c);
 
+	$c->stash->{username} = $c->user->get("name")
+		if ( $c->user_exists );
 }
 
 =head1 AUTHOR

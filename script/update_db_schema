@@ -1,0 +1,2 @@
+#!/bin/bash
+./script/ovpnc_create.pl model DB DBIC::Schema Ovpnc::Schema create=static dbi:mysql:ovpnc 'ovpnc' 'ovpncadmin' '{ AutoCommit => 1 }'

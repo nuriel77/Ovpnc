@@ -1,53 +1,52 @@
-$.Ovpnc.count = 0;
+$.Ovpnc().count = 0;
 
 // Document ready
 $(document).ready(function(){
 
 	// Declare flexigrid
+	// Will run a query
+	// to get clients
     set_clients_table();
 
-	// Show the clients tab;e
+	// Show the clients table
 	$('.flexigrid').slideDown(300);
 
-    // Then loop every n miliseconds
-//    setInterval(function() {
-//		$('#flexme').flexReload();
-//   }, $.Ovpnc().poll_freq );
+	// This will force to update
+	// online_data and not wait
+	// until the next update_Server loop
+	// This way user can see immediately
+	// who is online when he opens this page
+	var is_felxi_ready =
+		setInterval(function(){
+			if ( $('#flexme').is(':visible') ){
+				$.getDATA( "/api/server/status" );
+				window.clearInterval(is_felxi_ready);
+			}
+		}, 100);
 
-//	$('#flexme').flexigrid({dataType : "json"});
-/*
-var update = setInterval(function() {
-	$('#flexme').flexAddData({
-		clients: [ 
-			 {
-		        "virtual_ip" : "5.5.5.5",
-		        "remote_ip" : "1.2.7.92",
-		        "epoc_since" : "91074",
-		        "name" : "test",
-		        "conn_since" : "Fri Nov 22 18:17:54 2012",
-		        "bytes_sent" : "10111",
-		        "bytes_recv" : "111115",
-		        "remote_port" : "56561111119"
-		  	}
-		]
-	});
-	window.clearInterval(update);
- }, 2000);
-*/
 });
 
 function set_clients_table(){
 	$.ajaxSetup({ cache: false, async: true });
 	$('#flexme').flexigrid({
-	    url: '/api/server/status',
+	    url: '/api/clients',
 	    dataType: 'json',
 		method: "GET",
 		preProcess: format_results,
+		colModel : [
 		// TODO: Save table proportions in cookie
-	    colModel : [
-	        { display: 'Name', name : 'name', width : 100, sortable : true, align: 'left'},
-	        { display: 'Virtual IP', name : 'virtual_ip', width : 80, sortable : true, align: 'center'},
+			{ display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
+	        { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
+	        { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left', hide: true },
+	        { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left'},
+			{ display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
+			{ display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
+			{ display: 'Enabled', name : 'enabled', width: 10, sortable : true, align: 'right', hide: false },
+			{ display: 'Revoked', name : 'revoked', width: 10, sortable : true, align: 'right', hide: false },
+			{ display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: true },
+			{ display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false },
 	        { display: 'Remote IP', name : 'remote_ip', width : 120, sortable : true, align: 'left'},
+	        { display: 'Virtual IP', name : 'virtual_ip', width : 120, sortable : true, align: 'left'},
 	        { display: 'Connected Since', name : 'conn_since', width : 130, sortable : true, align: 'left', hide: false},
 	        { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'right'},
 	        { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'right'}
@@ -62,8 +61,12 @@ function set_clients_table(){
 	    searchitems : [
 	        { display: 'vIP', name : 'virtual_ip'},
 	        { display: 'rIP', name : 'remote_ip'},
+	        { display: 'created', name : 'created'},
+	        { display: 'modified', name : 'modified'},
+	        { display: 'fullname', name : 'fullname'},
+	        { display: 'email', name : 'email'},
 	        { display: 'since', name : 'conn_since'},
-	        { display: 'Name', name : 'name', isdefault: true}
+	        { display: 'username', name : 'username', isdefault: true}
 	    ],
 	    sortname: "name",
 	    sortorder: "asc",
@@ -82,39 +85,50 @@ function set_clients_table(){
 // server status, processing
 // only the clients array
 function format_results(obj){
-	var d = new Object();
-	d = obj.rest !== undefined ? obj.rest : obj;
-	update_server_status(obj); // Make sure to update server status div info
 
-	if ( d.clients !== undefined && d.clients.length !== undefined ){
+	// Check when the table is 
+	// ready and remove all 'undefined' values
+	// TODO: check how to avoid 'undefined' via
+	// flexigrid...
+	var clearer = setInterval(function(){
+		if ( $('#flexme').is(':hidden') ) return;
+		$('#flexme').find('tr').children('td').children('div').each(function(k,v){
+		   	if ( v.innerHTML === 'undefined' ) v.innerHTML = '';
+		});
+		window.clearInterval(clearer);
+	}, 1);
+
+	if ( obj.rest !== undefined && obj.rest.length !== undefined ){
 		var __rows = new Array();
 		var __count = 0;
-		for ( var index in d.clients ){
-			$.Ovpnc.count++;
+		for ( var index in obj.rest ){
+			$.Ovpnc().count++;
 			__count++;
 			__rows.push({
-				id: $.Ovpnc.count,
-				cell: get_client_col_data(d.clients[index])
+				id: $.Ovpnc().count,
+				cell: prepare_client_col_data(obj.rest[index])
 			});
 		}
 		return {
 			total: __count,
-//			total: $.Ovpnc.count,
 			page: 1,
 			rows: __rows
 		}
 	}
 }
 
-function get_client_col_data(c){
-	// Array order must be
-	// the same as the colModel
+function prepare_client_col_data(c){
 	return [
-		c.name,
-		c.virtual_ip,
-		c.remote_ip + ':' + c.remote_port, // Attach remote port to remote ip
-		c.conn_since,
-		c.bytes_recv,
-		c.bytes_sent
+		c.id,
+		c.username,
+		c.fullname,
+		c.email,
+		c.phone,
+		c.address,
+		c.enabled,
+		c.revoked,
+		c.created,
+		c.modified
 	]
 }
+

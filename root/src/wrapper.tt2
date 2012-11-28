@@ -35,33 +35,40 @@
 		</div><!-- top header -->
     	<div id="outer">
 			<div id="outer_centered">
-
-				<!-- left frame -->
-				<div id="left_frame">
-					<!-- navigation slider menu -->			
-					[% IF logged_in %]
+				[% IF logged_in %]
+					<!-- left frame -->
+					<div id="left_frame">
+						<!-- navigation slider menu -->			
 						[% INCLUDE menu.tt2 %]
-					[% END %]
-				</div>
-
+					</div>
+				[% END %]
+	
+	
 				<!-- middle frame -->
 				<div id="middle_frame">
-					[% IF this_link != 'root' %]
-						[% content %]
-					[% END %]
-				</div>
-	
-				<!-- right frame -->
-				<div id="right_frame">
-					[% IF this_link == 'root' %]
-						[% content %]
+					[% IF error_message %]
+						<div class="error_message">[% error_message %]</div>
 					[% ELSE %]
-						[% IF logged_in %]
-							[% INCLUDE 'index.tt2' %]
+						[% IF this_link != 'root' %]
+							[% content %]
 						[% END %]
 					[% END %]
 				</div>
-				<div class="clear"></div>
+
+				[% IF logged_in %]
+
+					<!-- right frame -->
+					<div id="right_frame">
+						[% IF this_link == 'root' %]
+							[% content %]
+						[% ELSE %]
+							[% INCLUDE 'index.tt2' %]
+						[% END %]
+					</div>
+					<div class="clear"></div>
+
+				[% END %]
+
 			</div><!-- outer_centered -->
     	</div><!-- outer -->
 		<input id="username" type="hidden" name="[% username %]" />

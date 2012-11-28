@@ -28,7 +28,7 @@
 			  + '<div style="float:left;margin:5px 0 0 6px;"></div>',
 	};
 	config = {
-		poll_freq : 10000, 			// Get server status from api every n milliseconds
+		poll_freq : 5000, 			// Get server status from api every n milliseconds
 		opacity_effect : 3000, 		// Sets the timing of the opacity fadein/out effect
 		pathname : window.location.pathname,
 		geo_username : function(){ return $('#geo_username').attr('name'); },
@@ -138,12 +138,10 @@ $(document).ready(function(){
 		alert( $.Ovpnc().alert_ok + 'Hello ' + $.Ovpnc.username + ', welcome to OpenVPN Controller!' );
 	}
 
-	// clients.js will load own status
-	if ( $.Ovpnc().pathname !== '/clients' ) {
-		// Get status (loop)
-		$.Ovpnc().poll_status();
-	}
-	
+	// Get status (loop)
+	$.Ovpnc().poll_status();
+
+
 });
 
 
@@ -181,7 +179,7 @@ function canJSON(value) {
 
 function update_server_status(r){
 	//console.log("Status returns: %o",r);
-	if ( r.rest !== undefined ){ 
+	if ( r !== undefined && r.rest !== undefined ){ 
 		// If we get status back, display
 		if ( r.rest.status !== undefined ){
 			r.status = r.rest.status; // Make "more" accessible
@@ -199,10 +197,61 @@ function update_server_status(r){
 			populate_version(r.rest.title);
 		}
 
+		// Update the table with any online clients data
+		// This applies only to path /clients
 		if ( r.rest.clients !== undefined ){
-			//if ( Ovpnc.pathname === '/clients' )
-			//	populate_clients(r.clients);
+			if ( $.Ovpnc().pathname === '/clients' && $('#flexme').is(':visible') ){
+				$('#flexme').find('tr').children('td[abbr="username"]').children('div').each(function(k,v){
+					// we match the username from online_data
+					// to the current tr.td[abbr=username].div.text in the loop
+					// inner_text is in order to get only the username and not
+					// any span we might have appended previous loop
+					var inner_text = v.innerHTML.replace(/^(\w+)<.*?>.*$/gi, "$1");
+					var online_data = check_client_match(r.rest.clients, inner_text);
+					if ( online_data !== false ){
+						// loop each td find the corresponding 'abbr'
+						// fill in the text from online_data
+						for( var i in online_data ){
+							if ( i !== 'username' ){
+								$(this).parent().parent('tr')
+									   .children('td[abbr="' + i + '"]')
+									   .children('div').text( online_data[i] );
+							}
+						}
+
+						// mark the row which has been found to be online
+						if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
+							$(this).append('<span class="inner_flexi_text">On</span>');
+						}
+					} 
+					else {
+						// Clean up td's with online data
+						// for client which is not online
+						// remove any background css
+						$(this).children('span.inner_flexi_text').remove();
+						if ( $(this).parent().parent('tr')
+                                   .children('td')
+                                   .children('div').text().match(/undefined/) 
+						){
+							var removable = [ "remote_ip", "virtual_ip", "conn_since" ];
+							for ( var z in removable ){
+								$(this).parent().parent('tr')
+    	                               .children('td[abbr="' + removable[z] + '"]')
+        	                           .children('div').empty();
+							}
+						}
+					}
+				});
+		    }
 		}
+	}
+	return false;
+}
+
+function check_client_match(clients,current_client){
+	for (var i in clients){
+		if ( clients[i].name === current_client )
+			return clients[i];
 	}
 	return false;
 }
@@ -223,7 +272,6 @@ function get_server_status()
 {
 
 	$.getDATA( "/api/server/status" );
-
         //.beforeSend( function(){
         //  console.log( "At retry loop " + this.tryCount );
         //},	

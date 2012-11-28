@@ -80,6 +80,7 @@ legend {
 #message_container {
 	
 }
+
 #msg_content{ margin-right:5px; }
 
 input:-webkit-autofill { color: #ffffff !important; }
@@ -101,13 +102,17 @@ img{
     -o-transition: margin 0.5s ease-out;
 }
 
-.login_box { max-width:320px; margin:90px 0px 0px 150px; }
-#header{ text-align:center; }
-#headerh1{ margin:0; }
-#headerimg{ float:right; }
-#footer{ text-align:center; font-style:italic; padding-top:20px; }
+.login_box {
+	max-width:320px;
+	margin:90px 0px 0px 150px; 
+}
 .error{ color:#f00; }
-
+.error_message{ 
+	color: #f00; 
+	padding: 80px; 
+	max-width:200px; 
+	min-width:200px; 
+}
 .right_div{
 	min-width:220px;
 	max-width:220px;
@@ -143,3 +148,9 @@ img{
 #online_clients { margin-top:28px; }
 #off_icon { float:right; }
 #on_icon { position:absolute;margin-right: 5px; opacity: 0; }
+span.inner_flexi_text {
+	float:right;
+	font-size:0.7em;
+	padding-top:2px;
+	color:#2BAB2B;
+}

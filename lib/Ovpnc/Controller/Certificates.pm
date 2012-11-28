@@ -51,7 +51,11 @@ around [qw(index)] => sub {
 
 =cut
 
-sub index : Path : Args(0) : Does('NeedsLogin') : Sitemap 
+sub index : Path 
+		  : Args(0) 
+		  : Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
+		  : Does('NeedsLogin') 
+		  : Sitemap 
 {
     my ( $self, $c ) = @_;
 
@@ -92,22 +96,39 @@ sub get_country_list : Private {
     return \@clist;
 }
 
+=head2 denied
+
+Unauthorized access
+no match for role
+
+=cut
+
+sub denied :Private {
+	my ( $self, $c ) = @_; 
+
+	$c->stash->{title}     = 'Certificates';
+    $c->stash->{this_link} = 'certificates';
+    $c->stash->{logged_in} = 1;
+	$c->stash->{error_message} = "Access denied";
+	$c->stash->{no_self} = 1;
+}
+
+
 =head2 end
 
 Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {
+sub end : ActionClass('RenderView') 
+{
     my ( $self, $c ) = @_;
 
-    # Will load any js or css
+    # Add js / css
     Ovpnc::Controller::Root->include_default_links($c);
 
-    # stash username
-    $c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
-      if $c->request->cookies->{Ovpnc_C};
-
+	$c->stash->{username} = $c->user->get("username")
+		if ( $c->user_exists );
 }
 
 =head1 AUTHOR

@@ -303,7 +303,7 @@ function get_state_list( geonameId ){
 		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
 			$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
 		}
-		$.ajaxSetup({ async: false, cache: false  });
+		$.ajaxSetup({ async: true, cache: false  });
 	});
 }
 
@@ -399,7 +399,7 @@ function get_user_geolocation(){
 				$('#t_country').empty();
 				return false;
 		    }).complete(function(){
-		 		$.ajaxSetup({ async: false, cache: false });
+		 		$.ajaxSetup({ async: true, cache: false });
 			})	
 		})
 	}
@@ -434,7 +434,7 @@ function set_select_country_geonameId( country ){
     	console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
         return false;
     }).complete(function(){
-		 $.ajaxSetup({ async: false, cache: false });
+		 $.ajaxSetup({ async: true, cache: false });
 	});	
 }
 
@@ -458,6 +458,6 @@ function get_country_name_from_id( geonameId ){
         console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
         return false;
     }).complete(function(){
-		 $.ajaxSetup({ async: false, cache: false });
+		 $.ajaxSetup({ async: true, cache: false });
 	});
 }

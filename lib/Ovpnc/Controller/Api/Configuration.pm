@@ -92,11 +92,9 @@ sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
     my $xml = $self->create_xml( \%data );
 
     if ( not defined $xml ) {
-        $c->stash(
-            { error => 'Could not generate XML format from posted parameters' }
-        );
-        $c->forward("View::JSON");
-        return;
+		Ovpnc::Controller::Api->detach_error( $c,
+			 'Could not generate XML format from posted parameters');
+        $c->detach;
     }
 
     # Create a string
@@ -195,8 +193,10 @@ sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
             $self->_send_error( $c, $st_msg->{error}, 200 );
             return;
         }
-
-        $c->stash($st_msg);
+		# Confirm to client
+		# submission okay
+		# =================
+        $self->status_ok( $c, entity => $st_msg );
     }
 }
 

@@ -62,20 +62,22 @@ __PACKAGE__->config(
                                                         #
     'Plugin::ConfigLoader' => { config_local_suffix => 'local' },
 
-    #
-    # Cache
-    'Plugin::Cache' => {
-        backend => {
-            class      => "Cache::File",
-            cache_root => 'tmp/cache',
-            store      => "Minimal",
-        }
-      }
-
 );
 
-#
+# Cache
+# =====
+__PACKAGE__->config(
+	'Plugin::Cache' => {
+    	backend => {
+        	class      => "Cache::File",
+        	cache_root => 'tmp/cache',
+            store      => "Minimal",
+        }
+	}
+);
+
 # Static::Simple
+# ==============
 __PACKAGE__->config(
     'Static::Simple' => {	
 		static => {
@@ -98,8 +100,8 @@ __PACKAGE__->config(
 	}
 );
 
-#
 # XSLT View
+# =========
 __PACKAGE__->config(
     'View::XSLT' => {
 
@@ -122,8 +124,8 @@ __PACKAGE__->config(
     }
 );
 
-#
 # HTML View
+# =========
 __PACKAGE__->config(
     'View::HTML' => {
         TEMPLATE_EXTENSION => '.tt2',
@@ -139,9 +141,8 @@ __PACKAGE__->config(
     }
 );
 
-#
 # Assets Plugin
-
+# =============
 __PACKAGE__->config(    
     'Plugin::Assets' => {
             path => "/static",
@@ -151,34 +152,36 @@ __PACKAGE__->config(
         },
 );
 
-#
-# Login controller config
+# Login controller
+# ================
 __PACKAGE__->config(
     'Controller::Login' => {
 
         # Force clear session on logout
+		# =============================
         clear_session_on_logout => 1,
 
         # Redirect to login page after logout
+		# ===================================
         redirect_after_logout_uri => '/login',
 
         login_form_args => { authenticate_args => { active => 'Y' }, },
 
         traits => [ 'Logout', 'WithRedirect', '-RenderAsTTTemplate' ],
 
-        #		actions => {
-        #			required => {
-        #				Does => ['ACL'],
-        #				AllowedRole => ['ovpncadmin'], # ANY of these
-        #				RequiresRole => ['admin'], # ALL of these
-        #				ACLDetachTo => 'login',
-        #			},
-        #		},
+        actions => {
+        	required => {
+        		Does => ['ACL'],
+        		AllowedRole => [qw/admin client/], # ANY of these
+        		RequiresRole => ['admin'], # ALL of these
+        		ACLDetachTo => 'login',
+        	},
+        },
     },
 );
 
-#
 # Session config
+# ==============
 __PACKAGE__->config(
     'Plugin::Session' => {
         flash_to_stash => 1,
@@ -187,8 +190,9 @@ __PACKAGE__->config(
 );
 
 
-#
+
 # Start the application
+# =====================
 __PACKAGE__->setup();
 
 =head1 AUTHOR

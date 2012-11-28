@@ -135,13 +135,6 @@
           </Params>
         </Directive>
         <Directive status="1">
-          <Name>management</Name>
-          <Params>
-            <ManagementIP>127.0.0.1</ManagementIP>
-            <ManagementPort>7505</ManagementPort>
-          </Params>
-        </Directive>
-        <Directive status="1">
           <Name>nice</Name>
           <Params>
             <ProcessPrio>0</ProcessPrio>

@@ -1,7 +1,7 @@
 <fieldset class="login_box box_shadow">
 	<legend>Login Ovpnc</legend>
 	<div style="padding:20px 0 0 5px;">
-	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="off">
+	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="on">
 	        <fieldset style="border: 0;">
 	            <table>
 	                <tr>
@@ -13,13 +13,6 @@
 	                    <td><input id="password" style="min-width:200px" type="password" name="password" value="" /></td>
 	                </tr>
 					<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<!--
-					<tr>
-						<td style="font-size:0.85em;">Remember me</td>
-						<td><input type="checkbox" name="remember" id="remember" />
-						</td>
-					</tr>
-				-->
 	            </table>
 				<div class="submit_button"><input style="width:100px" type="submit" name="submit" value="Login" /></div>
 	        </fieldset>

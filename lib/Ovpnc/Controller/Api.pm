@@ -49,7 +49,11 @@ A sanity check
 
 =cut
 
-sub sanity : Chained('base') PathPart('sanity') Args(0) Does('NeedsLogin') {
+sub sanity : Chained('base') 
+		   : PathPart('sanity') 
+		   : Args(0) 
+		   : Does('NeedsLogin') 
+{
 
     my ( $self, $c ) = @_;
     my $sanity = Ovpnc::Controller::Sanity->new(
@@ -79,7 +83,8 @@ message to user
 
 =cut
 
-sub detach_error : Private {
+sub detach_error : Private 
+{
     my ( $self, $c, $err_msg ) = @_;
     $c->response->status(500);
     $c->stash->{rest} =
@@ -99,7 +104,6 @@ sub assign_params : Private {
     my ( $self, $c ) = @_;
 
     # Remove trailing / if any
-    # ========================
     $c->config->{openvpn_dir}      =~ s/\/$//;
     $c->config->{application_root} =~ s/\/$//;
 

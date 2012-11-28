@@ -52,10 +52,12 @@ sub start {
         return { error => 'Server already started with pid ' . $_pid };
     } 
 	else {
+		# TODO: Pass args from assign_params
         # Build command
         my @cmd = (
             '/usr/bin/sudo',     $self->openvpn_bin,
             '--writepid',        $self->openvpn_pid,
+			'--management',		 '127.0.0.1',	 '7505', '/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/.management',
 			'--management-log-cache',	 2000,
             '--tls-server',
 		    '--daemon',          'ovpn-server',

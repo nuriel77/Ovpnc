@@ -89,7 +89,11 @@ $(document).ready(function() {
 				//	console.log( "At retry loop " + this.tryCount );
 				//},
 		        success: function(response){
-					if ( typeof (response.error) !== "undefined" ){
+					if ( response.rest.status !== undefined ){
+						alert( response.rest.status );
+						return false;
+					}
+					if ( response.error !== undefined ){
 						var element = response.error.replace(/.*<(.*)>.*/gi, "$1");
 						element = element.replace(/(\r\n|\n|\r)/gm,"");
 						//console.log("Element: " + element);
@@ -97,8 +101,6 @@ $(document).ready(function() {
 						alert(response.error);
 						return false;
 					}
-					alert(response.status);
-					return false;
 	         	},
 			    error : function (xhr, ajaxOptions, thrownError){  
 					var temp = thrownError.toString();

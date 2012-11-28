@@ -42,9 +42,13 @@ around 'login' => sub {
           . " Check the configuration manual on how to set this up.";
     }
 
-    # Will load any js or css
+    # Add js / css
+	# ============
     Ovpnc::Controller::Root->include_default_links($c);
-
+	
+#	$c->stash->{username} = $c->user->get("username")
+#		if $c->user_exists;
+=comment
     # Only sets the name in this cookie.
     if ( defined $c->request->params->{username} ) {
         $c->response->cookies->{Ovpnc_C} = {
@@ -57,7 +61,7 @@ around 'login' => sub {
         $self->remove_cookies( $c,
             [qw( Ovpnc_C ovpnc_session Ovpnc_User_Settings )] );
     }
-
+=cut
     return $self->$orig($c);
 
 };

@@ -27,11 +27,14 @@ methods execute
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+	# Assign config params
+	# ====================
 	$c->config->{openvpn_user} =
         Ovpnc::Controller::Api::Configuration->get_openvpn_param(
             $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
+	# ============
 	my $err = Ovpnc::Plugins::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
@@ -48,14 +51,12 @@ around [qw(index)] => sub {
 
 =cut
 
-sub index :Path :Args(0) : Does('NeedsLogin') : Sitemap {
+sub index : Path 
+		  : Args(0) 
+		  : Does('NeedsLogin') 
+		  : Sitemap 
+{
     my ( $self, $c ) = @_;
-
-	# Get all killed clients
-#    my $kc = Ovpnc::Controller::Root->list_revoked_clients($c);
-#    $c->stash->{killed_clients} = $kc
-#        if ( $kc and ref $kc );
-
 	$c->stash->{title} = 'Clients';
     $c->stash->{this_link} = 'clients';
     $c->stash->{logged_in} = 1;
@@ -68,14 +69,15 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {
+sub end : ActionClass('RenderView') 
+{
 	my ($self, $c) = @_;
-	# Will load any js or css
+
+	# Add js / css
 	Ovpnc::Controller::Root->include_default_links($c);
 
-	$c->stash->{username} = $c->request->cookies->{Ovpnc_C}->value
-        if $c->request->cookies->{Ovpnc_C};
-
+	$c->stash->{username} = $c->user->get("username")
+		if ( $c->user_exists );
 }
 
 =head1 AUTHOR
