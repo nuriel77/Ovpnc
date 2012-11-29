@@ -216,8 +216,8 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 11:33:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K8qJGkDp5HOL9TCsQ7gH3Q
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-29 01:48:15
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZLY0dALhNSX4BR/lf6Nkww
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

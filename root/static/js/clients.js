@@ -1,6 +1,5 @@
 // Global clients counter
 $.Ovpnc().count = 0;
-
 $(document).ready(function(){
 
 	// Declare flexigrid
@@ -31,18 +30,6 @@ $(document).ready(function(){
 // only the clients array
 function format_client_results(obj){
 
-	// Check when the table is 
-	// ready and remove all 'undefined' values
-	// TODO: check how to avoid 'undefined' via
-	// flexigrid...
-	var clearer = setInterval(function(){
-		if ( $('#flexme').is(':hidden') ) return;
-		$('#flexme').find('tr').children('td').children('div').each(function(k,v){
-		   	if ( v.innerHTML === 'undefined' ) v.innerHTML = '';
-		});
-		window.clearInterval(clearer);
-	}, 1);
-
 	if ( obj.rest !== undefined && obj.rest.length !== undefined ){
 		var __rows = new Array();
 		var __count = 0;
@@ -63,17 +50,28 @@ function format_client_results(obj){
 }
 
 function prepare_client_col_data(c){
+    // Some fields have to contain
+    // placeholders '-' because they
+    // only get updated when server
+    // status request returns
+    // this keeps flexgrid from
+    // messing up the order
 	return [
-		c.id,
-		c.username,
-		c.fullname,
-		c.email,
-		c.phone,
-		c.address,
-		c.enabled,
-		c.revoked,
-		c.created,
-		c.modified
-	]
+        c.id,                                                       // (client) id
+        c.username,
+        c.virtual_ip ? c.virtual_ip : '-',                          // virtual_ip
+        c.remote_ip ? c.remote_ip + ':' + c.remote_port : '-',      // remote_ip
+        c.conn_since ? c.conn_since : '-',                          // connected_since
+        c.bytes_in ? bytes_in : '-',                                // bytes_in
+        c.bytes_out ? bytes_out : '-',                              // bytes_out
+        c.fullname,
+        c.email,
+        c.phone,
+        c.address,
+        c.enabled,
+        c.revoked,
+        c.created,
+        c.modified
+    ]
 }
 

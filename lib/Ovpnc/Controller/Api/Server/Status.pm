@@ -75,9 +75,8 @@ around status_GET => sub {
         if $self->_has_vpn;
 
     # Establish connection to management port
-    # =======================================
     $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
-  
+
     return $self->$orig($c, @_);
 };
 
@@ -108,20 +107,17 @@ and title (version)
 
 =cut
 
-sub status_GET : Local 
-			   : Args(0) 
+sub status_GET : Local
+			   : Args(0)
 			   : Sitemap #Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Verify can run
-    # ==============
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
 	undef $_server if $_server->sanity( $c );
 
-
     # Trait names should match action name
-    # ====================================
 	# Ovpnc::TraitFor::Controller::Api::Server::Status
     my ($_fn) = (caller(0))[3] =~ /::(\w+)::\w+_.*$/;
     my $_role = $self->new_with_traits(
@@ -131,13 +127,14 @@ sub status_GET : Local
     ) or die "Could not get role '" . ucfirst( $_fn ) . "': $!";
 
  	# Check connection to mgmt port
-    # =============================
     if ( my $_status = $_role->get_status ) {
         $self->_disconnect_vpn;
         $self->status_ok( $c, entity => $_status );
+        return $_status;
     } else {
         $self->_disconnect_vpn;
         $self->gone( $c, message =>  'Did not get status data from management port, might be down');
+        return undef;
     }
 }
 

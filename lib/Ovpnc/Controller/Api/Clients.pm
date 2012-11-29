@@ -158,8 +158,8 @@ of Ovpnc/OpenVPN
 
 =cut
 
-sub clients_GET : Local 
-				: Args(0)    
+sub clients_GET : Local
+				: Args(0)
 				: Sitemap
 				#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
 				#: Does('NeedsLogin')
@@ -174,15 +174,15 @@ sub clients_GET : Local
     my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
 
 	my $_role_name = $c->model('DB::Role')->search({ name => 'client' })->single;
-	my @_clients = 
+	my @_clients =
 		$c->model('DB::User')->search(
 			{ 'user_roles.role_id' => $_role_name->id },
-			{ 
-				join => 'user_roles', 
+			{
+				join => 'user_roles',
 			  	select => [
 					qw/id
-					   username 
-					   enabled 
+					   username
+					   enabled
 					   email
 					   fullname
 					   revoked
@@ -190,13 +190,44 @@ sub clients_GET : Local
 					   address
 					   created
 					   modified/
-				] 
+				]
 			},
 		)->all;
+use Data::Dumper::Concise;
+    # Let's see who is online
+    my $_online_clients = $c->forward('/api/server/status');
 
-	if ( @_clients > 0 ){
-	    $self->status_ok( $c, entity => [ map { $_->{_column_data} } @_clients ] );
-	}
+    # Now lets start matching the list of
+    # all users to those who are online
+    # we shall append the online data
+    # for this response
+    @_clients = map { $_->{_column_data} } @_clients;
+
+    # Simple login uses hardcoded 'username'
+    # and openvpn returns 'name'
+    # here we first map so they two
+    # arrays match, we can run a simple comparison
+    # to find out to which client's data
+    # to append the online data.
+    $_online_clients->{clients} =[
+        map
+        {
+            # match to second hash's keyname
+            $_->{username} = $_->{name};
+            delete $_->{name};
+            LP: for my $i ( 0 .. @_clients ){
+                if ( $_clients[$i]->{username} eq $_->{username} ){
+                    # Merge the two hashes
+                    my %temp_hash = (%{$_clients[$i]}, %{$_});
+                    $_clients[$i] = \%temp_hash;
+                    last LP;
+                }
+            }
+        } @{$_online_clients->{clients}}
+    ];
+
+	$self->status_ok( $c, entity => [ @_clients ] )
+	    if @_clients > 0 ;
 }
 
 =head2 clients_POST
@@ -205,8 +236,8 @@ Add new client(s)
 
 =cut
 
-sub clients_POST : Local 
-				 : Args(0)    
+sub clients_POST : Local
+				 : Args(0)
 				 : Sitemap
 				 #: Does('NeedsLogin')
 {
