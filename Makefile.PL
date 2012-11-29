@@ -26,7 +26,6 @@ requires 'Config::General';
 requires 'XML::LibXML';
 requires 'XML::LibXSLT';
 requires 'XML::Validator::Schema';
-requires 'XML::LibXML::Document';
 requires 'XML::Simple';
 requires 'XML::SAX::ParserFactory';
 requires 'HTML::Tree';
@@ -89,6 +88,7 @@ install_script glob(
         join (' ',
                   'script/ovpnc_fastcgi.pl',
                   'script/ovpnc_server.pl',
+                  'ovpnc_https.sh',
         )
 );
 auto_install;
