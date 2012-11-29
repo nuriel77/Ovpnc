@@ -7,13 +7,11 @@ use namespace::autoclean;
 
 use vars qw/
   $REGEX
-/;
-
+  /;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
 __PACKAGE__->config( namespace => 'api/server' );
-
 
 =head1 NAME
 
@@ -25,14 +23,14 @@ Catalyst Controller for OpenVPN Server Status
 
 =cut
 
-
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
+
     # get the correct namespace.
     # Wanted to keep traits out of
     # the Controller directory
     default => sub {
-        my ($P, $SP) = __PACKAGE__ =~ /^(\w+)::(.*)::\w+$/;
+        my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)::\w+$/;
         return $P . '::TraitFor::' . $SP;
     }
 );
@@ -45,15 +43,16 @@ has 'vpn' => (
 );
 
 has 'cfg' => (
-    is => 'rw',
-    isa => 'HashRef',
+    is        => 'rw',
+    isa       => 'HashRef',
     predicate => '_has_conf'
 );
 
 $REGEX = {
-    client_list => 'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
-    log_line    => '^([0-9]+),(.*)\n',
-    verb_line   => '^SUCCESS: verb=(\d+)\n',
+    client_list =>
+      'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
+    log_line  => '^([0-9]+),(.*)\n',
+    verb_line => '^SUCCESS: verb=(\d+)\n',
 };
 
 =head2 around modifier
@@ -66,20 +65,19 @@ connection
 around status_GET => sub {
     my $orig = shift;
     my $self = shift;
-    my $c = shift;
+    my $c    = shift;
 
-	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
-    return $self->$orig($c, @_)
-        if $self->_has_vpn;
+    return $self->$orig( $c, @_ )
+      if $self->_has_vpn;
 
     # Establish connection to management port
-    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
+    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
-    return $self->$orig($c, @_);
+    return $self->$orig( $c, @_ );
 };
-
 
 =head2 after modifier
 
@@ -90,14 +88,14 @@ and release the mgmt port
 
 after 'status_GET' => sub { shift->_disconnect_vpn; };
 
-
 =head2 server
 
 For REST action class
 
 =cut
 
-sub status : Local : ActionClass('REST') { }
+sub status : Local : ActionClass('REST') {
+}
 
 =head2 status_GET
 
@@ -107,37 +105,37 @@ and title (version)
 
 =cut
 
-sub status_GET : Local
-			   : Args(0)
-			   : Sitemap #Does('NeedsLogin')
+sub status_GET : Local : Args(0) : Sitemap    #Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Verify can run
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
-	undef $_server if $_server->sanity( $c );
+    undef $_server if $_server->sanity($c);
 
     # Trait names should match action name
-	# Ovpnc::TraitFor::Controller::Api::Server::Status
-    my ($_fn) = (caller(0))[3] =~ /::(\w+)::\w+_.*$/;
+    # Ovpnc::TraitFor::Controller::Api::Server::Status
+    my ($_fn) = ( caller(0) )[3] =~ /::(\w+)::\w+_.*$/;
     my $_role = $self->new_with_traits(
-        traits  => [ $_fn ],
-        vpn     => $self->vpn,
-        regex   => $REGEX
-    ) or die "Could not get role '" . ucfirst( $_fn ) . "': $!";
+        traits => [$_fn],
+        vpn    => $self->vpn,
+        regex  => $REGEX
+    ) or die "Could not get role '" . ucfirst($_fn) . "': $!";
 
- 	# Check connection to mgmt port
+    # Check connection to mgmt port
     if ( my $_status = $_role->get_status ) {
         $self->_disconnect_vpn;
         $self->status_ok( $c, entity => $_status );
         return $_status;
-    } else {
+    }
+    else {
         $self->_disconnect_vpn;
-        $self->gone( $c, message =>  'Did not get status data from management port, might be down');
+        $self->gone( $c,
+            message =>
+              'Did not get status data from management port, might be down' );
         return undef;
     }
 }
-
 
 sub end : Private {
     my ( $self, $c ) = @_;

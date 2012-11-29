@@ -49,8 +49,8 @@ has utils_dir => (
 );
 
 has 'cfg' => (
-    is => 'rw',
-    isa => 'HashRef',
+    is        => 'rw',
+    isa       => 'HashRef',
     predicate => '_has_conf'
 );
 
@@ -82,9 +82,9 @@ has vpn => (
 
 around [
     qw(
-        clients_UNREVOKE
-        clients_DISABLE
-        clients_ENABLE
+      clients_UNREVOKE
+      clients_DISABLE
+      clients_ENABLE
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
@@ -94,9 +94,9 @@ around [
 
 around [
     qw(
-        clients_REVOKE
-        clients_REMOVE
-        kill_connection
+      clients_REVOKE
+      clients_REMOVE
+      kill_connection
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
@@ -107,15 +107,15 @@ around [
     }
 
     # Get global configuration params
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
-        unless $self->_has_conf;
+    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+      unless $self->_has_conf;
 
     # Also here, don't process twice
     return $self->$orig( $c, $params )
-        if $self->_has_vpn;
+      if $self->_has_vpn;
 
     # Instantiate connector
-    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
+    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
     # Check connection to mgmt port
     unless ( $self->vpn->connect ) {
@@ -158,11 +158,10 @@ of Ovpnc/OpenVPN
 
 =cut
 
-sub clients_GET : Local
-				: Args(0)
-				: Sitemap
-				#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-				#: Does('NeedsLogin')
+sub clients_GET : Local : Args(0) : Sitemap
+
+#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+#: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -175,23 +174,25 @@ sub clients_GET : Local
 
     # return only role 'client'
     # we get the id of role type 'client'
-	my $_role_name = $c->model('DB::Role')->search({ name => 'client' })->single;
+    my $_role_name =
+      $c->model('DB::Role')->search( { name => 'client' } )->single;
 
     # Assign the flexgrid request params
-    my ($page, $search_by, $search_text, $rows, $sort_by, $sort_order) =
-         @{$c->req->params}{qw/page qtype query rp sortname sortorder/};
+    my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
+      @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
 
-    my $_columns = [qw/
-        id
-        username
-        enabled
-        email
-        fullname
-        revoked
-        phone
-        address
-        created
-        modified/
+    my $_columns = [
+        qw/
+          id
+          username
+          enabled
+          email
+          fullname
+          revoked
+          phone
+          address
+          created
+          modified/
     ];
 
     # Check if these are columns which exists
@@ -200,10 +201,11 @@ sub clients_GET : Local
     # for now set default to user, and
     # sort after having mapped the two data sources
     my $_dont_sort_in_query;
-    if ( $sort_by ){
-        unless ( $sort_by ~~ @{$_columns} ){
+    if ($sort_by) {
+        unless ( $sort_by ~~ @{$_columns} ) {
+
             # Just set some default
-            $sort_by = 'username';
+            $sort_by             = 'username';
             $_dont_sort_in_query = 1;
         }
     }
@@ -215,15 +217,16 @@ sub clients_GET : Local
     $sort_by =~ s/\bname\b/username/ if $sort_by;
 
     # Query resultset
-	my @_clients =
-		$c->model('DB::User')->search(
-			{ 'user_roles.role_id' => $_role_name->id },
-            {
-                order_by => ( $sort_by && $sort_order) ? "$sort_by $sort_order" : "username ASC",
-				join => 'user_roles',
-			  	select => $_columns
-			},
-		)->all;
+    my @_clients = $c->model('DB::User')->search(
+        { 'user_roles.role_id' => $_role_name->id },
+        {
+            order_by => ( $sort_by && $sort_order )
+            ? "$sort_by $sort_order"
+            : "username ASC",
+            join   => 'user_roles',
+            select => $_columns
+        },
+    )->all;
 
     # Let's see who is online
     my $_online_clients = $c->forward('/api/server/status');
@@ -240,21 +243,22 @@ sub clients_GET : Local
     # arrays match, we can run a simple comparison
     # to find out to which client's data
     # to append the online data.
-    $_online_clients->{clients} =[
-        map
-        {
+    $_online_clients->{clients} = [
+        map {
+
             # match to second hash's keyname
             $_->{username} = $_->{name};
             delete $_->{name};
-            LP: for my $i ( 0 .. @_clients ){
-                if ( $_clients[$i]->{username} eq $_->{username} ){
+          LP: for my $i ( 0 .. @_clients ) {
+                if ( $_clients[$i]->{username} eq $_->{username} ) {
+
                     # Merge the two hashes
-                    my %temp_hash = (%{$_clients[$i]}, %{$_});
+                    my %temp_hash = ( %{ $_clients[$i] }, %{$_} );
                     $_clients[$i] = \%temp_hash;
                     last LP;
                 }
             }
-        } @{$_online_clients->{clients}}
+          } @{ $_online_clients->{clients} }
     ];
 
     # here we sort the hashes inside the array
@@ -262,15 +266,14 @@ sub clients_GET : Local
     # request. The sort is being done here
     # if these are columns which do not originate
     # in the database but from server status
-    if ( $_dont_sort_in_query && $sort_by ){
+    if ( $_dont_sort_in_query && $sort_by ) {
         my @_sorted = sort { $$a{$sort_by} cmp $$b{$sort_by} } @_clients;
         @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
     }
 
-	$self->status_ok( $c, entity => [ @_clients ] )
-	    if @_clients > 0 ;
+    $self->status_ok( $c, entity => [@_clients] )
+      if @_clients > 0;
 }
-
 
 =head2 clients_POST
 
@@ -278,10 +281,9 @@ Add new client(s)
 
 =cut
 
-sub clients_POST : Local
-				 : Args(0)
-				 : Sitemap
-				 #: Does('NeedsLogin')
+sub clients_POST : Local : Args(0) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -292,10 +294,9 @@ Update client(s) data
 
 =cut
 
-sub clients_UPDATE : Local
-				   : Args(0)
-				   : Sitemap
-				   #:Does('NeedsLogin')
+sub clients_UPDATE : Local : Args(0) : Sitemap
+
+  #:Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -306,10 +307,9 @@ Delete client(s)
 
 =cut
 
-sub clients_REMOVE : Local
-				   : Args(0)
-				   : Sitemap
-				   #: Does('NeedsLogin')
+sub clients_REMOVE : Local : Args(0) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -330,16 +330,15 @@ client.)
 
 =cut
 
-sub clients_DISABLE : Local 
-					: Args(1)    
-					: Sitemap
-					#: Does('NeedsLogin')
+sub clients_DISABLE : Local : Args(1) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
     $self->_client_error($c)
-      unless defined ( $client // $c->req->params->{client} );
+      unless defined( $client // $c->req->params->{client} );
 
     # Assign from post params if exists
     # This will override params in the path
@@ -385,10 +384,9 @@ Re-enable a disabled client
 
 =cut
 
-sub clients_ENABLE : Local 
-				   : Args(1)
-				   : Sitemap
-				   #: Does('NeedsLogin')
+sub clients_ENABLE : Local : Args(1) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -435,16 +433,15 @@ using crl.pem
 
 =cut
 
-sub clients_REVOKE : Local
-				   : Args(1)
-				   : Sitemap
-				   #: Does('NeedsLogin')
+sub clients_REVOKE : Local : Args(1) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
     $self->_client_error($c)
-      unless defined ( $client // $c->request->params->{client} );
+      unless defined( $client // $c->request->params->{client} );
 
     # Override anything in the path by setting
     # params from post if they exists
@@ -489,11 +486,10 @@ in ccd
 
 =cut
 
-sub clients_UNREVOKE : Local 
-					 : Args(1)
-					 : Sitemap
-					 #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-					 #: Does('NeedsLogin')
+sub clients_UNREVOKE : Local : Args(1) : Sitemap
+
+#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+#: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -536,10 +532,9 @@ Get revoked client list
 
 =cut
 
-sub list_revoked : Path('clients/list_revoked') 
-				 : Args(0)    
-				 : Sitemap
-				 #: Does('NeedsLogin')
+sub list_revoked : Path('clients/list_revoked') : Args(0) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -696,7 +691,7 @@ sub _set_controller_params : Private {
     # Assign OpenVPN dir
     $self->vpn_dir(
         (
-                 $c->config->{openvpn_dir}
+            $c->config->{openvpn_dir}
               // $c->config->{application_root} . '/openvpn'
         )
     );
@@ -710,10 +705,10 @@ no match for role
 
 =cut
 
-sub denied :Private {
+sub denied : Private {
     my ( $self, $c ) = @_;
-    $self->status_forbidden($c, message => "Access denied");
-	$c->detach;
+    $self->status_forbidden( $c, message => "Access denied" );
+    $c->detach;
 }
 
 =head2 default

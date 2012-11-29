@@ -4,29 +4,29 @@ use strict;
 use Fcntl ':mode';
 use vars qw/$errors $openvpn_user $os $distro/;
 
-sub cfg{
-	my $self = shift;
-	$self->{_cfg} = shift if @_;
-	return $self->{_cfg};
+sub cfg {
+    my $self = shift;
+    $self->{_cfg} = shift if @_;
+    return $self->{_cfg};
 }
 
 sub action {
     my ( $inv, $config ) = @_;
-    my $class    = ref($inv) || $inv;
-	my $self = {};
-	bless $self, $class;
+    my $class = ref($inv) || $inv;
+    my $self = {};
+    bless $self, $class;
 
-	return unless $config;
+    return unless $config;
 
     # remove trailing /
     $config->{openvpn_dir} =~ s/\/$//;
 
-	$openvpn_user = $config->{openvpn_user};
-	$distro = '/etc/debian_version';
-	$os = 'linux';
+    $openvpn_user = $config->{openvpn_user};
+    $distro       = '/etc/debian_version';
+    $os           = 'linux';
 
-	# Set in accessor
-	$self->cfg( $config );	
+    # Set in accessor
+    $self->cfg($config);
 
     my $checks = {
         os            => sub { return $self->check_os },
@@ -35,8 +35,7 @@ sub action {
         distro        => sub { return $self->check_dist },
         ovpnc_user    => sub { return $self->check_ovpnc_user },
         configuration => sub { return $self->check_config if $config },
-        check_scripts =>
-          sub { return $self->check_openvpn_scripts if $config },
+        check_scripts => sub { return $self->check_openvpn_scripts if $config },
         check_tmp_dirs => sub {
             return $self->check_temp_directories(
                 [
@@ -202,7 +201,9 @@ sub action {
         }
 
         # check openssl conf
-        elsif ( !-e $self->cfg->{openssl_conf} || !-r $self->cfg->{openssl_conf} ) {
+        elsif (!-e $self->cfg->{openssl_conf}
+            || !-r $self->cfg->{openssl_conf} )
+        {
             return $self->cfg->{openssl_conf}
               . " not found or not readable(openssl.conf)";
         }
@@ -211,11 +212,14 @@ sub action {
         elsif (!-e $self->cfg->{application_root}
             || !-d $self->cfg->{application_root} )
         {
-            return $self->cfg->{application_root} . " not found or not readable";
+            return $self->cfg->{application_root}
+              . " not found or not readable";
         }
 
         # check openvpn conf
-        elsif ( !-e $self->cfg->{openvpn_conf} || !-r $self->cfg->{openvpn_conf} ) {
+        elsif (!-e $self->cfg->{openvpn_conf}
+            || !-r $self->cfg->{openvpn_conf} )
+        {
             return $self->cfg->{openvpn_conf}
               . " not found or not readable(openvpn_conf)";
         }

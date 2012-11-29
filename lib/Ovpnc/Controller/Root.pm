@@ -43,9 +43,9 @@ methods execute
 around [qw(ovpnc_config index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
-	$c->config->{openvpn_user} = 
-		Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-			$c->config->{ovpnc_conf}, 'UserName' );
+    $c->config->{openvpn_user} =
+      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
     my $err = Ovpnc::Plugins::Sanity->action( $c->config );
@@ -53,7 +53,7 @@ around [qw(ovpnc_config index)] => sub {
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->forward('View::JSON');
-		$c->detach;
+        $c->detach;
     }
     else {
         return $self->$orig($c);
@@ -66,12 +66,7 @@ Default main page
 
 =cut
 
-sub index : Chained('/base') 
-		  : Path 
-		  : Args(0)
-		  : Does('NeedsLogin') 
-		  : Sitemap
-{
+sub index : Chained('/base') : Path : Args(0) : Does('NeedsLogin') : Sitemap {
     my ( $self, $c ) = @_;
 
     # Get username for geoname api service
@@ -91,47 +86,47 @@ sub include_default_links : Private {
     my ( $self, $c ) = @_;
 
     # Include defaults
-	my @_page_assets = qw(
-		css/normalize.css
-        css/slider.css
-		css/main.css
-        js/Flexigrid/css/flexigrid.css
-        js/jquery-latest.js
-        js/Flexigrid/js/flexigrid.js
-        js/jquery.cookie.js
-        js/jquery.validate.js
-	);
+    my @_page_assets = qw(
+      css/normalize.css
+      css/slider.css
+      css/main.css
+      js/Flexigrid/css/flexigrid.css
+      js/jquery-latest.js
+      js/Flexigrid/js/flexigrid.js
+      js/jquery.cookie.js
+      js/jquery.validate.js
+    );
 
-	push @_page_assets, 'js/main.js'
-		if $c->user_exists;
+    push @_page_assets, 'js/main.js'
+      if $c->user_exists;
 
     # Optional :
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
 
-	return 1 if $c->stash->{no_self};
+    return 1 if $c->stash->{no_self};
 
     # Include according to pathname
-	# not incase of 'main' ( path is undef )
-	if ( my $c_name = $c->req->path){ 
-	    $c_name =~ s/\/$//;
-	    for my $type (qw/ css js /) {
-	        if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
-	
-	            # example: 'css/certificates.css'
-	            $c->log->debug(
-	                "Including: " . $type . '/' . $c_name . '.' . $type );
-	            push( @_page_assets, $type . '/' . $c_name . '.' . $type );
-	        }
-	    }
-	}
-    $c->assets->include( $_ ) for @_page_assets;
+    # not incase of 'main' ( path is undef )
+    if ( my $c_name = $c->req->path ) {
+        $c_name =~ s/\/$//;
+        for my $type (qw/ css js /) {
+            if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
+
+                # example: 'css/certificates.css'
+                $c->log->debug(
+                    "Including: " . $type . '/' . $c_name . '.' . $type );
+                push( @_page_assets, $type . '/' . $c_name . '.' . $type );
+            }
+        }
+    }
+    $c->assets->include($_) for @_page_assets;
 }
 
 sub sitemap : Path('/sitemap') {
     my ( $self, $c ) = @_;
-	$c->response->headers->header( 'Content-Type' => 'application/xml' );
-	$c->stash( current_view => 'View::XML::Simple' );
+    $c->response->headers->header( 'Content-Type' => 'application/xml' );
+    $c->stash( current_view => 'View::XML::Simple' );
     $c->response->body( $c->sitemap_as_xml );
 }
 
@@ -172,11 +167,11 @@ Attempt to render a view, if needed.
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
-	# Include JS/CSS
+    # Include JS/CSS
     $self->include_default_links($c);
 
-	$c->stash->{username} = $c->user->get("name")
-		if ( $c->user_exists );
+    $c->stash->{username} = $c->user->get("name")
+      if ( $c->user_exists );
 }
 
 =head1 AUTHOR

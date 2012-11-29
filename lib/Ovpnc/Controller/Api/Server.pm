@@ -21,7 +21,7 @@ has '+_trait_namespace' => (
     default => sub {
         my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
         return $P . '::TraitFor::' . $SP;
-      }
+    }
 );
 
 has 'vpn' => (
@@ -32,9 +32,9 @@ has 'vpn' => (
 );
 
 has 'cfg' => (
-	is => 'rw',
-	isa => 'HashRef',
-	predicate => '_has_conf'
+    is        => 'rw',
+    isa       => 'HashRef',
+    predicate => '_has_conf'
 );
 
 $REGEX = {
@@ -81,7 +81,7 @@ around [
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
@@ -89,10 +89,10 @@ around [
 
     # Establish connection to management port
     # =======================================
-	$self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
+    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
-};
+  };
 
 =head2 after modifier
 
@@ -120,54 +120,55 @@ or 'all':  ?lines=20
 
 =cut
 
-sub logs_GET : Path('server/logs') 
-			 : Args(0) 
-			 : Sitemap(*)
-		#	 : Does('NeedsLogin')
+sub logs_GET : Path('server/logs') : Args(0) : Sitemap(*)
+
+  #	 : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
-	use constant MAX_LINES => 1000;
-	
+    use constant MAX_LINES => 1000;
+
     # Verify can run
-	# ==============
+    # ==============
     $self->sanity($c);
 
-	my $lines = $c->request->params->{lines} if $c->request->params->{lines};
+    my $lines = $c->request->params->{lines} if $c->request->params->{lines};
 
     # Get all or (n) lines of log
-	# ===========================
+    # ===========================
     my $_log = $self->vpn->log( $lines ? $lines : MAX_LINES );
     my $_log_object;
 
     # Check if any log is returned
-	# (should be array_ref)
-	# ============================
+    # (should be array_ref)
+    # ============================
     if ( ref $_log eq 'ARRAY' ) {
 
         for my $line ( @{$_log} ) {
+
             # Get time and data
-			# =================
+            # =================
             my ( $_time, $_data ) = $line =~ /$REGEX->{log_line}/;
 
-            # Convert epoc time to 
-			# readable if requested
-			# ====================
+            # Convert epoc time to
+            # readable if requested
+            # ====================
             $_time = scalar localtime($_time)
               if ( $c->request->params->{time} );
 
             # Add log data
-			# to new array_ref
-			# ================
+            # to new array_ref
+            # ================
             push( @{$_log_object}, { $_time => $_data } );
         }
     }
 
-	if ( $_log_object && ref $_log_object eq 'ARRAY' && @{$_log_object} > 0 ){
-	    $self->status_ok( $c, entity => $_log_object );
-	} else {
-		$self->status_not_found($c, message => 'No log data found' );
-	}
+    if ( $_log_object && ref $_log_object eq 'ARRAY' && @{$_log_object} > 0 ) {
+        $self->status_ok( $c, entity => $_log_object );
+    }
+    else {
+        $self->status_not_found( $c, message => 'No log data found' );
+    }
 }
 
 =head2
@@ -179,19 +180,18 @@ command=[...]
 
 =cut
 
-sub server_POST : Local
-				: Args(1)
-				: Sitemap
+sub server_POST : Local : Args(1) : Sitemap
+
 #				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-			 	#: Does('NeedsLogin')
+#: Does('NeedsLogin')
 {
     my ( $self, $c, $command ) = @_;
 
-	do {
+    do {
         $self->status_no_content($c);
         $self->_disconnect_vpn;
         $c->detach;
-    } unless defined ( $command // $c->request->params->{command} );
+    } unless defined( $command // $c->request->params->{command} );
 
     # Assign from post parameters
     # will override anything in the path
@@ -272,11 +272,11 @@ sub sanity : Private {
         unless ($_flag) {
             $self->_disconnect_vpn;
             $c->response->status(415);
-			$self->stash->{rest} =
-            	'Method '
-                  . $c->request->method
-                  . ' not permitted at '
-                  . ( caller(1) )[3];
+            $self->stash->{rest} =
+                'Method '
+              . $c->request->method
+              . ' not permitted at '
+              . ( caller(1) )[3];
             $c->detach;
         }
     }
@@ -297,12 +297,11 @@ no match for role
 
 =cut
 
-sub denied :Private {
+sub denied : Private {
     my ( $self, $c ) = @_;
-	$self->status_forbidden($c, message => 'Access denied');
-	$c->detach;
+    $self->status_forbidden( $c, message => 'Access denied' );
+    $c->detach;
 }
-
 
 sub end : Private {
     my ( $self, $c ) = @_;

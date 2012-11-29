@@ -8,7 +8,7 @@ use namespace::autoclean;
 
 use vars qw/
   $REGEX
-/;
+  /;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -33,30 +33,29 @@ has 'vpn' => (
 );
 
 has 'cfg' => (
-    is => 'rw',
-    isa => 'HashRef',
+    is        => 'rw',
+    isa       => 'HashRef',
     predicate => '_has_conf'
 );
 
-
-$REGEX = { verb_line   => '^SUCCESS: verb=(\d+)\n' };
+$REGEX = { verb_line => '^SUCCESS: verb=(\d+)\n' };
 
 around [qw(verb_GET verb_POST)] => sub {
     my $orig = shift;
     my $self = shift;
-    my $c = shift;
+    my $c    = shift;
 
-	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
-    return $self->$orig($c, @_)
-        if $self->_has_vpn;
+    return $self->$orig( $c, @_ )
+      if $self->_has_vpn;
 
     # Instantiate connector
     # =====================
-    $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
+    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
-    return $self->$orig($c, @_);
+    return $self->$orig( $c, @_ );
 };
 
 =head2 after modifier
@@ -68,15 +67,14 @@ and release the mgmt port
 
 after [qw(verb_GET verb_POST)] => sub { shift->_disconnect_vpn; };
 
-
 =head2 server
 
 For REST action class
 
 =cut
 
-sub verb : Local : ActionClass('REST') { }
-
+sub verb : Local : ActionClass('REST') {
+}
 
 =head2 verb_POST
 
@@ -91,20 +89,19 @@ For example:
 
 =cut
 
-sub verb_POST : Local 
-			  : Args(0) 
-			  : Sitemap
-			  #: Does('NeedsLogin')
+sub verb_POST : Local : Args(0) : Sitemap
+
+  #: Does('NeedsLogin')
 {
     my ( $self, $c, $level ) = @_;
 
     # Verify content not empty
     # ========================
-	do {
-	 	$self->status_no_content($c);
-		$self->_disconnect_vpn;
-		$c->detach;
-	} unless defined ( $level // $c->request->params->{level} );
+    do {
+        $self->status_no_content($c);
+        $self->_disconnect_vpn;
+        $c->detach;
+    } unless defined( $level // $c->request->params->{level} );
 
     # Assign from post params if exists
     # This will override anything in the path
@@ -114,29 +111,30 @@ sub verb_POST : Local
     # level range [0-9] check
     # =======================
     if ( !looks_like_number($level) or $level > 9 or $level < 0 ) {
-	    $self->status_bad_request( $c, message => 'Invalid range. Verbosity range is 0 to 9' );
-		$self->_disconnect_vpn;
+        $self->status_bad_request( $c,
+            message => 'Invalid range. Verbosity range is 0 to 9' );
+        $self->_disconnect_vpn;
         $c->detach;
-	}
+    }
 
     # Verify can run
     # ==============
-	my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
-	undef $_server if $_server->sanity( $c );
+    my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
+    undef $_server if $_server->sanity($c);
 
     # Set the verbosity level
     # =======================
-    $self->status_accepted( $c, entity =>
-        {
-            status => $self->_set_verbosity( $level ? $level : 4 )
-                    . ' Now at level: '
-                    . $self->get_verbosity
+    $self->status_accepted(
+        $c,
+        entity => {
+                status => $self->_set_verbosity( $level ? $level : 4 )
+              . ' Now at level: '
+              . $self->get_verbosity
         }
     );
 
     $self->_disconnect_vpn;
 }
-
 
 =head2 verb
 
@@ -144,23 +142,20 @@ Gets the verbosity level
 
 =cut
 
-sub verb_GET : Local 
-			 : Sitemap
-			 : Args(0)
-{
+sub verb_GET : Local : Sitemap : Args(0) {
     my ( $self, $c ) = @_;
 
     # Verify can run
     # ==============
-	my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
-    $_server->sanity( $c );
+    my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
+    $_server->sanity($c);
     $self->status_ok( $c, entity => { verbosity => $self->get_verbosity } );
 }
-
 
 # Private methods
 # ===============
 {
+
     sub get_verbosity : Private {
         my $self = shift;
 
@@ -178,21 +173,22 @@ sub verb_GET : Local
         return $verb;
     }
 
-	sub end : Private {
-	    my ( $self, $c ) = @_;
-	
-	    # Clean up the File::Assets
-	    # it is set to null but
-	    # is not needed in JSON output
-	    delete $c->stash->{assets};
-	
-	    # Debug if requested
-	    die "forced debug" if $c->req->params->{dump_info};
-	
-	    # Forward to JSON view
-	    $c->forward(
-	        ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
-	}
+    sub end : Private {
+        my ( $self, $c ) = @_;
+
+        # Clean up the File::Assets
+        # it is set to null but
+        # is not needed in JSON output
+        delete $c->stash->{assets};
+
+        # Debug if requested
+        die "forced debug" if $c->req->params->{dump_info};
+
+        # Forward to JSON view
+        $c->forward(
+            ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' )
+        );
+    }
 }
 
 =head1 AUTHOR

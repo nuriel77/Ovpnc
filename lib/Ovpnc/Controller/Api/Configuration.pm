@@ -6,13 +6,12 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema;
 use XML::LibXML;
 use Module::Locate qw(locate);
-scalar locate('File::Slurp') 		? 0 : do { use File::Slurp; };
-scalar locate('File::Copy') 		? 0 : do { use File::Copy; };
+scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
+scalar locate('File::Copy')  ? 0 : do { use File::Copy; };
 use Readonly;
 use Moose;
 Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
 use namespace::autoclean;
-
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -20,6 +19,7 @@ __PACKAGE__->config( namespace => 'api' );
 
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
+
     # get the correct namespace.
     # To keep traits out of
     # the Controller directory.
@@ -65,7 +65,7 @@ in the conf file manually
 sub configuration_GET : Local : Args(0) : Sitemap    #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
-	$self->status_ok($c, entity => { status => 'ok' } );
+    $self->status_ok( $c, entity => { status => 'ok' } );
 }
 
 =head2 configuration_POST
@@ -77,40 +77,40 @@ and run validataions via the xsd schema
 
 =cut
 
-sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
+sub configuration_POST : Local : Args(0) : Sitemap    # Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Dereference
-	# ===========
+    # ===========
     my %data = %{ $c->request->params };
 
-    # This will only prepare a 
-	# data structure which can 
-	# be converted to XML
-	# ========================
+    # This will only prepare a
+    # data structure which can
+    # be converted to XML
+    # ========================
     my $xml = $self->create_xml( \%data );
 
     if ( not defined $xml ) {
-		Ovpnc::Controller::Api->detach_error( $c,
-			 'Could not generate XML format from posted parameters');
+        Ovpnc::Controller::Api->detach_error( $c,
+            'Could not generate XML format from posted parameters' );
         $c->detach;
     }
 
     # Create a string
     # from the xml object
-	# ===================
+    # ===================
     my $xml_string = $self->perl_to_xml($xml);
 
     # Validate the xml against the xsd schema
     # Will return a message if any error
-	# =======================================
+    # =======================================
     my $message =
       $self->validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
 
-    if ( $message ) {
+    if ($message) {
         $self->status_bad_request( $c, message => $message );
-		$c->detach;
+        $c->detach;
     }
     else {
         my $st_msg      = {};
@@ -118,7 +118,7 @@ sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
 
         # Pretty fatal, but should not happen here
         # because we ran validation earlier on xml format
-        unless ( $config_file ) {
+        unless ($config_file) {
             $st_msg->{error} = "Did not receive any configuration file value!";
             $self->_send_error( $c, $st_msg->{error}, 200 );
             $c->detach;
@@ -193,9 +193,10 @@ sub configuration_POST : Local : Args(0) : Sitemap   # Does('NeedsLogin')
             $self->_send_error( $c, $st_msg->{error}, 200 );
             return;
         }
-		# Confirm to client
-		# submission okay
-		# =================
+
+        # Confirm to client
+        # submission okay
+        # =================
         $self->status_ok( $c, entity => $st_msg );
     }
 }
@@ -209,30 +210,29 @@ XSD schema from openvpn
 
 =cut
 
-sub configuration_UPDATE : Local : Args(0) : Sitemap #Does('NeedsLogin') 
+sub configuration_UPDATE : Local : Args(0) : Sitemap    #Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
-	# Get action's traits
-	# ===================
-	my $_role = $self->new_with_traits(
-        traits      => [ qw/RenewCiphers/ ],
-		schema_file => $c->config->{ovpnc_config_schema},
-		openvpn		=> $c->config->{openvpn_bin}
+    # Get action's traits
+    # ===================
+    my $_role = $self->new_with_traits(
+        traits      => [qw/RenewCiphers/],
+        schema_file => $c->config->{ovpnc_config_schema},
+        openvpn     => $c->config->{openvpn_bin}
     ) or die "Could not get role: $!";
 
-	# Update the cipher list
-	# in the xsd schema file
-	# ======================
+    # Update the cipher list
+    # in the xsd schema file
+    # ======================
     my $_ret_val = $_role->update_cipher_list;
-	Ovpnc::Controller::Api->detach_error($c) 
-		unless ( $_ret_val );
-	Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} ) 
-		if ( ref $_ret_val && $_ret_val->{error} );
-	$self->status_ok( $c, entity => $_ret_val )
-		if ( ref $_ret_val && ! $_ret_val->{error} ); 
+    Ovpnc::Controller::Api->detach_error($c)
+      unless ($_ret_val);
+    Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} )
+      if ( ref $_ret_val && $_ret_val->{error} );
+    $self->status_ok( $c, entity => $_ret_val )
+      if ( ref $_ret_val && !$_ret_val->{error} );
 }
-
 
 =head2 XML example create_xml
 
@@ -262,7 +262,7 @@ sub configuration_UPDATE : Local : Args(0) : Sitemap #Does('NeedsLogin')
 # =================
 sub _send_error : Private {
     my ( $self, $c, $error ) = @_;
-	$c->response->status($error ? $error : 500);
+    $c->response->status( $error ? $error : 500 );
     delete $c->stash->{assets};
     $c->stash( { error => $error } );
     $c->detach;
@@ -543,7 +543,6 @@ sub validate_xml : Private {
     return "Form validation error: $@" if $@;
 }
 
-
 =head2 get_openvpn_[param]
 
 Next methods get
@@ -560,19 +559,20 @@ sub get_openvpn_config_file : Private {
 
 sub get_openvpn_param : Private {
     my ( $self, $file, $params ) = @_;
-	my $dom = XML::LibXML->load_xml( location => $file );
-	if ( ref $params && ref $params eq 'ARRAY' ){
-		my @arr;
-		for ( @{$params} ){
-			my $value = 
-				$dom->findvalue('/Nodes/Node/Directives/Group/Directive/Params/' . $_ );
-			push ( @arr, $value ) if $value;
-		}
-		return \@arr;
-	} 
-	elsif ( !ref $params ) {
-		return $dom->findvalue('/Nodes/Node/Directives/Group/Directive/Params/' . $params );
-	}
+    my $dom = XML::LibXML->load_xml( location => $file );
+    if ( ref $params && ref $params eq 'ARRAY' ) {
+        my @arr;
+        for ( @{$params} ) {
+            my $value = $dom->findvalue(
+                '/Nodes/Node/Directives/Group/Directive/Params/' . $_ );
+            push( @arr, $value ) if $value;
+        }
+        return \@arr;
+    }
+    elsif ( !ref $params ) {
+        return $dom->findvalue(
+            '/Nodes/Node/Directives/Group/Directive/Params/' . $params );
+    }
 }
 
 =head2 perl_to_xml

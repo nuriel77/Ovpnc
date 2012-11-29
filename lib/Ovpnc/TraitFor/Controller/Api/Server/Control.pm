@@ -50,29 +50,32 @@ sub start {
     if ( $_pid || ( $self->_has_vpn && $self->vpn->{objects} ) ) {
         $self->_disconnect_vpn;
         return { error => 'Server already started with pid ' . $_pid };
-    } 
-	else {
-		# TODO: Pass args from assign_params
+    }
+    else {
+
+        # TODO: Pass args from assign_params
         # Build command
         my @cmd = (
-            '/usr/bin/sudo',     $self->openvpn_bin,
-            '--writepid',        $self->openvpn_pid,
-			'--management',		 '127.0.0.1',	 '7505', '/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/.management',
-			'--management-log-cache',	 2000,
+            '/usr/bin/sudo', $self->openvpn_bin,
+            '--writepid',    $self->openvpn_pid,
+            '--management', '127.0.0.1', '7505',
+            '/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/.management',
+            '--management-log-cache', 2000,
             '--tls-server',
-		    '--daemon',          'ovpn-server',
-	        '--setenv',          'PATH',              '/bin',
-            '--script-security', '2',
-            '--client-connect',  '/bin/client_connect',
-            '--client-disconnect',  '/bin/client_disconnect',
-            '--echo',            'on all',
-            '--tmp-dir',         '/tmp',
-            '--ccd-exclusive',   '--cd',
-            '/',                 '--config',
+            '--daemon', 'ovpn-server',
+            '--setenv',            'PATH', '/bin',
+            '--script-security',   '2',
+            '--client-connect',    '/bin/client_connect',
+            '--client-disconnect', '/bin/client_disconnect',
+            '--echo',              'on all',
+            '--tmp-dir',           '/tmp',
+            '--ccd-exclusive',     '--cd',
+            '/',                   '--config',
             $self->openvpn_config
         );
 
-		warn join " ", @cmd;
+        warn join " ", @cmd;
+
         # Run a new openvpn process
         # =========================
         my $proc    = Proc::Simple->new();

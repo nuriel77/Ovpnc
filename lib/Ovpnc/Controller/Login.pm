@@ -42,7 +42,7 @@ around 'login' => sub {
           . " Check the configuration manual on how to set this up.";
     }
 
-	$c->stash->{logged_in} = $c->user_exists ? 1 : 0;
+    $c->stash->{logged_in} = $c->user_exists ? 1 : 0;
     return $self->$orig($c);
 
 };

@@ -31,12 +31,12 @@ methods execute
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
-	$c->config->{openvpn_user} =
-        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-            $c->config->{ovpnc_conf}, 'UserName' );
+    $c->config->{openvpn_user} =
+      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
-    my $err = Ovpnc::Plugins::Sanity->action($c->config);
+    my $err = Ovpnc::Plugins::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->forward('View::JSON');
@@ -51,12 +51,8 @@ around [qw(index)] => sub {
 
 =cut
 
-sub index : Path 
-		  : Args(0) 
-		  : Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-		  : Does('NeedsLogin') 
-		  : Sitemap 
-{
+sub index : Path : Args(0) : Does('ACL') AllowedRole('admine')
+  AllowedRole('can_edit') ACLDetachTo('denied') : Does('NeedsLogin') : Sitemap {
     my ( $self, $c ) = @_;
 
     # Get the country list (for certificates signing)
@@ -102,17 +98,16 @@ no match for role
 
 =cut
 
-sub denied :Private {
-	my ( $self, $c ) = @_; 
+sub denied : Private {
+    my ( $self, $c ) = @_;
 
     # Add js / css
-    Ovpnc::Controller::Root->include_default_links( $c );
-    $c->stash->{this_link} = 'certificates';
-	$c->stash->{title}     = ucfirst( $c->stash->{this_link} );
-	$c->stash->{error_message} = "Access denied";
-	$c->stash->{no_self} = 1;
+    Ovpnc::Controller::Root->include_default_links($c);
+    $c->stash->{this_link}     = 'certificates';
+    $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
+    $c->stash->{error_message} = "Access denied";
+    $c->stash->{no_self}       = 1;
 }
-
 
 =head2 end
 
@@ -120,15 +115,14 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') 
-{
+sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
     # Add js / css
     Ovpnc::Controller::Root->include_default_links($c);
 
-	$c->stash->{username} = $c->user->get("username")
-		if ( $c->user_exists );
+    $c->stash->{username} = $c->user->get("username")
+      if ( $c->user_exists );
 }
 
 =head1 AUTHOR

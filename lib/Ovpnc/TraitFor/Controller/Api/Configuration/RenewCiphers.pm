@@ -7,15 +7,15 @@ use Moose::Role;
 use vars qw/$list $lines/;
 
 has 'schema_file' => (
-	is => 'ro',
-	isa => 'Str',
-	required => 1
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1
 );
 
 has 'openvpn' => (
-	is => 'ro',
-	isa => 'Str',
-	required => 1
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1
 );
 
 sub update_cipher_list {
@@ -40,12 +40,13 @@ sub update_cipher_list {
       unless $list;
 
     # Read current XSD File
-    $lines = $self->readXsdFile($self->schema_file);
+    $lines = $self->readXsdFile( $self->schema_file );
     if ( !$lines ) {
         return { error => "No return from readXsdFile!" };
     }
     elsif ( ref $lines and $lines->{error} ) {
-        return { error => "Error reading " . $self->schema_file . ": "
+        return {error => "Error reading "
+              . $self->schema_file . ": "
               . ( $lines->{error} ? $lines->{error} : '' ) };
     }
 
@@ -59,7 +60,8 @@ sub update_cipher_list {
 
     # Create new file
     open( my $XSD, ">", $self->schema_file )
-      or return { error => "Cannot open ". $self->schema_file . " for writing: $!" };
+      or return {
+        error => "Cannot open " . $self->schema_file . " for writing: $!" };
     print $XSD $lines;
     close $XSD;
 
@@ -76,8 +78,8 @@ sub removeOldCiphers {
 
 sub getCiphers {
     my $self = shift;
-    my $cmd =
-    	$self->openvpn . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
+    my $cmd  = $self->openvpn
+      . ' --show-ciphers | egrep \'^[A-Z]{2}\' | awk {\'print $1\'}';
     my @data = `$cmd`;
     return "Error" if ( $? >> 8 != 0 );
     map { chomp } @data;
@@ -85,9 +87,9 @@ sub getCiphers {
 }
 
 sub readXsdFile {
-	my $self = shift;
+    my $self = shift;
     open( my $XSD, "<", $self->schema_file )
-		or return "Cannot open " . $self->schema_file . ": " . $!;
+      or return "Cannot open " . $self->schema_file . ": " . $!;
     $lines .= $_ while (<$XSD>);
     close $XSD;
     return $lines;
@@ -97,7 +99,7 @@ sub makeXsdList {
     my $self = shift;
     my @data = @{ (shift) };
 
-	my $list = <<_OO_;
+    my $list = <<_OO_;
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">
  <xsd:restriction base="xsd:string">

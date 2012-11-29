@@ -49,10 +49,7 @@ A sanity check
 
 =cut
 
-sub sanity : Chained('base') 
-		   : PathPart('sanity') 
-		   : Args(0) 
-		   : Does('NeedsLogin') 
+sub sanity : Chained('base') : PathPart('sanity') : Args(0) : Does('NeedsLogin')
 {
 
     my ( $self, $c ) = @_;
@@ -83,15 +80,13 @@ message to user
 
 =cut
 
-sub detach_error : Private 
-{
+sub detach_error : Private {
     my ( $self, $c, $err_msg ) = @_;
     $c->response->status(500);
     $c->stash->{rest} =
-        { error => $err_msg ? $err_msg : "An unknown error has occurred" };
+      { error => $err_msg ? $err_msg : "An unknown error has occurred" };
     $c->detach;
 }
-
 
 =head2 assign_params
 
@@ -113,39 +108,48 @@ sub assign_params : Private {
     # ============================
 
     # OpenVPN pid file
-    my $_pid_file = $c->config->{openvpn_pid}
-        // $c->config->{application_root} . '/openpvpn/var/run/openvpn.server.pid';
+    my $_pid_file = $c->config->{openvpn_pid} // $c->config->{application_root}
+      . '/openpvpn/var/run/openvpn.server.pid';
     $_pid_file = $c->config->{application_root} . '/' . $_pid_file
-        if ( $_pid_file !~ /^\// );
+      if ( $_pid_file !~ /^\// );
 
     return {
+
         # The ovpnc application root
-        app_root        => $c->config->{application_root} // getcwd,
+        app_root => $c->config->{application_root} // getcwd,
+
         # Ovpnc temporary directory
-        tmp_dir         => $c->config->{application_root} . '/openvpn/tmp/',
-        openvpn_pid     => $_pid_file,
+        tmp_dir     => $c->config->{application_root} . '/openvpn/tmp/',
+        openvpn_pid => $_pid_file,
+
         # OpenVPN Binary
- 		openvpn_bin     => $c->config->{openvpn_bin} // '/usr/sbin/openvpn',
+        openvpn_bin => $c->config->{openvpn_bin} // '/usr/sbin/openvpn',
+
         # OpenVPN config
-        openvpn_config  =>
-            Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
-                $c->config->{ovpnc_conf} ) //
-                    $c->config->{application_root}
-                    . '/openvpn/conf/openvpn.ovpnc.conf',
+        openvpn_config =>
+          Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
+            $c->config->{ovpnc_conf}
+          ) // $c->config->{application_root}
+          . '/openvpn/conf/openvpn.ovpnc.conf',
+
         # OpenVPN main directory
-        vpn_dir         => $c->config->{openvpn_dir}
-                            // $c->config->{application_root} . '/openvpn',
+        vpn_dir => $c->config->{openvpn_dir}
+          // $c->config->{application_root} . '/openvpn',
+
         # OpenVPN tools/utilities directory (scripts for CA, Certificates etc)
-        utils_dir       => $c->config->{openvpn_utils} // 'conf/2.0',
+        utils_dir => $c->config->{openvpn_utils} // 'conf/2.0',
+
         # OpenSSL config
-        ssl_config      => $c->config->{openssl_conf},
-		# OpenVPN Management console
-		mgmt_params		=> {
-	        host     => $c->config->{mgmt_host}     // '127.0.0.1',
-    	    port     => $c->config->{mgmt_port}     // '7505',
-      		timeout  => $c->config->{mgmt_timeout}  // 5,
-        	password => read_file( $c->config->{mgmt_passwd_file}, chomp => 1 ) // '',
-		}
+        ssl_config => $c->config->{openssl_conf},
+
+        # OpenVPN Management console
+        mgmt_params => {
+            host    => $c->config->{mgmt_host}    // '127.0.0.1',
+            port    => $c->config->{mgmt_port}    // '7505',
+            timeout => $c->config->{mgmt_timeout} // 5,
+            password => read_file( $c->config->{mgmt_passwd_file}, chomp => 1 )
+              // '',
+        }
     };
 }
 
@@ -161,7 +165,7 @@ sub end : Private {
     delete $c->stash->{assets};
 
     # Forward to JSON view or XML
-	$c->forward(
+    $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }
 

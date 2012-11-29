@@ -27,15 +27,15 @@ methods execute
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
-	# Assign config params
-	# ====================
-	$c->config->{openvpn_user} =
-        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-            $c->config->{ovpnc_conf}, 'UserName' );
+    # Assign config params
+    # ====================
+    $c->config->{openvpn_user} =
+      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
-	# ============
-	my $err = Ovpnc::Plugins::Sanity->action( $c->config );
+    # ============
+    my $err = Ovpnc::Plugins::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->forward('View::JSON');
@@ -46,18 +46,13 @@ around [qw(index)] => sub {
     }
 };
 
-
 =head2 index
 
 =cut
 
-sub index : Path 
-		  : Args(0) 
-		  : Does('NeedsLogin') 
-		  : Sitemap 
-{
+sub index : Path : Args(0) : Does('NeedsLogin') : Sitemap {
     my ( $self, $c ) = @_;
-	$c->stash->{title} = 'Clients';
+    $c->stash->{title}     = 'Clients';
     $c->stash->{this_link} = 'clients';
 
 }
@@ -65,12 +60,12 @@ sub index : Path
 sub denied : Private {
     my ( $self, $c ) = @_;
 
-	# Add js / css
-    Ovpnc::Controller::Root->include_default_links( $c );
-    $c->stash->{this_link} = 'clients';
-    $c->stash->{title}     = ucfirst( $c->stash->{this_link} );
+    # Add js / css
+    Ovpnc::Controller::Root->include_default_links($c);
+    $c->stash->{this_link}     = 'clients';
+    $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
     $c->stash->{error_message} = "Access denied";
-    $c->stash->{no_self} = 1;
+    $c->stash->{no_self}       = 1;
 }
 
 =head2 end
@@ -79,15 +74,14 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') 
-{
-	my ($self, $c) = @_;
+sub end : ActionClass('RenderView') {
+    my ( $self, $c ) = @_;
 
-	# Add js / css
-	Ovpnc::Controller::Root->include_default_links($c);
+    # Add js / css
+    Ovpnc::Controller::Root->include_default_links($c);
 
-	$c->stash->{username} = $c->user->get("username")
-		if ( $c->user_exists );
+    $c->stash->{username} = $c->user->get("username")
+      if ( $c->user_exists );
 }
 
 =head1 AUTHOR
