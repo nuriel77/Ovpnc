@@ -9,11 +9,15 @@ __PACKAGE__->config(
     connect_info => {
         dsn => 'dbi:mysql:ovpnc',
         user => 'ovpnc',
-        password => ( read_file('config/.mysql', chomp => 1 )
-            or die "Cannot read the mysql password file config/.mysql: $!" ),
+        password => &get_pass,
         AutoCommit => q{1},
     }
 );
+
+sub get_pass{
+    return read_file('config/.mysql', chomp => 1)
+        or die "Cannot read SQL passwd file: " . $!;
+}
 
 =head1 NAME
 
