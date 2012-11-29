@@ -32,7 +32,12 @@
 	-moz-border-bottom-left-radius: 5px;
 	-moz-border-bottom-right-radius: 5px;
 }
-.flexigrid { display: none; z-index:3001; }
+.flexigrid { 
+    display: none;
+    z-index:3001; 
+    font-family: Verdana, helvetica, arial, sans-serif;
+    font-size:0.85em;
+}
 .flexigrid div.fbutton .add {
     background: url(../js/Flexigrid/demo/images/add.png) no-repeat center left;
 }

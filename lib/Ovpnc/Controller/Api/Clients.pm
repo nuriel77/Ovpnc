@@ -173,11 +173,45 @@ sub clients_GET : Local
     # client configuration dir
     my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
 
+    # return only role 'client'
+    # we get the id of role type 'client'
 	my $_role_name = $c->model('DB::Role')->search({ name => 'client' })->single;
 
+    # Assign the flexgrid request params
     my ($page, $search_by, $search_text, $rows, $sort_by, $sort_order) =
          @{$c->req->params}{qw/page qtype query rp sortname sortorder/};
 
+    my $_columns = [qw/
+        id
+        username
+        enabled
+        email
+        fullname
+        revoked
+        phone
+        address
+        created
+        modified/
+    ];
+
+    # Check if these are rows which exists
+    # in the resultset, otherwise they are
+    # from openvpn mgmt port status.
+    # for now set default to user, and
+    # sort after having mapped the two data sources
+    my $_dont_sort_in_query;
+    if ( $sort_by ){
+        unless ( $sort_by ~~ @{$_columns} ){
+            # Just set some default
+            $sort_by = 'username';
+            $_dont_sort_in_query = 1;
+        }
+    }
+
+    # There is a mismatch between the hardcoded
+    # username of simplelogin and of openvpn
+    # that's why need to make sure they match
+    # before mapping the two data sources
     $sort_by =~ s/\bname\b/username/ if $sort_by;
 
 	my @_clients =
@@ -186,21 +220,10 @@ sub clients_GET : Local
             {
                 order_by => ( $sort_by && $sort_order) ? "$sort_by $sort_order" : "username ASC",
 				join => 'user_roles',
-			  	select => [
-					qw/id
-					   username
-					   enabled
-					   email
-					   fullname
-					   revoked
-					   phone
-					   address
-					   created
-					   modified/
-				]
+			  	select => $_columns
 			},
 		)->all;
-#use Data::Dumper::Concise;
+
     # Let's see who is online
     my $_online_clients = $c->forward('/api/server/status');
 
@@ -233,9 +256,20 @@ sub clients_GET : Local
         } @{$_online_clients->{clients}}
     ];
 
+    # here we sort the hashes inside the array
+    # according to what is specified in the
+    # request. The sort is being done here
+    # if these are columns which do not originate
+    # in the database but from server status
+    if ( $_dont_sort_in_query ){
+        my @_sorted = sort { $$a{$sort_by} cmp $$b{$sort_by} } @_clients;
+        @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+    }
+
 	$self->status_ok( $c, entity => [ @_clients ] )
 	    if @_clients > 0 ;
 }
+
 
 =head2 clients_POST
 

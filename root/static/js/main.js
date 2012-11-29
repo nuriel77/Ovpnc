@@ -39,7 +39,7 @@
     // Ovnpc config items
     //
     config = {
-        poll_freq: 10000,
+        poll_freq: 5000,
         // Get server status from api every n milliseconds
         opacity_effect: 3000,
         // Sets the timing of the opacity fadein/out effect
@@ -158,17 +158,18 @@
                 preProcess: format_client_results,
                 colModel: [
                 // TODO: Save table proportions in cookie
-                    { display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
+                    { display: 'ID', name : 'id', width: 15, sortable : true, align: 'right', hide: true },
                     { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
-                    { display: 'Virtual IP', name : 'virtual_ip', width : 80, sortable : false, align: 'left'},
-                    { display: 'Remote IP', name : 'remote_ip', width : 80, sortable : false, align: 'left'},
-                    { display: 'Connected Since', name : 'conn_since', width : 130, sortable : false, align: 'left' },
-                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : false, align: 'right'},
-                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : false, align: 'right'},
+                    { display: 'Virtual IP', name : 'virtual_ip', width : 85, sortable : true, align: 'left'},
+                    { display: 'Remote IP', name : 'remote_ip', width : 85, sortable : true, align: 'left'},
+                    { display: 'Remote Port', name : 'remote_port', width : 40, sortable : true, align: 'left', hide: true },
+                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'center'},
+                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'center'},
+                    { display: 'Connected Since', name : 'conn_since', width : 150, sortable : true, align: 'left' },
                     { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left' },
                     { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
-                    { display: 'Phone', name : 'phone', width: 80, sortable : false, align: 'right', hide: true },
-                    { display: 'Address', name : 'address', width: 100, sortable : false, align: 'right', hide: true },
+                    { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
+                    { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
                     { display: 'Enabled', name : 'enabled', width: 20, sortable : true, align: 'right', hide: false },
                     { display: 'Revoked', name : 'revoked', width: 20, sortable : true, align: 'right', hide: false },
                     { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
@@ -184,6 +185,7 @@
                 searchitems : [
                     { display: 'Virtual IP', name : 'virtual_ip'},
                     { display: 'Remote IP', name : 'remote_ip'},
+                    { display: 'Remote Port', name : 'remote_port'},
                     { display: 'Created', name : 'created'},
                     { display: 'Modified', name : 'modified'},
                     { display: 'Fullname', name : 'fullname'},
@@ -215,9 +217,13 @@
                 if (online_data !== false) {
                     // loop each td find the corresponding 'abbr'
                     // fill in the text from online_data
+                    var mem_ip;
                     for (var i in online_data) {
-                        if (i !== 'username') {
-                            $(this).parent().parent('tr').children('td[abbr="' + i + '"]').children('div').text(online_data[i]);
+                        if (i !== 'name') {
+                            $(this).parent().parent('tr')
+                                   .children('td[abbr="' + i + '"]')
+                                   .children('div')
+                                   .text( online_data[i] ).css('color','black');
                         }
                     }
                     // mark the row which has been found to be online
@@ -228,16 +234,19 @@
                 else {
                     // Clean up td's with online data
                     // for client which is not online
-                    // remove any background css
                     $(this).children('span.inner_flexi_text').hide(300).remove();
-                    /*
-                    if ( $(this).parent().parent('tr').children('td').children('div').text() === 'undefined' ) {
-                        var removable = ["remote_ip", "virtual_ip", "conn_since"];
+                    if ( $(this).parent().parent('tr')
+                                .children('td').children('div')
+                                .text() !== '-'
+                    ) {
+                        var removable =
+                            [ "remote_ip", "virtual_ip", "conn_since","remote_port", "bytes_recv", "bytes_sent" ];
                         for (var z in removable) {
-                            $(this).parent().parent('tr').children('td[abbr="' + removable[z] + '"]').children('div').empty();
+                            $(this).parent().parent('tr')
+                                   .children('td[abbr="' + removable[z] + '"]')
+                                   .children('div').css('color','lightgray');
                         }
                     }
-                    */
                 }
             });
         },
@@ -388,6 +397,7 @@ function canJSON(value) {
 }
 
 function update_server_status(r) {
+
     if (r !== undefined && r.rest !== undefined) {
         // If we get status back, display
         if (r.rest.status !== undefined) {

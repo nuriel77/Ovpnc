@@ -18,7 +18,7 @@ Catalyst Controller, override login from CatalystX::SimpleLogin
 
 =head2 around 'login'
 
-Modify the original 
+Modify the original
 login parameters
 from CatalystX::SimpleLogin
 
@@ -42,11 +42,7 @@ around 'login' => sub {
           . " Check the configuration manual on how to set this up.";
     }
 
-    # Add js / css
-    Ovpnc::Controller::Root->include_default_links( $c );
-	
 	$c->stash->{logged_in} = $c->user_exists ? 1 : 0;
-
     return $self->$orig($c);
 
 };

@@ -19,6 +19,7 @@ function format_client_results(obj){
 
 	// This will force to update
 	// online_data and not wait
+
 	var is_felxgrid_ready =
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){
@@ -54,13 +55,14 @@ function prepare_client_col_data(c){
     // this keeps flexgrid from
     // messing up the order
 	return [
-        c.id,                                                       // (client) id
+        c.id,
         c.username,
-        c.virtual_ip ? c.virtual_ip : '-',                          // virtual_ip
-        c.remote_ip ? c.remote_ip + ':' + c.remote_port : '-',      // remote_ip
-        c.conn_since ? c.conn_since : '-',                          // connected_since
-        c.bytes_recv ? c.bytes_recv : '-',                            // bytes_in
-        c.bytes_sent ? c.bytes_sent : '-',                            // bytes_out
+        c.virtual_ip ? c.virtual_ip : '-',
+        c.remote_ip ? c.remote_ip : '-',
+        c.remote_port ? c.remote_port : '-',
+        c.bytes_recv ? c.bytes_recv : '-',
+        c.bytes_sent ? c.bytes_sent : '-',
+        c.conn_since ? c.conn_since : '-',
         c.fullname,
         c.email,
         c.phone,

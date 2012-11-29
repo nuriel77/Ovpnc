@@ -179,11 +179,11 @@ command=[...]
 
 =cut
 
-sub server_POST : Local 
-				: Args(1) 
-				: Sitemap 
-				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-			 	#: Does('NeedsLogin') 
+sub server_POST : Local
+				: Args(1)
+				: Sitemap
+#				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
+			 	#: Does('NeedsLogin')
 {
     my ( $self, $c, $command ) = @_;
 

@@ -64,6 +64,7 @@ sub start {
 	        '--setenv',          'PATH',              '/bin',
             '--script-security', '2',
             '--client-connect',  '/bin/client_connect',
+            '--client-disconnect',  '/bin/client_disconnect',
             '--echo',            'on all',
             '--tmp-dir',         '/tmp',
             '--ccd-exclusive',   '--cd',
