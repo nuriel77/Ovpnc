@@ -174,10 +174,17 @@ sub clients_GET : Local
     my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
 
 	my $_role_name = $c->model('DB::Role')->search({ name => 'client' })->single;
+
+    my ($page, $search_by, $search_text, $rows, $sort_by, $sort_order) =
+         @{$c->req->params}{qw/page qtype query rp sortname sortorder/};
+
+    $sort_by =~ s/\bname\b/username/ if $sort_by;
+
 	my @_clients =
 		$c->model('DB::User')->search(
 			{ 'user_roles.role_id' => $_role_name->id },
-			{
+            {
+                order_by => ( $sort_by && $sort_order) ? "$sort_by $sort_order" : "username ASC",
 				join => 'user_roles',
 			  	select => [
 					qw/id
@@ -193,7 +200,7 @@ sub clients_GET : Local
 				]
 			},
 		)->all;
-use Data::Dumper::Concise;
+#use Data::Dumper::Concise;
     # Let's see who is online
     my $_online_clients = $c->forward('/api/server/status');
 
@@ -250,7 +257,7 @@ Update client(s) data
 
 =cut
 
-sub clients_UPDATE : Local 
+sub clients_UPDATE : Local
 				   : Args(0)
 				   : Sitemap
 				   #:Does('NeedsLogin')
@@ -264,8 +271,8 @@ Delete client(s)
 
 =cut
 
-sub clients_REMOVE : Local 
-				   : Args(0)    
+sub clients_REMOVE : Local
+				   : Args(0)
 				   : Sitemap
 				   #: Does('NeedsLogin')
 {
@@ -393,8 +400,8 @@ using crl.pem
 
 =cut
 
-sub clients_REVOKE : Local 
-				   : Args(1)    
+sub clients_REVOKE : Local
+				   : Args(1)
 				   : Sitemap
 				   #: Does('NeedsLogin')
 {

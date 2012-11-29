@@ -39,7 +39,7 @@
     // Ovnpc config items
     //
     config = {
-        poll_freq: 5000,
+        poll_freq: 10000,
         // Get server status from api every n milliseconds
         opacity_effect: 3000,
         // Sets the timing of the opacity fadein/out effect
@@ -160,11 +160,11 @@
                 // TODO: Save table proportions in cookie
                     { display: 'ID', name : 'id', width: 80, sortable : true, align: 'right', hide: true },
                     { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
-                    { display: 'Virtual IP', name : 'virtual_ip', width : 80, sortable : true, align: 'left'},
-                    { display: 'Remote IP', name : 'remote_ip', width : 80, sortable : true, align: 'left'},
-                    { display: 'Connected Since', name : 'conn_since', width : 130, sortable : true, align: 'left' },
-                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'right'},
-                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'right'},
+                    { display: 'Virtual IP', name : 'virtual_ip', width : 80, sortable : false, align: 'left'},
+                    { display: 'Remote IP', name : 'remote_ip', width : 80, sortable : false, align: 'left'},
+                    { display: 'Connected Since', name : 'conn_since', width : 130, sortable : false, align: 'left' },
+                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : false, align: 'right'},
+                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : false, align: 'right'},
                     { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left' },
                     { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
                     { display: 'Phone', name : 'phone', width: 80, sortable : false, align: 'right', hide: true },
@@ -200,6 +200,45 @@
                 showTableToggleBtn: false,
                 width: 600,
                 height: 300
+            });
+        },
+        // Update the client's tables
+        update_flexgrid : function(r){
+            $('#flexme').find('tr').children('td[abbr="username"]')
+                        .children('div').each(function(k, v){
+                // we match the username from online_data
+                // to the current tr.td[abbr=username].div.text in the loop
+                // inner_text is in order to get only the username and not
+                // any span we might have appended previous loop
+                var inner_text = v.innerHTML.replace(/^(\w+)<.*?>.*$/gi, "$1");
+                var online_data = check_client_match(r.rest.clients, inner_text);
+                if (online_data !== false) {
+                    // loop each td find the corresponding 'abbr'
+                    // fill in the text from online_data
+                    for (var i in online_data) {
+                        if (i !== 'username') {
+                            $(this).parent().parent('tr').children('td[abbr="' + i + '"]').children('div').text(online_data[i]);
+                        }
+                    }
+                    // mark the row which has been found to be online
+                    if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
+                        $(this).append('<span class="inner_flexi_text">On</span>');
+                    }
+                }
+                else {
+                    // Clean up td's with online data
+                    // for client which is not online
+                    // remove any background css
+                    $(this).children('span.inner_flexi_text').hide(300).remove();
+                    /*
+                    if ( $(this).parent().parent('tr').children('td').children('div').text() === 'undefined' ) {
+                        var removable = ["remote_ip", "virtual_ip", "conn_since"];
+                        for (var z in removable) {
+                            $(this).parent().parent('tr').children('td[abbr="' + removable[z] + '"]').children('div').empty();
+                        }
+                    }
+                    */
+                }
             });
         },
         // The navigation menu
@@ -288,7 +327,6 @@
 
 })(jQuery);
 
-/* jQuery begin document */
 $(document).ready(function() {
 
     if ($.Ovpnc().pathname === '/login') return;
@@ -328,7 +366,8 @@ $(document).ready(function() {
     // Or if never displayed before
     if ($.cookie('Ovpnc_User_Settings') === null || $.Ovpnc().pathname === '/') {
         $.Ovpnc.username = ucfirst($('#username').attr('name'));
-        alert($.Ovpnc().alert_ok + 'Hello ' + $.Ovpnc.username + ', welcome to OpenVPN Controller!');
+        alert($.Ovpnc().alert_ok + 'Hello ' + $.Ovpnc.username
+        + ', welcome to OpenVPN Controller!');
     }
 
     // Get status (loop)
@@ -356,9 +395,9 @@ function update_server_status(r) {
             $('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray');
             // hand_pointer is only applied when this user
             // has ACL to control the server. (in the tt2 template)
-            if ($('#on_off_click_area').hasClass('hand_pointer')) {
-                $('#on_off_click_area').attr('title', (r.status.match(/online/i) ? 'Shutdown' : 'Poweron') + ' OpenVPN server')
-            }
+            if ( $('#on_off_click_area').hasClass('hand_pointer') )
+                $('#on_off_click_area').attr('title', (r.status.match(/online/i) ? 'Shutdown' : 'Poweron') + ' OpenVPN server');
+            // reference used to determine status on click events
             $('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off');
             // Show or dont show the green on icon
             $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
@@ -367,49 +406,16 @@ function update_server_status(r) {
         // Show number of connected clients if any
         $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
 
-        if (r.rest.title !== undefined) {
-            populate_version(r.rest.title);
-        }
+        // In the title of the server status
+        if (r.rest.title !== undefined) populate_version(r.rest.title);
 
         // Update the table with any online clients data
         // This applies only to path /clients
-        if (r.rest.clients !== undefined) {
-            if ($.Ovpnc().pathname === '/clients' && $('#flexme').is(':visible')) {
-                $('#flexme').find('tr').children('td[abbr="username"]').children('div').each(function(k, v) {
-                    // we match the username from online_data
-                    // to the current tr.td[abbr=username].div.text in the loop
-                    // inner_text is in order to get only the username and not
-                    // any span we might have appended previous loop
-                    var inner_text = v.innerHTML.replace(/^(\w+)<.*?>.*$/gi, "$1");
-                    var online_data = check_client_match(r.rest.clients, inner_text);
-                    if (online_data !== false) {
-                        // loop each td find the corresponding 'abbr'
-                        // fill in the text from online_data
-                        for (var i in online_data) {
-                            if (i !== 'username') {
-                                $(this).parent().parent('tr').children('td[abbr="' + i + '"]').children('div').text(online_data[i]);
-                            }
-                        }
-
-                        // mark the row which has been found to be online
-                        if (!$(this).children('span.inner_flexi_text').is(':visible')) {
-                            $(this).append('<span class="inner_flexi_text">On</span>');
-                        }
-                    }
-                    else {
-                        // Clean up td's with online data
-                        // for client which is not online
-                        // remove any background css
-                        $(this).children('span.inner_flexi_text').remove();
-                        if ($(this).parent().parent('tr').children('td').children('div').text().match(/undefined/)) {
-                            var removable = ["remote_ip", "virtual_ip", "conn_since"];
-                            for (var z in removable) {
-                                $(this).parent().parent('tr').children('td[abbr="' + removable[z] + '"]').children('div').empty();
-                            }
-                        }
-                    }
-                });
-            }
+        if (r.rest.clients !== undefined
+            && $.Ovpnc().pathname === '/clients'
+            && $('#flexme').is(':visible')
+        ) {
+            $.Ovpnc().update_flexgrid(r);
         }
     }
     return false;
@@ -425,120 +431,6 @@ function check_client_match(clients, current_client) {
 function get_server_status() {
     $.Ovpnc().get_data("/api/server/status", {},
     'GET', update_server_status);
-}
-
-function populate_clients(c) {
-    if (c.length === 0) {
-        return;
-    }
-    else {
-        // Clean up the no_clients div if it exists
-        if ($("#no_clients").is(":visible")) $("#no_clients").hide();
-        if ($("#no_data").is(":visible")) $("#no_data").hide();
-        if ($('#client_status_container').is(':hidden')) $('#client_status_container').show();
-    }
-
-    $('.client_div').each(function() {
-
-        // Current open client divs
-        var current_name = this.id;
-        current_name = current_name.replace(/.*_(.*)$/, "$1");
-        var checker = 0;
-        // Comapre with names recieved from ajax
-        for (var i = 0; i < c.length; i++) {
-            if (c[i].name === current_name) {
-                //console.log("Match: " +  current_name);
-                checker++;
-            }
-        }
-        // Remove this div if it is not found in recieved data
-        if (checker === 0) {
-            //console.log( current_name + " has to go..." );
-            $('#client_name_' + current_name).hide(200);
-        }
-
-    });
-
-    // For each client
-    for (var i = 0; i < c.length; i++) {
-        // Get client object
-        var client_obj = c[i];
-        var disp_client = 'none';
-
-        if (client_obj['name'] !== 'UNDEF') {
-
-            if ($('#' + client_obj['name'] + '_hidden_data').is(':visible')) {
-                disp_client = 'block';
-            }
-
-            var output = '<div class="client_keys">' + client_obj['name'] + '</div>' + '<div class="client_values">' + ' <span style="float:right;margin-left:4px">' + client_obj['virtual_ip'] + ' </span>' + '</div><!-- client_name -->' + '<br/>' + '<div style="display:' + disp_client + '" class="client_hidden_data" id="' + client_obj['name'] + '_hidden_data">';
-
-            $.Ovpnc().tfc. in =client_obj['bytes_recv'];
-            $.Ovpnc().tfc.out = client_obj['bytes_sent'];
-
-            // for each client's data
-            for (var obj in client_obj) {
-                if (obj !== 'name' && !obj.match(/epoc_since|virtual_ip/)) {
-
-                    // If numbers, add commas
-                    if (!isNaN(client_obj[obj]) && obj !== 'remote_port') client_obj[obj] = numberWithCommas(client_obj[obj]);
-
-                    output += '<div class="client_keys">' + obj + ':</div><!-- client_keys -->' + '<div class="client_values" >' + client_obj[obj] + '</div><!-- client_values -->';
-                }
-            }
-
-            output += '</div><!-- client_hidden_data -->';
-
-            if (!$("#client_name_" + client_obj["name"]).is(':visible')) {
-
-                $('#client_status_container').append('<div class="client_div" id="client_name_' + client_obj['name'] + '">' + ' <div class="client_data" id="data_client_name_' + client_obj['name'] + '">' + output + ' </div><!-- client_data -->' + ' <div class="client_actions">' + '  <div class="client_action_link" title="Kill client" style="float:right" id="' + client_obj['name'] + '_kill" onClick="kill_client(\'' + client_obj['name'] + '\');" >' + '   <img style="margin-top:-2px;" src="/static/images/kill_client.png" style="margin-top:-3px"></img></div>' + '  </div>' + '  <div class="client_action_link" title="Extend status" id="' + client_obj['name'] + '_ext_status" onClick="extend_client_data(\'' + client_obj['name'] + '\');" >' + '   <img style="margin-top:-2px;" src="/static/images/arrow_down.png"></img>' + '  </div>' + ' <div class="client_tfc" title="Bandwidth usage" id="in_out_' + client_obj['name'] + '"></div>' + ' </div><!-- client_actions -->' + '</div><!-- client_div --><div class="clear"></div><br><br>');
-
-                $('#client_name_' + client_obj['name']).show(500);
-            }
-            else {
-                $("#data_client_name_" + client_obj["name"]).html(output);
-            }
-
-            get_client_network_usage(client_obj['name']);
-        }
-    }
-}
-
-function functionDelay(f, t) {
-    $.Ovpnc().timer = setTimeout(f, t);
-}
-
-function extend_client_data(n) {
-
-    // Before expending make sure ajax call is finished updating the div
-    /*	if ( checkPendingRequest() ){
-		console.log( "sleep for 1 sec");
-		functionDelay( extend_client_data(n), 1000 );
-		return;
-	}
-	// If we got here, remove any active timers
-	if ( typeof(Ovpnc.timer) !== "undefined") {
-		clearInterval(Ovpnc.timer);
-	}
-*/
-    if ($.Ovpnc.ajax_lock === 1) {
-        console.log("sleep for 1 sec");
-        functionDelay(extend_client_data(n), 500);
-        return;
-    }
-    else {
-        clearInterval($.Ovpnc().timer);
-    }
-
-    if ($('#' + n + '_hidden_data').is(':visible')) {
-        $('#' + n + '_hidden_data').hide(250);
-        $('#' + n + '_ext_status').html("<img src='/static/images/arrow_down.png'></img>").attr('title', 'Extend status');
-    }
-    else {
-        $('#' + n + '_hidden_data').show(250);
-        $('#' + n + '_ext_status').html("<img style='margin-left:-10px;' src='/static/images/arrow_up.png'></img>").attr('title', 'Hide status');
-    }
-
 }
 
 function populate_version(s) {
@@ -617,10 +509,6 @@ function server_on_off() {
     }
 }
 
-function numberWithCommas(n) {
-    var parts = n.toString().split(".");
-    return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
-}
 
 function kill_client(c) {
 
@@ -651,20 +539,6 @@ function unkill_client(c) {
 
 }
 
-function append_dead_client(c) {
-
-    var now = get_date();
-    var output = '<div class="unkill_me" id="unkill_' + c + '">' + ' <b>' + c + '</b> killed ' + now + '<hr />' + ' <img style="float:right;margin-top:-2px"' + '  class="client_action_link"' + '  title="Click to unkill"' + '  onClick="unkill_client(\'' + c + '\');"' + '  src="/static/images/okay_icon.png">' + ' </img>' + '</div>';
-
-    $('#killed_clients').append(output);
-
-    if (!$('#killed_clients_container').is(":visible")) {
-        $('#killed_clients_container').show(250);
-        //Ovpnc.actions.hover_binds();
-    }
-
-}
-
 // Check for pending ajax calls
 function checkPendingRequest() {
 
@@ -679,12 +553,6 @@ function checkPendingRequest() {
         return false;
     }
 
-}
-
-function get_date() {
-    var now = new Date();
-    var then = now.getDay() + '-' + (now.getMonth() + 1) + '-' + now.getFullYear() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
-    return then;
 }
 
 $.Ovpnc().tfc = new Object();
@@ -768,7 +636,21 @@ function get_client_network_usage(name) {
 
 }
 
+
+/* Helper functions */
 function ucfirst(str) {
     var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
 }
+
+function get_date() {
+    var now = new Date();
+    var then = now.getDay() + '-' + (now.getMonth() + 1) + '-' + now.getFullYear() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+    return then;
+}
+
+function numberWithCommas(n) {
+    var parts = n.toString().split(".");
+    return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+}
+
