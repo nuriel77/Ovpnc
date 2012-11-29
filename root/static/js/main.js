@@ -220,6 +220,8 @@
                     var mem_ip;
                     for (var i in online_data) {
                         if (i !== 'name') {
+                            if ( i.match(/^bytes_.*$/) )
+                                online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
                             $(this).parent().parent('tr')
                                    .children('td[abbr="' + i + '"]')
                                    .children('div')
@@ -240,7 +242,7 @@
                                 .text() !== '-'
                     ) {
                         var removable =
-                            [ "remote_ip", "virtual_ip", "conn_since","remote_port", "bytes_recv", "bytes_sent" ];
+                            [ "remote_ip", "virtual_ip", "conn_since", "remote_port", "bytes_recv", "bytes_sent" ];
                         for (var z in removable) {
                             $(this).parent().parent('tr')
                                    .children('td[abbr="' + removable[z] + '"]')
@@ -585,7 +587,7 @@ function get_client_network_usage(name) {
 
         // Record the in/out packets, use as a starting point for delta calculation
         $('#tfc_' + name).html('<input style="opacity:0" id="rec_in_' + name + '" value="' + $.Ovpnc().tfc. in +'" />' + '<input style="opacity:0" id="rec_out_' + name + '" value="' + $.Ovpnc().tfc.out + '" />');
-        // This is the first loop because we created the 
+        // This is the first loop because we created the
         // tfc_+name div, second loop will already
         // see this div is created.
         return;

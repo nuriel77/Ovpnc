@@ -82,9 +82,9 @@ has vpn => (
 
 around [
     qw(
-      clients_UNREVOKE
-      clients_DISABLE
-      clients_ENABLE
+        clients_UNREVOKE
+        clients_DISABLE
+        clients_ENABLE
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
@@ -94,9 +94,9 @@ around [
 
 around [
     qw(
-      clients_REVOKE
-      clients_REMOVE
-      kill_connection
+        clients_REVOKE
+        clients_REMOVE
+        kill_connection
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
@@ -106,13 +106,13 @@ around [
         $self->_set_controller_params($c);
     }
 
-	# Get global configuration params
-	$self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
-      unless $self->_has_conf;
+    # Get global configuration params
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+        unless $self->_has_conf;
 
     # Also here, don't process twice
     return $self->$orig( $c, $params )
-      if $self->_has_vpn;
+        if $self->_has_vpn;
 
     # Instantiate connector
     $self->vpn( Ovpnc::Plugins::Connector->new($self->cfg->{mgmt_params}) );
@@ -194,7 +194,7 @@ sub clients_GET : Local
         modified/
     ];
 
-    # Check if these are rows which exists
+    # Check if these are columns which exists
     # in the resultset, otherwise they are
     # from openvpn mgmt port status.
     # for now set default to user, and
@@ -214,6 +214,7 @@ sub clients_GET : Local
     # before mapping the two data sources
     $sort_by =~ s/\bname\b/username/ if $sort_by;
 
+    # Query resultset
 	my @_clients =
 		$c->model('DB::User')->search(
 			{ 'user_roles.role_id' => $_role_name->id },
@@ -227,7 +228,7 @@ sub clients_GET : Local
     # Let's see who is online
     my $_online_clients = $c->forward('/api/server/status');
 
-    # Now lets start matching the list of
+    # Now let's start matching the list of
     # all users to those who are online
     # we shall append the online data
     # for this response
@@ -261,7 +262,7 @@ sub clients_GET : Local
     # request. The sort is being done here
     # if these are columns which do not originate
     # in the database but from server status
-    if ( $_dont_sort_in_query ){
+    if ( $_dont_sort_in_query && $sort_by ){
         my @_sorted = sort { $$a{$sort_by} cmp $$b{$sort_by} } @_clients;
         @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
     }
