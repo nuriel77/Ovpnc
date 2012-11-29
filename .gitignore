@@ -4,6 +4,7 @@ start_dev_server
 ovpnc_fastcgi.pl
 ovpnc_create.pl
 ovpnc_cgi.pl
+.mysql
 .htpasswd
 blib/*
 inc/*

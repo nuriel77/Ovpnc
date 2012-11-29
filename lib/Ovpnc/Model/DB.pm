@@ -1,15 +1,16 @@
 package Ovpnc::Model::DB;
-
+use File::Slurp;
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
     schema_class => 'Ovpnc::Schema',
-    
+
     connect_info => {
         dsn => 'dbi:mysql:ovpnc',
         user => 'ovpnc',
-        password => 'ovpncadmin',
+        password => ( read_file('config/.mysql', chomp => 1 )
+            or die "Cannot read the mysql password file config/.mysql: $!" ),
         AutoCommit => q{1},
     }
 );
@@ -32,7 +33,7 @@ Catalyst::Helper::Model::DBIC::Schema - 0.6
 
 =head1 AUTHOR
 
-root
+Nuriel Shem-Tov
 
 =head1 LICENSE
 
