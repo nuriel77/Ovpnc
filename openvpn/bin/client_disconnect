@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo `date` $common_name disconnected  >> /tmp/log.txt;
+exit 0;
+
