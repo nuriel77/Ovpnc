@@ -98,6 +98,7 @@ sub configuration_POST : Local
     if ( not defined $xml ) {
         Ovpnc::Controller::Api->detach_error( $c,
             'Could not generate XML format from posted parameters' );
+        delete $c->stash->{assets} if $c->stash->{assets};
         $c->detach;
     }
 
@@ -114,6 +115,7 @@ sub configuration_POST : Local
 
     if ($message) {
         $self->status_bad_request( $c, message => $message );
+        delete $c->stash->{assets} if $c->stash->{assets};
         $c->detach;
     }
     else {
@@ -155,19 +157,21 @@ sub configuration_POST : Local
         }
 
         # Create backup for existing configuration file
+        # Also backup the xml configuration file.
         # =============================================
         if ( -e $config_file ) {
             $_ =
-              $self->_manage_conf_backup( $config_file,
+              $self->_manage_conf_backup(
+                [ $config_file, $c->config->{ovpnc_conf} ],
                 $c->config->{keep_n_conf_backup} );
-            $st_msg = $_->{error} if $_->{error};
+            $st_msg->{error} = $_->{error} if $_->{error};
         }
 
         my $FILE;
 
         # Open the (new) file for writing
         # ===============================
-        unless ( defined $st_msg->{error} ) {
+        unless ( $st_msg->{error} ) {
             open( $FILE, ">", $config_file )
               or $st_msg->{error} =
               "Error: Configuration file could not be updated: $!";
@@ -281,7 +285,7 @@ sub configuration_UPDATE : Local
 sub _send_error : Private {
     my ( $self, $c, $error ) = @_;
     $c->response->status( $error ? $error : 500 );
-    delete $c->stash->{assets};
+    delete $c->stash->{assets} if $c->stash->{assets};
     $c->stash( { error => $error } );
     $c->detach;
 }
@@ -595,25 +599,33 @@ create backup before save
 =cut
 
 sub _manage_conf_backup : Private {
-    my ( $self, $config_file, $keep_conf ) = @_;
+    my ( $self, $config_files, $keep_conf ) = @_;
 
-    # backup conf file
-    copy( $config_file, $config_file . '_' . time() . '_backup' )
-      or return {
-        error => "Error: Cannot backup existing configuration file: $!" };
+    return "\$config_files missing data!" unless $config_files;
+    return "\$config_files must be an ArrayRef"
+        if ref $config_files ne 'ARRAY';
 
-    my ($_dir) = split( /\/[a-z\._\-]*$/i, $config_file );
+    for my $config_file ( @{$config_files} ) {
+        # Backup conf file
+        # ================
+        copy( $config_file, $config_file . '_' . time() . '_backup' )
+          or return {
+            error => "Error: Cannot backup existing config file '" . $config_file . "': $!" };
 
-    # leave n copies (remove old)
-    opendir( my $DIR, $_dir );
-    my @_files =
-      map { $_ if $_ =~ /^[a-z\.\-_]+_[0-9]+_backup/g } readdir($DIR);
-    close $DIR;
-    my @_to_remove = splice @{ [ reverse sort @_files ] },
-      ( $keep_conf ? $keep_conf : 1 );
-    for (@_to_remove) {
-        next if $_ eq $_dir . '/';
-        unlink $_dir . '/' . $_;
+        my ($_dir) = split( /\/[a-z\._\-]*$/i, $config_file );
+
+        # leave n copies (remove old)
+        # ===========================
+        opendir( my $DIR, $_dir );
+        my @_files =
+          map { $_ if $_ =~ /^[a-z\.\-_]+_[0-9]+_backup/g } readdir($DIR);
+        close $DIR;
+        my @_to_remove = splice @{ [ reverse sort @_files ] },
+          ( $keep_conf ? $keep_conf : 1 );
+        for (@_to_remove) {
+            next if $_ eq $_dir . '/';
+            unlink $_dir . '/' . $_;
+        }
     }
     return;
 }

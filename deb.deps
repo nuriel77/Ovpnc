@@ -1,24 +1,23 @@
 apt-get install build-essential \
-        		libmodule-install-perl \
-
+                libmodule-install-perl \
                 libmath-bigint-gmp-perl \
                 libmath-gmp-perl \
-        		libssl-dev \
-        		libnet-ssleay-perl \
-        		libexpat1-dev \
-        		libxml++2.6-dev \
-        		libxslt1-dev \
-        		libxml-libxslt-perl \
+                libssl-dev \
+                libnet-ssleay-perl \
+                libexpat1-dev \
+                libxml++2.6-dev \
+                libxslt1-dev \
+                libxml-libxslt-perl \
                 libxml-simple-perl \
-        		libxml-xslt-perl \
-        		libxml-writer-perl \
-        		libxml-validator-schema-perl \
-        		libxml-validate-perl \
+                libxml-xslt-perl \
+                libxml-writer-perl \
+                libxml-validator-schema-perl \
+                libxml-validate-perl \
                 libdatetime-perl \
                 libtry-tiny-perl \
                 libdigest-md5-file-perl \
                 libjson-xs-perl \
-        		libgdbm-dev \
+                libgdbm-dev \
                 libfile-which-perl \
                 libfile-homedir-perl \
                 libtemplate-tiny-perl \
@@ -26,41 +25,41 @@ apt-get install build-essential \
                 libfile-util-perl \
                 libcss-minifier-xs-perl \
                 libjavascript-minifier-xs-perl \
-        		libxml-writer-simple-perl \
-        		libxml-dumper-perl \
-        		libcommon-sense-perl  \
-        		libjson-xs-perl  \
-        		libphp-serialization-perl \
-        		libfile-cache-perl \
+                libxml-writer-simple-perl \
+                libxml-dumper-perl \
+                libcommon-sense-perl  \
+                libjson-xs-perl  \
+                libphp-serialization-perl \
+                libfile-cache-perl \
                 liblog-any-perl \
-        		libproc-processtable-perl \
-        		libfile-touch-perl \
-        		libproc-simple-perl \
-        		libnet-telnet-perl \
-        		libmoosex-traits-perl \
-        		libmoosex-traits-pluggable-perl \
-        		libmoosex-compiletime-traits-perl \
-        		libencode-detect-perl \
-        		libxml-validator-schema-perl \
-        		libreadonly-perl \
-        		libdbix-class-datetime-epoch-perl \
-        		libdbix-class-timestamp-perl \
-        		libdbix-class-encodedcolumn-perl \
-        		libdbix-class-inflatecolumn-ip-perl \
-        		libdbix-password-perl \
-        		libcrypt-eksblowfish-perl \
-        		libauthen-passphrase-perl \
-        		libpar-packer-perl \
-        		libfile-slurp-perl \
+                libproc-processtable-perl \
+                libfile-touch-perl \
+                libproc-simple-perl \
+                libnet-telnet-perl \
+                libmoosex-traits-perl \
+                libmoosex-traits-pluggable-perl \
+                libmoosex-compiletime-traits-perl \
+                libencode-detect-perl \
+                libxml-validator-schema-perl \
+                libreadonly-perl \
+                libdbix-class-datetime-epoch-perl \
+                libdbix-class-timestamp-perl \
+                libdbix-class-encodedcolumn-perl \
+                libdbix-class-inflatecolumn-ip-perl \
+                libdbix-password-perl \
+                libcrypt-eksblowfish-perl \
+                libauthen-passphrase-perl \
+                libpar-packer-perl \
+                libfile-slurp-perl \
                 libhttp-daemon-ssl-perl \
-        		libmoosex-traits-pluggable-perl \
-        		libcatalyst-modules-extra-perl \
-        		libcatalyst-modules-perl \
-        		libcatalyst-engine-psgi-perl \
-        		libcatalystx-simplelogin-perl \
-        		libdata-serializer-perl \
-        		libtree-simple-perl \
-        		libhtml-formfu-model-dbic-perl \
-        		libhtml-formfu-perl \
-        		libconvert-pem-perl \
-        		starman
+                libmoosex-traits-pluggable-perl \
+                libcatalyst-modules-extra-perl \
+                libcatalyst-modules-perl \
+                libcatalyst-engine-psgi-perl \
+                libcatalystx-simplelogin-perl \
+                libdata-serializer-perl \
+                libtree-simple-perl \
+                libhtml-formfu-model-dbic-perl \
+                libhtml-formfu-perl \
+                libconvert-pem-perl \
+                starman

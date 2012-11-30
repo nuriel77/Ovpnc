@@ -1,5 +1,6 @@
 # Ovpnc git ignore list
 openvpn.conf.ovpnc*
+*_backup
 start_dev_server
 ovpnc_fastcgi.pl
 ovpnc_create.pl
