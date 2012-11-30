@@ -63,6 +63,7 @@ before [qw(
     my ( $self, $c ) = @_;
 
     # Assign config params
+    # ====================
     $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
         unless $self->_has_conf;
 };

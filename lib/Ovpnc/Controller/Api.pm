@@ -129,6 +129,16 @@ sub assign_params : Private {
         # will be considered full-paths
         # =============================
 
+        # User and Group name
+        # ===================
+        openvpn_group => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+                $c->config->{ovpnc_conf}, 'GroupName'
+        ),
+
+        openvpn_user => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+                $c->config->{ovpnc_conf}, 'UserName'
+        ),
+
         # The ovpnc application root
         # ==========================
         app_root => $cfg->{app_root} // getcwd,

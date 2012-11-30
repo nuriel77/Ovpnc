@@ -23,9 +23,7 @@ sub set_environment_vars
 
     # OpenVPN tools
     # =============
-    my $_tools_dir = $self->_cfg->{app_root}
-                    . '/' . $self->_cfg->{openvpn_dir}
-                    . '/' . $self->_cfg->{utils_dir};
+    my $_tools_dir = $self->_cfg->{openvpn_utils};
 
     # OpenSSL config
     # ==============
@@ -34,7 +32,9 @@ sub set_environment_vars
             ? $self->_cfg->{ssl_config}
             : $_tools_dir . '/' . $self->_cfg->{ssl_config};
 
-    # Set openssl environment variables (eq to source ./vars)
+    # Set openssl environment
+    # variables (eq to source ./vars)
+    # ===============================
     my %_oe = (
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},

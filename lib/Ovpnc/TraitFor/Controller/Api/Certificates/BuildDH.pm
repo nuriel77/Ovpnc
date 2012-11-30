@@ -41,9 +41,10 @@ sub build_dh
 
     # OpenVPN tools directory
     # =======================
-    my $_tools_dir = $self->_cfg->{app_root}
-                    . '/' . $self->_cfg->{openvpn_dir}
-                    . '/' . $self->_cfg->{utils_dir};
+    my $_tools_dir = $self->_cfg->{openvpn_utils};
+    # $self->_cfg->{app_root}
+     #               . '/' . $self->_cfg->{openvpn_dir}
+      #              . '/' . $self->_cfg->{utils_dir};
 
     # The DH file to process
     # ======================
@@ -121,10 +122,16 @@ sub build_dh
         return { error => $_dh_file . ' was not created: ' . $_out }
             unless $_new_digest;
 
-        # Chmod
-        # =====
-        chmod 0440, $_dh_file
-            or $_out .= ';Warning! Could not chmod 0440 ' . $_dh_file . ': ' . $!;
+        # Chown & Chmod
+        # =============
+        my (undef, undef, $gid) = getgrnam( $self->_cfg->{openvpn_group} );
+
+        chown $<, $gid, $_dh_file
+            or $_out .= ';Warning! Could not chown ' . $< . ':' . $gid . ' ' . $_dh_file . ': ' . $!;
+
+        chmod 0640, $_dh_file
+            or $_out .= ';Warning! Could not chmod 0640 ' . $_dh_file . ': ' . $!;
+
 
         # Ok
         # ==

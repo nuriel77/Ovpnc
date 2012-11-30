@@ -528,7 +528,7 @@ sub create_xml : Private {
     return $xml_obj;
 }
 
-=head2 validate_xml 
+=head2 validate_xml
 
 Validate the xml against a xsd schema
 returns the errors if any
@@ -546,7 +546,7 @@ sub validate_xml : Private {
 =head2 get_openvpn_[param]
 
 Next methods get
-parameters from the 
+parameters from the
 Ovpnc xml conf file
 
 =cut
