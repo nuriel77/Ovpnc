@@ -31,7 +31,7 @@ has '+_trait_namespace' => (
 
 =head1 NAME
 
-Ovpnc::Controller::Api::Config - Catalyst Controller 
+Ovpnc::Controller::Api::Config - Catalyst Controller
 
 =head1 DESCRIPTION
 

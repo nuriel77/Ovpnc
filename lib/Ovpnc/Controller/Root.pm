@@ -66,7 +66,12 @@ Default main page
 
 =cut
 
-sub index : Chained('/base') : Path : Args(0) : Does('NeedsLogin') : Sitemap {
+sub index : Chained('/base')
+          : Path
+          : Args(0)
+          #: Does('NeedsLogin')
+          : Sitemap
+{
     my ( $self, $c ) = @_;
 
     # Get username for geoname api service
@@ -84,6 +89,11 @@ Include static files, dynamically
 
 sub include_default_links : Private {
     my ( $self, $c ) = @_;
+
+    $c->log->debug( "fn: " . ( caller(0) )[3] . " called by: " . ( caller(1) )[3] );
+
+#    $c->response->headers->header( 'Content-Type' => 'text/html' );
+#    $c->stash( current_view => 'View::HTML' );
 
     # Include defaults
     my @_page_assets = qw(

@@ -144,7 +144,7 @@ sub certificates_POST : Local
     if ( ref $_ret_val ){
         # Any errors? put in error stash
         if ( $_ret_val->{error} ){
-            $self->_err($c, $_ret_val->{error});
+            $self->_send_err($c, $_ret_val->{error});
         }
         # All ok? return what is supposed to
         # be the newely generated filename
@@ -153,11 +153,11 @@ sub certificates_POST : Local
             $c->detach;
         }
         else {
-           $self->_err($c, "Something went wrong with command " . $req->{cmd} );
+           $self->_send_err($c, "Something went wrong with command " . $req->{cmd} );
         }
     }
     else {
-        $self->_err($c, "Something went wrong with command " . $req->{cmd} );
+        $self->_send_err($c, "Something went wrong with command " . $req->{cmd} );
     }
 
 }
@@ -217,16 +217,17 @@ sub _build_dh : Private {
     return $self->_roles->build_dh;
 }
 
-=head2 _err
+=head2 _send_err
 
 detach with status 500
 and the error message
 
 =cut
 
-sub _err : Private {
+sub _send_err : Private {
     my ( $self, $c, $msg ) = @_;
     $c->response->status(500);
+    delete $c->stash->{assets};
     $c->stash->{error} = $msg ? $msg : 'An unknown error has occured';
     $c->detach;
 }
