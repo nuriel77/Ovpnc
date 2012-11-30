@@ -69,7 +69,7 @@ Default main page
 sub index : Chained('/base')
           : Path
           : Args(0)
-          #: Does('NeedsLogin')
+          : Does('NeedsLogin')
           : Sitemap
 {
     my ( $self, $c ) = @_;

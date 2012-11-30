@@ -84,6 +84,7 @@ message to user
 sub detach_error : Private {
     my ( $self, $c, $err_msg ) = @_;
     $c->response->status(500);
+    delete $c->stash->{assets};
     $c->stash->{rest} =
       { error => $err_msg ? $err_msg : "An unknown error has occurred" };
     $c->detach;

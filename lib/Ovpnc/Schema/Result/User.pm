@@ -190,6 +190,21 @@ __PACKAGE__->add_unique_constraint("username", ["username"]);
 
 =head1 RELATIONS
 
+=head2 logs
+
+Type: has_many
+
+Related object: L<Ovpnc::Schema::Result::Log>
+
+=cut
+
+__PACKAGE__->has_many(
+  "logs",
+  "Ovpnc::Schema::Result::Log",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 user_roles
 
 Type: has_many
@@ -216,8 +231,8 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-29 01:48:15
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZLY0dALhNSX4BR/lf6Nkww
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 16:49:48
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K7BjqjPkD1pfAeIZLanKYw
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

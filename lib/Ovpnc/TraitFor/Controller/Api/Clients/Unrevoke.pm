@@ -1,9 +1,11 @@
 package Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke;
 use warnings;
 use strict;
+use IPC::Cmd qw( can_run run );
 use Moose::Role;
 use namespace::autoclean;
 use vars qw( $openvpn_dir $tools );
+use constant TIMEOUT   => 5;
 
 has openvpn_dir => (
     is       => 'ro',
@@ -71,36 +73,37 @@ sub unrevoke_certificate {
 
         # Regenerate the crl.pem
         # ======================
-        $command =
-            $ssl_bin
-          . ' ca -gencrl -config '
-          . $_openssl_config
-          . ' -out '
-          . $tools
-          . '/keys/crl.pem';
+        my @_cmd = (
+            $ssl_bin,
+            'ca',
+            '-gencrl',
+            '-config',
+            $_openssl_config,
+            '-out',
+            $tools . '/keys/crl.pem'
+        );
 
-        # vars script location
-        # ====================
-        my $vars = $tools . '/vars';
+        unless ( can_run($ssl_bin) ){
+            return 'Error! Cannot run ' . $ssl_bin;
+        }
 
         # Run command
-        # TODO: Replace with IPC::Cmd
-        # TODO: Get vars from certificates trait
         # ===========
-        $_ret_val = `cd $tools && . $vars >/dev/null && $command && cd - 2>&1`;
-        chomp($_ret_val);
+        my ( $success, $error_code, $full_buf ) =
+            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
 
-        # Check exit status
-        # =================
-        if ( $? >> 8 != 0 ) {
-            return
-                'Un-revocation failure for '
-              . $client
-              . ' while regenerating crl.pem: '
-              . $_ret_val;
+        $_ret_val = join( "\n", @{$full_buf} );
+        $_ret_val =~ s/\n/;/g;
+
+        if ( $success ){
+            return 'Un-revocation success for '
+                . $client . ': ' . $_ret_val;
         }
         else {
-            return 'Un-revocation success for ' . $client . ': ' . $_ret_val;
+            return 'Un-revocation failure for '
+                . $client
+                . ( $error_code ? ': ' . $error_code : '' )
+                . ( $_ret_val ? ', ' . $_ret_val : '' );
         }
     }
     else {

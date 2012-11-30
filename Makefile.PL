@@ -40,6 +40,7 @@ requires 'File::Copy';
 requires 'File::Signature';
 requires 'Readonly';
 requires 'Cache::File';
+requires 'Linux::Distribution';
 requires 'Net::Telnet';
 requires 'Net::OpenVPN::Manage';
 requires 'DBIx::Class';

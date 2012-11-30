@@ -1,9 +1,11 @@
 package Ovpnc::TraitFor::Controller::Api::Clients::Revoke;
 use warnings;
 use strict;
+use IPC::Cmd qw( can_run run );
 use Moose::Role;
 use namespace::autoclean;
 use vars qw( $openvpn_dir $tools $vars );
+use constant TIMEOUT    => 5;
 
 has openvpn_dir => (
     is       => 'ro',
@@ -38,45 +40,63 @@ sub revoke_certificate {
       ? $self->openvpn_utils
       : $openvpn_dir . '/' . $self->openvpn_utils;
 
-    # TODO: Get vars from certificates trait
-    # Use IPC::Cmd
-
     # Vars script location
     # ====================
     $vars = $tools . '/vars';
 
     # Build command
     # =============
-    my $command = $tools . '/revoke-full';
+    my @_cmd = ( $tools . '/revoke-full', $client );
 
     # Check if can run
     # ===============
-    if ( -e $vars and -e $command and -x $command ) {
+    if ( can_run( $tools . '/revoke-full' ) ){
 
         # Run command
         # ===========
-        $_ret_val = `cd $tools && . $vars > /dev/null && $command $client 2>&1`;
+        my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
+            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
 
-        # Check exit status
-        # =================
-        if ( $? >> 8 != 0 or $_ret_val =~ /Error opening/g ) {
-            return {error => "Revocation failure for '"
-                  . $client . "': "
-                  . $_ret_val };
+        $_ret_val = join( "\n", @{$full_buf} );
+        $_ret_val =~ s/\n/;/g;
+
+        if ( $success ){
+            # Explicit ERROR in output
+            # ========================
+            if ( $_ret_val =~ /ERROR:(.*)$/g ) {
+                return {error => "Revocation failure for '"
+                      . $client
+                      . ( $1 ? ': ' . $1 : '' )
+                };
+            }
+            # If we match this, certificate
+            # has been revoked successfully
+            # =============================
+            elsif ( $_ret_val =~ /error 23.*certificate revoked/g ) {
+                return 'Ok';
+            }
+            # Anything else is unknown
+            # ========================
+            else {
+                return {error => "Unknown revocation status for '"
+                      . $client
+                      . ( $_ret_val ? ': ' . $_ret_val : '' )
+                };
+            }
+
         }
-
-        if ( $_ret_val =~ /ERROR:Already revoked/g ) {
-            return {error => "Revocation failure for '"
-                  . $client
-                  . "': Already revoked" };
-        }
-
-        if ( $_ret_val =~ /error 23.*certificate revoked\n/g ) {
-            $_ret_val = 'Ok';
+        # Could be a timeout (if yes, it will
+        # appear in the error_code)
+        # ===================================
+        else {
+            return {error => $_ret_val . ';'
+                . ( $error_code ? $error_code : '' )
+            };
         }
     }
     else {
-        die "Error revoking client " . $client;
+        die "Error revoking client " . $client
+            . ", cannot run " . $tools . '/revoke-full';
     }
 
     return $_ret_val;

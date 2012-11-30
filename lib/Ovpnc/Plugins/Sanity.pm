@@ -2,6 +2,7 @@ package Ovpnc::Plugins::Sanity;
 use warnings;
 use strict;
 use Fcntl ':mode';
+use Linux::Distribution qw(distribution_name distribution_version);
 use vars qw/$errors $openvpn_user $os $distro/;
 
 sub cfg {
@@ -23,7 +24,8 @@ sub action {
     $config->{openvpn_dir} =~ s/\/$//;
 
     $openvpn_user = $config->{openvpn_user};
-    $distro       = '/etc/debian_version';
+
+    $distro       = distribution_name || 'unknown';
     $os           = 'linux';
 
     # Set in accessor
@@ -228,7 +230,6 @@ sub action {
             return $self->cfg->{app_root}
               . " not found or not readable";
         }
-
         # check openvpn conf
         # ==================
         elsif (!-e $self->cfg->{openvpn_conf}

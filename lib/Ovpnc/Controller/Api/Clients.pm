@@ -48,6 +48,12 @@ has openvpn_utils => (
     predicate => '_has_utils_dir'
 );
 
+has '_roles' => (
+    is        => 'rw',
+    isa       => 'Object',
+    predicate => '_has_roles',
+);
+
 has 'cfg' => (
     is        => 'rw',
     isa       => 'HashRef',
@@ -94,6 +100,11 @@ around [
     $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
+    # File::Assets might leave an empty hash
+    # so we better delete it, no need in api
+    # ======================================
+    delete $c->stash->{assets} if $c->stash->{assets};
+
     return $self->$orig( $c, $params );
 
 };
@@ -107,16 +118,21 @@ around [
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
 
+    # File::Assets might leave an empty hash
+    # so we better delete it, no need in api
+    # ======================================
+    delete $c->stash->{assets} if ref $c && $c->stash->{assets};
+
     # Do not process twice
     # ====================
     if ( ref $c && !$self->_has_vpn_dir ) {
-        $self->cfg( Ovpnc::Controller::Api->assign_params($c) );
+        $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) );
     }
 
     # Get global configurations
     # if not assigned yet
     # =========================
-    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
       unless $self->_has_conf;
 
     # Also here, don't process twice
@@ -475,14 +491,23 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
 
     # Trait names should match request method
     # =======================================
-    my $role = $self->_get_roles( $c->request->method );
+    $self->_roles(
+        $self->_get_roles(
+            $c->request->method,
+            '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars'
+        )
+    );
+
+    # Same as source ./vars
+    # =====================
+    $self->_roles->set_environment_vars;
 
     my $_ret_val;
 
     # Revoke client's certificate
     # ===========================
     unless ( $c->request->params->{no_revoke} ) {
-        $_ret_val = $role->revoke_certificate($client);
+        $_ret_val = $self->_roles->revoke_certificate($client);
     }
 
     # If error from above don't proceed
@@ -499,7 +524,8 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
         $_ret_val .= ';' . $str;
     }
     else {
-        $_ret_val .= ';Client ' . $client . ' not found online';
+        $_ret_val .= ';Kill connection status: Client '
+                    . $client . ' not found online';
     }
 
     $self->status_ok( $c, entity => $_ret_val );
@@ -546,11 +572,21 @@ sub clients_UNREVOKE : Local : Args(1) : Sitemap
 
     # Trait names should match request method
     # =======================================
-    my $role = $self->_get_roles( $c->request->method );
+    $self->_roles (
+        $self->_get_roles(
+            $c->request->method,
+            '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars'
+        )
+    );
+
+    # Same as source ./vars
+    # =====================
+    $self->_roles->set_environment_vars;
+
 
     # Unrevoke a revoked client's certificate
     # =======================================
-    my $_ret_val = $role->unrevoke_certificate(
+    my $_ret_val = $self->_roles->unrevoke_certificate(
         $client,
         $c->config->{openssl_conf},
         $c->config->{openssl_bin}
@@ -695,10 +731,14 @@ sub _get_roles : Private {
 
     return $self->new_with_traits(
         traits    => [ ucfirst( lc(shift) ), @_ ],
-        openvpn_dir   => $self->cfg->{openvpn_dir},
-        openvpn_utils => $self->cfg->{openvpn_utils},
-        app_root => $self->cfg->{app_root}
+        openvpn_dir     => $self->cfg->{openvpn_dir},
+        openvpn_utils   => $self->cfg->{openvpn_utils},
+        app_root        => $self->cfg->{app_root},
+        openssl_conf    => $self->cfg->{openssl_conf},
+        _req            => {},
+        _cfg            => $self->cfg,
     );
+
 }
 
 =head2 _client_error

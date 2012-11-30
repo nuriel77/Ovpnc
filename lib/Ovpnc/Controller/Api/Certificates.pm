@@ -62,6 +62,11 @@ before [qw(
     )] => sub {
     my ( $self, $c ) = @_;
 
+    # File::Assets might leave an empty hash
+    # so we better delete it, no need in api
+    # ======================================
+    delete $c->stash->{assets} if $c->stash->{assets};
+
     # Assign config params
     # ====================
     $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
@@ -91,6 +96,7 @@ sub certificates_POST : Local
         $self->status_bad_request($c, message =>
             "Missing param 'cmd'"
         );
+        delete $c->stash->{assets};
         $c->detach;
     }
 
