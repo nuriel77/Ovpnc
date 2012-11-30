@@ -123,8 +123,8 @@ sub build_dh
 
         # Chmod
         # =====
-        chmod 0400, $_dh_file
-            or $_out .= ';Warning! Could not chmod 0400 ' . $_dh_file . ': ' . $!;
+        chmod 0440, $_dh_file
+            or $_out .= ';Warning! Could not chmod 0440 ' . $_dh_file . ': ' . $!;
 
         # Ok
         # ==
