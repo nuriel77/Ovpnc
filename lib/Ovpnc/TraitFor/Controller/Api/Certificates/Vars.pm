@@ -21,16 +21,26 @@ sub set_environment_vars
 {
     my $self = shift;
 
+    # OpenVPN tools
+    # =============
     my $_tools_dir = $self->_cfg->{app_root}
-                    . '/' . $self->_cfg->{vpn_dir}
+                    . '/' . $self->_cfg->{openvpn_dir}
                     . '/' . $self->_cfg->{utils_dir};
+
+    # OpenSSL config
+    # ==============
+    my $_openssl_config =
+        $self->_cfg->{ssl_config} =~ /^\//
+            ? $self->_cfg->{ssl_config}
+            : $_tools_dir . '/' . $self->_cfg->{ssl_config};
+
     # Set openssl environment variables (eq to source ./vars)
     my %_oe = (
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},
         PKCS11TOOL         => $_tools_dir . '/pkcs11-tool',
         GREP               => '/bin/grep',
-        KEY_CONFIG         => $_tools_dir . '/' . $self->_cfg->{ssl_config},
+        KEY_CONFIG         => $_openssl_config,
         KEY_DIR            => $_tools_dir . '/keys',
         PKCS11_MODULE_PATH => 'dummy',
         PKCS11_PIN         => 'dummy',

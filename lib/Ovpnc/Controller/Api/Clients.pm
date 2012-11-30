@@ -34,14 +34,14 @@ has '+_trait_namespace' => (
     }
 );
 
-has vpn_dir => (
+has openvpn_dir => (
     is        => 'rw',
     isa       => 'Str',
     required  => 0,
     predicate => '_has_vpn_dir'
 );
 
-has utils_dir => (
+has openvpn_utils => (
     is        => 'rw',
     isa       => 'Str',
     required  => 0,
@@ -85,12 +85,18 @@ around [
       clients_UNREVOKE
       clients_DISABLE
       clients_ENABLE
+      clients_GET
+      list_revoked
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
-    $self->_set_controller_params($c);
+
+    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+      unless $self->_has_conf;
+
     return $self->$orig( $c, $params );
-  };
+
+};
 
 around [
     qw(
@@ -102,22 +108,28 @@ around [
     my ( $orig, $self, $c, $params ) = @_;
 
     # Do not process twice
+    # ====================
     if ( ref $c && !$self->_has_vpn_dir ) {
-        $self->_set_controller_params($c);
+        $self->cfg( Ovpnc::Controller::Api->assign_params($c) );
     }
 
-    # Get global configuration params
+    # Get global configurations
+    # if not assigned yet
+    # =========================
     $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
     # Also here, don't process twice
+    # ==============================
     return $self->$orig( $c, $params )
       if $self->_has_vpn;
 
     # Instantiate connector
+    # =====================
     $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
     # Check connection to mgmt port
+    # =============================
     unless ( $self->vpn->connect ) {
         $c->stash( { status => 'Server offline' } );
         $self->_disconnect_vpn if $self->_has_vpn;
@@ -170,7 +182,10 @@ sub clients_GET : Local : Args(0) : Sitemap
     $client = $c->req->params->{client} if $c->req->params->{client};
 
     # client configuration dir
-    my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
+    # ========================
+    my $_ccd_dir = $self->cfg->{openvpn_ccd}  =~ /^\//
+        ? $self->cfg->{openvpn_ccd}
+        : $self->cfg->{app_root} . '/' . $self->cfg->{openvpn_ccd};
 
     # return only role 'client'
     # we get the id of role type 'client'
@@ -337,19 +352,26 @@ sub clients_DISABLE : Local : Args(1) : Sitemap
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
+    # ======================================
     $self->_client_error($c)
       unless defined( $client // $c->req->params->{client} );
 
     # Assign from post params if exists
     # This will override params in the path
+    # =====================================
     $client = $c->req->params->{client} if $c->req->params->{client};
 
-    # client configuration dir
-    my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
+    # Client configuration dir
+    # ========================
+    my $_ccd_dir = $self->cfg->{openvpn_ccd} =~ /^\//
+        ? $self->cfg->{openvpn_ccd}
+        : $self->cfg->{openvpn_dir} . '/'
+            . $self->cfg->{openvpn_ccd};
 
     if ( -e $_ccd_dir . '/' . $client ) {
 
-        # rename the file so it becomes .disabled
+        # Rename the file so it becomes .disabled
+        # =======================================
         rename( $_ccd_dir . '/' . $client,
             $_ccd_dir . '/' . $client . '.disabled' )
           or die "Cannot rename $client: $!";
@@ -359,11 +381,11 @@ sub clients_DISABLE : Local : Args(1) : Sitemap
     }
     else {
         if ( -e $_ccd_dir . '/' . $client . '.disabled' ) {
-            $c->status_forbidden( $c,
+            $self->status_forbidden( $c,
                 message => "Client is already disabled." );
         }
         else {
-            $c->status_not_found( $c,
+            $self->status_not_found( $c,
                 message => "Cannot find '" . $_ccd_dir . '/' . $client . "'." );
         }
     }
@@ -373,8 +395,8 @@ sub clients_DISABLE : Local : Args(1) : Sitemap
     # was not found (in a strange case...)
     unless ( $c->request->params->{no_kill} ) {
         $c->stash->{kill_status} = $self->kill_connection( $c, $client );
-        $self->_disconnect_vpn;
     }
+    $self->_disconnect_vpn;
 
 }
 
@@ -384,15 +406,17 @@ Re-enable a disabled client
 
 =cut
 
-sub clients_ENABLE : Local : Args(1) : Sitemap
-
-  #: Does('NeedsLogin')
+sub clients_ENABLE : Local
+                   : Args(1)
+                   : Sitemap
+                   #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
     # either a single via clients/[client_name]
     # or via params '?client=client_name&...'
+    # ========================================
     $self->_client_error($c)
       unless $client
           or $c->req->params->{client};
@@ -440,11 +464,13 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
+    # ======================================
     $self->_client_error($c)
       unless defined( $client // $c->request->params->{client} );
 
     # Override anything in the path by setting
     # params from post if they exists
+    # ========================================
     $client = $c->request->params->{client} if $c->request->params->{client};
 
     # Trait names should match request method
@@ -454,18 +480,21 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
     my $_ret_val;
 
     # Revoke client's certificate
+    # ===========================
     unless ( $c->request->params->{no_revoke} ) {
         $_ret_val = $role->revoke_certificate($client);
     }
 
-    # If error from above don't proceed.
+    # If error from above don't proceed
+    # =================================
     if ( !$_ret_val || ( ref $_ret_val && $_ret_val->{error} ) ) {
         $self->_disconnect_vpn if $self->_has_vpn;
         Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} );
     }
 
-    # Kill the connection (just incase client
-    # is currently connected).
+    # Kill the connection (just incase
+    # client is currently connected).
+    # ================================
     if ( my $str = $self->kill_connection($client) ) {
         $_ret_val .= ';' . $str;
     }
@@ -494,14 +523,17 @@ sub clients_UNREVOKE : Local : Args(1) : Sitemap
     my ( $self, $c, $client ) = @_;
 
     # Verify that a client name was provided
+    # ======================================
     $self->_client_error($c)
-      unless ( $client || $c->request->params->{client} );
+      unless defined ( $client // $c->request->params->{client} );
 
     # Override anything in the path by setting
     # params from post if they exists
+    # ========================================
     $client = $c->request->params->{client} if $c->request->params->{client};
 
     # Check if client's certificate is revoked
+    # ========================================
     my $revoked = $c->forward('list_revoked');
 
     unless ( $self->_match_revoked( $revoked, $client ) ) {
@@ -513,9 +545,11 @@ sub clients_UNREVOKE : Local : Args(1) : Sitemap
     }
 
     # Trait names should match request method
+    # =======================================
     my $role = $self->_get_roles( $c->request->method );
 
     # Unrevoke a revoked client's certificate
+    # =======================================
     my $_ret_val = $role->unrevoke_certificate(
         $client,
         $c->config->{openssl_conf},
@@ -532,17 +566,24 @@ Get revoked client list
 
 =cut
 
-sub list_revoked : Path('clients/list_revoked') : Args(0) : Sitemap
-
-  #: Does('NeedsLogin')
+sub list_revoked : Path('clients/list_revoked')
+                 : Args(0)
+                 : Sitemap
+                 #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
+    my $openvpn_dir = $self->cfg->{openvpn_dir} =~ /\//
+        ? $self->cfg->{openvpn_dir}
+        :  $self->cfg->{app_root} . '/' . $self->cfg->{openvpn_dir};
+
     # The crl index file from OpenVPN
-    my $crl_index =
-        $c->config->{openvpn_dir} . '/'
-      . $c->config->{openvpn_utils}
-      . '/keys/index.txt';
+    # ===============================
+    my $crl_index = $self->cfg->{openvpn_utils} =~ /\//
+        ? $self->cfg->{openvpn_utils} . '/keys/index.txt'
+        : $openvpn_dir . '/'
+            . $self->cfg->{openvpn_utils}
+            . '/keys/index.txt';
 
     unless ( -r $crl_index ) {
         $self->status_forbidden( $c,
@@ -587,7 +628,7 @@ sub kill_connection : Private {
 
 =head2 read_crl_index_file
 
-This file generated by 
+This file generated by
 OpenVPN lists the certificates
 and provides us information
 who is revoked
@@ -607,7 +648,7 @@ sub read_crl_index_file : Private {
         if ( $revoke_time and $name ) {
             ( $Y, $M, $D, $h, $m, $s ) = $revoke_time =~ /(..)/g;
             my $kill_time =
-                $D . '-' 
+                $D . '-'
               . $M . '-'
               . ( $Y + 2000 ) . ' '
               . $h . ':'
@@ -651,10 +692,12 @@ and also sent extra params
 
 sub _get_roles : Private {
     my $self = shift;
+
     return $self->new_with_traits(
         traits    => [ ucfirst( lc(shift) ), @_ ],
-        vpn_dir   => $self->vpn_dir,
-        utils_dir => $self->utils_dir
+        openvpn_dir   => $self->cfg->{openvpn_dir},
+        openvpn_utils => $self->cfg->{openvpn_utils},
+        app_root => $self->cfg->{app_root}
     );
 }
 
@@ -673,30 +716,6 @@ sub _client_error : Private {
     $c->detach;
 }
 
-=head2 _set_controller_params
-
-Sets parameters
-from config file
-to be used in this controller
-
-=cut
-
-sub _set_controller_params : Private {
-    my ( $self, $c ) = @_;
-
-    # Remove trailing /
-    $c->config->{openvpn_dir}      =~ s/\/$//;
-    $c->config->{application_root} =~ s/\/$//;
-
-    # Assign OpenVPN dir
-    $self->vpn_dir(
-        (
-            $c->config->{openvpn_dir}
-              // $c->config->{application_root} . '/openvpn'
-        )
-    );
-    $self->utils_dir( $self->vpn_dir . '/' . $c->config->{openvpn_utils} );
-}
 
 =head2 denied
 
@@ -742,6 +761,9 @@ sub end : Private {
     # it is set to null but
     # is not needed in JSON output
     delete $c->stash->{assets};
+
+    # disconnect if exists
+    $self->_disconnect_vpn if $self->_has_vpn;
 
     # Forward to JSON view
     $c->forward(

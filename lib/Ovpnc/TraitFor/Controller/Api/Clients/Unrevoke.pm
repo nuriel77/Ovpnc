@@ -3,15 +3,21 @@ use warnings;
 use strict;
 use Moose::Role;
 use namespace::autoclean;
-use vars qw( $vpn_dir $tools );
+use vars qw( $openvpn_dir $tools );
 
-has vpn_dir => (
+has openvpn_dir => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
 );
 
-has utils_dir => (
+has openvpn_utils => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has app_root => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -21,8 +27,16 @@ sub unrevoke_certificate {
     my ( $self, $client, $ssl_config, $ssl_bin ) = @_;
 
     my $_ret_val;
-    $vpn_dir = $self->vpn_dir;
-    $tools   = $self->utils_dir;
+
+    $openvpn_dir =
+        $self->openvpn_dir =~ /^\//
+      ? $self->openvpn_dir
+      : $self->app_root . '/' . $self->openvpn_dir;
+
+    $tools =
+        $self->openvpn_utils =~ /^\//
+      ? $self->openvpn_utils
+      : $openvpn_dir . '/' . $self->openvpn_utils;
 
     # vars script location
     # ====================
@@ -50,12 +64,17 @@ sub unrevoke_certificate {
             return 'Un-revocation failure for ' . $client . ': ' . $_ret_val;
         }
 
+        my $_openssl_config =
+            $ssl_config =~ /^\//
+                ? $ssl_config
+                : $tools . '/' . $ssl_config;
+
         # Regenerate the crl.pem
         # ======================
         $command =
             $ssl_bin
           . ' ca -gencrl -config '
-          . $ssl_config
+          . $_openssl_config
           . ' -out '
           . $tools
           . '/keys/crl.pem';
@@ -65,6 +84,8 @@ sub unrevoke_certificate {
         my $vars = $tools . '/vars';
 
         # Run command
+        # TODO: Replace with IPC::Cmd
+        # TODO: Get vars from certificates trait
         # ===========
         $_ret_val = `cd $tools && . $vars >/dev/null && $command && cd - 2>&1`;
         chomp($_ret_val);
@@ -73,7 +94,7 @@ sub unrevoke_certificate {
         # =================
         if ( $? >> 8 != 0 ) {
             return
-                'Un-revocation failure for ' 
+                'Un-revocation failure for '
               . $client
               . ' while regenerating crl.pem: '
               . $_ret_val;
@@ -84,7 +105,7 @@ sub unrevoke_certificate {
     }
     else {
         return
-            'Un-revocation failure for ' 
+            'Un-revocation failure for '
           . $client
           . ' as index file does not exists or is not accessible: '
           . $index_file;

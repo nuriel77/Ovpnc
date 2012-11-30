@@ -42,7 +42,7 @@ sub build_dh
     # OpenVPN tools directory
     # =======================
     my $_tools_dir = $self->_cfg->{app_root}
-                    . '/' . $self->_cfg->{vpn_dir}
+                    . '/' . $self->_cfg->{openvpn_dir}
                     . '/' . $self->_cfg->{utils_dir};
 
     # The DH file to process

@@ -19,6 +19,7 @@ sub action {
     return unless $config;
 
     # remove trailing /
+    # =================
     $config->{openvpn_dir} =~ s/\/$//;
 
     $openvpn_user = $config->{openvpn_user};
@@ -26,8 +27,12 @@ sub action {
     $os           = 'linux';
 
     # Set in accessor
+    # ===============
     $self->cfg($config);
 
+    # Prepare hash with
+    # list of all checks
+    # ==================
     my $checks = {
         os            => sub { return $self->check_os },
         openvpn_user  => sub { return $self->check_openvpn_user },
@@ -52,6 +57,8 @@ sub action {
         },
     };
 
+    # Loop the hash to execute checks
+    # ===============================
     for my $check ( keys %{$checks} ) {
         if ( my $ret_val = $checks->{$check}->() ) {
             push( @{$errors}, 'Check error - ' . $check . ': ' . $ret_val );
@@ -167,11 +174,13 @@ sub action {
 
         # Get the openvpn conf
         # File from the xml
+        # ====================
         $self->cfg->{openvpn_conf} =
           Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
             $self->cfg->{ovpnc_conf} );
 
         # Check binary
+        # ============
         if ( !-e $self->cfg->{openvpn_bin} ) {
             return $self->cfg->{openvpn_bin} . " is not found";
         }
@@ -182,7 +191,8 @@ sub action {
               . $self->cfg->{ovpnc_user};
         }
 
-        # check openvpn dir
+        # Check openvpn dir
+        # =================
         elsif (!-e $self->cfg->{openvpn_dir}
             || !-d $self->cfg->{openvpn_dir}
             || !-r $self->cfg->{openvpn_dir} )
@@ -192,6 +202,7 @@ sub action {
         }
 
         # check openvpn tmpdir
+        # ====================
         elsif (!-e $self->cfg->{openvpn_dir} . '/tmp'
             || !-d $self->cfg->{openvpn_dir} . '/tmp'
             || !-w $self->cfg->{openvpn_dir} . '/tmp' )
@@ -201,6 +212,7 @@ sub action {
         }
 
         # check openssl conf
+        # ==================
         elsif (!-e $self->cfg->{openssl_conf}
             || !-r $self->cfg->{openssl_conf} )
         {
@@ -209,14 +221,16 @@ sub action {
         }
 
         # check application root dir
-        elsif (!-e $self->cfg->{application_root}
-            || !-d $self->cfg->{application_root} )
+        # ==========================
+        elsif (!-e $self->cfg->{app_root}
+            || !-d $self->cfg->{app_root} )
         {
-            return $self->cfg->{application_root}
+            return $self->cfg->{app_root}
               . " not found or not readable";
         }
 
         # check openvpn conf
+        # ==================
         elsif (!-e $self->cfg->{openvpn_conf}
             || !-r $self->cfg->{openvpn_conf} )
         {
@@ -239,8 +253,11 @@ sub action {
         # Add a trailing / to dir
         # and append the util dir
         # it was removed earier
+        # =====================
         my $conf_dir =
-          $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openvpn_utils} . '/';
+            $self->cfg->{openvpn_utils} =~ /^\//
+            ? $self->cfg->{openvpn_utils}
+            : $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openvpn_utils} . '/';
 
         # check openvpn scripts
         for (

@@ -43,6 +43,7 @@ For REST action class
 sub index : Chained('/') PathPart('api/') Args(0) : ActionClass('REST') {
 }
 
+
 =head2 sanity
 
 A sanity check
@@ -98,9 +99,16 @@ and return as hashref
 sub assign_params : Private {
     my ( $self, $c ) = @_;
 
+    my $cfg = $c->config;
+
     # Remove trailing / if any
-    $c->config->{openvpn_dir}      =~ s/\/$//;
-    $c->config->{application_root} =~ s/\/$//;
+    # ========================
+    for (
+        $cfg->{openvpn_dir},
+        $cfg->{app_root},
+        $cfg->{openvpn_ccd},
+        $cfg->{openvpn_utils},
+    ){ s/\/$// if $_ }
 
     # Assing configurations params
     # be made accessible via
@@ -108,49 +116,86 @@ sub assign_params : Private {
     # ============================
 
     # OpenVPN pid file
-    my $_pid_file = $c->config->{openvpn_pid} // $c->config->{application_root}
-      . '/openpvpn/var/run/openvpn.server.pid';
-    $_pid_file = $c->config->{application_root} . '/' . $_pid_file
-      if ( $_pid_file !~ /^\// );
+    # ================
+    $cfg->{openvpn_pid} ||= $cfg->{app_root}
+        . '/openpvpn/var/run/openvpn.server.pid';
+
+    $cfg->{openvpn_pid} = $cfg->{app_root} . '/' . $cfg->{openvpn_pid}
+        if (  $cfg->{openvpn_pid} !~ /^\// );
 
     return {
 
+        # Paths beginning with '/'
+        # will be considered full-paths
+        # =============================
+
         # The ovpnc application root
-        app_root => $c->config->{application_root} // getcwd,
+        # ==========================
+        app_root => $cfg->{app_root} // getcwd,
 
         # Ovpnc temporary directory
-        tmp_dir     => $c->config->{application_root} . '/openvpn/tmp/',
-        openvpn_pid => $_pid_file,
+        # =========================
+        tmp_dir     => $cfg->{app_root}
+                        . '/' . $cfg->{openvpn_utils} . '/tmp/',
+
+        # OpenVPN pid file
+        # ================
+        openvpn_pid => $cfg->{openvpn_pid},
+
+        # OpenVPN client's dir
+        # ====================
+        openvpn_ccd => ( $cfg->{openvpn_ccd} =~ /^\//
+            ? $cfg->{openvpn_ccd}
+            : $cfg->{openvpn_dir} . '/' . $cfg->{openvpn_ccd}
+        ),
 
         # OpenVPN Binary
-        openvpn_bin => $c->config->{openvpn_bin} // '/usr/sbin/openvpn',
+        # ==============
+        openvpn_bin => $cfg->{openvpn_bin} // '/usr/sbin/openvpn',
 
         # OpenVPN config
+        # ==============
         openvpn_config =>
           Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
-            $c->config->{ovpnc_conf}
-          ) // $c->config->{application_root}
+            $cfg->{ovpnc_conf}
+          ) // $cfg->{app_root}
           . '/openvpn/conf/openvpn.ovpnc.conf',
 
         # OpenVPN main directory
-        vpn_dir => $c->config->{openvpn_dir}
-          // $c->config->{application_root} . '/openvpn',
+        # ======================
+        openvpn_dir => ( $c->config->{openvpn_dir} =~ /^\//
+            ? $cfg->{openvpn_dir}
+            : $cfg->{app_root} . '/' . $cfg->{openvpn_dir}
+        ),
 
-        # OpenVPN tools/utilities directory (scripts for CA, Certificates etc)
-        utils_dir => $c->config->{openvpn_utils} // 'conf/2.0',
+        # OpenVPN tools/utilities directory
+        # (scripts for CA, Certificates etc)
+        # ==================================
+        openvpn_utils => ( $cfg->{openvpn_utils} =~ /^\//
+            ? $cfg->{openvpn_utils}
+            : $cfg->{openvpn_dir}
+              . '/' . $cfg->{openvpn_utils}
+        ),
 
         # OpenSSL config
-        ssl_config => $c->config->{openssl_conf},
+        # ==============
+        ssl_config => ( $cfg->{openssl_conf} =~ /^\//
+            ? $cfg->{openssl_conf}
+            : $cfg->{openvpn_dir} . '/'
+                . $cfg->{openvpn_utils} . '/' . $cfg->{openssl_conf}
+        ),
 
         # OpenSSL binary
-        ssl_bin => $c->config->{openssl_bin},
+        # ==============
+        ssl_bin => $cfg->{openssl_bin},
 
         # OpenVPN Management console
+        # ==========================
         mgmt_params => {
-            host    => $c->config->{mgmt_host}    // '127.0.0.1',
-            port    => $c->config->{mgmt_port}    // '7505',
-            timeout => $c->config->{mgmt_timeout} // 5,
-            password => read_file( $c->config->{mgmt_passwd_file}, chomp => 1 )
+            host    => $cfg->{mgmt_host}    // '127.0.0.1',
+            port    => $cfg->{mgmt_port}    // '7505',
+            timeout => $cfg->{mgmt_timeout} // 5,
+            password => read_file( $cfg->{mgmt_passwd_file}, chomp => 1 )
               // '',
         }
     };
