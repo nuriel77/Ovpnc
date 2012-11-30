@@ -142,7 +142,11 @@ Gets the verbosity level
 
 =cut
 
-sub verb_GET : Local : Sitemap : Args(0) {
+sub verb_GET : Local
+             : Sitemap
+             : Args(0)
+             : Does('NeedsLogin')
+{
     my ( $self, $c ) = @_;
 
     # Verify can run

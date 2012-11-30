@@ -1,21 +1,29 @@
 package Ovpnc;
 use Moose;
 use namespace::autoclean;
-
 use Catalyst::Runtime 5.80;
 use v5.10.1;
 
-# Set flags and add plugins for the application.
-#
-# Note that ORDERING IS IMPORTANT here as plugins are initialized in order,
-# therefore you almost certainly want to keep ConfigLoader at the head of the
-# list if you're using it.
-#
-#         -Debug: activates the debug mode for very useful log messages
-#   ConfigLoader: will load the configuration from a Config::General file in the
-#                 application's home directory
-# Static::Simple: will serve static files from the application's root
-#                 directory
+=head1 NAME
+
+Ovpnc - OpenVPN Controller
+
+=head1 SYNOPSIS
+
+See L<Ovpnc>
+
+=head1 DESCRIPTION
+
+L<Ovpnc>
+GUI and API Controller for OpenVPN
+
+=head2 VERSION v0.01
+
+v0.01
+
+=cut
+
+our $VERSION = '0.01';
 
 use Catalyst qw/
   -Debug
@@ -38,17 +46,19 @@ use Catalyst qw/
 
 extends 'Catalyst';
 
-our $VERSION = '0.01';
-sub get_version{ return $VERSION; }
 
-# Configure the application.
-#
-# Note that settings in ovpnc.conf (or other external
-# configuration file that you set up manually) take precedence
-# over this when using ConfigLoader. Thus configuration
-# details given here can function as a default configuration,
-# with an external configuration file acting as an override for
-# local deployment.
+=head2 CONFIGURATION
+
+Configure the application.
+
+Note that settings in ovpnc.conf (or other external
+configuration file that you set up manually) take precedence
+over this when using ConfigLoader. Thus configuration
+details given here can function as a default configuration,
+with an external configuration file acting as an override for
+local deployment.
+
+=cut
 
 __PACKAGE__->config(
 
@@ -80,7 +90,7 @@ __PACKAGE__->config(
 # Static::Simple
 # ==============
 __PACKAGE__->config(
-    'Static::Simple' => {	
+    'Static::Simple' => {
 		static => {
 			expires => 86400, # Default expire value (24hrs)
 			ignore_extensions => [ qw/xhtml shtml phtml tmpl tt2 tt asp php/ ],
@@ -144,7 +154,7 @@ __PACKAGE__->config(
 
 # Assets Plugin
 # =============
-__PACKAGE__->config(    
+__PACKAGE__->config(
     'Plugin::Assets' => {
             path => "/static",
             output_path => "built/",
@@ -196,6 +206,16 @@ __PACKAGE__->config(
 # =====================
 __PACKAGE__->setup();
 
+
+=head2 get_version
+
+Make version accessible
+
+=cut
+
+sub get_version{ return $VERSION; }
+
+
 =head1 AUTHOR
 
 Nuriel Shem-Tov 2012
@@ -206,5 +226,6 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
+
 
 1;

@@ -185,8 +185,7 @@ sub certificates_GET : Local
     $self->status_ok(
         $c,
         entity => {
-            some => 'dsta',
-            foo  => 'is real bar-x',
+            status  => 'Will list certificates',
         },
     );
 }

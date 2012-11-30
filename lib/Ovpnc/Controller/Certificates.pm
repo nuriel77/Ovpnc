@@ -36,6 +36,7 @@ around [qw(index)] => sub {
         $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
+    # ============
     my $err = Ovpnc::Plugins::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);

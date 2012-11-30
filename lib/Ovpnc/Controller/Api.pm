@@ -3,14 +3,15 @@ use warnings;
 use strict;
 use Ovpnc::Plugins::Connector;
 use Moose;
-use File::Slurp;
+use Linux::Distribution;
 use Cwd;
-use vars qw/$status/;
+use File::Slurp;
+use vars qw( $ovpnc_conf $mgmt_passwd_file );
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
-__PACKAGE__->config( namespace => 'api' );
+__PACKAGE__->config( namespace => '' );
 
 =head1 NAME
 
@@ -25,22 +26,36 @@ OpenVPN Controller API
 
 =head1 METHODS
 
-=head2 base
-
-For chain to login page
-
-=cut
-
-sub base : Chained('/base') PathPrefix CaptureArgs(0) {
-}
-
-=head2 index
+=head2 api
 
 For REST action class
 
 =cut
 
-sub index : Chained('/') PathPart('api/') Args(0) : ActionClass('REST') {
+sub api : Local : Args(0) : ActionClass('REST') {
+}
+
+
+=head2 api_GET
+
+Api Usage
+
+=cut
+
+sub api_GET : Local
+            : Args(0)
+            : Sitemap
+            : Does('NeedsLogin')
+{
+    my ( $self, $c ) = @_;
+
+    $self->status_ok($c, entity =>
+        { status => 'Here usage information for the API will be displayed' }
+    );
+
+    delete $c->stash->{assets} if $c->stash->{assets};
+    $c->forward('View::JSON');
+
 }
 
 
@@ -50,27 +65,59 @@ A sanity check
 
 =cut
 
-sub sanity : Chained('base') : PathPart('sanity') : Args(0) : Does('NeedsLogin')
+sub sanity : Path('api/sanity')
+           : Args(0)
+           : Sitemap
+           : Does('NeedsLogin')
 {
 
     my ( $self, $c ) = @_;
-    my $sanity = Ovpnc::Controller::Sanity->new(
-        ovpnc_user   => $c->config->{ovpnc_user}   || 'ovpnc',
-        os           => $c->config->{os}           || 'linux',
-        dist         => $c->config->{dist}         || '/etc/debian_version',
-        openvpn_user => $c->config->{openvpn_user} || 'openvpn',
-    );
 
-    my $ret_val = $sanity->action( $c->config );
+    $c->response->headers->header(
+        'Content-Type' => 'application/json' );
 
-    if ( ref $ret_val eq 'ARRAY' ) {
+    # Check build of ovpnc_conf
+    # =========================
+    $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
+        ? $c->config->{ovpnc_conf}
+        : $c->config->{app_root} . '/' . $c->config->{ovpnc_conf};
+
+    # Mysql passwd file
+    # =================
+    $mgmt_passwd_file = $c->config->{mgmt_passwd_file} =~ /^\//
+        ? $c->config->{mgmt_passwd_file}
+        : $c->config->{app_root} . '/' . $c->config->{mgmt_passwd_file};
+
+    # Get OpenVPN username
+    # ====================
+    $c->config->{openvpn_user} =
+      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $ovpnc_conf, 'UserName' );
+
+    # Sanity plugin action
+    # ====================
+    my $_ret_val = Ovpnc::Plugins::Sanity->action( $c->config );
+
+    # Not ok?
+    # =======
+    if ( $_ret_val && ref $_ret_val eq 'ARRAY' ) {
         $c->response->status(500);
-        $c->stash( { status => $ret_val } );
-        return $ret_val;
+        delete $c->stash->{assets} if $c->stash->{assets};
+        $c->response->body( $_ret_val );
+        $c->detach;
+        return $_ret_val;
     }
 
-    $c->stash( { status => 'Sanity check successful' } )
-      if ( $c->request->path =~ /sanity/ );
+    # Ok
+    # ==
+    if ( $c->request->path =~ /sanity/ ){
+        delete $c->stash->{assets} if $c->stash->{assets};
+        $c->response->status(200);
+        $c->stash->{status} = 'Sanity check successful';
+    }
+
+    $c->forward('View::JSON');
+
 }
 
 =head2 detach_error
@@ -116,6 +163,25 @@ sub assign_params : Private {
     # private methods as well
     # ============================
 
+    # Mysql passwd file
+    # =================
+    $mgmt_passwd_file = $c->config->{mgmt_passwd_file} =~ /^\//
+        ? $c->config->{mgmt_passwd_file}
+        : $c->config->{app_root} . '/' . $c->config->{mgmt_passwd_file};
+
+
+    # Check build if ovpnc_conf
+    # =========================
+    $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
+        ? $c->config->{ovpnc_conf}
+        : $c->config->{app_root} . '/' . $c->config->{ovpnc_conf};
+
+    # Get OpenVPN username
+    # ====================
+    $c->config->{openvpn_user} =
+      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $ovpnc_conf, 'UserName' );
+
     # OpenVPN pid file
     # ================
     $cfg->{openvpn_pid} ||= $cfg->{app_root}
@@ -133,11 +199,11 @@ sub assign_params : Private {
         # User and Group name
         # ===================
         openvpn_group => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-                $c->config->{ovpnc_conf}, 'GroupName'
+                $ovpnc_conf, 'GroupName'
         ),
 
         openvpn_user => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-                $c->config->{ovpnc_conf}, 'UserName'
+                $ovpnc_conf, 'UserName'
         ),
 
         # The ovpnc application root
@@ -167,10 +233,9 @@ sub assign_params : Private {
         # OpenVPN config
         # ==============
         openvpn_config =>
-          Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
-            $cfg->{ovpnc_conf}
-          ) // $cfg->{app_root}
-          . '/openvpn/conf/openvpn.ovpnc.conf',
+            Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
+            $ovpnc_conf
+        ),
 
         # OpenVPN main directory
         # ======================
@@ -204,9 +269,9 @@ sub assign_params : Private {
         # ==========================
         mgmt_params => {
             host    => $cfg->{mgmt_host}    // '127.0.0.1',
-            port    => $cfg->{mgmt_port}    // '7505',
+            port    => $cfg->{mgmt_port}    // 7505,
             timeout => $cfg->{mgmt_timeout} // 5,
-            password => read_file( $cfg->{mgmt_passwd_file}, chomp => 1 )
+            password => read_file( $mgmt_passwd_file, chomp => 1 )
               // '',
         }
     };

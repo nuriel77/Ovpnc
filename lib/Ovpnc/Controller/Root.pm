@@ -78,8 +78,11 @@ sub index : Chained('/base')
     my ( $self, $c ) = @_;
 
     # Get username for geoname api service
+    # ====================================
     $c->stash->{geo_username} = $c->config->{geo_username};
 
+    # This page will be referred to as 'root'
+    # =======================================
     $c->stash->{this_link} = 'root';
 
 }
@@ -93,12 +96,8 @@ Include static files, dynamically
 sub include_default_links : Private {
     my ( $self, $c ) = @_;
 
-    $c->log->debug( "fn: " . ( caller(0) )[3] . " called by: " . ( caller(1) )[3] );
-
-#    $c->response->headers->header( 'Content-Type' => 'text/html' );
-#    $c->stash( current_view => 'View::HTML' );
-
     # Include defaults
+    # ================
     my @_page_assets = qw(
       css/normalize.css
       css/slider.css
@@ -121,14 +120,15 @@ sub include_default_links : Private {
 
     # Include according to pathname
     # not incase of 'main' ( path is undef )
+    # ======================================
     if ( my $c_name = $c->req->path ) {
         $c_name =~ s/\/$//;
         for my $type (qw/ css js /) {
             if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
 
                 # example: 'css/certificates.css'
-                $c->log->debug(
-                    "Including: " . $type . '/' . $c_name . '.' . $type );
+                #$c->log->debug(
+                #    "Including: " . $type . '/' . $c_name . '.' . $type );
                 push( @_page_assets, $type . '/' . $c_name . '.' . $type );
             }
         }

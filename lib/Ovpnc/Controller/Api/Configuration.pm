@@ -23,10 +23,22 @@ has '+_trait_namespace' => (
     # get the correct namespace.
     # To keep traits out of
     # the Controller directory.
+    # ==========================
     default => sub {
         my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
         return $P . '::TraitFor::' . $SP;
     }
+);
+
+has 'cfg' => (
+    is        => 'rw',
+    isa       => 'HashRef',
+    predicate => '_has_conf'
+);
+
+has '_roles' => (
+    is  => 'rw',
+    isa => 'Object',
 );
 
 =head1 NAME
@@ -50,6 +62,31 @@ For REST action class
 
 sub configuration : Local : ActionClass('REST') {
 }
+
+
+=head2 before...
+
+Method modifier
+
+=cut
+
+before [qw(
+        configuration_GET
+    )] => sub {
+    my ( $self, $c, $params ) = @_;
+
+    # File::Assets might leave an empty hash
+    # so we better delete it, no need in api
+    # ======================================
+    delete $c->stash->{assets} if ref $c && $c->stash->{assets};
+
+    # Assign config params
+    # ====================
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+        if ( ref $c && ! $self->_has_conf );
+};
+
+
 
 =head2 configuration_GET
 
@@ -238,16 +275,18 @@ sub configuration_UPDATE : Local
 
     # Get action's traits
     # ===================
-    my $_role = $self->new_with_traits(
-        traits      => [qw/RenewCiphers/],
-        schema_file => $c->config->{ovpnc_config_schema},
-        openvpn     => $c->config->{openvpn_bin}
-    ) or die "Could not get role: $!";
+    $self->_role(
+        $self->new_with_traits(
+            traits      => [qw/RenewCiphers/],
+            schema_file => $c->config->{ovpnc_config_schema},
+            openvpn     => $c->config->{openvpn_bin}
+        )
+    );
 
     # Update the cipher list
     # in the xsd schema file
     # ======================
-    my $_ret_val = $_role->update_cipher_list;
+    my $_ret_val = $self->_role->update_cipher_list;
     Ovpnc::Controller::Api->detach_error($c)
       unless ($_ret_val);
     Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} )
@@ -650,6 +689,7 @@ sub get_openvpn_config_file : Private {
 
 sub get_openvpn_param : Private {
     my ( $self, $file, $params ) = @_;
+
     my $dom = XML::LibXML->load_xml( location => $file );
     if ( ref $params && ref $params eq 'ARRAY' ) {
         my @arr;

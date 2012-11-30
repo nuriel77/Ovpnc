@@ -4,10 +4,7 @@ use warnings;
 use Ovpnc::Plugins::Connector;
 use Moose;
 use namespace::autoclean;
-
-use vars qw/
-  $REGEX
-  /;
+use vars qw/ $REGEX /;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -67,13 +64,18 @@ around status_GET => sub {
     my $self = shift;
     my $c    = shift;
 
+    # Assign config params
+    # ====================
     $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
       unless $self->_has_conf;
 
+    # Don't connect if exists
+    # =======================
     return $self->$orig( $c, @_ )
       if $self->_has_vpn;
 
     # Establish connection to management port
+    # =======================================
     $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
@@ -88,6 +90,7 @@ and release the mgmt port
 
 after 'status_GET' => sub { shift->_disconnect_vpn; };
 
+
 =head2 server
 
 For REST action class
@@ -97,6 +100,7 @@ For REST action class
 sub status : Local : ActionClass('REST') {
 }
 
+
 =head2 status_GET
 
 Gets status from OpenVPN
@@ -105,11 +109,15 @@ and title (version)
 
 =cut
 
-sub status_GET : Local : Args(0) : Sitemap    #Does('NeedsLogin')
+sub status_GET : Local
+               : Args(0)
+               : Sitemap
+               : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Verify can run
+    # ==============
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
     undef $_server if $_server->sanity($c);
 
@@ -152,6 +160,7 @@ sub end : Private {
     $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }
+
 
 =head1 AUTHOR
 

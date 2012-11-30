@@ -5,6 +5,9 @@ use Test::More;
 
 use Catalyst::Test 'Ovpnc';
 
-ok( request('/login')->is_success, 'Request should succeed' );
+Ovpnc->log->levels( qw/error fatal/ );
+
+ok( request('/login')->is_success,
+    'Request should succeed and be redirected to login' );
 
 done_testing();

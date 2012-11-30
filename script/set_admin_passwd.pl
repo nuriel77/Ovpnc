@@ -5,12 +5,12 @@ use lib 'lib';
 
 use constant USERNAME => 'ovpncadmin';
 use constant NEWPASS  => 'ovpncadmin';
- 
+
 BEGIN { $ENV{CATALYST_DEBUG} = 1 }
- 
+
 use DateTime;
 use Ovpnc::Schema;
-    
+
 my $schema = Ovpnc::Schema->connect('dbi:mysql:ovpnc;host=localhost;user=ovpnc;password=ovpncadmin');
 die "No DB connection\n" unless $schema;
 

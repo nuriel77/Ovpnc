@@ -186,15 +186,17 @@ of Ovpnc/OpenVPN
 
 =cut
 
-sub clients_GET : Local : Args(0) : Sitemap
-
-#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-#: Does('NeedsLogin')
+sub clients_GET : Local
+                : Args(0)
+                : Sitemap
+                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
     # Assign from post params if exists
     # This will override params in the path
+    # =====================================
     $client = $c->req->params->{client} if $c->req->params->{client};
 
     # client configuration dir
@@ -205,10 +207,12 @@ sub clients_GET : Local : Args(0) : Sitemap
 
     # return only role 'client'
     # we get the id of role type 'client'
+    # ===================================
     my $_role_name =
       $c->model('DB::Role')->search( { name => 'client' } )->single;
 
     # Assign the flexgrid request params
+    # ==================================
     my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
       @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
 
@@ -231,6 +235,7 @@ sub clients_GET : Local : Args(0) : Sitemap
     # from openvpn mgmt port status.
     # for now set default to user, and
     # sort after having mapped the two data sources
+    # =============================================
     my $_dont_sort_in_query;
     if ($sort_by) {
         unless ( $sort_by ~~ @{$_columns} ) {
@@ -245,9 +250,11 @@ sub clients_GET : Local : Args(0) : Sitemap
     # username of simplelogin and of openvpn
     # that's why need to make sure they match
     # before mapping the two data sources
+    # =========================================
     $sort_by =~ s/\bname\b/username/ if $sort_by;
 
     # Query resultset
+    # ===============
     my @_clients = $c->model('DB::User')->search(
         { 'user_roles.role_id' => $_role_name->id },
         {
@@ -260,12 +267,14 @@ sub clients_GET : Local : Args(0) : Sitemap
     )->all;
 
     # Let's see who is online
+    # =======================
     my $_online_clients = $c->forward('/api/server/status');
 
     # Now let's start matching the list of
     # all users to those who are online
     # we shall append the online data
     # for this response
+    # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
     # Simple login uses hardcoded 'username'
@@ -274,16 +283,19 @@ sub clients_GET : Local : Args(0) : Sitemap
     # arrays match, we can run a simple comparison
     # to find out to which client's data
     # to append the online data.
+    # ============================================
     $_online_clients->{clients} = [
         map {
 
             # match to second hash's keyname
+            # ==============================
             $_->{username} = $_->{name};
             delete $_->{name};
           LP: for my $i ( 0 .. @_clients ) {
                 if ( $_clients[$i]->{username} eq $_->{username} ) {
 
                     # Merge the two hashes
+                    # ====================
                     my %temp_hash = ( %{ $_clients[$i] }, %{$_} );
                     $_clients[$i] = \%temp_hash;
                     last LP;
@@ -292,11 +304,12 @@ sub clients_GET : Local : Args(0) : Sitemap
           } @{ $_online_clients->{clients} }
     ];
 
-    # here we sort the hashes inside the array
+    # Here we sort the hashes inside the array
     # according to what is specified in the
     # request. The sort is being done here
     # if these are columns which do not originate
     # in the database but from server status
+    # ===========================================
     if ( $_dont_sort_in_query && $sort_by ) {
         my @_sorted = sort { $$a{$sort_by} cmp $$b{$sort_by} } @_clients;
         @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
@@ -312,9 +325,10 @@ Add new client(s)
 
 =cut
 
-sub clients_POST : Local : Args(0) : Sitemap
-
-  #: Does('NeedsLogin')
+sub clients_POST : Local
+                 : Args(0)
+                 : Sitemap
+                 #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -325,9 +339,10 @@ Update client(s) data
 
 =cut
 
-sub clients_UPDATE : Local : Args(0) : Sitemap
-
-  #:Does('NeedsLogin')
+sub clients_UPDATE : Local
+                   : Args(0)
+                   : Sitemap
+                   #:Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -338,9 +353,10 @@ Delete client(s)
 
 =cut
 
-sub clients_REMOVE : Local : Args(0) : Sitemap
-
-  #: Does('NeedsLogin')
+sub clients_REMOVE : Local
+                   : Args(0)
+                   : Sitemap
+                   #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -361,9 +377,10 @@ client.)
 
 =cut
 
-sub clients_DISABLE : Local : Args(1) : Sitemap
-
-  #: Does('NeedsLogin')
+sub clients_DISABLE : Local
+                    : Args(1)
+                    : Sitemap
+                   #: Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -409,6 +426,7 @@ sub clients_DISABLE : Local : Args(1) : Sitemap
     # kill any active connections of this client
     # This will even occur if the file above
     # was not found (in a strange case...)
+    # ==========================================
     unless ( $c->request->params->{no_kill} ) {
         $c->stash->{kill_status} = $self->kill_connection( $c, $client );
     }
