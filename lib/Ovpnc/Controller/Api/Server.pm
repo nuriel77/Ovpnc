@@ -13,11 +13,6 @@ __PACKAGE__->config( namespace => 'api' );
 
 with 'MooseX::Traits';
 has '+_trait_namespace' => (
-
-    # A litte hack in order
-    # to get the correct namespace.
-    # Wanted to keep traits out of
-    # the Controller directory
     default => sub {
         my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
         return $P . '::TraitFor::' . $SP;
@@ -66,7 +61,7 @@ sub server : Local : ActionClass('REST') {
 =head2 around modifier
 
 Establish connection
-before accessing any 
+before accessing any
 of these actions
 
 =cut

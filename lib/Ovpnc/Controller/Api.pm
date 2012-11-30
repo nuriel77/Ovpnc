@@ -142,6 +142,9 @@ sub assign_params : Private {
         # OpenSSL config
         ssl_config => $c->config->{openssl_conf},
 
+        # OpenSSL binary
+        ssl_bin => $c->config->{openssl_bin},
+
         # OpenVPN Management console
         mgmt_params => {
             host    => $c->config->{mgmt_host}    // '127.0.0.1',

@@ -1,10 +1,32 @@
 package Ovpnc::Controller::Api::Certificates;
+use warnings;
+use strict;
 use Moose;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
-__PACKAGE__->config( namespace => 'api/certificates' );
+__PACKAGE__->config( namespace => 'api' );
+
+with 'MooseX::Traits';
+has '+_trait_namespace' => (
+    default => sub {
+        my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)$/;
+        return $P . '::TraitFor::' . $SP;
+    }
+);
+
+has 'cfg' => (
+    is        => 'rw',
+    isa       => 'HashRef',
+    predicate => '_has_conf'
+);
+
+has '_roles' => (
+    is  => 'rw',
+    isa => 'Object',
+);
+
 
 =head1 NAME
 
@@ -18,60 +40,128 @@ Catalyst Controller.
 
 =cut
 
-=head2 base
 
-For chain to login page
-
-=cut
-
-sub base : Chained('/base') PathPrefix CaptureArgs(0) {
-}
-
-=head2 index
+=head2 certificates
 
 For REST action class
 
 =cut
 
-sub certificates : Chained('/') PathPart('api/certificates') Args(0) :
-  ActionClass('REST') {
+sub certificates : Local : Args(0) : ActionClass('REST') {
 }
 
-=head2 get_cert
+
+=head2 before...
+
+Method modifier
 
 =cut
 
-sub certificates_POST : Path('certificates') : Args(0) Does('NeedsLogin') {
+before [qw(
+        certificates_POST
+    )] => sub {
     my ( $self, $c ) = @_;
 
-    # Set openssl environment variables (eq to source ./vars)
-    my $oe = {
-        EASY_RSA           => $c->config->{openvpn_dir},
-        OPENSSL            => $c->config->{openvpn_bin},
-        PKCS11TOOL         => $c->config->{openvpn_dir} . 'pkcs11-tool',
-        GREP               => '/bin/grep',
-        KEY_CONFIG         => $c->config->{openssl_conf},
-        KEY_DIR            => $c->config->{openvpn_dir} . 'keys',
-        PKCS11_MODULE_PATH => 'dummy',
-        PKCS11_PIN         => 'dummy',
-        KEY_SIZE           => $c->req->params->{key_size} || 1024,
-        CA_EXPIRE          => $c->req->params->{ca_expire} || 3650,
-        KEY_EXPIRE         => $c->req->params->{key_expire} || 3650,
-        KEY_COUNTRY        => $c->req->params->{key_country} || 'NL',
-        KEY_PROVINCE       => $c->req->params->{key_province} || 'NH',
-        KEY_CITY           => $c->req->params->{key_city} || 'Amsterdam',
-        KEY_ORG            => $c->req->params->{key_org} || 'DeBar',
-        KEY_EMAIL          => $c->req->params->{key_email} || 'nuri@de-bar.com',
+    # Assign config params
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+        unless $self->_has_conf;
+};
+
+=head2 certificates_POST
+
+Certificate actions such as generating
+a new CA, server or client certificates
+requires user to provide options
+
+=cut
+
+sub certificates_POST : Local
+                      : Args(0)
+                      : Sitemap
+#                      : Does('NeedsLogin')
+{
+    my ( $self, $c ) = @_;
+
+    my $req = $c->request->params;
+
+    # 'cmd' must always be provided
+    # =============================
+    unless ( $req->{cmd} ){
+        $self->status_bad_request($c, message =>
+            "Missing param 'cmd'"
+        );
+        $c->detach;
+    }
+
+    # Set roles
+    # =========
+    $self->_roles(
+        $self->new_with_traits(
+            traits         => [ qw( Vars BuildDH ) ],
+            openvpn_dir    => $c->config->{openvpn_dir},
+            openssl_bin    => $c->config->{openssl_bin},
+            openssl_conf   => $c->config->{openssl_conf},
+            _req           => $c->request->params,
+            _cfg           => $self->cfg,
+        )
+    );
+
+    # Possible options
+    # ================
+    my $_options = {
+        build_dh        => sub { return $self->_build_dh( @_ ) },
+        gen_ca          => sub { return $self->_gen_ca( @_ ) },
+        gen_server      => sub { return $self->_gen_server( @_ ) },
+        gen_client      => sub { return $self->_gen_client( @_ ) }
     };
 
-    $ENV{$_} = $oe->{$_} for ( keys %{$oe} );
+    # Same as source ./vars
+    # =====================
+    $self->_roles->set_environment_vars;
 
-    # 	$self->status_ok(
-    #       $c,
-    #        entity => { test => 'just a test' },
-    # 	);
+    # Match param command against our
+    # list of possible commands
+    # Execute on match (closure)
+    # ===============================
+    my ( $_found, $_ret_val );
+    for my $_command ( keys %{$_options} ){
+        if ( $_command eq $req->{cmd} ){
+            $_ret_val = $_options->{$_command}->( $req );
+            $_found++;
+        }
+    }
+
+    # No command match?
+    # =================
+    unless ( $_found ){
+        $self->status_bad_request($c,
+            message => 'Unknown option ' . $req->{cmd}
+        );
+        $c->detach;
+    }
+    # Process return value
+    # ====================
+    if ( ref $_ret_val ){
+        # Any errors? put in error stash
+        if ( $_ret_val->{error} ){
+            $self->_err($c, $_ret_val->{error});
+        }
+        # All ok? return what is supposed to
+        # be the newely generated filename
+        elsif ( $_ret_val->{status} ) {
+            $self->status_ok($c, entity => $_ret_val );
+            $c->detach;
+        }
+        else {
+           $self->_err($c, "Something went wrong with command " . $req->{cmd} );
+        }
+    }
+    else {
+        $self->_err($c, "Something went wrong with command " . $req->{cmd} );
+    }
 
 }
+
 
 =head2 certificates_GET
 
@@ -79,7 +169,11 @@ Get certificate(s) data
 
 =cut
 
-sub certificates_GET : Path('certificates') : Args(0) Does('NeedsLogin') {
+sub certificates_GET : Local
+                     : Args(0)
+                     : Sitemap
+#                     : Does('NeedsLogin')
+{
     my ( $self, $c ) = @_;
     $self->status_ok(
         $c,
@@ -90,13 +184,17 @@ sub certificates_GET : Path('certificates') : Args(0) Does('NeedsLogin') {
     );
 }
 
-=head2 certificates_GET
+=head2 certificates_DELETE
 
 Delete certificate(s)
 
 =cut
 
-sub certificates_DELETE : Path('certificates') : Args(0) Does('NeedsLogin') {
+sub certificates_DELETE : Local
+                        : Args(0)
+                        : Sitemap
+                        #: Does('NeedsLogin')
+{
     my ( $self, $c ) = @_;
     $self->status_ok(
         $c,
@@ -105,6 +203,32 @@ sub certificates_DELETE : Path('certificates') : Args(0) Does('NeedsLogin') {
             foo  => 'is real bar-x',
         },
     );
+}
+
+
+=head2 _build_dh
+
+Generate DH secret
+
+=cut
+
+sub _build_dh : Private {
+    my ( $self, $req ) = @_;
+    return $self->_roles->build_dh;
+}
+
+=head2 _err
+
+detach with status 500
+and the error message
+
+=cut
+
+sub _err : Private {
+    my ( $self, $c, $msg ) = @_;
+    $c->response->status(500);
+    $c->stash->{error} = $msg ? $msg : 'An unknown error has occured';
+    $c->detach;
 }
 
 sub default : Private {

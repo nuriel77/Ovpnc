@@ -1,22 +1,38 @@
 apt-get install build-essential \
         		libmodule-install-perl \
-        		libexpat1-dev \
-        		libxslt1-dev \
+
+                libmath-bigint-gmp-perl \
+                libmath-gmp-perl \
         		libssl-dev \
         		libnet-ssleay-perl \
+        		libexpat1-dev \
+        		libxml++2.6-dev \
+        		libxslt1-dev \
         		libxml-libxslt-perl \
+                libxml-simple-perl \
         		libxml-xslt-perl \
         		libxml-writer-perl \
         		libxml-validator-schema-perl \
-        		libgdbm-dev \
-        		libxml++2.6-dev \
         		libxml-validate-perl \
+                libdatetime-perl \
+                libtry-tiny-perl \
+                libdigest-md5-file-perl \
+                libjson-xs-perl \
+        		libgdbm-dev \
+                libfile-which-perl \
+                libfile-homedir-perl \
+                libtemplate-tiny-perl \
+                libfile-chdir-perl \
+                libfile-util-perl \
+                libcss-minifier-xs-perl \
+                libjavascript-minifier-xs-perl \
         		libxml-writer-simple-perl \
         		libxml-dumper-perl \
         		libcommon-sense-perl  \
         		libjson-xs-perl  \
         		libphp-serialization-perl \
         		libfile-cache-perl \
+                liblog-any-perl \
         		libproc-processtable-perl \
         		libfile-touch-perl \
         		libproc-simple-perl \
@@ -36,6 +52,7 @@ apt-get install build-essential \
         		libauthen-passphrase-perl \
         		libpar-packer-perl \
         		libfile-slurp-perl \
+                libhttp-daemon-ssl-perl \
         		libmoosex-traits-pluggable-perl \
         		libcatalyst-modules-extra-perl \
         		libcatalyst-modules-perl \
