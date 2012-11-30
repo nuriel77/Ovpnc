@@ -72,7 +72,6 @@ sub action {
 {
 
     sub check_os {
-        my $self = shift;
         return (
             $^O eq $os
             ? 0
@@ -81,24 +80,31 @@ sub action {
     }
 
     sub check_dist {
-        my $self = shift;
-        return ( -e $distro ? 0 : 'Not a ' . $distro . ' distro' );
+        return (
+            $distro =~ /debian|ubuntu/gi
+            ? 0
+            : 'Not a Debian type distribution'
+        );
     }
 
     sub check_openvpn_user {
         my $self = shift;
 
         # Check if user exists
+        # ====================
         if (
             my ( undef, $st, undef, undef, undef, undef, undef, undef, $home ) =
             getpwnam $self->cfg->{openvpn_user} )
         {
 
             # Check if user is diabled
+            # ========================
             return "User " . $self->cfg->{openvpn_user} . " is disabled"
               if ( $st ne 'x' );
 
-            # Make sure user does not have a login shell
+            # Make sure user does
+            # not have a login shell
+            # ======================
             return
 "User has a login shell, please disable it by changing the shell entry of this user in the /etc/passwd to /sbin/nologin"
               if ( $home !~ /\/sbin\/nologin|\/bin\/false/ )
@@ -118,6 +124,7 @@ sub action {
 
         #Example: ovpnc:x:1011:1012::/home/ovpnc:/bin/sh
         # Check if user exists
+        # ====================
         if (
             my (
                 undef, $st,   $user_id, $group_id, undef,
@@ -128,8 +135,9 @@ sub action {
         {
 
             # Check if user is diabled
+            # ========================
             return "User " . $self->cfg->{ovpnc_user} . " is disabled"
-              if ( $st ne 'x' );
+              if $st ne 'x';
 
 # Make sure user does not have a login shell
 #return "User has a login shell, please disable it by changing the shell entry of this user in the /etc/passwd to /sbin/nologin"

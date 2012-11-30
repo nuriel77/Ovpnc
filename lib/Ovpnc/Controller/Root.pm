@@ -48,10 +48,13 @@ around [qw(ovpnc_config index)] => sub {
         $c->config->{ovpnc_conf}, 'UserName' );
 
     # Sanity check
-    my $err = Ovpnc::Plugins::Sanity->action( $c->config );
+    # ============
+    my $_err = Ovpnc::Plugins::Sanity->action( $c->config );
 
-    if ( $err and ref $err eq 'ARRAY' ) {
+    if ( $_err and ref $_err eq 'ARRAY' ) {
         $c->response->status(500);
+        delete $c->stash->{assets} if $c->stash->{assets};
+        $c->stash->{error} = join "", @{$_err};
         $c->forward('View::JSON');
         $c->detach;
     }
