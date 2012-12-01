@@ -104,7 +104,7 @@ sub certificates_POST : Local
     # =========
     $self->_roles(
         $self->new_with_traits(
-            traits         => [ qw( Vars BuildDH ) ],
+            traits         => [ qw( Vars BuildDH InitCA ) ],
             openvpn_dir    => $c->config->{openvpn_dir},
             openssl_bin    => $c->config->{openssl_bin},
             openssl_conf   => $c->config->{openssl_conf},
@@ -117,9 +117,9 @@ sub certificates_POST : Local
     # ================
     my $_options = {
         build_dh        => sub { return $self->_build_dh( @_ ) },
-        gen_ca          => sub { return $self->_gen_ca( @_ ) },
+        init_ca         => sub { return $self->_gen_ca( @_ ) },
         gen_server      => sub { return $self->_gen_server( @_ ) },
-        gen_client      => sub { return $self->_gen_client( @_ ) }
+        gen_client      => sub { return $self->_gen_client( @_ ) },
     };
 
     # Same as source ./vars
@@ -154,7 +154,7 @@ sub certificates_POST : Local
             $self->_send_err($c, $_ret_val->{error});
         }
         # All ok? return what is supposed to
-        # be the newely generated filename
+        # be the newely generated filename(s)
         elsif ( $_ret_val->{status} ) {
             $self->status_ok($c, entity => $_ret_val );
             $c->detach;
@@ -219,8 +219,30 @@ Generate DH secret
 =cut
 
 sub _build_dh : Private {
-    my ( $self, $req ) = @_;
-    return $self->_roles->build_dh;
+    return shift->_roles->build_dh;
+}
+
+=head2 _gen_ca
+
+Create Root CA
+Self signed
+
+=cut
+
+sub _gen_ca : Private{
+    my $self = shift;
+
+    my $_ret_val = $self->_roles->init_ca;
+
+    if ( defined $_ret_val && ref $_ret_val ){
+        return (
+            ref $_ret_val eq 'ARRAY'
+                ? { status => $_ret_val }
+                : $_ret_val
+        );
+    }
+
+    return undef;
 }
 
 =head2 _send_err

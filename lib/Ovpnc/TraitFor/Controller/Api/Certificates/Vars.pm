@@ -5,6 +5,7 @@ use Moose::Role;
 
 # will become defined
 # for all other traits
+# ====================
 has '_cfg' => (
     is => 'ro',
     required => 1,

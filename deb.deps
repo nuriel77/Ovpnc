@@ -4,6 +4,7 @@ apt-get install build-essential \
                 libmath-gmp-perl \
                 libssl-dev \
                 libnet-ssleay-perl \
+                libintl-xs-perl \
                 libexpat1-dev \
                 libxml++2.6-dev \
                 libxslt1-dev \

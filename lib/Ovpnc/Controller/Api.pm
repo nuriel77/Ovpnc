@@ -265,6 +265,10 @@ sub assign_params : Private {
         # ==============
         ssl_bin => $cfg->{openssl_bin},
 
+        # Ovpnc XML OpenVPN conf file
+        # ===========================
+        ovpnc_conf => $ovpnc_conf,
+
         # OpenVPN Management console
         # ==========================
         mgmt_params => {
