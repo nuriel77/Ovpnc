@@ -230,7 +230,7 @@ Self signed
 
 sub _gen_ca : Private{
 
-    my $_ret_val = shift->_roles->init_ca;
+    my $_ret_val = shift->_roles->init_ca( @_ );
 
     if ( defined $_ret_val && ref $_ret_val ){
         return (

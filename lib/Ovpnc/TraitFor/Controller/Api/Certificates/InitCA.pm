@@ -43,13 +43,27 @@ has _keys_dir => (
     isa => 'Str',
 );
 
+=head2 init_ca
+
+This function will create a new Root CA
+(key + cert) with which other certificates
+can be signed with. It would be best to
+place the key elsewhere after creation,
+or else chown it as root and leave it
+on mode 0400 to be secure.
+This function will also remove
+all files existing in the keys
+directory.
+
+=cut
+
 sub init_ca {
-    my ( $self, $cfg ) = @_;
+    my ( $self, $params ) = @_;
 
     # Generate key/cert
     # =================
     my $priv_key = $self->_ca->gen_private_key;
-    my $cert = $self->_ca->gen_ca_certificate( $priv_key );
+    my $cert = $self->_ca->gen_ca_certificate( $priv_key, $params );
 
     # Get the filename of the CA cert
     # ===============================
@@ -71,11 +85,7 @@ sub init_ca {
     my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
     $self->_keys_dir($_keys_dir);
 
-    # Get the group/user
-    # ==================
-    my (undef, undef, undef, $gid) = getpwnam(
-        $self->_cfg->{openvpn_group} );
-    my (undef, undef, $uid) = getpwuid( $< );
+    my ( $uid, $gid ) = $self->_get_user_group_id;
 
     # Generate new serial file and index.txt
     # ======================================
@@ -129,15 +139,101 @@ sub init_ca {
     });
 }
 
+=head2 gen_ca_signed_certificate
+
+Create a new key / csr and then
+have it signed by the root CA.
+User can choose cert_type server
+or client, which is mandatory.
+'server' is always expected to
+be created before any client
+is created. There are some additional
+files being created which are
+necessary for functionality.
+
+=cut
+
 sub gen_ca_signed_certificate {
     my ( $self, $params ) = @_;
 
     delete $params->{cmd};
+
     return { error => 'No parameters supplied at gen_server_certificate' }
         unless $params;
 
-    return { status => 'ok' }
-        if $self->_ca->gen_user_certificate( $params, $self->_cfg );
+    # Generate a new key and csr
+    # ==========================
+    my $_new_csr = $self->_ca->gen_key_and_csr( $params, $self->_cfg );
+
+    if ( $_new_csr ){
+
+        # Set permissions/ownership
+        # =========================
+        my ( $uid, $gid ) = $self->_get_user_group_id;
+        $self->_set_chown_chmod(
+            $self->_cfg->{openvpn_utils} . '/keys/'
+                    . $params->{name} . '.csr',
+            0640,
+            $uid,
+            $gid,
+        );
+        $self->_set_chown_chmod(
+            $self->_cfg->{openvpn_utils} . '/keys/'
+                    . $params->{name} . '.key',
+            0400,
+            $gid,
+            $uid,
+        );
+
+        # Sign the new CSR
+        # ================
+        my $_files = $self->_ca->sign_new_csr( $_new_csr, $params, $self->_cfg );
+
+        # Success? Set permissions
+        # ========================
+        if ( $_files && ref $_files eq 'ARRAY' ){
+            for ( @{$_files} ){
+                $self->_set_chown_chmod(
+                    $_,
+                    0640,
+                    $uid,
+                    $gid
+                );
+            }
+        } else {
+            return { error => 'Did not create new certificate for ' . $params->{name} };
+        }
+        return { status => 'ok' };
+    } else {
+        return { error => 'Did not create new certificate(s) for ' . $params->{name} };
+    }
+
+}
+
+sub _get_user_group_id {
+    my $self = shift;
+
+    # Get the group/user
+    # ==================
+    my (undef, undef, undef, $gid) = getpwnam(
+        $self->_cfg->{openvpn_group} );
+    my (undef, undef, $uid) = getpwuid( $< );
+
+    return ( $uid, $gid );
+}
+
+sub _set_chown_chmod {
+    my ( $self, $file, $mode, $user, $group ) = @_;
+
+    chown $user, $group, $file
+        or warn "Warning!! Cannot chown "
+                . $file . ": " . $!;
+
+    chmod $mode, $file
+        or warn "Warning!! Cannot chmod "
+            . $file . ": " . $!;
+
+    return 1;
 }
 
 sub _write_to_file {
@@ -181,21 +277,12 @@ sub _write_to_file {
 
         # Chown/Chmod
         # ===========
-        my $user = $params->{$item}->{user};
-        my $group = $params->{$item}->{group};
-
-        if ( $params->{$item}->{user} && $params->{$item}->{group} ) {
-            chown $params->{$item}->{user}, $params->{$item}->{group},
-                $params->{$item}->{file}
-                    or warn "Warning!! Cannot chown "
-                        . $params->{$item}->{file} . ": " . $!;
-        }
-
-        if ( $params->{$item}->{mode} ){
-            chmod $params->{$item}->{mode}, $params->{$item}->{file}
-                or warn "Warning!! Cannot chmod "
-                    . $params->{$item}->{file} . ": " . $!;
-        }
+        $self->_set_chown_chmod(
+            $params->{$item}->{file},
+            $params->{$item}->{mode},
+            $params->{$item}->{user},
+            $params->{$item}->{group}
+        );
 
         push (@{$_digests}, {
             file    => $params->{$item}->{file},
@@ -208,14 +295,6 @@ sub _write_to_file {
             ? $_digests
             : undef
     );
-
-}
-
-
-sub _get_ca_file_name {
-
-
-
 
 }
 
