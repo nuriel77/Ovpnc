@@ -118,8 +118,7 @@ sub certificates_POST : Local
     my $_options = {
         build_dh        => sub { return $self->_build_dh( @_ ) },
         init_ca         => sub { return $self->_gen_ca( @_ ) },
-        gen_server      => sub { return $self->_gen_server( @_ ) },
-        gen_client      => sub { return $self->_gen_client( @_ ) },
+        gen_cert        => sub { return $self->_gen_cert( @_ ) },
     };
 
     # Same as source ./vars
@@ -230,9 +229,8 @@ Self signed
 =cut
 
 sub _gen_ca : Private{
-    my $self = shift;
 
-    my $_ret_val = $self->_roles->init_ca;
+    my $_ret_val = shift->_roles->init_ca;
 
     if ( defined $_ret_val && ref $_ret_val ){
         return (
@@ -243,6 +241,22 @@ sub _gen_ca : Private{
     }
 
     return undef;
+}
+
+sub _gen_cert : Private {
+
+    my $_ret_val = shift->_roles->gen_ca_signed_certificate( @_ );
+
+    if ( defined $_ret_val && ref $_ret_val ){
+        return (
+            ref $_ret_val eq 'ARRAY'
+                ? { status => $_ret_val }
+                : $_ret_val
+        );
+    }
+
+    return undef;
+
 }
 
 =head2 _send_err

@@ -2,9 +2,11 @@ package Ovpnc::TraitFor::Controller::Api::Certificates::InitCA;
 use warnings;
 use strict;
 use File::Copy;
+use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
 use Ovpnc::Plugins::ChainCA;
 use Moose::Role;
+use vars qw/$ca/;
 
 =head1 NAME
 
@@ -25,11 +27,29 @@ generate new certificate
 
 =cut
 
+has serial => (
+    is => 'rw',
+    isa => 'Str',
+);
+
+has _ca => (
+    is => 'rw',
+    isa => 'Object',
+    default => sub { return Ovpnc::Plugins::ChainCA->new; }
+);
+
+has _keys_dir => (
+    is => 'rw',
+    isa => 'Str',
+);
+
 sub init_ca {
-    my $self = shift;
-    my $ca = Ovpnc::Plugins::ChainCA->new;
-    my $priv_key = $ca->gen_private_key;
-    my $cert = $ca->gen_certificate( $priv_key );
+    my ( $self, $cfg ) = @_;
+
+    # Generate key/cert
+    # =================
+    my $priv_key = $self->_ca->gen_private_key;
+    my $cert = $self->_ca->gen_ca_certificate( $priv_key );
 
     # Get the filename of the CA cert
     # ===============================
@@ -49,33 +69,42 @@ sub init_ca {
     # to the extracted path from the cert
     # ===================================
     my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
+    $self->_keys_dir($_keys_dir);
 
     # Get the group/user
     # ==================
-    my (undef, undef, undef, $gid) = getpwnam( $self->_cfg->{openvpn_group} );
+    my (undef, undef, undef, $gid) = getpwnam(
+        $self->_cfg->{openvpn_group} );
     my (undef, undef, $uid) = getpwuid( $< );
 
     # Generate new serial file and index.txt
     # ======================================
+    if ( my @_to_remove = glob($_keys_dir . '/*') ){
+        unlink ( @_to_remove )
+            or die "Cannot clean " . $_keys_dir . '/* :' . $!;
+    }
+
+    # Write data to file(s)
+    # =====================
     unless ( $self->_write_to_file({
-        serial => {
-            data => "01\n",
-            file => $_keys_dir . '/serial',
+        indexer => {
+            data => '',
+            file => $self->_keys_dir . '/index.txt',
             mode => 0660,
-            backup => 1,
+            backup => 0,
             group => $gid,
             user => $uid,
         },
-        indexer => {
-            data => '',
-            file => $_keys_dir . '/index.txt',
+        attr => {
+            data => "unique_subject = yes\n",
+            file => $self->_keys_dir . '/index.txt.attr',
             mode => 0660,
-            backup => 1,
+            backup => 0,
             group => $gid,
             user => $uid,
         }
     })){
-        return { error => 'Could not create new serial and index.txt!' };
+        return { error => 'Could not create new serial and/or index.txt!' };
     }
 
     # Write the key/cert to file
@@ -98,6 +127,17 @@ sub init_ca {
             user => $uid,
         }
     });
+}
+
+sub gen_ca_signed_certificate {
+    my ( $self, $params ) = @_;
+
+    delete $params->{cmd};
+    return { error => 'No parameters supplied at gen_server_certificate' }
+        unless $params;
+
+    return { status => 'ok' }
+        if $self->_ca->gen_user_certificate( $params, $self->_cfg );
 }
 
 sub _write_to_file {

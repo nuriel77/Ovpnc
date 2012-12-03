@@ -1,6 +1,6 @@
 package Ovpnc::Model::DB;
-use File::Slurp;
 use strict;
+use File::Slurp;
 use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
@@ -10,8 +10,8 @@ __PACKAGE__->config(
         dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
         user        => 'ovpnc',
         password    => ( $ENV{MYSQL_PASSFILE}
-            ? read_file($ENV{MYSQL_PASSFILE}, chomp => 1)
-            : read_file('config/.mysql', chomp => 1)
+            ? read_file( $ENV{MYSQL_PASSFILE}, chomp => 1 )
+            : read_file( 'config/.mysql', chomp => 1 )
         ),
         AutoCommit  => q{1},
     }
