@@ -85,7 +85,7 @@ sub init_ca {
     my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
     $self->_keys_dir($_keys_dir);
 
-    my ( $uid, $gid ) = $self->_get_user_group_id;
+    my ( $uid, $gid ) = $self->get_user_group_id;
 
     # Generate new serial file and index.txt
     # ======================================
@@ -97,6 +97,14 @@ sub init_ca {
     # Write data to file(s)
     # =====================
     unless ( $self->_write_to_file({
+        serial => {
+            data => "01\n",
+            file => $self->_keys_dir . '/serial',
+            mode => 0660,
+            backup => 0,
+            group => $gid,
+            user => $uid,
+        },
         indexer => {
             data => '',
             file => $self->_keys_dir . '/index.txt',
@@ -105,14 +113,6 @@ sub init_ca {
             group => $gid,
             user => $uid,
         },
-        attr => {
-            data => "unique_subject = yes\n",
-            file => $self->_keys_dir . '/index.txt.attr',
-            mode => 0660,
-            backup => 0,
-            group => $gid,
-            user => $uid,
-        }
     })){
         return { error => 'Could not create new serial and/or index.txt!' };
     }
@@ -156,8 +156,6 @@ necessary for functionality.
 sub gen_ca_signed_certificate {
     my ( $self, $params ) = @_;
 
-    delete $params->{cmd};
-
     return { error => 'No parameters supplied at gen_server_certificate' }
         unless $params;
 
@@ -166,51 +164,20 @@ sub gen_ca_signed_certificate {
     my $_new_csr = $self->_ca->gen_key_and_csr( $params, $self->_cfg );
 
     if ( $_new_csr ){
-
-        # Set permissions/ownership
-        # =========================
-        my ( $uid, $gid ) = $self->_get_user_group_id;
-        $self->_set_chown_chmod(
-            $self->_cfg->{openvpn_utils} . '/keys/'
-                    . $params->{name} . '.csr',
-            0640,
-            $uid,
-            $gid,
-        );
-        $self->_set_chown_chmod(
-            $self->_cfg->{openvpn_utils} . '/keys/'
-                    . $params->{name} . '.key',
-            0400,
-            $gid,
-            $uid,
-        );
+        return $_new_csr if ( ref $_new_csr eq 'HASH' && $_new_csr->{error} );
 
         # Sign the new CSR
         # ================
-        my $_files = $self->_ca->sign_new_csr( $_new_csr, $params, $self->_cfg );
+        my $_files = $self->_ca->sign_new_csr( $params, $self->_cfg );
 
-        # Success? Set permissions
-        # ========================
-        if ( $_files && ref $_files eq 'ARRAY' ){
-            for ( @{$_files} ){
-                $self->_set_chown_chmod(
-                    $_,
-                    0640,
-                    $uid,
-                    $gid
-                );
-            }
-        } else {
-            return { error => 'Did not create new certificate for ' . $params->{name} };
-        }
-        return { status => 'ok' };
+        return { status => 'ok' } if $_files;
     } else {
         return { error => 'Did not create new certificate(s) for ' . $params->{name} };
     }
 
 }
 
-sub _get_user_group_id {
+sub get_user_group_id {
     my $self = shift;
 
     # Get the group/user
@@ -222,16 +189,23 @@ sub _get_user_group_id {
     return ( $uid, $gid );
 }
 
-sub _set_chown_chmod {
+sub set_chown_chmod {
     my ( $self, $file, $mode, $user, $group ) = @_;
 
-    chown $user, $group, $file
-        or warn "Warning!! Cannot chown "
-                . $file . ": " . $!;
+    die "No filename supplied"
+        unless $file;
 
-    chmod $mode, $file
-        or warn "Warning!! Cannot chmod "
-            . $file . ": " . $!;
+    if ( $user && $group ) {
+        chown $user, $group, $file
+            or warn "Warning!! Cannot chown "
+                    . $file . ": " . $!;
+    }
+
+    if ( $mode ) {
+        chmod $mode, $file
+            or warn "Warning!! Cannot chmod "
+                . $file . ": " . $!;
+    }
 
     return 1;
 }
@@ -277,7 +251,7 @@ sub _write_to_file {
 
         # Chown/Chmod
         # ===========
-        $self->_set_chown_chmod(
+        $self->set_chown_chmod(
             $params->{$item}->{file},
             $params->{$item}->{mode},
             $params->{$item}->{user},

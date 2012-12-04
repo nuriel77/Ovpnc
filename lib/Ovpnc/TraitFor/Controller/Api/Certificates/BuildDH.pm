@@ -5,7 +5,7 @@ use IPC::Cmd qw( can_run run );
 use Digest::MD5::File 'file_md5_hex';
 use Moose::Role;
 
-use constant TIMEOUT    => 60;
+use constant TIMEOUT    => 120;
 
 
 =head1 NAME
@@ -136,7 +136,6 @@ sub build_dh
             status => {
                 filename => $_dh_file,
                 digest   => $_new_digest,
-                output   => $_out,
             }
         }
     }

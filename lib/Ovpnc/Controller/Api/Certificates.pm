@@ -104,7 +104,7 @@ sub certificates_POST : Local
     # =========
     $self->_roles(
         $self->new_with_traits(
-            traits         => [ qw( Vars BuildDH InitCA ) ],
+            traits         => [ qw( Vars BuildDH BuildTA InitCA ) ],
             openvpn_dir    => $c->config->{openvpn_dir},
             openssl_bin    => $c->config->{openssl_bin},
             openssl_conf   => $c->config->{openssl_conf},
@@ -117,6 +117,7 @@ sub certificates_POST : Local
     # ================
     my $_options = {
         build_dh        => sub { return $self->_build_dh( @_ ) },
+        build_ta        => sub { return $self->_build_ta( @_ ) },
         init_ca         => sub { return $self->_gen_ca( @_ ) },
         gen_cert        => sub { return $self->_gen_cert( @_ ) },
     };
@@ -154,7 +155,7 @@ sub certificates_POST : Local
         }
         # All ok? return what is supposed to
         # be the newely generated filename(s)
-        elsif ( $_ret_val->{status} ) {
+        elsif ( ref $_ret_val eq 'HASH' ){
             $self->status_ok($c, entity => $_ret_val );
             $c->detach;
         }
@@ -218,7 +219,42 @@ Generate DH secret
 =cut
 
 sub _build_dh : Private {
-    return shift->_roles->build_dh;
+    my $self = shift;
+    if ( my $_ret_val = $self->_roles->build_dh ){
+        if ( ref $_ret_val eq 'HASH' ){
+            return $_ret_val->{status} ? $_ret_val->{status} : $_ret_val;
+        }
+        else {
+            return { error => $_ret_val };
+        }
+    }
+}
+
+
+=head2 _build_ta
+
+Generate ta.key secret
+
+=cut
+
+sub _build_ta : Private {
+    my $self = shift;
+
+    if ( my $_ret_val = $self->_roles->build_ta ) {
+        if ( ref $_ret_val eq 'HASH' ){
+            warn "Did not chown 0400 new ta.key!"
+                unless $self->_roles->set_chown_chmod(
+                    $self->cfg->{openvpn_utils} . '/keys/ta.key',
+                    0400
+                );
+            return $_ret_val->{status} ? $_ret_val->{status} : $_ret_val;
+        }
+        else {
+            return { error => $_ret_val };
+        }
+    }
+
+    return { error =>  "Build ta.key failed!" };
 }
 
 =head2 _gen_ca
@@ -229,10 +265,23 @@ Self signed
 =cut
 
 sub _gen_ca : Private{
+    my $self = shift;
 
-    my $_ret_val = shift->_roles->init_ca( @_ );
+    # Create a new CA + key
+    # Setup the keys dir
+    # =====================
+    my $_ret_val = $self->_roles->init_ca( @_ );
 
     if ( defined $_ret_val && ref $_ret_val ){
+
+        # Build DH params
+        # ===============
+        push @{$_ret_val} , $self->_build_dh();
+
+        # Build ta.key
+        # ============
+        push @{$_ret_val} , $self->_build_ta();
+
         return (
             ref $_ret_val eq 'ARRAY'
                 ? { status => $_ret_val }

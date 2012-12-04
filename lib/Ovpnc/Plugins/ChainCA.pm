@@ -4,25 +4,30 @@ use warnings;
 use utf8;
 use MIME::Base64;
 use POSIX;
+use IPC::Cmd qw( can_run run );
 use Crypt::OpenSSL::CA;
 use Crypt::OpenSSL::Bignum;
 use Crypt::OpenSSL::Random;
 use Crypt::OpenSSL::RSA;
-use Crypt::OpenSSL::PKCS10 qw( :const );
 use Crypt::Rijndael;
 use Data::Entropy qw(with_entropy_source entropy_source);
 use Data::Entropy::Algorithms qw( rand_bits rand_int );
 use Data::Entropy::RawSource::CryptCounter;
 use Data::Entropy::RawSource::Local;
 use Data::Entropy::Source;
+use File::Copy;
 use File::Slurp;
 use Moose;
-use vars qw/$time_format/;
+use Readonly;
+use Expect;
 use namespace::autoclean;
 
-use constant ONE_YEAR   => 31536000;
-use constant ONE_MONTH  => ONE_YEAR / 12; #2628000
-$time_format = "%Y%m%d%H%M%SZ";
+Readonly::Scalar    my $ONE_YEAR    => 31536000;
+Readonly::Scalar    my $ONE_MONTH   => $ONE_YEAR / 12;
+Readonly::Scalar    my $ONE_DAY     => 86400;
+Readonly::Scalar    my $TIMEOUT     => 60;
+Readonly::Scalar    my $time_format => "%Y%m%d%H%M%SZ";
+
 
 has _ca_privkey_as_text => (
     is  => 'ro',
@@ -129,12 +134,10 @@ sub gen_ca_certificate {
     # ==================
     my $_time_now = strftime( $time_format, gmtime(time()) );
     my $_time_yr = strftime( $time_format, gmtime(time() + (
-        ONE_YEAR * ( $params->{expires} ? $params->{expires} : 1 ) )
+        $ONE_DAY * ( $params->{ca_expire} || $ENV{CA_EXPIRE} || 365 ) )
     ));
     $ca_cert->set_notBefore( $_time_now );
     $ca_cert->set_notAfter( $_time_yr );
-#    $ca_cert->set_notBefore("20080204101500Z");
-#    $ca_cert->set_notAfter("22080204101500Z");
 
     my $ca_dn = Crypt::OpenSSL::CA::X509_NAME->new(
         C               => $params->{C}             || 'NL',
@@ -177,7 +180,6 @@ sub gen_ca_certificate {
 
 sub gen_key_and_csr {
     my ( $self, $params, $cfg ) = @_;
-
     # Check that we don't already
     # have some client with this name
     # ================================
@@ -200,52 +202,124 @@ sub gen_key_and_csr {
         }
     }
 
-    # Generate a new key
-    # ==================
-    my $rsa = Crypt::OpenSSL::RSA->generate_key(
-        $params->{key_size} // $ENV{KEY_SIZE} // 1024
-    );
+    # The Crypt::OpenSSL::PKCS10 does not install
+    # nicely on some systems I have tested. To
+    # make sure things will work, will use the
+    # pkitool over here.
+    # ===========================================
 
-    # Generate a new request
-    # ======================
-    my $req = Crypt::OpenSSL::PKCS10->new_from_rsa( $rsa );
+    # In openssl by default these are commented.
+    # To make sure this works, will add it to the
+    # end of the file, we will create a temp.
+    # ==========================================
+    my $_openssl_conf = $cfg->{ssl_config} . '.working';
+    copy ( $cfg->{ssl_config}, $_openssl_conf )
+        or die "Cannot create a working copy of "
+                . $_openssl_conf . ": " . $!;
 
-    my ( undef, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
+    $ENV{KEY_CONFIG} = $_openssl_conf;
+    my $_cmd = <<_OO_;
+sed -i 's/^#\\(organizationalUnitName_default = \$ENV::KEY_OU\\)/\\1/' $_openssl_conf ;
+sed -i 's/^#\\(commonName_default = \$ENV::KEY_CN\\)/\\1/' $_openssl_conf ;
+sed -i 's/^#\\(name_default = \$ENV::KEY_NAME\\)/\\1/' $_openssl_conf ;
+_OO_
+
+    my $_ret_val = `$_cmd`;
+    return { error => 'Could not update temporary working ' . $_openssl_conf }
+        if ( $? >> 8 != 0 );
+
+    # Incase cert_type is server
+    # ==========================
+    if ( $params->{cert_type} eq 'server'){
+
+        my @_cmd = (
+            $cfg->{openvpn_utils} . '/pkitool',
+            '--server',
+            $params->{name}
+        );
+
+        unless ( can_run( $cfg->{ssl_bin} ) ){
+            unlink $_openssl_conf;
+            return { error => 'Cannot run openssl! ' . $! };
+        }
+
+        # Run command
+        # ===========
+        my ( $success, $error_code, $full_buf ) =
+            run( command => [ @_cmd ], verbose => 0, timeout => $TIMEOUT );
+
+        # Remove temporary
+        # openssl.conf
+        # ================
+        unlink $_openssl_conf;
+
+        unless ( $success ){
+            return { error => 'Failed to create csr and key: '
+                . join( "\n", @{$full_buf} ) . ", " . $error_code }
+        }
+
+    }
+    else {
+        my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
+        my $_args = [
+            ( $params->{password} ? '--pass' : '' ),
+            $params->{name}
+        ];
+        # If user requested password
+        # we use Expect to enter it
+        # ==========================
+        if ( $params->{password} ) {
+            my $exp = Expect->spawn( $_cmd, @{$_args} )
+                or die "Cannot spawn command: " . $!;
+            $Expect::Debug = 0;
+            $Expect::Log_Stdout = 0;
+            $exp->expect(2, "Enter PEM pass phrase:");
+            $exp->send( $params->{password} . "\n" );
+            $exp->expect(2, "","Verifying - Enter PEM pass phrase:");
+            $exp->send( $params->{password} . "\n" );
+            $exp->soft_close();
+        }
+        # No password? Run without pass arg
+        # =================================
+        else {
+            my ( $success, $error_code, $full_buf ) =
+                run(
+                    command => [ $_cmd, @{$_args} ],
+                    verbose => 0,
+                    timeout => $TIMEOUT
+                );
+
+            # Remove temporary
+            # openssl.conf
+            # ================
+            unlink $_openssl_conf;
+
+            unless ( $success ){
+                return { error => 'Failed to create csr and key: '
+                    . join( "\n", @{$full_buf} ) . ", " . $error_code }
+            }
+        }
+    }
+
+    return { status => 'Ok' };
+#    my ( undef, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
 
     # Save DN / KeyID
     # ===============
-    my $_ca_dn = $ca_cert->get_subject_DN();
-    my $_ca_keyid = $ca_cert->get_subject_keyid;
-    my $_ca_serial = $ca_cert->get_serial();
-    $req->set_subject( $_ca_dn->to_string() );
-    $req->add_ext_final();
-    $req->sign();
+#    my $_ca_dn = $ca_cert->get_subject_DN();
+#    my $_ca_keyid = $ca_cert->get_subject_keyid;
+#    my $_ca_serial = $ca_cert->get_serial();
 
-    # Write to file
-    # =============
-    $req->write_pem_req(
-        $cfg->{openvpn_utils} . '/keys/'
-            . $params->{name} . '.csr' );
-    $req->write_pem_pk(
-        $cfg->{openvpn_utils} . '/keys/'
-            . $params->{name} . '.key' );
-
-    return [ $_ca_dn, $_ca_keyid, $_ca_serial ];
+#    return [ $_ca_dn, $_ca_keyid, $_ca_serial ];
 }
 
 sub sign_new_csr {
-    my ( $self, $req, $params, $cfg ) = @_;
+
+    my ( $self, $params, $cfg ) = @_;
 
     my ( $ca_privkey, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
 
-    # Extract public key
-    # ==================
-#    my $ca_pubkey = $ca_privkey->get_public_key;
-
-    # x509 object
-    # ===========
-#    my $ca_cert = Crypt::OpenSSL::CA::X509->new( $ca_pubkey );
-
+=comment
     my $_req = read_file(
         $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.csr',
         chomp => 1
@@ -253,13 +327,11 @@ sub sign_new_csr {
         . $cfg->{openvpn_utils} . '/keys/'
         . $params->{name} . '.csr' . ": " . $!;
 
-
     # Extract public key from
     # the newely created csr
     # =======================
     my $user_pubkey = Crypt::OpenSSL::CA::PublicKey->
         validate_PKCS10( $_req );
-#        validate_PKCS10(  $req->get_pem_req() );
 
     my $user_dn = Crypt::OpenSSL::CA::X509_NAME->new_utf8(
         C => $params->{C}                           || 'NL',
@@ -277,6 +349,8 @@ sub sign_new_csr {
     my $subject_keyid = $user_pubkey->get_openssl_keyid;
     $user_cert->set_issuer_DN( $req->[0] );
     $user_cert->set_subject_DN( $user_dn );
+=cut
+
 
     my $_current_serial;
     if ( -e $cfg->{openvpn_utils} . '/keys/serial'
@@ -286,24 +360,33 @@ sub sign_new_csr {
             $cfg->{openvpn_utils} . '/keys/serial', chomp => 1
         ) or die "Cannot read serial file: "
                  . $cfg->{openvpn_utils} . '/keys/serial';
-    } else {
-        open ( my $SF, '>', $cfg->{openvpn_utils} . '/keys/serial' )
-            or die "Cannot create new serial file: " . $!;
-        print $SF "01\n";
-        close $SF;
+    }
+    else {
+    #    open ( my $SF, '>', $cfg->{openvpn_utils} . '/keys/serial' )
+    #        or die "Cannot create new serial file: " . $!;
+    #    print $SF "01\n";
+    #    close $SF;
+        $_current_serial = "01";
     }
 
-    my $_serial = $_current_serial
+
+    # Server certificate always defaults
+    # serial to 0x01, since all directory
+    # has been already wiped out in the
+    # step of generating the CA
+    # ===================================
+    my $_serial = $params->{cert_type} ne 'server'
         ? sprintf('%02X', hex( $_current_serial ) + 1 )
         : '01';
 
+=disabled
     $user_cert->set_serial( '0x' . $_serial );
 
     # Set validaty range
     # ==================
     my $_time_now = strftime($time_format, gmtime(time()));
     my $_time_yr = strftime($time_format, gmtime(time() +
-        ONE_YEAR * ( $params->{expires} ? $params->{expires} : 1 ) )
+        $ONE_DAY * ( $params->{key_expire} || $ENV{KEY_EXPIRE} || 365 ) )
     );
     $user_cert->set_notBefore( $_time_now );
     $user_cert->set_notAfter( $_time_yr );
@@ -325,14 +408,15 @@ sub sign_new_csr {
     $user_cert->set_extension
       (subjectAltName => 'email:nuri@de-bar.com,email:ovpnc@x-vps.com');
 
-    my $user_cert_as_text = $user_cert->sign($ca_privkey, 'sha256');
+    #my $user_cert_as_text = $user_cert->sign($ca_privkey, 'sha256');
 
-    my $new_user_cert = Crypt::OpenSSL::CA::X509->parse( $user_cert_as_text );
+    #my $new_user_cert = Crypt::OpenSSL::CA::X509->parse( $user_cert_as_text );
+=cut
 
     my @_files = (
         $cfg->{openvpn_utils} . '/keys/crl.pem',
         $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.crt',
-        $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.pem',
+        $cfg->{openvpn_utils} . '/keys/' . $_serial . '.pem',
     );
 
     # Prepare CRL file
@@ -345,8 +429,8 @@ sub sign_new_csr {
 
         # Set validaty range
         # ==================
-        $_time_now = strftime($time_format, gmtime(time()) );
-        my $_time_month = strftime($time_format, gmtime(time() + ONE_MONTH ));
+        my $_time_now = strftime($time_format, gmtime(time()) );
+        my $_time_month = strftime($time_format, gmtime(time() + $ONE_MONTH ));
         $_crl->set_lastUpdate( $_time_now );
         $_crl->set_nextUpdate( $_time_month );
         my $_crl_data = $_crl->sign( $ca_privkey, 'sha256' );
@@ -358,34 +442,33 @@ sub sign_new_csr {
 
     # Write to file
     # =============
-    open (my $FH, '>', $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.crt')
-        or die "Cannot open certificate file '" . $params->{name} . ".crt' for writing: " . $!;
-    print {$FH} $user_cert_as_text;
-    close $FH;
+    #open (my $FH, '>', $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.crt')
+    #    or die "Cannot open certificate file '" . $params->{name} . ".crt' for writing: " . $!;
+    #print {$FH} $user_cert_as_text;
+    #close $FH;
 
-    open ($FH, '>', $cfg->{openvpn_utils} . '/keys/' . $_serial . '.pem')
-        or die "Cannot open certificate file '" . $_serial . ".pem' for writing: " . $!;
-    print {$FH} $new_user_cert->dump();
-    close $FH;
+    #open ($FH, '>', $cfg->{openvpn_utils} . '/keys/' . $_serial . '.pem')
+    #    or die "Cannot open certificate file '" . $_serial . ".pem' for writing: " . $!;
+    #print {$FH} $new_user_cert->dump();
+    #close $FH;
 
     # All ok, update serial
     # =====================
-    open ( $FH, '>', $cfg->{openvpn_utils} . '/keys/serial' )
-        or die "Cannot update serial file: " . $!;
-    print $FH $_serial . "\n";
-    close $FH;
+#    open ( $FH, '>', $cfg->{openvpn_utils} . '/keys/serial' )
+#        or die "Cannot update serial file: " . $!;
+#    print $FH $_serial . "\n";
+#    close $FH;
 
     # Update index.txt
     # ================
-    open ( $FH, '>>', $cfg->{openvpn_utils} . '/keys/index.txt' )
-        or die "Cannot update index.txt file: " . $!;
-    my $_tmp_time_format = "%y%m%d%H%M%SZ";
-    $_time_now = strftime( $_tmp_time_format, gmtime(time() + ( 10 * ONE_YEAR ) ) );
-    my $_index_str = "V\t" . $_time_now . "\t\t" . $_serial . "\tunknown\t"
-                    . $new_user_cert->get_subject_DN()->to_string();
-
-    print $FH $_index_str . "\n";
-    close $FH;
+#    open ( $FH, '>>', $cfg->{openvpn_utils} . '/keys/index.txt' )
+#        or die "Cannot update index.txt file: " . $!;
+#    my $_tmp_time_format = "%y%m%d%H%M%SZ";
+#    $_time_now = strftime( $_tmp_time_format, gmtime(time() + ( 10 * $ONE_YEAR ) ) );
+#    my $_index_str = "V\t" . $_time_now . "\t\t" . $_serial . "\tunknown\t"
+#                    . $new_user_cert->get_subject_DN()->to_string();
+#    print $FH $_index_str . "\n";
+#    close $FH;
 
     return \@_files;
 }

@@ -37,6 +37,8 @@ sub set_environment_vars
     # variables (eq to source ./vars)
     # ===============================
     my %_oe = (
+        KEY_CN             => $self->_req->{CN}             || 'server',
+        KEY_NAME           => $self->_req->{name}           || 'Ovpnc',
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},
         PKCS11TOOL         => $_tools_dir . '/pkcs11-tool',
@@ -45,12 +47,12 @@ sub set_environment_vars
         KEY_DIR            => $_tools_dir . '/keys',
         PKCS11_MODULE_PATH => 'dummy',
         PKCS11_PIN         => 'dummy',
-        KEY_SIZE           => $self->_req->{key_size}       || 2048,
-        CA_EXPIRE          => $self->_req->{ca_expire}      || 3650,
-        KEY_EXPIRE         => $self->_req->{key_expire}     || 3650,
+        KEY_SIZE           => $self->_req->{key_size}       // 2048,
+        CA_EXPIRE          => $self->_req->{ca_expire}      // 3650,
+        KEY_EXPIRE         => $self->_req->{key_expire}     // 3650,
         KEY_COUNTRY        => $self->_req->{key_country}    || 'NL',
-        KEY_PROVINCE       => $self->_req->{key_province}   || 'NH',
-        KEY_CITY           => $self->_req->{key_city}       || 'Amsterdam',
+        KEY_PROVINCE       => $self->_req->{key_state}      || 'NH',
+        KEY_CITY           => $self->_req->{key_location}   || 'Amsterdam',
         KEY_ORG            => $self->_req->{key_org}        || 'DeBar',
         KEY_EMAIL          => $self->_req->{key_email}      || 'nuri@de-bar.com',
     );

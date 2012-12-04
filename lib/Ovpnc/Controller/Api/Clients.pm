@@ -149,7 +149,7 @@ around [
     unless ( $self->vpn->connect ) {
         $c->stash( { status => 'Server offline' } );
         $self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
+        #$c->detach;
     }
 
     return $self->$orig( $c, $params );
@@ -538,12 +538,14 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
     # Kill the connection (just incase
     # client is currently connected).
     # ================================
-    if ( my $str = $self->kill_connection($client) ) {
-        $_ret_val .= ';' . $str;
-    }
-    else {
-        $_ret_val .= ';Kill connection status: Client '
-                    . $client . ' not found online';
+    if ( $self->_has_vpn ) {
+        if ( my $str = $self->kill_connection($client) ) {
+            $_ret_val .= ';' . $str;
+        }
+        else {
+            $_ret_val .= ';Kill connection status: Client '
+                        . $client . ' not found online';
+        }
     }
 
     $self->status_ok( $c, entity => $_ret_val );
@@ -703,6 +705,7 @@ sub _read_crl_index_file : Private {
       or die "Cannot read $crl_index: $!";
 
     while ( my $line = <FH> ) {
+        # 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*'
         my ( $revoke_time, $name ) = $line =~ /$REGEX->{client}->{crl}/g;
         if ( $revoke_time and $name ) {
             ( $Y, $M, $D, $h, $m, $s ) = $revoke_time =~ /(..)/g;

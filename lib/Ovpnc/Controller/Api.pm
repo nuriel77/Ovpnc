@@ -226,6 +226,13 @@ sub assign_params : Private {
             : $cfg->{openvpn_dir} . '/' . $cfg->{openvpn_ccd}
         ),
 
+        # OpenVPN config dir
+        # ==================
+        openvpn_conf_dir => ( $cfg->{openvpn_conf_dir} =~ /^\//
+            ? $cfg->{openvpn_conf_dir}
+            : $cfg->{openvpn_dir} . '/conf'
+        ),
+
         # OpenVPN Binary
         # ==============
         openvpn_bin => $cfg->{openvpn_bin} // '/usr/sbin/openvpn',
@@ -268,6 +275,10 @@ sub assign_params : Private {
         # Ovpnc XML OpenVPN conf file
         # ===========================
         ovpnc_conf => $ovpnc_conf,
+
+        # OpenVPN Management password
+        # ===========================
+        mgmt_passwd_file => $cfg->{mgmt_passwd_file},
 
         # OpenVPN Management console
         # ==========================

@@ -33,6 +33,7 @@ has [
       openvpn_config
       openvpn_tmpdir
       openvpn_pid
+      mgmt_passwd_file
       /
   ] => (
     is       => 'ro',
@@ -53,13 +54,11 @@ sub start {
     }
     else {
 
-        # TODO: Pass args from assign_params
-        # Build command
         my @cmd = (
             '/usr/bin/sudo', $self->openvpn_bin,
             '--writepid',    $self->openvpn_pid,
             '--management', '127.0.0.1', '7505',
-            '/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/.management',
+            $self->mgmt_passwd_file,
             '--management-log-cache', 2000,
             '--tls-server',
             '--daemon', 'ovpn-server',
