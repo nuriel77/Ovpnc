@@ -34,7 +34,11 @@ sub build_ta
 
     # The DH file to process
     # ======================
-    my $_ta_key = $_tools_dir . '/keys/ta.key';
+    my $_ta_key = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $self->_cfg->{ovpnc_conf}, 'TlsKey' );
+
+    $_ta_key = $_tools_dir . '/keys/' . $_ta_key
+        unless $_ta_key =~ /^\//;
 
     # Confirm writable if exists
     # ===========================

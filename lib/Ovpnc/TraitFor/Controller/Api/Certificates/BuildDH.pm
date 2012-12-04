@@ -45,7 +45,11 @@ sub build_dh
 
     # The DH file to process
     # ======================
-    my $_dh_file = $_tools_dir . '/keys/dh' . $key_size . '.pem';
+    my $_dh_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $self->_cfg->{ovpnc_conf}, 'Dh' );
+
+    $_dh_file = $_tools_dir . '/keys/' . $_dh_file
+        unless $_dh_file =~ /^\//;
 
     # Confirm writable if exists
     # ===========================

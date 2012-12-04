@@ -57,7 +57,7 @@
         <Directive status="1">
           <Name>dh</Name>
           <Params>
-            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/dh1024.pem</Dh>
+            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/dh.pem</Dh>
           </Params>
         </Directive>
         <Directive status="1">

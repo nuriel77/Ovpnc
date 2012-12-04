@@ -1,5 +1,6 @@
 package Ovpnc;
 use Moose;
+use Cwd;
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
 use v5.10.1;
@@ -81,7 +82,7 @@ __PACKAGE__->config(
 	'Plugin::Cache' => {
     	backend => {
         	class      => "Cache::File",
-        	cache_root => 'tmp/cache',
+        	cache_root => getcwd . '/tmp/cache',
             store      => "Minimal",
         }
 	}

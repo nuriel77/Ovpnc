@@ -104,7 +104,7 @@ sub certificates_POST : Local
     # =========
     $self->_roles(
         $self->new_with_traits(
-            traits         => [ qw( Vars BuildDH BuildTA InitCA ) ],
+            traits         => [ qw( Vars BuildDH BuildTA Generate ) ],
             openvpn_dir    => $c->config->{openvpn_dir},
             openssl_bin    => $c->config->{openssl_bin},
             openssl_conf   => $c->config->{openssl_conf},
@@ -242,9 +242,9 @@ sub _build_ta : Private {
 
     if ( my $_ret_val = $self->_roles->build_ta ) {
         if ( ref $_ret_val eq 'HASH' ){
-            warn "Did not chown 0400 new ta.key!"
+            warn "Did not chown 0400 new tls file!"
                 unless $self->_roles->set_chown_chmod(
-                    $self->cfg->{openvpn_utils} . '/keys/ta.key',
+                    $_ret_val->{status}->{filename} ? $_ret_val->{status}->{filename} : undef,
                     0400
                 );
             return $_ret_val->{status} ? $_ret_val->{status} : $_ret_val;

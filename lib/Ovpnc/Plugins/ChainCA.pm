@@ -178,7 +178,7 @@ sub gen_ca_certificate {
 
 =cut
 
-sub gen_key_and_csr {
+sub gen_certificate {
     my ( $self, $params, $cfg ) = @_;
     # Check that we don't already
     # have some client with this name
@@ -302,122 +302,13 @@ _OO_
     }
 
     return { status => 'Ok' };
-#    my ( undef, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
-
-    # Save DN / KeyID
-    # ===============
-#    my $_ca_dn = $ca_cert->get_subject_DN();
-#    my $_ca_keyid = $ca_cert->get_subject_keyid;
-#    my $_ca_serial = $ca_cert->get_serial();
-
-#    return [ $_ca_dn, $_ca_keyid, $_ca_serial ];
 }
 
-sub sign_new_csr {
+sub gen_crl {
 
     my ( $self, $params, $cfg ) = @_;
 
     my ( $ca_privkey, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
-
-=comment
-    my $_req = read_file(
-        $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.csr',
-        chomp => 1
-    ) or die "Cannot read CSR file: "
-        . $cfg->{openvpn_utils} . '/keys/'
-        . $params->{name} . '.csr' . ": " . $!;
-
-    # Extract public key from
-    # the newely created csr
-    # =======================
-    my $user_pubkey = Crypt::OpenSSL::CA::PublicKey->
-        validate_PKCS10( $_req );
-
-    my $user_dn = Crypt::OpenSSL::CA::X509_NAME->new_utf8(
-        C => $params->{C}                           || 'NL',
-        ST => $params->{ST}                         || 'NH',
-        L => $params->{L}                           || 'Amsterdam',
-        O => $params->{O}                           || 'Ovpnc',
-        OU => $params->{OU}                         || 'Development',
-        CN => $params->{CN}                         || 'ovpncadmin',
-        name => $params->{name}                     || 'Ovpnc VPN Server',
-        emailAddress => $params->{emailAddress}     || 'nuri@de-bar.com',
-    );
-    #/C=NL/ST=NH/L=Amsterdam/O=XVPS/OU=XVPS_SERVER/CN=server/name=XVPS_SERVER/emailAddress=nuri@de-bar.com
-
-    my $user_cert = Crypt::OpenSSL::CA::X509->new( $user_pubkey );
-    my $subject_keyid = $user_pubkey->get_openssl_keyid;
-    $user_cert->set_issuer_DN( $req->[0] );
-    $user_cert->set_subject_DN( $user_dn );
-=cut
-
-
-    my $_current_serial;
-    if ( -e $cfg->{openvpn_utils} . '/keys/serial'
-        && -f $cfg->{openvpn_utils} . '/keys/serial'
-    ) {
-        $_current_serial = read_file(
-            $cfg->{openvpn_utils} . '/keys/serial', chomp => 1
-        ) or die "Cannot read serial file: "
-                 . $cfg->{openvpn_utils} . '/keys/serial';
-    }
-    else {
-    #    open ( my $SF, '>', $cfg->{openvpn_utils} . '/keys/serial' )
-    #        or die "Cannot create new serial file: " . $!;
-    #    print $SF "01\n";
-    #    close $SF;
-        $_current_serial = "01";
-    }
-
-
-    # Server certificate always defaults
-    # serial to 0x01, since all directory
-    # has been already wiped out in the
-    # step of generating the CA
-    # ===================================
-    my $_serial = $params->{cert_type} ne 'server'
-        ? sprintf('%02X', hex( $_current_serial ) + 1 )
-        : '01';
-
-=disabled
-    $user_cert->set_serial( '0x' . $_serial );
-
-    # Set validaty range
-    # ==================
-    my $_time_now = strftime($time_format, gmtime(time()));
-    my $_time_yr = strftime($time_format, gmtime(time() +
-        $ONE_DAY * ( $params->{key_expire} || $ENV{KEY_EXPIRE} || 365 ) )
-    );
-    $user_cert->set_notBefore( $_time_now );
-    $user_cert->set_notAfter( $_time_yr );
-
-    $user_cert->set_extension( "basicConstraints", "CA:FALSE");
-    $user_cert->set_extension( "nsCertType", $params->{cert_type});
-    $user_cert->set_extension( "nsComment", "Ovpnc - Crypt::OpenSSL::CA Generated Server Certificate");
-    $user_cert->set_extension( "extendedKeyUsage", "TLS Web " . ucfirst($params->{cert_type}) . " Authentication" );
-    $user_cert->set_extension( "keyUsage", "Digital Signature, Key Encipherment" );
-    $user_cert->set_extension( subjectKeyIdentifier => $subject_keyid );
-    $user_cert->set_extension( authorityKeyIdentifier =>
-        {
-            keyid => $req->[1],
-            issuer => $req->[0],
-            serial => $req->[2],
-        },
-        -critical => 0); # As per RFC3280 section 4.2.1.1
-
-    $user_cert->set_extension
-      (subjectAltName => 'email:nuri@de-bar.com,email:ovpnc@x-vps.com');
-
-    #my $user_cert_as_text = $user_cert->sign($ca_privkey, 'sha256');
-
-    #my $new_user_cert = Crypt::OpenSSL::CA::X509->parse( $user_cert_as_text );
-=cut
-
-    my @_files = (
-        $cfg->{openvpn_utils} . '/keys/crl.pem',
-        $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.crt',
-        $cfg->{openvpn_utils} . '/keys/' . $_serial . '.pem',
-    );
 
     # Prepare CRL file
     # ================
@@ -440,37 +331,7 @@ sub sign_new_csr {
         close $FH;
     }
 
-    # Write to file
-    # =============
-    #open (my $FH, '>', $cfg->{openvpn_utils} . '/keys/' . $params->{name} .'.crt')
-    #    or die "Cannot open certificate file '" . $params->{name} . ".crt' for writing: " . $!;
-    #print {$FH} $user_cert_as_text;
-    #close $FH;
-
-    #open ($FH, '>', $cfg->{openvpn_utils} . '/keys/' . $_serial . '.pem')
-    #    or die "Cannot open certificate file '" . $_serial . ".pem' for writing: " . $!;
-    #print {$FH} $new_user_cert->dump();
-    #close $FH;
-
-    # All ok, update serial
-    # =====================
-#    open ( $FH, '>', $cfg->{openvpn_utils} . '/keys/serial' )
-#        or die "Cannot update serial file: " . $!;
-#    print $FH $_serial . "\n";
-#    close $FH;
-
-    # Update index.txt
-    # ================
-#    open ( $FH, '>>', $cfg->{openvpn_utils} . '/keys/index.txt' )
-#        or die "Cannot update index.txt file: " . $!;
-#    my $_tmp_time_format = "%y%m%d%H%M%SZ";
-#    $_time_now = strftime( $_tmp_time_format, gmtime(time() + ( 10 * $ONE_YEAR ) ) );
-#    my $_index_str = "V\t" . $_time_now . "\t\t" . $_serial . "\tunknown\t"
-#                    . $new_user_cert->get_subject_DN()->to_string();
-#    print $FH $_index_str . "\n";
-#    close $FH;
-
-    return \@_files;
+    return 1;
 }
 
 sub _get_ca_key_and_cert {
