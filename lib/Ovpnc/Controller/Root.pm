@@ -118,22 +118,22 @@ sub include_default_links : Private {
 
     return 1 if $c->stash->{no_self};
 
-    # Include according to pathname
+# Include according to pathname
     # not incase of 'main' ( path is undef )
     # ======================================
     if ( my $c_name = $c->req->path ) {
         $c_name =~ s/\/$//;
         for my $type (qw/ css js /) {
-            if ( -e 'root/static/' . $type . '/' . $c_name . '.' . $type ) {
-
-                # example: 'css/certificates.css'
-                #$c->log->debug(
-                #    "Including: " . $type . '/' . $c_name . '.' . $type );
-                push( @_page_assets, $type . '/' . $c_name . '.' . $type );
-            }
+            push(
+                @_page_assets,
+                $type . '/' . $c_name . '.' . $type
+            ) if ( -e $c->config->{home} . '/root/static/'
+                    . $type . '/' . $c_name . '.' . $type
+            );
         }
     }
     $c->assets->include($_) for @_page_assets;
+
 }
 
 sub sitemap : Path('/sitemap') {
