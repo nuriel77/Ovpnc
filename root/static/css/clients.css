@@ -46,3 +46,16 @@
     background: url(../js/Flexigrid/demo/images/close.png) no-repeat center left;
 }
 
+.flexigrid div.fbutton .block {
+    background: url(/static/images/kill_client.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .unblock {
+    background: url(/static/images/unblock.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .edit {
+    background: url(/static/images/edit-icon.png) no-repeat center left;
+}
+
+

@@ -23,9 +23,10 @@ Controls start/stop/restart
 has vpn => (
     is        => 'ro',
     isa       => 'Object',
-    required  => 1,
+    required  => 0,
     predicate => '_has_vpn',
     clearer   => '_disconnect_vpn',
+    writer    => '_set_vpn',
 );
 
 has [
@@ -43,7 +44,10 @@ has [
   );
 
 sub start {
-    my $self = shift;
+    my ( $self, $vpn ) = @_;
+
+    $self->_set_vpn( $vpn )
+        if $vpn;
 
     my $_pid = $self->_check_running;
 
@@ -130,7 +134,11 @@ sub start {
 }
 
 sub stop {
-    my $self = shift;
+    my ( $self, $vpn ) = @_;
+
+    if ( $vpn ){
+        $self->_set_vpn($vpn);
+    }
 
     # First find out if the openvpn
     # process is running
@@ -165,7 +173,7 @@ sub stop {
     # If we are here, we should
     # have $_pid not undef
     # =========================
-    if ($_pid) {
+    if ( $_pid ) {
 
         # Okay, we have a running process,
         # Let's try killing it
@@ -202,7 +210,10 @@ sub stop {
 }
 
 sub restart {
-    my $self = shift;
+    my ( $self, $vpn ) = @_;
+
+    $self->_set_vpn($vpn)
+        if $vpn;
 
     $self->stop if $self->_check_running || $self->vpn->{objects};
     sleep 1;

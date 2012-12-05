@@ -76,11 +76,14 @@ around [
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
-      if $self->_has_vpn;
+        if 'start' ~~ @_;
+
+    return $self->$orig( $c, @_ )
+        if $self->_has_vpn;
 
     # Establish connection to management port
     # =======================================
@@ -101,7 +104,10 @@ after [
       server_POST
       logs_GET
       /
-] => sub { shift->_disconnect_vpn; };
+] => sub {
+    my $self = shift;
+    $self->_disconnect_vpn if $self->_has_vpn;
+};
 
 # Main actions
 # ============
@@ -175,8 +181,9 @@ command=[...]
 
 =cut
 
-sub server_POST : Local : Args(1) : Sitemap
-
+sub server_POST : Local
+                : Args(0)
+                : Sitemap
 #				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
 #: Does('NeedsLogin')
 {
@@ -184,7 +191,7 @@ sub server_POST : Local : Args(1) : Sitemap
 
     do {
         $self->status_no_content($c);
-        $self->_disconnect_vpn;
+        $self->_disconnect_vpn if $self->_has_vpn;
         $c->detach;
     } unless defined( $command // $c->request->params->{command} );
 
@@ -195,7 +202,6 @@ sub server_POST : Local : Args(1) : Sitemap
 
     my $_role = $self->new_with_traits(
         traits         => ['Control'],
-        vpn            => $self->vpn,
         openvpn_bin    => $self->cfg->{openvpn_bin},
         openvpn_pid    => $self->cfg->{openvpn_pid},
         openvpn_config => $self->cfg->{openvpn_config},
@@ -206,9 +212,9 @@ sub server_POST : Local : Args(1) : Sitemap
     # Dict of possible commands
     # =========================
     my $_cmds = {
-        start   => sub { $_role->start },
-        stop    => sub { $_role->stop },
-        restart => sub { $_role->restart }
+        start   => sub { $_role->start( $self->_has_vpn ? $self->vpn : undef ) },
+        stop    => sub { $_role->stop( $self->_has_vpn ? $self->vpn : undef ) },
+        restart => sub { $_role->restart( $self->_has_vpn ? $self->vpn : undef ) }
     };
 
     my ( $_found_command, $_ret_val );
@@ -234,7 +240,7 @@ sub server_POST : Local : Args(1) : Sitemap
     # =========================
     unless ($_found_command) {
         $self->status_not_found( $c,
-                message => 'Command \'' 
+                message => 'Command \''
               . $command
               . '\' is unrecognized. Possible commands: start, stop, restart.'
         );

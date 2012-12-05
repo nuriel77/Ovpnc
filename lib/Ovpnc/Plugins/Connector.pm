@@ -20,7 +20,7 @@ sub new {
         {
             host     => $params->{host},
             port     => $params->{port},
-            password => read_file( $params->{password}, chomp => 1 ),
+            password => read_file( $params->{password}, chomp => 1 ) || '',
             timeout  => $params->{timeout},
         }
     ) or die "cannot establish connection: $!";

@@ -1,11 +1,3 @@
-<style>
-.flexigrid div.fbutton .block {
-	background: url(/static/images/kill_client.png) no-repeat center left;
-}
-.flexigrid div.fbutton .edit {
-	background: url(/static/images/edit-icon.png) no-repeat center left;
-}
-</style>
 <div id="client_wrapper">
 
 	<!-- client_table -->

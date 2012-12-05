@@ -185,6 +185,7 @@
                     { name: 'Add', bclass: 'add', onpress : console.log('add') },
                     { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
                     { name: 'Block', bclass: 'block', onpress : block_clients },
+                    { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
                     { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
                     { separator: true}
                 ],

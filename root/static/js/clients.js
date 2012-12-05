@@ -11,7 +11,16 @@ $(document).ready(function(){
 	$('.flexigrid').slideDown(300);
 
     function block_clients(button, grid) {}
+    function unblock_clients(button, grid) {}
 });
+
+function block_clients(button, grid){
+    block_unblock_clients(button, grid, 'revoke');
+}
+
+function unblock_clients(button, grid){
+    block_unblock_clients(button, grid, 'unrevoke');
+}
 
 // Format the data from
 // server status, processing
@@ -76,12 +85,11 @@ function prepare_client_col_data(c){
     ]
 }
 
-function block_clients(button,grid){
+function block_unblock_clients(button, grid, action){
     // Get total selected clients
     var total_count = $('.trSelected', grid).length;
-    var blocked = 0;
+    var processed = 0;
     var loop = 0;
-
     $.each($('.trSelected', grid), function() {
         // Get the client's name of this grid
         var client = $('td:nth-child(2) div', this).html();
@@ -90,45 +98,49 @@ function block_clients(button,grid){
         // Revoke client/disconnect
         $.ajax({
             url: '/api/clients/' + client,
-            type: 'REVOKE',
+            type: action,
             data: {},
             dataType: 'json',
-            success: function(msg) {
+            success: function( msg ) {
                 if ( msg && msg.rest !== undefined ){
-                    if ( msg.rest.match( /revoked ok.*SUCCESS/g ) ){
-                        blocked++;
+                    if ( msg.rest.match( /revoked ok.*SUCCESS/g )
+                      || msg.rest.match( /Un-revocation success/g )
+                    ){
+                        processed++;
                     }
                     else {
-                        alert( "'" + client + "' revoke failed: " + msg.rest );
+                        alert( "'" + client + "' " + action + " failed: " + msg.rest );
                     }
                 }
                 else {
-                    alert( "'" + client + "' revoke failed: " + msg.rest );
+                    alert( "'" + client + "' " + action + " failed: " + msg.rest );
                 }
             },
             error: function(xhr, ajaxOptions, thrownError){
                 var err = xhr.responseText;
-                alert( "Error revoking '" + client + "': " + xhr.responseText );
+                alert( "Failed command " + action + " for '" + client + "': " + xhr.responseText );
             },
             complete : function(){
                 loop++;
-                check_complete_block(loop, blocked, total_count);
+                check_complete_block(loop, processed, total_count, action);
             }
         });
     });
 }
 
-function check_complete_block(loop,blocked,total_count){
-    if ( blocked === total_count ){
-        alert( 'Total ' + blocked + ' clients blocked' );
+function check_complete_block(loop, processed, total_count, action){
+    if ( processed === total_count ){
+        alert( 'Total ' + processed
+                + ' client' + ( processed === 1 ? ' ' : 's ' )
+                + action + 'd' );
         return;
     }
     if ( loop === total_count ){
-        if ( blocked === 0 ){
-            alert( 'No clients blocked!' );
+        if ( processed === 0 ){
+            alert( 'No clients ' + action + 'd!' );
         }
         else {
-            alert( 'Only ' + blocked + ' out of ' + total_count + ' clients blocked' );
+            alert( 'Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd' );
         }
     }
 }
