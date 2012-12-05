@@ -5,7 +5,7 @@ use Ovpnc::Plugins::Connector;
 use Moose;
 use Linux::Distribution;
 use Cwd;
-use File::Slurp;
+#use File::Slurp;
 use vars qw( $ovpnc_conf $mgmt_passwd_file );
 use namespace::autoclean;
 
@@ -23,6 +23,12 @@ Catalyst Controller
 
 OpenVPN Controller API
 
+
+has cfg => (
+    is => 'rw',
+    isa => 'HashRef',
+    predicate => '_has_çfg',
+);
 
 =head1 METHODS
 
@@ -76,23 +82,9 @@ sub sanity : Path('api/sanity')
     $c->response->headers->header(
         'Content-Type' => 'application/json' );
 
-    # Check build of ovpnc_conf
-    # =========================
-    $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
-        ? $c->config->{ovpnc_conf}
-        : $c->config->{app_root} . '/' . $c->config->{ovpnc_conf};
-
-    # Mysql passwd file
-    # =================
-    $mgmt_passwd_file = $c->config->{mgmt_passwd_file} =~ /^\//
-        ? $c->config->{mgmt_passwd_file}
-        : $c->config->{app_root} . '/' . $c->config->{mgmt_passwd_file};
-
-    # Get OpenVPN username
-    # ====================
-    $c->config->{openvpn_user} =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'UserName' );
+    if ( !$self->_has_cfg ){
+        $self->assign_params( $c );
+    }
 
     # Sanity plugin action
     # ====================
@@ -162,7 +154,7 @@ sub assign_params : Private {
     # ========================
     for (
         $cfg->{openvpn_dir},
-        $cfg->{app_root},
+        $cfg->{home},
         $cfg->{openvpn_ccd},
         $cfg->{openvpn_utils},
     ){ s/\/$// if $_ }
@@ -176,30 +168,37 @@ sub assign_params : Private {
     # =================
     $mgmt_passwd_file = $c->config->{mgmt_passwd_file} =~ /^\//
         ? $c->config->{mgmt_passwd_file}
-        : $c->config->{app_root} . '/' . $c->config->{mgmt_passwd_file};
+        : $c->config->{home} . '/' . $c->config->{mgmt_passwd_file};
 
 
     # Check build if ovpnc_conf
     # =========================
     $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
         ? $c->config->{ovpnc_conf}
-        : $c->config->{app_root} . '/' . $c->config->{ovpnc_conf};
+        : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
 
-    # Get OpenVPN username
-    # ====================
-    $c->config->{openvpn_user} =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'UserName' );
+
+    # OpenVPN Dir
+    # ===========
+    $cfg->{openvpn_dir} = $cfg->{home} . '/' . $cfg->{openvpn_dir}
+        if $cfg->{openvpn_dir} !~ /^\//;
 
     # OpenVPN pid file
     # ================
-    $cfg->{openvpn_pid} ||= $cfg->{app_root}
-        . '/openpvpn/var/run/openvpn.server.pid';
-
-    $cfg->{openvpn_pid} = $cfg->{app_root} . '/' . $cfg->{openvpn_pid}
+    $cfg->{openvpn_pid} = $cfg->{openvpn_dir} . '/' . $cfg->{openvpn_pid}
         if (  $cfg->{openvpn_pid} !~ /^\// );
 
-    return {
+    # Get OpenVPN username
+    # ====================
+    my ($_openvpn_user, $_openvpn_group ) = @{(
+        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+            $ovpnc_conf, [ 'UserName', 'GroupName' ]
+        )
+    )};
+    $c->config->{openvpn_user} = $_openvpn_user;
+
+
+    my $_cfg = {
 
         # Paths beginning with '/'
         # will be considered full-paths
@@ -207,22 +206,16 @@ sub assign_params : Private {
 
         # User and Group name
         # ===================
-        openvpn_group => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-                $ovpnc_conf, 'GroupName'
-        ),
-
-        openvpn_user => Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-                $ovpnc_conf, 'UserName'
-        ),
+        openvpn_group => $_openvpn_group,
+        openvpn_user => $_openvpn_user,
 
         # The ovpnc application root
         # ==========================
-        app_root => $cfg->{app_root} // getcwd,
+        home => $cfg->{home} // getcwd,
 
         # Ovpnc temporary directory
         # =========================
-        tmp_dir     => $cfg->{app_root}
-                        . '/' . $cfg->{openvpn_utils} . '/tmp/',
+        tmp_dir     => $cfg->{openvpn_dir} . '/tmp/',
 
         # OpenVPN pid file
         # ================
@@ -255,10 +248,7 @@ sub assign_params : Private {
 
         # OpenVPN main directory
         # ======================
-        openvpn_dir => ( $c->config->{openvpn_dir} =~ /^\//
-            ? $cfg->{openvpn_dir}
-            : $cfg->{app_root} . '/' . $cfg->{openvpn_dir}
-        ),
+        openvpn_dir => $cfg->{openvpn_dir},
 
         # OpenVPN tools/utilities directory
         # (scripts for CA, Certificates etc)
@@ -273,8 +263,7 @@ sub assign_params : Private {
         # ==============
         ssl_config => ( $cfg->{openssl_conf} =~ /^\//
             ? $cfg->{openssl_conf}
-            : $cfg->{openvpn_dir} . '/'
-                . $cfg->{openvpn_utils} . '/' . $cfg->{openssl_conf}
+            : $cfg->{openvpn_dir} . '/' . $cfg->{openssl_conf}
         ),
 
         # OpenSSL binary
@@ -287,7 +276,9 @@ sub assign_params : Private {
 
         # OpenVPN Management password
         # ===========================
-        mgmt_passwd_file => $cfg->{mgmt_passwd_file},
+        mgmt_passwd_file => $cfg->{mgmt_passwd_file} =~ /^\//
+            ? $cfg->{mgmt_passwd_file}
+            : $cfg->{home} . '/' . $cfg->{mgmt_passwd_file},
 
         # OpenVPN Management console
         # ==========================
@@ -295,26 +286,32 @@ sub assign_params : Private {
             host    => $cfg->{mgmt_host}    // '127.0.0.1',
             port    => $cfg->{mgmt_port}    // 7505,
             timeout => $cfg->{mgmt_timeout} // 5,
-            password => read_file( $mgmt_passwd_file, chomp => 1 )
-              // '',
+            password => $mgmt_passwd_file   // '',
         }
     };
+
+    return $_cfg;
 }
 
 sub end : Private {
     my ( $self, $c ) = @_;
 
     # Debug if requested
+    # ==================
     die "forced debug" if $c->req->params->{dump_info};
 
     # Clean up the File::Assets
     # it is set to null but
     # is not needed in JSON output
+    # ============================
     delete $c->stash->{assets};
 
     # Forward to JSON view or XML
+    # ===========================
     $c->forward(
-        ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
+        ( $c->request->params->{xml} ?
+        'View::XML::Simple' : 'View::JSON' )
+    );
 }
 
 =head1 AUTHOR

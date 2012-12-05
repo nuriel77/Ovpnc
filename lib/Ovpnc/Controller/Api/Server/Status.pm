@@ -42,7 +42,7 @@ has 'vpn' => (
 has 'cfg' => (
     is        => 'rw',
     isa       => 'HashRef',
-    predicate => '_has_conf'
+    predicate => '_has_cfg'
 );
 
 $REGEX = {
@@ -59,15 +59,18 @@ connection
 
 =cut
 
-around status_GET => sub {
+around [
+    qw(
+        status_GET
+    )] => sub {
     my $orig = shift;
     my $self = shift;
     my $c    = shift;
 
     # Assign config params
     # ====================
-    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
-      unless $self->_has_conf;
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_cfg;
 
     # Don't connect if exists
     # =======================
@@ -114,7 +117,7 @@ sub status_GET : Local
                : Sitemap
 #               : Does('NeedsLogin')
 {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $cfg_params ) = @_;
 
     # Verify can run
     # ==============

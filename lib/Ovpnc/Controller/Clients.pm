@@ -50,7 +50,11 @@ around [qw(index)] => sub {
 
 =cut
 
-sub index : Path : Args(0) : Does('NeedsLogin') : Sitemap {
+sub index : Path
+          : Args(0)
+          : Sitemap
+          : Does('NeedsLogin')
+{
     my ( $self, $c ) = @_;
     $c->stash->{title}     = 'Clients';
     $c->stash->{this_link} = 'clients';

@@ -1,6 +1,7 @@
 package Ovpnc;
 use Moose;
 use Cwd;
+use File::Slurp;
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
 use v5.10.1;
@@ -74,6 +75,23 @@ __PACKAGE__->config(
                                                         #
     'Plugin::ConfigLoader' => { config_local_suffix => 'local' },
 
+);
+
+# Database
+# ========
+__PACKAGE__->config(
+    'Model::DB' => {
+        schema_class => 'Ovpnc::Schema',
+        connect_info => {
+            dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
+            user        => $ENV{MYSQL_USER} ||= 'ovpnc',
+            password    => ( $ENV{MYSQL_PASSFILE}
+                ? read_file( $ENV{MYSQL_PASSFILE}, chomp => 1 )
+                : read_file( 'config/.mysql', chomp => 1 )
+            ),
+            AutoCommit  => q{1},
+        }
+    }
 );
 
 # Cache

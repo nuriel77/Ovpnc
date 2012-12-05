@@ -124,6 +124,11 @@ function check_complete_block(loop,blocked,total_count){
         return;
     }
     if ( loop === total_count ){
-        alert( 'Only ' + blocked + ' out of ' + total_count + ' clients blocked' );
+        if ( blocked === 0 ){
+            alert( 'No clients blocked!' );
+        }
+        else {
+            alert( 'Only ' + blocked + ' out of ' + total_count + ' clients blocked' );
+        }
     }
 }

@@ -97,7 +97,7 @@ around [
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
       unless $self->_has_conf;
 
     # File::Assets might leave an empty hash
@@ -168,7 +168,10 @@ after [
       clients_REMOVE
       kill_connection
       /
-] => sub { shift->_disconnect_vpn; };
+] => sub {
+    my $self = shift;
+    $self->_disconnect_vpn if $self->_has_vpn;
+};
 
 =head2 clients
 
@@ -203,7 +206,7 @@ sub clients_GET : Local
     # ========================
     my $_ccd_dir = $self->cfg->{openvpn_ccd}  =~ /^\//
         ? $self->cfg->{openvpn_ccd}
-        : $self->cfg->{app_root} . '/' . $self->cfg->{openvpn_ccd};
+        : $self->cfg->{home} . '/' . $self->cfg->{openvpn_ccd};
 
     # return only role 'client'
     # we get the id of role type 'client'
@@ -267,7 +270,7 @@ sub clients_GET : Local
 
     # Let's see who is online
     # =======================
-    my $_online_clients = $c->forward('/api/server/status');
+    my $_online_clients = $c->forward('/api/server/status', $self->cfg );
 
     # Now let's start matching the list of
     # all users to those who are online
@@ -634,7 +637,7 @@ sub clients_UNREVOKE : Local
         # =======================================
         $_ret_val .= ';' . $self->_roles->unrevoke_certificate(
             $client,
-            $c->config->{openssl_conf},
+            $self->cfg->{ssl_config},
             $c->config->{openssl_bin}
         );
     }
@@ -659,7 +662,7 @@ sub list_revoked : Path('clients/list_revoked')
 
     my $openvpn_dir = $self->cfg->{openvpn_dir} =~ /^\//
         ? $self->cfg->{openvpn_dir}
-        :  $self->cfg->{app_root} . '/' . $self->cfg->{openvpn_dir};
+        :  $self->cfg->{home} . '/' . $self->cfg->{openvpn_dir};
 
     # The crl index file from OpenVPN
     # ===============================
@@ -787,7 +790,7 @@ sub _get_roles : Private {
         traits    => [ ucfirst( lc(shift) ), @_ ],
         openvpn_dir     => $self->cfg->{openvpn_dir},
         openvpn_utils   => $self->cfg->{openvpn_utils},
-        app_root        => $self->cfg->{app_root},
+        home            => $self->cfg->{home},
         openssl_conf    => $self->cfg->{openssl_conf},
         _req            => {},
         _cfg            => $self->cfg,

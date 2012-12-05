@@ -19,7 +19,7 @@ has openvpn_utils => (
     required => 1,
 );
 
-has app_root => (
+has home => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -31,7 +31,7 @@ sub revoke_certificate {
     $openvpn_dir =
         $self->openvpn_dir =~ /^\//
       ? $self->openvpn_dir
-      : $self->app_root . '/' . $self->openvpn_dir;
+      : $self->home . '/' . $self->openvpn_dir;
 
     $tools =
         $self->openvpn_utils =~ /^\//

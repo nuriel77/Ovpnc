@@ -32,6 +32,12 @@ sub action {
     # ===============
     $self->cfg($config);
 
+    # Set openssl.cnf location
+    # ========================
+    $self->cfg->{openssl_conf} = $self->cfg->{openssl_conf} =~ /^\//
+        ? $self->cfg->{openssl_conf}
+        : $self->cfg->{home} . '/' . $config->{openvpn_dir} . '/' . $self->cfg->{openssl_conf};
+
     # Prepare hash with
     # list of all checks
     # ==================
@@ -232,10 +238,10 @@ sub action {
 
         # check application root dir
         # ==========================
-        elsif (!-e $self->cfg->{app_root}
-            || !-d $self->cfg->{app_root} )
+        elsif (!-e $self->cfg->{home}
+            || !-d $self->cfg->{home} )
         {
-            return $self->cfg->{app_root}
+            return $self->cfg->{home}
               . " not found or not readable";
         }
         # check openvpn conf

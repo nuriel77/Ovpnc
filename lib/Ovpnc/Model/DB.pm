@@ -2,13 +2,13 @@ package Ovpnc::Model::DB;
 use strict;
 use File::Slurp;
 use base 'Catalyst::Model::DBIC::Schema';
-
+=comment
 __PACKAGE__->config(
     schema_class => 'Ovpnc::Schema',
 
     connect_info => {
         dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
-        user        => 'ovpnc',
+        user        => $ENV{MYSQL_USER} ||= 'ovpnc',
         password    => ( $ENV{MYSQL_PASSFILE}
             ? read_file( $ENV{MYSQL_PASSFILE}, chomp => 1 )
             : read_file( 'config/.mysql', chomp => 1 )
@@ -17,6 +17,7 @@ __PACKAGE__->config(
     }
 );
 
+=cut
 
 =head1 NAME
 

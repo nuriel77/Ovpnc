@@ -21,7 +21,6 @@ requires 'Proc::Simple';
 requires 'Digest::MD5::File';
 requires 'Net::SSLeay';
 requires 'Crypt::OpenSSL::CA';
-requires 'Crypt::OpenSSL::PKCS10';
 requires 'Crypt::OpenSSL::RSA';
 requires 'Crypt::OpenSSL::Bignum';
 requires 'Crypt::OpenSSL::Random';

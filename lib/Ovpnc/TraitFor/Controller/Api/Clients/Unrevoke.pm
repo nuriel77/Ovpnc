@@ -19,7 +19,7 @@ has openvpn_utils => (
     required => 1,
 );
 
-has app_root => (
+has home => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -30,15 +30,8 @@ sub unrevoke_certificate {
 
     my $_ret_val;
 
-    $openvpn_dir =
-        $self->openvpn_dir =~ /^\//
-      ? $self->openvpn_dir
-      : $self->app_root . '/' . $self->openvpn_dir;
-
-    $tools =
-        $self->openvpn_utils =~ /^\//
-      ? $self->openvpn_utils
-      : $openvpn_dir . '/' . $self->openvpn_utils;
+    $openvpn_dir = $self->openvpn_dir;
+    $tools = $self->openvpn_utils;
 
     # vars script location
     # ====================
@@ -66,11 +59,6 @@ sub unrevoke_certificate {
             return 'Un-revocation failure for ' . $client . ': ' . $_ret_val;
         }
 
-        my $_openssl_config =
-            $ssl_config =~ /^\//
-                ? $ssl_config
-                : $tools . '/' . $ssl_config;
-
         # Regenerate the crl.pem
         # ======================
         my @_cmd = (
@@ -78,7 +66,7 @@ sub unrevoke_certificate {
             'ca',
             '-gencrl',
             '-config',
-            $_openssl_config,
+            $ssl_config,
             '-out',
             $tools . '/keys/crl.pem'
         );

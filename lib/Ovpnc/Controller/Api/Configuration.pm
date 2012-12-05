@@ -701,8 +701,10 @@ sub get_openvpn_param : Private {
         return \@arr;
     }
     elsif ( !ref $params ) {
-        return $dom->findvalue(
+        my $_ret_val = $dom->findvalue(
             '/Nodes/Node/Directives/Group/Directive/Params/' . $params );
+        warn "Param not found: $params" unless $_ret_val;
+        return $_ret_val;
     }
 }
 

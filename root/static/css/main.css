@@ -30,7 +30,7 @@ div#top_header_content{
 div#outer{
 	min-width:1124px;
 	height:100%;
-	margin-top:40px;
+	margin-top:70px;
 }
 
 div#outer_centered{
@@ -81,7 +81,7 @@ legend {
 	
 }
 
-#msg_content{ margin-right:5px; max-height:59px; overflow:auto ;}
+#msg_content{ margin-right:5px; max-height:72px; overflow:auto ;}
 
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }
