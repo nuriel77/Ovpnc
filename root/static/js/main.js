@@ -62,7 +62,7 @@
             setInterval(function() {
                 get_server_status();
             },
-            $.Ovpnc().poll_freq);
+            $.Ovpnc().poll_freq );
         },
         // Init hover events
         hover_binds: function() {
@@ -145,6 +145,9 @@
                 });
             }
         },
+        populate_version : function (version) {
+            $('#server_status_content').attr('title', version ? version : '');
+        },
         // On client page start the flexgrid plugin
         set_clients_table: function() {
             $.ajaxSetup({
@@ -193,7 +196,7 @@
                     { display: 'Since', name : 'conn_since'},
                     { display: 'Username', name : 'username', isdefault: true}
                 ],
-                sortname: "name",
+                sortname: "username",
                 sortorder: "asc",
                 usepager: true,
                 title: 'Clients',
@@ -212,8 +215,8 @@
                 // to the current tr.td[abbr=username].div.text in the loop
                 // inner_text is in order to get only the username and not
                 // any span we might have appended previous loop
-                var inner_text = v.innerHTML.replace(/^(\w+)<.*?>.*$/gi, "$1");
-                var online_data = check_client_match(r.rest.clients, inner_text);
+                var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                var online_data = $.Ovpnc().check_client_match(r.rest.clients, inner_text);
                 if (online_data !== false) {
                     // loop each td find the corresponding 'abbr'
                     // fill in the text from online_data
@@ -419,7 +422,7 @@ function update_server_status(r) {
         $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
 
         // In the title of the server status
-        if (r.rest.title !== undefined) populate_version(r.rest.title);
+        if (r.rest.title !== undefined) $.Ovpnc().populate_version(r.rest.title);
 
         // Update the table with any online clients data
         // This applies only to path /clients
@@ -433,21 +436,11 @@ function update_server_status(r) {
     return false;
 }
 
-function check_client_match(clients, current_client) {
-    for (var i in clients) {
-        if (clients[i].name === current_client) return clients[i];
-    }
-    return false;
-}
-
 function get_server_status() {
     $.Ovpnc().get_data("/api/server/status", {},
     'GET', update_server_status);
 }
 
-function populate_version(s) {
-    $('#server_status_content').attr('title', s ? s : '');
-}
 
 function server_ajax_control(cmd) {
 

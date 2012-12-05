@@ -63,7 +63,7 @@ sub start {
             '--tls-server',
             '--daemon', 'ovpn-server',
             '--setenv',            'PATH', '/bin',
-            '--script-security',   '2',
+            '--script-security',   '3',
             '--client-connect',    '/bin/client_connect',
             '--client-disconnect', '/bin/client_disconnect',
             '--echo',              'on all',

@@ -239,7 +239,6 @@ sub clients_GET : Local
     my $_dont_sort_in_query;
     if ($sort_by) {
         unless ( $sort_by ~~ @{$_columns} ) {
-
             # Just set some default
             $sort_by             = 'username';
             $_dont_sort_in_query = 1;
@@ -277,6 +276,8 @@ sub clients_GET : Local
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
+    my @_unknown_connected;
+
     # Simple login uses hardcoded 'username'
     # and openvpn returns 'name'
     # here we first map so they two
@@ -291,16 +292,20 @@ sub clients_GET : Local
             # ==============================
             $_->{username} = $_->{name};
             delete $_->{name};
+            my $_found;
           LP: for my $i ( 0 .. @_clients ) {
-                if ( $_clients[$i]->{username} eq $_->{username} ) {
-
+                if ( $_clients[$i]->{username}
+                    && $_clients[$i]->{username} eq $_->{username}
+                ) {
                     # Merge the two hashes
                     # ====================
                     my %temp_hash = ( %{ $_clients[$i] }, %{$_} );
                     $_clients[$i] = \%temp_hash;
-                    last LP;
+                    $_found++;
                 }
             }
+            push @_unknown_connected, $_
+                unless $_found;
           } @{ $_online_clients->{clients} }
     ];
 
@@ -315,7 +320,14 @@ sub clients_GET : Local
         @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
     }
 
-    $self->status_ok( $c, entity => [@_clients] )
+    # Remove any empty elements
+    # =========================
+    for my $i ( 0 .. $#_clients ) {
+        delete $_clients[$i]
+           if scalar keys %{$_clients[$i]} == 0;
+    }
+
+    $self->status_ok( $c, entity => [ @_clients, @_unknown_connected ] )
       if @_clients > 0;
 }
 

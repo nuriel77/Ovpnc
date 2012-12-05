@@ -112,7 +112,7 @@ and title (version)
 sub status_GET : Local
                : Args(0)
                : Sitemap
-               : Does('NeedsLogin')
+#               : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

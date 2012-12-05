@@ -120,6 +120,15 @@ sub sanity : Path('api/sanity')
 
 }
 
+sub check_login_params : Path('api/clogin')
+                       : Args(0)
+                       : Sitemap
+{
+    my ( $self, $c ) = @_;
+    $self->status_ok( $c, entity => { status => 'Login check successful' } );
+    $c->forward('View::JSON');
+}
+
 =head2 detach_error
 
 End action chain

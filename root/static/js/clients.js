@@ -48,6 +48,7 @@ function format_client_results(obj){
 }
 
 function prepare_client_col_data(c){
+
     // Some fields have to contain
     // placeholders '-' because they
     // only get updated when server
@@ -55,21 +56,21 @@ function prepare_client_col_data(c){
     // this keeps flexgrid from
     // messing up the order
 	return [
-        c.id,
-        c.username,
+        c.id ? c.id : 'unknown',
+        c.username ? c.username : 'unknown',
         c.virtual_ip ? c.virtual_ip : '-',
         c.remote_ip ? c.remote_ip : '-',
         c.remote_port ? c.remote_port : '-',
         c.bytes_recv ? ( c.bytes_recv / 1024 ).toFixed(2) + 'KB' : '-',
         c.bytes_sent ? ( c.bytes_sent / 1024 ).toFixed(2) + 'KB' : '-',
         c.conn_since ? c.conn_since : '-',
-        c.fullname,
-        c.email,
-        c.phone,
-        c.address,
-        c.enabled,
-        c.revoked,
-        c.created,
-        c.modified
+        c.fullname ? c.fullname : 'unknown',
+        c.email ? c.email : 'unknown',
+        c.phone ? c.phone : 'unknown',
+        c.address ? c.address : 'unknown',
+        c.enabled ? c.enabled : 0,
+        c.revoked ? c.revoked : 0,
+        c.created ? c.created : '0000-00-00 00:00',
+        c.modified ? c.modified : '0000-00-00 00:00'
     ]
 }
