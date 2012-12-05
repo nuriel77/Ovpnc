@@ -124,7 +124,7 @@ sub action {
             return
                 "User "
               . $self->cfg->{openvpn_user}
-              . " not found, please add the user by issusing the command: sudo adduser "
+              . " not found, please add the user by issusing the command: sudo useradd -M -s '/bin/false' "
               . $self->cfg->{openvpn_user};
         }
     }
@@ -158,7 +158,7 @@ sub action {
                 ( getgrgid($group_id) )[3] !~ /$openvpn_user/
                 ? "You need to add user openvpn to the group "
                   . $self->cfg->{ovpnc_user}
-                  . ": sudo adduser openvpn "
+                  . ": sudo adduser openvpn ovpnc"
                   . $self->cfg->{ovpnc_user}
                 : 0
             );
@@ -168,7 +168,7 @@ sub action {
             return
                 "User "
               . $self->cfg->{ovpnc_user}
-              . " not found, please add the user by issusing the command: sudo adduser "
+              . " not found, please add the user by issusing the command: sudo useradd -M "
               . $self->cfg->{ovpnc_user};
         }
     }
@@ -296,8 +296,6 @@ sub action {
             build-dh
             build-inter
             revoke-full
-            build-key-automatic
-            keys/index.txt
             ]
           )
         {
