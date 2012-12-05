@@ -39,6 +39,7 @@ requires 'HTML::Tree';
 requires 'HTML::FormFu';
 requires 'HTML::FormFu::Model::DBIC';
 requires 'JSON::XS';
+requires 'String::MkPasswd';
 requires 'Locale::Messages';
 requires 'File::Slurp';
 requires 'File::Copy';

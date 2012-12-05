@@ -3,6 +3,7 @@ use warnings;
 use strict;
 use Module::Locate qw(locate);
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
+use String::MkPasswd 'mkpasswd';
 use Proc::Simple;
 use Proc::ProcessTable;
 use Moose::Role;
@@ -53,6 +54,8 @@ sub start {
         return { error => 'Server already started with pid ' . $_pid };
     }
     else {
+
+        $self->_check_management_password;
 
         my @cmd = (
             '/usr/bin/sudo', $self->openvpn_bin,
@@ -240,5 +243,51 @@ sub _check_running {
     }
     return;
 }
+
+=head2 _check_management_password
+
+Will check if password for management
+console already exists, if not, it
+will create one before starting up.
+When using the connector, it will
+read from the file so it should
+work automatically without having
+to manually set the password.
+
+=cut
+
+sub _check_management_password {
+    my $self = shift;
+
+    # If no file or file empty, generate a new password
+    # ==================================================
+    $self->_write_new_passwd
+        if ( ! -e $self->mgmt_passwd_file
+            || (stat( $self->mgmt_passwd_file ))[7] == 0
+        );
+}
+
+sub _write_new_passwd{
+    my $self = shift;
+    open ( my $FH, '>', $self->mgmt_passwd_file )
+        or die "Cannot update " . $self->mgmt_passwd_file
+                . ": " . $!;
+    print {$FH} $self->_gen_passwd(32, 3, 3, 3, 0);
+    close $FH;
+    return 1;
+}
+
+sub _gen_passwd {
+    my $self = shift;
+    my ($a,$b,$c,$d,$e) = @_;
+    return mkpasswd(
+            -length     => $a,
+            -minnum     => $b,
+            -minlower   => $c,
+            -minupper   => $d,
+            -minspecial => $e,
+    );
+}
+
 
 1;

@@ -1,6 +1,7 @@
 apt-get install build-essential \
                 libmodule-install-perl \
                 libmath-bigint-gmp-perl \
+                libstring-mkpasswd-perl \
                 libmath-gmp-perl \
                 libssl-dev \
                 libnet-ssleay-perl \

@@ -200,7 +200,7 @@ sub server_POST : Local : Args(1) : Sitemap
         openvpn_pid    => $self->cfg->{openvpn_pid},
         openvpn_config => $self->cfg->{openvpn_config},
         openvpn_tmpdir => $self->cfg->{tmp_dir},
-        mgmt_passwd_file => $self->cfg->{home} . '/' . $self->cfg->{mgmt_passwd_file},
+        mgmt_passwd_file => $self->cfg->{mgmt_passwd_file},
     ) or die "Could not get role 'Control': $!";
 
     # Dict of possible commands
