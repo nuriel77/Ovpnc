@@ -276,7 +276,7 @@ sub clients_GET : Local
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
-    my @_unknown_connected;
+    my @_list;
 
     # Simple login uses hardcoded 'username'
     # and openvpn returns 'name'
@@ -304,7 +304,7 @@ sub clients_GET : Local
                     $_found++;
                 }
             }
-            push @_unknown_connected, $_
+            push @_list, $_
                 unless $_found;
           } @{ $_online_clients->{clients} }
     ];
@@ -316,19 +316,23 @@ sub clients_GET : Local
     # in the database but from server status
     # ===========================================
     if ( $_dont_sort_in_query && $sort_by ) {
-        my @_sorted = sort { $$a{$sort_by} cmp $$b{$sort_by} } @_clients;
+        my @_sorted = sort {
+                ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
+            cmp
+                ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
+        } @_clients;
         @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
     }
 
     # Remove any empty elements
+    # Merge any unknown clients
     # =========================
-    for my $i ( 0 .. $#_clients ) {
-        delete $_clients[$i]
-           if scalar keys %{$_clients[$i]} == 0;
+    for ( @_clients ){
+        push @_list, $_ if scalar keys %{$_} != 0;
     }
 
-    $self->status_ok( $c, entity => [ @_clients, @_unknown_connected ] )
-      if @_clients > 0;
+    $self->status_ok( $c, entity => [ @_list ] )
+      if @_list > 0;
 }
 
 =head2 clients_POST
@@ -503,21 +507,24 @@ using crl.pem
 
 =cut
 
-sub clients_REVOKE : Local : Args(1) : Sitemap
-
-  #: Does('NeedsLogin')
+sub clients_REVOKE : Local
+                   : Args(0)
+                   : Sitemap
+                  #: Does('NeedsLogin')
 {
-    my ( $self, $c, $client ) = @_;
+    my ( $self, $c, $client_list ) = @_;
 
     # Verify that a client name was provided
     # ======================================
     $self->_client_error($c)
-      unless defined( $client // $c->request->params->{client} );
+      unless defined( $client_list // $c->request->params->{client} );
 
     # Override anything in the path by setting
     # params from post if they exists
     # ========================================
-    $client = $c->request->params->{client} if $c->request->params->{client};
+    $client_list = $c->request->params->{client} if $c->request->params->{client};
+
+    my @clients = split ',', $client_list;
 
     # Trait names should match request method
     # =======================================
@@ -537,7 +544,7 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
     # Revoke client's certificate
     # ===========================
     unless ( $c->request->params->{no_revoke} ) {
-        $_ret_val = $self->_roles->revoke_certificate($client);
+        $_ret_val = $self->_roles->revoke_certificate( \@clients );
     }
 
     # If error from above don't proceed
@@ -550,13 +557,15 @@ sub clients_REVOKE : Local : Args(1) : Sitemap
     # Kill the connection (just incase
     # client is currently connected).
     # ================================
-    if ( $self->_has_vpn ) {
-        if ( my $str = $self->kill_connection($client) ) {
-            $_ret_val .= ';' . $str;
-        }
-        else {
-            $_ret_val .= ';Kill connection status: Client '
-                        . $client . ' not found online';
+    if ( $self->_has_vpn && $_ret_val !~ /failure/ ) {
+        for my $client ( @clients ){
+            if ( my $str = $self->kill_connection( $client ) ) {
+                $_ret_val .= ';' . $str;
+            }
+            else {
+                $_ret_val .= ';Kill connection status: Client '
+                            . $client . ' not found online';
+            }
         }
     }
 
@@ -573,34 +582,25 @@ in ccd
 
 =cut
 
-sub clients_UNREVOKE : Local : Args(1) : Sitemap
-
+sub clients_UNREVOKE : Local
+                     : Args(0)
+                     : Sitemap
 #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
 #: Does('NeedsLogin')
 {
-    my ( $self, $c, $client ) = @_;
+    my ( $self, $c, $client_list ) = @_;
 
     # Verify that a client name was provided
     # ======================================
     $self->_client_error($c)
-      unless defined ( $client // $c->request->params->{client} );
+      unless defined ( $client_list // $c->request->params->{client} );
 
     # Override anything in the path by setting
     # params from post if they exists
     # ========================================
-    $client = $c->request->params->{client} if $c->request->params->{client};
+    $client_list = $c->request->params->{client} if $c->request->params->{client};
 
-    # Check if client's certificate is revoked
-    # ========================================
-    my $revoked = $c->forward('list_revoked');
-
-    unless ( $self->_match_revoked( $revoked, $client ) ) {
-        delete $c->stash->{status};
-        $self->status_not_found( $c,
-            message => "Unrevoke faild: client is not the revoked list" );
-        $self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
-    }
+    my @clients = split ',', $client_list;
 
     # Trait names should match request method
     # =======================================
@@ -615,14 +615,30 @@ sub clients_UNREVOKE : Local : Args(1) : Sitemap
     # =====================
     $self->_roles->set_environment_vars;
 
+    # Check if client's certificate is revoked
+    # ========================================
+    my $revoked = $c->forward('list_revoked');
 
-    # Unrevoke a revoked client's certificate
-    # =======================================
-    my $_ret_val = $self->_roles->unrevoke_certificate(
-        $client,
-        $c->config->{openssl_conf},
-        $c->config->{openssl_bin}
-    );
+    my $_ret_val;
+    my $_err = [];
+
+    CLIENT: for my $client ( @clients ){
+
+        unless ( $self->_match_revoked( $revoked, $client ) ) {
+            push @{$_err}, "Unrevoke faild: client '"
+                        . $client . "' is not the revoked list";
+            next CLIENT;
+        }
+
+        # Unrevoke a revoked client's certificate
+        # =======================================
+        $_ret_val .= ';' . $self->_roles->unrevoke_certificate(
+            $client,
+            $c->config->{openssl_conf},
+            $c->config->{openssl_bin}
+        );
+    }
+    $c->stash->{error} = $_err if @{$_err} > 0;
     $self->status_ok( $c, entity => $_ret_val );
     $self->_disconnect_vpn if $self->_has_vpn;
     delete $c->stash->{status};

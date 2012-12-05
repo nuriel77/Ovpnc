@@ -141,7 +141,10 @@
                         obj.rest.status = v;
                         update_server_status(obj);
                     }
-                    //console.log( k + " -> " + v );
+                    else {
+                        console.log( k + " -> " + v );
+                        alert( 'Error: ' + k + " -> " + v );
+                    }
                 });
             }
         },
@@ -181,7 +184,7 @@
                 buttons : [
                     { name: 'Add', bclass: 'add', onpress : console.log('add') },
                     { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
-                    { name: 'Block', bclass: 'block', onpress : console.log('block') },
+                    { name: 'Block', bclass: 'block', onpress : block_clients },
                     { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
                     { separator: true}
                 ],
@@ -209,6 +212,16 @@
         },
         // Update the client's tables
         update_flexgrid : function(r){
+            // Color unknown client in red
+            $('#flexme').find('tr').children('td[abbr="id"]')
+                        .children('div').each(function(k, v){
+                if ( v.innerHTML === 'unknown' ){
+                    $(this).parent().parent('tr').children('td[abbr="username"]')
+                        .children('div').css('color','red');
+                }
+            });
+            // Set the right color - on/off notice according
+            // to client's status
             $('#flexme').find('tr').children('td[abbr="username"]')
                         .children('div').each(function(k, v){
                 // we match the username from online_data

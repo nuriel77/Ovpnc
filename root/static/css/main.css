@@ -81,7 +81,7 @@ legend {
 	
 }
 
-#msg_content{ margin-right:5px; }
+#msg_content{ margin-right:5px; max-height:59px; overflow:auto ;}
 
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }

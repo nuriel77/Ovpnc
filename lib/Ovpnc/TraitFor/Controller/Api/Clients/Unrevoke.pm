@@ -97,13 +97,13 @@ sub unrevoke_certificate {
 
         if ( $success ){
             return 'Un-revocation success for '
-                . $client . ': ' . $_ret_val;
+                . $client . ';';
         }
         else {
             return 'Un-revocation failure for '
                 . $client
                 . ( $error_code ? ': ' . $error_code : '' )
-                . ( $_ret_val ? ', ' . $_ret_val : '' );
+                . ( $_ret_val ? ', ' . $_ret_val : '' ).';';
         }
     }
     else {

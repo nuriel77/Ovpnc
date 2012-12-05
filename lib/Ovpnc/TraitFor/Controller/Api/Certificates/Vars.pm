@@ -35,10 +35,13 @@ sub set_environment_vars
 
     # Set openssl environment
     # variables (eq to source ./vars)
-    # ===============================
+    # At the moment we don't do duplicate
+    # client certifiates, so each client
+    # gets same CN as the client's name
+    # ===================================
     my %_oe = (
         KEY_CN             => $self->_req->{CN}             || 'server',
-        KEY_NAME           => $self->_req->{name}           || 'Ovpnc',
+        KEY_NAME           => $self->_req->{CN}             || 'Ovpnc',
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},
         PKCS11TOOL         => $_tools_dir . '/pkcs11-tool',

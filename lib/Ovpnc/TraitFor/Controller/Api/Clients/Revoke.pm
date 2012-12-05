@@ -26,9 +26,7 @@ has app_root => (
 );
 
 sub revoke_certificate {
-    my ( $self, $client ) = @_;
-
-    my $_ret_val;
+    my ( $self, $clients ) = @_;
 
     $openvpn_dir =
         $self->openvpn_dir =~ /^\//
@@ -44,62 +42,79 @@ sub revoke_certificate {
     # ====================
     $vars = $tools . '/vars';
 
-    # Build command
-    # =============
-    my @_cmd = ( $tools . '/revoke-full', $client );
+    my $_out;
 
-    # Check if can run
-    # ===============
-    if ( can_run( $tools . '/revoke-full' ) ){
+    for my $client ( @{$clients} ){
 
-        # Run command
-        # ===========
-        my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
-            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
+        my $_ret_val;
 
-        $_ret_val = join( "\n", @{$full_buf} );
-        $_ret_val =~ s/\n/;/g;
+        # Build command
+        # =============
+        my @_cmd = ( $tools . '/revoke-full', $client );
 
-        if ( $success ){
-            # Explicit ERROR in output
-            # ========================
-            if ( $_ret_val =~ /ERROR:(.*)$/g ) {
-                return {error => "Revocation failure for '"
-                      . $client
-                      . ( $1 ? ': ' . $1 : '' )
-                };
+        # Check if can run
+        # ===============
+        if ( can_run( $tools . '/revoke-full' ) ){
+
+            # Run command
+            # ===========
+            my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
+                run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
+
+            my $_check_ret_val = join( "\n", @{$full_buf} );
+            $_check_ret_val =~ s/\n/;/g;
+            warn $client . ": ". $_check_ret_val;
+            if ( $success ){
+                # Already in revoke list
+                # ======================
+                if ( $_check_ret_val =~ /already revoked/gi ){
+                    $_ret_val .= "Revocation failure for '"
+                          . $client
+                          . "': Already revoked;";
+                }
+                elsif ( $_check_ret_val =~ /No such file or directory/gi ){
+                    $_ret_val.= "Revocation failure for '"
+                          . $client
+                          . "': has no certificates;";
+                }
+                # Explicit ERROR in output
+                # ========================
+                elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
+                    $_ret_val .= "Revocation failure for '"
+                          . $client
+                          . ( $1 ? '\': ' . $1 : '\'' ) .';';
+                }
+                # If we match this, certificate
+                # has been revoked successfully
+                # =============================
+                elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
+                    $_ret_val .=  $client . ' revoked ok;';
+                }
+                # Anything else is unknown
+                # ========================
+                else {
+                    $_ret_val .= 'Unknown status for '
+                    . $client
+                    . ( $_ret_val ? ': ' . $_ret_val : '' ).';';
+                }
+
             }
-            # If we match this, certificate
-            # has been revoked successfully
-            # =============================
-            elsif ( $_ret_val =~ /error 23.*certificate revoked/g ) {
-                return 'Ok';
-            }
-            # Anything else is unknown
-            # ========================
+            # Could be a timeout (if yes, it will
+            # appear in the error_code)
+            # ===================================
             else {
-                return {error => "Unknown revocation status for '"
-                      . $client
-                      . ( $_ret_val ? ': ' . $_ret_val : '' )
-                };
+                $_ret_val .= 'Timeout out error for ' . $_ret_val . ';'
+                    . ( $error_code ? $error_code : '' ).';';
             }
-
         }
-        # Could be a timeout (if yes, it will
-        # appear in the error_code)
-        # ===================================
         else {
-            return {error => $_ret_val . ';'
-                . ( $error_code ? $error_code : '' )
-            };
+            die "Error revoking client " . $client
+                . ", cannot run " . $tools . '/revoke-full';
         }
-    }
-    else {
-        die "Error revoking client " . $client
-            . ", cannot run " . $tools . '/revoke-full';
+        $_out .= $_ret_val;
     }
 
-    return $_ret_val;
+    return $_out;
 }
 
 1;

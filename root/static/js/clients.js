@@ -10,6 +10,7 @@ $(document).ready(function(){
 	// Show the clients table
 	$('.flexigrid').slideDown(300);
 
+    function block_clients(button, grid) {}
 });
 
 // Format the data from
@@ -73,4 +74,56 @@ function prepare_client_col_data(c){
         c.created ? c.created : '0000-00-00 00:00',
         c.modified ? c.modified : '0000-00-00 00:00'
     ]
+}
+
+function block_clients(button,grid){
+    // Get total selected clients
+    var total_count = $('.trSelected', grid).length;
+    var blocked = 0;
+    var loop = 0;
+
+    $.each($('.trSelected', grid), function() {
+        // Get the client's name of this grid
+        var client = $('td:nth-child(2) div', this).html();
+        // Get rid of any html
+        client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+        // Revoke client/disconnect
+        $.ajax({
+            url: '/api/clients/' + client,
+            type: 'REVOKE',
+            data: {},
+            dataType: 'json',
+            success: function(msg) {
+                if ( msg && msg.rest !== undefined ){
+                    if ( msg.rest.match( /revoked ok.*SUCCESS/g ) ){
+                        blocked++;
+                    }
+                    else {
+                        alert( "'" + client + "' revoke failed: " + msg.rest );
+                    }
+                }
+                else {
+                    alert( "'" + client + "' revoke failed: " + msg.rest );
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+                var err = xhr.responseText;
+                alert( "Error revoking '" + client + "': " + xhr.responseText );
+            },
+            complete : function(){
+                loop++;
+                check_complete_block(loop, blocked, total_count);
+            }
+        });
+    });
+}
+
+function check_complete_block(loop,blocked,total_count){
+    if ( blocked === total_count ){
+        alert( 'Total ' + blocked + ' clients blocked' );
+        return;
+    }
+    if ( loop === total_count ){
+        alert( 'Only ' + blocked + ' out of ' + total_count + ' clients blocked' );
+    }
 }
