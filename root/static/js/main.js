@@ -360,13 +360,11 @@ $(document).ready(function() {
 
     // Set custom alert functionality
     window.alert = function(message) {
-        //console.log('Alert called with ' + message);
         // Check if message is already visible,
         // If yes, save current content and append
         if ($('#message').is(':visible')) {
             // Remove first welcome message.
             var old_content = $('#msg_content').html();
-            //console.log('old: ' + old_content);
             old_content = old_content.replace('<br>', '');
             if (old_content.match(/Hello/g) || old_content === message) {
                 $('#msg_content').empty();
@@ -375,7 +373,7 @@ $(document).ready(function() {
             }
         }
         // Write
-        $('#message').html('<div id="msg_content">' + get_time() + ': ' + message + '</div>' + '<img id="message_close"' + ' src="/static/images/close-gray.png"' + ' class="hand_pointer"></img>').slideDown(300);
+        $('#message').html('<div id="msg_content">[' + get_time() + '] ' + message + '</div>' + '<img id="message_close"' + ' src="/static/images/close-gray.png"' + ' class="hand_pointer"></img>').slideDown(300);
         $('#message_close').click(function() {
             $('#message').hide(300).empty();
         });
@@ -663,12 +661,16 @@ function ucfirst(str) {
 
 function get_date() {
     var now = new Date();
+    var hrs = now.getHours();
+    var min = now.getMinutes();
+    var sec = now.getSeconds();
     var then = now.getDay() + '-'
-            + (now.getMonth() + 1) + '-'
-            + now.getFullYear() + ' '
-            + now.getHours() + ':'
-            + now.getMinutes() + ':'
-            + now.getSeconds();
+             + (now.getMonth() + 1) + '-'
+             + now.getFullYear() + ' '
+             + ( hrs < 9 ? '0' + hrs : hrs ) + ':'
+             + ( min < 9 ? '0' + min : min ) + ':'
+             + ( sec < 9 ? '0' + sec : sec );
+
     return then;
 }
 
@@ -677,9 +679,9 @@ function get_time() {
     var hrs = now.getHours();
     var min = now.getMinutes();
     var sec = now.getSeconds();
-    var then = ( hrs.length === 1 ? '0' + hrs : hrs ) + ':'
-             + ( min.length === 1 ? '0' + min : min ) + ':'
-             + ( sec.length === 1 ? '0' + sec : sec );
+    var then = ( hrs < 9 ? '0' + hrs : hrs ) + ':'
+             + ( min < 9 ? '0' + min : min ) + ':'
+             + ( sec < 9 ? '0' + sec : sec );
     return then;
 }
 

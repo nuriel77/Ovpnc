@@ -102,11 +102,13 @@ sub start {
                 if ( $_file_pid == $_pid ) {
 
                     # Report status ok
+                    # ================
                     return { status => 'Server started ok with pid ' . $_pid };
                 }
                 else {
 
-                    # Report the error
+                    # Report error
+                    # ============
                     return {
                             error => 'Found two different pid numbers: Active: '
                           . $_pid

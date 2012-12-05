@@ -19,24 +19,28 @@ sub action {
 
     return unless $config;
 
-    # remove trailing /
-    # =================
-    $config->{openvpn_dir} =~ s/\/$//;
+    # Set in accessor
+    # ===============
+    $self->cfg( $config );
 
-    $openvpn_user = $config->{openvpn_user};
+    # OpenVPN dir
+    # ===========
+    $self->cfg->{openvpn_dir} = $self->cfg->{openvpn_dir} =~ /^\//
+        ? $self->cfg->{openvpn_dir}
+        : $self->cfg->{home} . '/' . $self->cfg->{openvpn_dir};
+
+    # OpenVPN user
+    # ============
+    $openvpn_user = $self->cfg->{openvpn_user};
 
     $distro       = distribution_name || 'unknown';
     $os           = 'linux';
-
-    # Set in accessor
-    # ===============
-    $self->cfg($config);
 
     # Set openssl.cnf location
     # ========================
     $self->cfg->{openssl_conf} = $self->cfg->{openssl_conf} =~ /^\//
         ? $self->cfg->{openssl_conf}
-        : $self->cfg->{home} . '/' . $config->{openvpn_dir} . '/' . $self->cfg->{openssl_conf};
+        : $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openssl_conf};
 
     # Prepare hash with
     # list of all checks

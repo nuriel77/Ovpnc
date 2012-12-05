@@ -38,6 +38,7 @@ around [qw(index)] => sub {
     my $err = Ovpnc::Plugins::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
+        $c->response->body( $err );
         $c->forward('View::JSON');
         return;
     }
