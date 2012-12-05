@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Nov 30, 2012 at 04:53 PM
+-- Generation Time: Dec 06, 2012 at 12:14 AM
 -- Server version: 5.1.63-0+squeeze1-log
 -- PHP Version: 5.3.18-1~dotdeb.0
 
@@ -47,6 +47,15 @@ CREATE TABLE IF NOT EXISTS `roles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
 
+--
+-- Dumping data for table `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`) VALUES
+(1, 'admin'),
+(2, 'can_edit'),
+(3, 'client');
+
 -- --------------------------------------------------------
 
 --
@@ -71,6 +80,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Ovpnc Users for OpenVPN' AUTO_INCREMENT=9 ;
 
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `enabled`, `username`, `password`, `password_expires`, `fullname`, `email`, `phone`, `address`, `revoked`, `created`, `modified`) VALUES
+(1, 1, 'ovpncadmin', '$2$14$XBz98gwkk1vI/YeUyQmma.6nZJZdu0Y94/joNXWxdi.74s/KKrpXK', '2019-01-01 00:00:00', 'Ovpnc Administrator', 'ovpnc@localhost', '0000', '0000', 0, '2012-11-28 05:20:00', '2012-12-05 23:13:30');
+
 -- --------------------------------------------------------
 
 --
@@ -83,6 +99,13 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   PRIMARY KEY (`user_id`,`role_id`),
   KEY `role_id` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `user_roles`
+--
+
+INSERT INTO `user_roles` (`user_id`, `role_id`) VALUES
+(1, 1);
 
 --
 -- Constraints for dumped tables
@@ -98,8 +121,8 @@ ALTER TABLE `log`
 -- Constraints for table `user_roles`
 --
 ALTER TABLE `user_roles`
-  ADD CONSTRAINT `user_roles_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `user_roles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `user_roles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_roles_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
