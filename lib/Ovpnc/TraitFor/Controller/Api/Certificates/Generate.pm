@@ -83,7 +83,10 @@ sub init_ca {
     # to the extracted path from the cert
     # ===================================
     my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
-    $self->_keys_dir($_keys_dir);
+    $self->_keys_dir( $_keys_dir );
+
+    mkdir $self->_keys_dir, 0770
+        if ! -e $self->_keys_dir;
 
     my ( $uid, $gid ) = $self->get_user_group_id;
 
