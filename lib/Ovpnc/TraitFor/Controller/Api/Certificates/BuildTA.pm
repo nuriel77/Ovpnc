@@ -114,32 +114,5 @@ sub build_ta
 
 }
 
-=head2 _verify_new
 
-Verify whether the file we are about
-to create is new or not. If there is
-already a file we save its digest
-and later compare it with
-the newely generated file.
-MD5Sum returns to user when everything
-goes alright.
-
-=cut
-=comment
-sub _verify_new {
-    my ( $self, $file ) = @_;
-    return file_md5_hex( $file )
-        if -e $file;
-}
-
-sub _verify_created {
-    my ( $self, $file, $old_digest ) = @_;
-
-    my $_new_digest = file_md5_hex( $file ) or return undef;
-
-    return undef if $old_digest and $old_digest eq $_new_digest;
-
-    return $_new_digest;
-}
-=cut
 1;
