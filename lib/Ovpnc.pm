@@ -87,7 +87,12 @@ __PACKAGE__->config(
             user        => $ENV{MYSQL_USER} ||= 'ovpnc',
             password    => ( $ENV{MYSQL_PASSFILE}
                 ? read_file( $ENV{MYSQL_PASSFILE}, chomp => 1 )
-                : read_file( 'config/.mysql', chomp => 1 )
+                : read_file(
+                    getcwd . '/'
+                    . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : '' )
+                    . ( getcwd =~ /Ovpnc$/ ? '' : '/Ovpnc' )
+                    . '/config/.mysql', chomp => 1
+                )
             ),
             AutoCommit  => q{1},
         }
