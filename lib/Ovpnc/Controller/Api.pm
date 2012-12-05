@@ -5,7 +5,6 @@ use Ovpnc::Plugins::Connector;
 use Moose;
 use Linux::Distribution;
 use Cwd;
-#use File::Slurp;
 use vars qw( $ovpnc_conf $mgmt_passwd_file );
 use namespace::autoclean;
 
@@ -27,7 +26,7 @@ OpenVPN Controller API
 has cfg => (
     is => 'rw',
     isa => 'HashRef',
-    predicate => '_has_çfg',
+    predicate => '_has_cfg',
 );
 
 =head1 METHODS

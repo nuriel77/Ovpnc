@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Root;
 use warnings;
 use strict;
+use Cwd;
 use Ovpnc::Plugins::Sanity;
 use Moose;
 use namespace::autoclean;
@@ -43,6 +44,13 @@ methods execute
 around [qw(ovpnc_config index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+    if ( $c->config->{ovpnc_conf} !~ /^\// ){
+        $c->config->{ovpnc_conf} = getcwd . '/'
+          . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} . '/' : '' )
+          . ( getcwd =~ /Ovpnc$/ ? '' : 'Ovpnc' )
+          . '/' . $c->config->{ovpnc_conf};
+    }
+
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
         $c->config->{ovpnc_conf}, 'UserName' );
@@ -54,7 +62,7 @@ around [qw(ovpnc_config index)] => sub {
     if ( $_err and ref $_err eq 'ARRAY' ) {
         $c->response->status(500);
         delete $c->stash->{assets} if $c->stash->{assets};
-        $c->stash->{error} = join "", @{$_err};
+        $c->stash->{error} = $_err;
         $c->forward('View::JSON');
         $c->detach;
     }
