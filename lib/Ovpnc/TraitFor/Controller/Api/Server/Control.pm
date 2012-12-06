@@ -105,8 +105,8 @@ sub start {
             if ( -e $self->openvpn_pid and -r $self->openvpn_pid ) {
                 undef $_pid;
                 $_pid = $self->_check_running;
-                my $_file_pid = read_file( $self->openvpn_pid );
-                chomp($_file_pid);
+                my $_file_pid = read_file( $self->openvpn_pid, chomp => 1 );
+
                 if ( $_file_pid == $_pid ) {
 
                     # Report status ok
@@ -238,10 +238,8 @@ sub _check_running {
     my $_pid;
     my $openvpn_bin = $self->openvpn_bin;
 
-    if ( -e $self->openvpn_pid ) {
-        $_pid = read_file( $self->openvpn_pid )
-          or die "Cannot read pidfile '" . $self->openvpn_pid . "': $!";
-        chomp $_pid;
+    if ( -e $self->openvpn_pid and -r $self->openvpn_pid ) {
+        $_pid = read_file( $self->openvpn_pid, chomp => 1 );
     }
     else {
         die "Pidfile does not exists: " . $self->openvpn_pid;

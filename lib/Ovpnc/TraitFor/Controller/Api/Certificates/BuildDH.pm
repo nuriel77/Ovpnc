@@ -43,12 +43,16 @@ sub build_dh
     # =======================
     my $_tools_dir = $self->_cfg->{openvpn_utils};
 
+    my $ovpnc_conf = $self->_cfg->{ovpnc_conf} =~ /^\//
+        ? $self->_cfg->{ovpnc_conf}
+        : $self->_cfg->{home} . '/' . $self->_cfg->{ovpnc_conf};
+
     # The DH file to process
     # ======================
     my $_dh_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $self->_cfg->{ovpnc_conf}, 'Dh' );
+        $ovpnc_conf, 'Dh' );
 
-    $_dh_file = $_tools_dir . '/keys/' . $_dh_file
+    $_dh_file = $self->_cfg->{home} . '/' . $_dh_file
         unless $_dh_file =~ /^\//;
 
     # Confirm writable if exists
@@ -132,7 +136,6 @@ sub build_dh
 
         chmod 0640, $_dh_file
             or $_out .= ';Warning! Could not chmod 0640 ' . $_dh_file . ': ' . $!;
-
 
         # Ok
         # ==

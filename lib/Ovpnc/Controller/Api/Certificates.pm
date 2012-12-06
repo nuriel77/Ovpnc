@@ -242,6 +242,7 @@ sub _build_ta : Private {
 
     if ( my $_ret_val = $self->_roles->build_ta ) {
         if ( ref $_ret_val eq 'HASH' ){
+	    return $_ret_val if $_ret_val->{error};
             warn "Did not chown 0400 new tls file!"
                 unless $self->_roles->set_chown_chmod(
                     $_ret_val->{status}->{filename} ? $_ret_val->{status}->{filename} : undef,
@@ -271,6 +272,10 @@ sub _gen_ca : Private{
     # Setup the keys dir
     # =====================
     my $_ret_val = $self->_roles->init_ca( @_ );
+
+    if ( defined $_ret_val && ref $_ret_val eq 'HASH' && $_ret_val->{error} ){
+	return $_ret_val;
+    }
 
     if ( defined $_ret_val && ref $_ret_val ){
 

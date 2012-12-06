@@ -2,7 +2,6 @@ package Ovpnc::Plugins::ChainCA;
 use strict;
 use warnings;
 use utf8;
-use MIME::Base64;
 use POSIX;
 use IPC::Cmd qw( can_run run );
 use Crypt::OpenSSL::CA;
@@ -79,6 +78,61 @@ sub gen_private_key {
     return $self->_ca_privkey_as_text;
 }
 
+=head2 gen_via_pitool
+
+Generate CA root certificate
+using the openvpn pkitool
+
+=cut
+
+sub gen_via_pkitool {
+    my ( $self,	$params, $cfg ) = @_;
+
+    # In openssl by default these are commented.
+    # To make sure this works, will add it to the
+    # end of the file, we will create a temp.
+    # ==========================================
+    my $_openssl_conf = $cfg->{ssl_config} . '.working';
+    copy ( $cfg->{ssl_config}, $_openssl_conf )
+        or die "Cannot create a working copy of "
+                . $_openssl_conf . ": " . $!;
+
+    $ENV{KEY_CONFIG} = $_openssl_conf;
+
+    my $_cmd = <<_OO_;
+sed -i 's/^#\\(organizationalUnitName_default = \$ENV::KEY_OU\\)/\\1/' $_openssl_conf ;
+sed -i 's/^#\\(commonName_default = \$ENV::KEY_CN\\)/\\1/' $_openssl_conf ;
+sed -i 's/^#\\(name_default = \$ENV::KEY_NAME\\)/\\1/' $_openssl_conf ;
+_OO_
+
+    my $_ret_val = `$_cmd`;
+    return { error => 'Could not update temporary working ' . $_openssl_conf }
+        if ( $? >> 8 != 0 );   
+
+    my @_cmd = (
+        $cfg->{openvpn_utils} . '/pkitool',
+        '--initca'
+    );
+
+    unless ( can_run( $cfg->{openvpn_utils} . '/pkitool' ) ){
+        unlink $_openssl_conf;
+        return { error => 'Cannot run pkitool! ' . $! };
+    }
+
+    # Run command
+    # ===========
+    my ( $success, $error_code, $full_buf ) =
+        run( command => [ @_cmd ], verbose => 0, timeout => $TIMEOUT );
+
+    unless ( $success ){
+        return { error => 'Failed to create csr and key: '
+            . join( "\n", @{$full_buf} ) . ", " . $error_code }
+    }
+    else {
+        return { status => join( "\n", @{$full_buf} ) };
+    }
+
+}
 
 =head2 gen_ca_certificate
 
@@ -155,7 +209,7 @@ sub gen_ca_certificate {
 
     # v3 extention data
     # =================
-    $ca_cert->set_extension("basicConstraints", "CA:TRUE", -critical => 0);
+    $ca_cert->set_extension( basicConstraints => "CA:TRUE", -critical => 0);
 
     my $ca_keyid = $ca_pubkey->get_openssl_keyid;
     $ca_cert->set_extension("subjectKeyIdentifier", $ca_keyid);
@@ -180,6 +234,7 @@ sub gen_ca_certificate {
 
 sub gen_certificate {
     my ( $self, $params, $cfg ) = @_;
+
     # Check that we don't already
     # have some client with this name
     # ================================
@@ -253,10 +308,13 @@ _OO_
         # ================
         unlink $_openssl_conf;
 
-        unless ( $success ){
+        if ( !$success ){
             return { error => 'Failed to create csr and key: '
                 . join( "\n", @{$full_buf} ) . ", " . $error_code }
         }
+    	else {
+	        return { status => join( "\n", @{$full_buf} ) };
+    	}
 
     }
     else {
@@ -300,7 +358,6 @@ _OO_
             }
         }
     }
-
     return { status => 'Ok' };
 }
 
@@ -356,16 +413,20 @@ sub _get_ca_key_and_cert {
     # ===================================
     my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
 
+    $_keys_dir = $_keys_dir =~ /^\//
+	? $_keys_dir
+	: $cfg->{home} . '/' . $_keys_dir;
+
     # Get the Root CA key
     # ===================
-    my $_ca_key = read_file ( $ca_key_file, chomp => 1 )
+    my $_ca_key = read_file ( $cfg->{home} . '/' . $ca_key_file, chomp => 1 )
         or die "Cannot read CA key, make sure it has been created.";
     my $ca_privkey = Crypt::OpenSSL::CA::PrivateKey->
         parse( $_ca_key );
 
     # Get the Root CA certificate
     # ===========================
-    my $_ca_cert = read_file ( $ca_cert_file, chomp => 1 )
+    my $_ca_cert = read_file ( $cfg->{home} . '/' . $ca_cert_file, chomp => 1 )
         or die "Cannot read CA certificate, make sure it has been created.";
     my $ca_cert = Crypt::OpenSSL::CA::X509->
         parse( $_ca_cert );
