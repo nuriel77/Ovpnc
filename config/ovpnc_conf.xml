@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Nodes>
   <Node id="0">
-    <ConfigFile>/home/ovpnc/Ovpnc/openvpn/conf/openvpn.conf.ovpnc</ConfigFile>
+    <ConfigFile>openvpn.conf.ovpnc</ConfigFile>
     <Directives>
       <Group id="0">
         <Directive status="1">
