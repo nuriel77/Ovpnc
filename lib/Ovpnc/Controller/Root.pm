@@ -44,6 +44,8 @@ methods execute
 around [qw(ovpnc_config index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+    # Set ovpnc conf location
+    # =======================
     if ( $c->config->{ovpnc_conf} !~ /^\// ){
         $c->config->{ovpnc_conf} = getcwd . '/'
           . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} . '/' : '' )
@@ -51,6 +53,8 @@ around [qw(ovpnc_config index)] => sub {
           . '/' . $c->config->{ovpnc_conf};
     }
 
+    # Get the openvpn user
+    # ====================
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
         $c->config->{ovpnc_conf}, 'UserName' );
@@ -67,9 +71,12 @@ around [qw(ovpnc_config index)] => sub {
         $c->detach;
     }
     else {
+        $self->_apply_username_to_stash( $c );
         return $self->$orig($c);
     }
 };
+
+
 
 =head2 index
 
@@ -189,10 +196,33 @@ sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
     # Include JS/CSS
+    # ==============
     $self->include_default_links($c);
 
-    $c->stash->{username} = $c->user->get("name")
-      if ( $c->user_exists );
+    $self->_apply_username_to_stash($c)
+        unless $c->stash->{username};
+}
+
+
+=head2 _apply_username_to_stash
+
+Gets the username currently logged in
+and puts it into the stash
+
+=cut
+
+sub _apply_username_to_stash : Private
+{
+    my ( $self, $c ) = @_;
+    if ( $c->user_exists ){
+        $c->stash->{username} = $c->user->get("name");
+        if ( $c->user->_user->{_column_data}->{username}
+            && !$c->stash->{username}
+        ){
+            $c->stash->{username} =
+                $c->user->_user->{_column_data}->{username};
+        }
+    }
 }
 
 =head1 AUTHOR
