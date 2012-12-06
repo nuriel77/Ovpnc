@@ -31,6 +31,7 @@ has vpn => (
 
 has [
     qw/
+      app_root
       openvpn_bin
       openvpn_config
       openvpn_tmpdir
@@ -62,9 +63,9 @@ sub start {
         $self->_check_management_password;
 
         my @cmd = (
-            '/usr/bin/sudo', $self->openvpn_bin,
-            '--writepid',    $self->openvpn_pid,
-            '--management', '127.0.0.1', '7505',
+            '/usr/bin/sudo',        $self->openvpn_bin,
+            '--writepid',           $self->openvpn_pid,
+            '--management',         '127.0.0.1', '7505',
             $self->mgmt_passwd_file,
             '--management-log-cache', 2000,
             '--tls-server',
@@ -74,10 +75,10 @@ sub start {
             '--client-connect',    '/bin/client_connect',
             '--client-disconnect', '/bin/client_disconnect',
             '--echo',              'on all',
-            '--tmp-dir',           '/tmp',
-            '--ccd-exclusive',     '--cd',
-            '/',                   '--config',
-            $self->openvpn_config
+            '--tmp-dir',           $self->openvpn_tmpdir,
+            '--ccd-exclusive',
+            '--cd',                '/',
+            '--config',            $self->app_root . '/' . $self->openvpn_config,
         );
 
         warn join " ", @cmd;
