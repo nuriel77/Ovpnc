@@ -28,6 +28,10 @@ sub build_ta
 {
     my $self = shift;
 
+    my $ovpnc_conf = $self->_cfg->{ovpnc_conf} =~ /^\//
+        ? $self->_cfg->{ovpnc_conf}
+        : $self->_cfg->{home} . '/' . $self->_cfg->{ovpnc_conf};
+
     # OpenVPN tools directory
     # =======================
     my $_tools_dir = $self->_cfg->{openvpn_utils};
@@ -35,9 +39,9 @@ sub build_ta
     # The DH file to process
     # ======================
     my $_ta_key = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $self->_cfg->{ovpnc_conf}, 'TlsKey' );
+        $ovpnc_conf, 'TlsKey' );
 
-    $_ta_key = $_tools_dir . '/keys/' . $_ta_key
+    $_ta_key = $self->_cfg->{home} . '/' . $_ta_key
         unless $_ta_key =~ /^\//;
 
     # Confirm writable if exists
@@ -95,7 +99,6 @@ sub build_ta
 
         chmod 0640, $_ta_key
             or $_out .= ';Warning! Could not chmod 0640 ' . $_ta_key . ': ' . $!;
-
 
         # Ok
         # ==
