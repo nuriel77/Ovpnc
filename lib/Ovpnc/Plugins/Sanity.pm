@@ -189,9 +189,9 @@ sub action {
           Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
             $self->cfg->{ovpnc_conf} );
 
-        $self->cfg->{openvpn_conf} = /^\//
+        $self->cfg->{openvpn_conf} = $self->cfg->{openvpn_conf} =~ /^\//
             ? $self->cfg->{openvpn_conf}
-            : $self->cfg->{openvpn_dir} . '/conf/' . $self->cfg->{openvpn_conf};
+            : $self->cfg->{home} . '/' . $self->cfg->{openvpn_conf};
 
         # Check binary
         # ============
