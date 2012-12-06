@@ -60,15 +60,18 @@ directory.
 sub init_ca {
     my ( $self, $params ) = @_;
 
-    # Generate key/cert
-    # =================
-    my $priv_key = $self->_ca->gen_private_key;
-    my $cert = $self->_ca->gen_ca_certificate( $priv_key, $params );
+    my $ovpnc_conf = $self->_cfg->{ovpnc_conf} =~ /^\//
+        ? $self->_cfg->{ovpnc_conf}
+        : $self->_cfg->{home} . '/' . $self->_cfg->{ovpnc_conf};
 
     # Get the filename of the CA cert
     # ===============================
     my $ca_cert_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $self->_cfg->{ovpnc_conf}, 'Ca' );
+        $ovpnc_conf, 'Ca' );
+
+    $ca_cert_file = $ca_cert_file =~ /^\//
+	? $ca_cert_file
+	: $self->_cfg->{home} . '/' . $ca_cert_file;
 
     # Auto-append key for the key filename
     # ====================================
@@ -82,43 +85,76 @@ sub init_ca {
     # Determine the keys dir according
     # to the extracted path from the cert
     # ===================================
-    my ($_keys_dir) = $ca_cert_file =~ /^(.*)\/.*$/;
+    my ( $_keys_dir ) = $ca_cert_file =~ /^(.*)\/.*$/;
     $self->_keys_dir( $_keys_dir );
 
-    mkdir $self->_keys_dir, 0770
-        if ! -e $self->_keys_dir;
+    if ( ! -e $self->_keys_dir ) {
+        mkdir $self->_keys_dir, 0770
+    }
+    else {
+        # Generate new serial file and index.txt
+        # ======================================
+        if ( my @_to_remove = glob($_keys_dir . '/*') ){
+            unlink ( @_to_remove )
+                or die "Cannot clean " . $_keys_dir . '/* :' . $!;
+        }
+    }
 
     my ( $uid, $gid ) = $self->get_user_group_id;
+    
+    # Override Perl's Crypt::OpenSSL::CA
+    # ==================================
+    unless ( $self->_cfg->{ssl_via_perl} ){
+        
+        my $_rv = $self->_ca->gen_via_pkitool( $params, $self->_cfg );
+        if ( $_rv && ref $_rv eq 'HASH' && $_rv->{status} ){
 
-    # Generate new serial file and index.txt
-    # ======================================
-    if ( my @_to_remove = glob($_keys_dir . '/*') ){
-        unlink ( @_to_remove )
-            or die "Cannot clean " . $_keys_dir . '/* :' . $!;
+            # Generate index.txt and serial
+            # =============================
+            unless ( $self->_write_to_file({
+                serial => {
+                    data => "01\n",
+                    file => $self->_keys_dir . '/serial',
+                    mode => 0660,
+                    backup => 0,
+                    group => $gid,
+                    user => $uid,
+                },
+                indexer => {
+                    data => '',
+                    file => $self->_keys_dir . '/index.txt',
+                    mode => 0660,
+                    backup => 0,
+                    group => $gid,
+                    user => $uid,
+                },
+            })){
+                return { error => 'Could not create new serial and/or index.txt!' };
+            }
+            # Return output from ca creation
+            # ==============================
+            my $_digest->{crt} = file_md5_hex( $ca_cert_file );
+            $_digest->{key} = file_md5_hex( $ca_key_file );
+            return [
+                {
+                    filename => $ca_cert_file,
+                    digest => $_digest->{crt}
+                },
+                {
+                    filename => $ca_key_file,
+                    digest => $_digest->{key}
+                }
+            ];
+        }
+
+        return $_rv
+            if ( $_rv && ref $_rv eq 'HASH' && $_rv->{error} );
+        return { error =>
+            'Something went wrong while creating root CA' };
     }
 
-    # Write data to file(s)
-    # =====================
-    unless ( $self->_write_to_file({
-        serial => {
-            data => "01\n",
-            file => $self->_keys_dir . '/serial',
-            mode => 0660,
-            backup => 0,
-            group => $gid,
-            user => $uid,
-        },
-        indexer => {
-            data => '',
-            file => $self->_keys_dir . '/index.txt',
-            mode => 0660,
-            backup => 0,
-            group => $gid,
-            user => $uid,
-        },
-    })){
-        return { error => 'Could not create new serial and/or index.txt!' };
-    }
+    my $priv_key = $self->_ca->gen_private_key;
+    my $cert = $self->_ca->gen_ca_certificate( $priv_key, $params );
 
     # Write the key/cert to file
     # ==========================
