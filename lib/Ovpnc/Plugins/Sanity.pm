@@ -106,18 +106,12 @@ sub action {
             my ( undef, $st, undef, undef, undef, undef, undef, undef, $home ) =
             getpwnam $self->cfg->{openvpn_user} )
         {
-
-            # Check if user is diabled
-            # ========================
-            return "User " . $self->cfg->{openvpn_user} . " is disabled"
-              if ( $st ne 'x' );
-
             # Make sure user does
             # not have a login shell
             # ======================
             return
 "User has a login shell, please disable it by changing the shell entry of this user in the /etc/passwd to /sbin/nologin"
-              if ( $home !~ /\/sbin\/nologin|\/bin\/false/ )
+              if ( $home !~ /nologin|\/bin\/false/ )
 
         }
         else {
@@ -143,16 +137,6 @@ sub action {
             = getpwnam $self->cfg->{ovpnc_user}
           )
         {
-
-            # Check if user is diabled
-            # ========================
-            return "User " . $self->cfg->{ovpnc_user} . " is disabled"
-              if $st ne 'x';
-
-# Make sure user does not have a login shell
-#return "User has a login shell, please disable it by changing the shell entry of this user in the /etc/passwd to /sbin/nologin"
-#	if ( $home !~ /\/sbin\/nologin|\/bin\/false/ )
-
             # Check if openvpn user is in the group of ovpnc
             return (
                 ( getgrgid($group_id) )[3] !~ /$openvpn_user/
