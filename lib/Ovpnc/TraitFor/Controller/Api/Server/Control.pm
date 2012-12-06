@@ -75,7 +75,7 @@ sub start {
             '--client-connect',    '/bin/client_connect',
             '--client-disconnect', '/bin/client_disconnect',
             '--echo',              'on all',
-            '--tmp-dir',           $self->openvpn_tmpdir,
+            '--tmp-dir',           '/tmp', #$self->openvpn_tmpdir,
             '--ccd-exclusive',
             '--cd',                '/',
             '--config',            $self->app_root . '/' . $self->openvpn_config,
