@@ -206,6 +206,7 @@ sub server_POST : Local
         openvpn_pid    => $self->cfg->{openvpn_pid},
         openvpn_config => $self->cfg->{openvpn_config},
         openvpn_tmpdir => $self->cfg->{tmp_dir},
+        app_root       => $c->config->{home},
         mgmt_passwd_file => $self->cfg->{mgmt_passwd_file},
     ) or die "Could not get role 'Control': $!";
 
