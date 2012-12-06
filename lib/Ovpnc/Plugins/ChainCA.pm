@@ -2,7 +2,6 @@ package Ovpnc::Plugins::ChainCA;
 use strict;
 use warnings;
 use utf8;
-use MIME::Base64;
 use POSIX;
 use IPC::Cmd qw( can_run run );
 use Crypt::OpenSSL::CA;
