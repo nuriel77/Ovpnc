@@ -27,11 +27,15 @@ methods execute
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+    my $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
+        ? $c->config->{ovpnc_conf}
+        : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
+
     # Assign config params
     # ====================
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $c->config->{ovpnc_conf}, 'UserName' );
+        $ovpnc_conf, 'UserName' );
 
     # Sanity check
     # ============
