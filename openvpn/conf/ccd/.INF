@@ -1,0 +1,5 @@
+This is the default location for the client-config-dir
+Ovpnc uses the --ccd-exclusive which means a client
+(comman-name) must match one of the files.
+For more information on what goes into these files
+refer to the OpenVPN documentation.
