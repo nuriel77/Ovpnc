@@ -4,6 +4,8 @@ apt-get install build-essential \
                 libstring-mkpasswd-perl \
                 libmath-gmp-perl \
                 libssl-dev \
+                libexpect-perl \
+                libcrypt-rijndael-perl \
                 libnet-ssleay-perl \
                 libintl-xs-perl \
                 libexpat1-dev \
