@@ -23,6 +23,12 @@ sub action {
     # ===============
     $self->cfg( $config );
 
+    # OpenVPN/Ovpnc XML
+    # =================
+     $self->cfg->{ovpnc_conf} = $self->cfg->{ovpnc_conf} =~ /^\//
+        ? $self->cfg->{ovpnc_conf}
+        : $self->cfg->{home} . '/' . $self->cfg->{ovpnc_conf};
+
     # OpenVPN dir
     # ===========
     $self->cfg->{openvpn_dir} = $self->cfg->{openvpn_dir} =~ /^\//
@@ -183,6 +189,10 @@ sub action {
           Ovpnc::Controller::Api::Configuration->get_openvpn_config_file(
             $self->cfg->{ovpnc_conf} );
 
+        $self->cfg->{openvpn_conf} = /^\//
+            ? $self->cfg->{openvpn_conf}
+            : $self->cfg->{openvpn_dir} . '/conf/' . $self->cfg->{openvpn_conf};
+
         # Check binary
         # ============
         if ( !-e $self->cfg->{openvpn_bin} ) {
@@ -240,10 +250,10 @@ sub action {
             return $self->cfg->{openvpn_conf}
               . " not found or not readable(openvpn_conf)";
         }
-        elsif (!-e $self->cfg->{ovpnc_config_schema}
-            || !-r $self->cfg->{ovpnc_config_schema} )
+        elsif (!-e $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema}
+            || !-r $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema} )
         {
-            return $self->cfg->{ovpnc_config_schema}
+            return $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema}
               . " not found or not readable or not writable (should be both)";
         }
 

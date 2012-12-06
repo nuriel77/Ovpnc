@@ -176,7 +176,6 @@ sub assign_params : Private {
         ? $c->config->{ovpnc_conf}
         : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
 
-
     # OpenVPN Dir
     # ===========
     $cfg->{openvpn_dir} = $cfg->{home} . '/' . $cfg->{openvpn_dir}
@@ -195,7 +194,6 @@ sub assign_params : Private {
         )
     )};
     $c->config->{openvpn_user} = $_openvpn_user;
-
 
     my $_cfg = {
 
