@@ -250,10 +250,10 @@ sub action {
             return $self->cfg->{openvpn_conf}
               . " not found or not readable(openvpn_conf)";
         }
-        elsif (!-e $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema}
-            || !-r $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema} )
+        elsif (! $self->cfg->{ovpnc_config_schema}
+            || ! $self->cfg->{ovpnc_config_schema} )
         {
-            return $self->cfg->{home} . '/'. $self->cfg->{ovpnc_config_schema}
+            return $self->cfg->{ovpnc_config_schema}
               . " not found or not readable or not writable (should be both)";
         }
 
@@ -319,3 +319,4 @@ sub action {
 }
 
 1;
+
