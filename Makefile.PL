@@ -15,6 +15,7 @@ requires 'boolean';
 requires 'fields';
 requires 'Module::Locate';
 requires 'Moose';
+requires 'MooseX::Traits';
 requires 'Scalar::Util';
 requires 'Proc::ProcessTable'; 
 requires 'Proc::Simple';

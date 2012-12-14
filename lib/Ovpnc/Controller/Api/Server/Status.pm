@@ -134,6 +134,7 @@ sub status_GET : Local
     ) or die "Could not get role '" . ucfirst($_fn) . "': $!";
 
     # Check connection to mgmt port
+    # =============================
     if ( my $_status = $_role->get_status ) {
         $self->_disconnect_vpn;
         $self->status_ok( $c, entity => $_status );
@@ -141,9 +142,12 @@ sub status_GET : Local
     }
     else {
         $self->_disconnect_vpn;
-        $self->gone( $c,
-            message =>
-              'Did not get status data from management port, might be down' );
+        $self->status_ok( $c,
+            entity =>
+            {
+                status => 'Server offline'
+            }
+        );
         return undef;
     }
 }
@@ -154,12 +158,11 @@ sub end : Private {
     # Clean up the File::Assets
     # it is set to null but
     # is not needed in JSON output
+    # ============================
     delete $c->stash->{assets};
 
-    # Debug if requested
-    die "forced debug" if $c->req->params->{dump_info};
-
     # Forward to JSON view
+    # ====================
     $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }

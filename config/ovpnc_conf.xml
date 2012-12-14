@@ -45,31 +45,31 @@
         <Directive status="1">
           <Name>ca</Name>
           <Params>
-            <Ca>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/ca.crt</Ca>
+            <Ca>openvpn/conf/2.0/keys/ca.crt</Ca>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>cert</Name>
           <Params>
-            <Certificate>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/server.crt</Certificate>
+            <Certificate>openvpn/conf/2.0/keys/someserver.crt</Certificate>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>dh</Name>
           <Params>
-            <Dh>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/dh.pem</Dh>
+            <Dh>openvpn/conf/2.0/keys/dh.pem</Dh>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>key</Name>
           <Params>
-            <Key>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/server.key</Key>
+            <Key>openvpn/conf/2.0/keys/someserver.key</Key>
           </Params>
         </Directive>
         <Directive status="1">
           <Name>tls-auth</Name>
           <Params>
-            <TlsKey>/home/ovpnc/Ovpnc/openvpn/conf/2.0/keys/ta.key</TlsKey>
+            <TlsKey>openvpn/conf/2.0/keys/ta.key</TlsKey>
             <TlsMode>0</TlsMode>
           </Params>
         </Directive>
@@ -103,7 +103,7 @@
         <Directive status="1">
           <Name>ifconfig-pool-persist</Name>
           <Params>
-            <PoolFile>/home/ovpnc/Ovpnc/openvpn/conf/ipp.txt</PoolFile>
+            <PoolFile>openvpn/conf/ipp.txt</PoolFile>
             <RefreshPoolFile>5</RefreshPoolFile>
           </Params>
         </Directive>
@@ -125,7 +125,7 @@
         <Directive status="1">
           <Name>chroot</Name>
           <Params>
-            <ChrootDir>/home/ovpnc/Ovpnc/openvpn</ChrootDir>
+            <ChrootDir>openvpn</ChrootDir>
           </Params>
         </Directive>
         <Directive status="1">
@@ -169,7 +169,7 @@
         <Directive status="1">
           <Name>log-append</Name>
           <Params>
-            <LogFile>/home/ovpnc/Ovpnc/openvpn/var/log/openvpn.log</LogFile>
+            <LogFile>openvpn/var/log/openvpn.log</LogFile>
           </Params>
         </Directive>
         <Directive status="1">
@@ -181,7 +181,7 @@
         <Directive status="1">
           <Name>status</Name>
           <Params>
-            <StatusFile>/home/ovpnc/Ovpnc/openvpn/var/log/openvpn-status.log</StatusFile>
+            <StatusFile>openvpn/var/log/openvpn-status.log</StatusFile>
             <StatusSec>3</StatusSec>
           </Params>
         </Directive>

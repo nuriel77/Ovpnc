@@ -112,7 +112,6 @@
                     console.log("Ajax got back: %o", rest);
                 },
                 error: error_func ? error_func : function(xhr, ajaxOptions, thrownError) {
-                    $.Ovpnc().process_err(xhr.status, xhr.responseText);
                     this.tryCount++;
                     if (this.tryCount <= this.retryLimit) {
                         //try again
@@ -138,8 +137,9 @@
             if (msg.rest !== undefined) {
                 $.each(msg.rest, function(k, v) {
                     if (k == "error" && v == "Server offline") {
-                        obj.rest.status = v;
-                        update_server_status(obj);
+                    obj.rest.status = v;
+                        update_server_status( obj );
+						return;
                     }
                     else {
                         console.log( k + " -> " + v );
@@ -414,7 +414,6 @@ function canJSON(value) {
 }
 
 function update_server_status(r) {
-
     if (r !== undefined && r.rest !== undefined) {
         // If we get status back, display
         if (r.rest.status !== undefined) {
@@ -463,8 +462,6 @@ function server_ajax_control(cmd) {
         if (r !== undefined && r.rest !== undefined) {
             r.status = new Object();
             r.status = r.rest.status;
-            console.log("reply: %o", r.status);
-
             // Check returned /started/
             if (cmd == 'start') {
                 if (r.status.match(/started/)) {
@@ -668,9 +665,9 @@ function get_date() {
     var then = now.getDay() + '-'
              + (now.getMonth() + 1) + '-'
              + now.getFullYear() + ' '
-             + ( hrs < 9 ? '0' + hrs : hrs ) + ':'
-             + ( min < 9 ? '0' + min : min ) + ':'
-             + ( sec < 9 ? '0' + sec : sec );
+             + ( hrs < 10 ? '0' + hrs : hrs ) + ':'
+             + ( min < 10 ? '0' + min : min ) + ':'
+             + ( sec < 10 ? '0' + sec : sec );
 
     return then;
 }
@@ -680,9 +677,9 @@ function get_time() {
     var hrs = now.getHours();
     var min = now.getMinutes();
     var sec = now.getSeconds();
-    var then = ( hrs < 9 ? '0' + hrs : hrs ) + ':'
-             + ( min < 9 ? '0' + min : min ) + ':'
-             + ( sec < 9 ? '0' + sec : sec );
+    var then = ( hrs < 10 ? '0' + hrs : hrs ) + ':'
+             + ( min < 10 ? '0' + min : min ) + ':'
+             + ( sec < 10 ? '0' + sec : sec );
     return then;
 }
 

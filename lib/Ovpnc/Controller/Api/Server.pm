@@ -287,7 +287,7 @@ sub sanity : Private {
     # Check connection
     if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
         $self->_disconnect_vpn;    # Just to clear the handle
-        $self->status_gone( $c, message => 'Server offline' );
+        $self->status_ok( $c, entity => { status => 'Server offline' });
         $c->detach;
     }
     return 1;
