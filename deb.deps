@@ -26,10 +26,8 @@ apt-get install build-essential \
                 libfile-homedir-perl \
                 libtemplate-tiny-perl \
                 libfile-chdir-perl \
-                libfile-util-perl \
                 libcss-minifier-xs-perl \
                 libjavascript-minifier-xs-perl \
-                libxml-writer-simple-perl \
                 libxml-dumper-perl \
                 libcommon-sense-perl  \
                 libjson-xs-perl  \
@@ -49,7 +47,6 @@ apt-get install build-essential \
                 libdbix-class-datetime-epoch-perl \
                 libdbix-class-timestamp-perl \
                 libdbix-class-encodedcolumn-perl \
-                libdbix-class-inflatecolumn-ip-perl \
                 libdbix-password-perl \
                 libcrypt-eksblowfish-perl \
                 libauthen-passphrase-perl \
@@ -59,11 +56,8 @@ apt-get install build-essential \
                 libmoosex-traits-pluggable-perl \
                 libcatalyst-modules-extra-perl \
                 libcatalyst-modules-perl \
-                libcatalyst-engine-psgi-perl \
-                libcatalystx-simplelogin-perl \
                 libdata-serializer-perl \
                 libtree-simple-perl \
                 libhtml-formfu-model-dbic-perl \
                 libhtml-formfu-perl \
-                libconvert-pem-perl \
-                starman
+                libconvert-pem-perl
