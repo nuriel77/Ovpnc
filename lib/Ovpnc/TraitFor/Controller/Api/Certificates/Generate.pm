@@ -2,6 +2,7 @@ package Ovpnc::TraitFor::Controller::Api::Certificates::Generate;
 use warnings;
 use strict;
 use File::Copy;
+use File::Touch;
 use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
 use Ovpnc::Plugins::ChainCA;
@@ -206,8 +207,11 @@ sub gen_ca_signed_certificate {
 
         # Sign the new CSR
         # ================
-        my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg );
-        return { status => 'ok' } if $_ret_val;
+        if ( my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg ) ) { 
+            touch $self->_cfg->{openvpn_ccd} . '/' . $params->{name}
+                or warn "Did not create client ccd file: " . $!;
+            return { status => 'ok' };
+        }
     } else {
         return { error => 'Did not create new certificate(s) for ' . $params->{name} };
     }

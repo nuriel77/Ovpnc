@@ -223,8 +223,10 @@
             });
             // Set the right color - on/off notice according
             // to client's status
+            var _checker = 0;
             $('#flexme').find('tr').children('td[abbr="username"]')
                         .children('div').each(function(k, v){
+                _checker++;
                 // we match the username from online_data
                 // to the current tr.td[abbr=username].div.text in the loop
                 // inner_text is in order to get only the username and not
@@ -268,6 +270,9 @@
                     }
                 }
             });
+            if ( _checker === 0 && r.rest.clients.length > 0 ){
+                $('.pReload').click();
+            }
         },
         // The navigation menu
         slide: function(nav_id, pad_out, pad_in, time, multiplier) {
@@ -437,6 +442,7 @@ function update_server_status(r) {
 
         // Update the table with any online clients data
         // This applies only to path /clients
+
         if (r.rest.clients !== undefined
             && $.Ovpnc().pathname === '/clients'
             && $('#flexme').is(':visible')

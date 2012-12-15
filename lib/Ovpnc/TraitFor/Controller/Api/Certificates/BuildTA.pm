@@ -92,12 +92,10 @@ sub build_ta
 
         # Chown & Chmod
         # =============
-        my (undef, undef, $gid) = getgrnam( $self->_cfg->{openvpn_group} );
+        chown $<, $<, $_ta_key
+            or $_out .= ';Warning! Could not chown ' . $< . ':' . $< . ' ' . $_ta_key . ': ' . $!;
 
-        chown $<, $gid, $_ta_key
-            or $_out .= ';Warning! Could not chown ' . $< . ':' . $gid . ' ' . $_ta_key . ': ' . $!;
-
-        chmod 0640, $_ta_key
+        chmod 0400, $_ta_key
             or $_out .= ';Warning! Could not chmod 0640 ' . $_ta_key . ': ' . $!;
 
         # Ok

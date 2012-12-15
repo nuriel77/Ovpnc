@@ -354,7 +354,7 @@ _OO_
             my $_buf = join "", @{$full_buf};
             if ( !$success || $_buf =~ /error/g ){
                 return { error => 'Failed to create csr and key: '
-                    . $_buf . ", " . $error_code }
+                    . $_buf . ", " . ( $error_code ? $error_code : '' ) }
             }
             else {
                 return { status => $_buf };
