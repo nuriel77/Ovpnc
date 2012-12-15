@@ -18,7 +18,7 @@ elements:
                         name: username
                         label: "Username:"
                         attributes_xml:
-                          style: "min-width:220px;float:right"
+                          class: "form_row"
                           id: "username"
                           autofocus: "autofocus"
                         constraints:
@@ -32,7 +32,7 @@ elements:
                         label: "Password:"
                         attributes_xml:
                           id: "password"
-                          style: "min-width:220px;float:right"
+                          class: "form_row"
                         constraints:
                           - Required
               # Email
@@ -44,7 +44,7 @@ elements:
                         label: "Email:"
                         attributes_xml:
                           id: "email"
-                          style: "min-width:220px;float:right"
+                          class: "form_row"
                         constraints:
                           - Required
                           - Email
@@ -57,7 +57,7 @@ elements:
                         label: "Phone:"
                         attributes_xml:
                           id: "phone"
-                          style: "min-width:220px;float:right"
+                          class: "form_row"
                         constraints:
                           - Required
               # Address
@@ -69,7 +69,7 @@ elements:
                         label: "Address:"
                         attributes_xml:
                           id: "address"
-                          style: "min-width:220px;float:right"
+                          class: "form_row"
                         constraints:
                           - Required
         

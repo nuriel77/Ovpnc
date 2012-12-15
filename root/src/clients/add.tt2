@@ -1,3 +1,9 @@
 <div id="add_client">
     [% form %]
 </div>
+<script>
+    // Set events for form
+    // input fields
+    // and submit
+    set_form_events();
+</script>

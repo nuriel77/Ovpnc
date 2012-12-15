@@ -29,6 +29,7 @@ around 'login' => sub {
 
     # Redirect to https if user specified
     # a port in config under 'redirect_https_port'
+    # ============================================
     if ( $c->config->{redirect_https_port} && !$c->req->secure ) {
         $c->redirect( 'https://'
               . $c->req->uri->host . ':'
@@ -36,6 +37,9 @@ around 'login' => sub {
               . $c->req->path );
     }
 
+    # Display warning if user is not
+    # forcing https on login page
+    # ==============================
     unless ( $c->req->secure ) {
         $c->stash->{warning} =
             "Warning: It is recommended to serve this page under HTTPS."
@@ -43,8 +47,10 @@ around 'login' => sub {
     }
 
     $c->stash->{logged_in} = $c->user_exists ? 1 : 0;
+    $c->response->headers->header('Content-Type', 'text/html');
+    Ovpnc::Controller::Root->include_default_links($c);
+    $c->forward('View::HTML');
     return $self->$orig($c);
-
 };
 
 sub remove_cookies : Private {

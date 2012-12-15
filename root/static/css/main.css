@@ -123,10 +123,7 @@ img{
 	color: #f00; 
     position:absolute;
     z-index:9001;
-    margin:3px 0 0 307px;  
-/*	padding: 80px; 
-	max-width:200px;
-	min-width:200px; */ 
+    margin:3px 0 0 407px;
 }
 
 .right_div{
@@ -172,5 +169,6 @@ span.inner_flexi_text {
 }
 
 .label { min-width: 400px; max-width: 400px;  margin:20px;} 
-#middle_div { padding:10px 0 10px 10px; width:96.5%; }
-.submit_form { float:right;margin-right:70px;padding:4px 6px 4px 4px; }
+#middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
+.submit_form { float:right;margin:5px 70px 0 0;padding:4px 6px 4px 4px; }
+.form_row { min-width:270px;float:right; }

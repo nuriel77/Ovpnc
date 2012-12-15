@@ -4,7 +4,7 @@
 		<!-- login form -->
 	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="on">
 	        <fieldset style="border: 0;">
-	            <table>
+	            <table id="login_table">
 	                <tr>
 	                    <td style="min-width:80px"><label class="label" for="username">Username:</label></td>
 	                    <td><input id="username" style="min-width:200px;" type="text" name="username" value="" autofocus="autofocus" /></td>
@@ -21,11 +21,11 @@
 	</div>
 </fieldset>
 <div class="errors">
-    [% FOR field IN login_form.error_fields %]
-        [% FOR error IN field.errors %]
-            <p><span style="color: red;">[% error %]</span></p>
-        [% END %]
+[% FOR field IN login_form.error_fields %]
+    [% FOR error IN field.errors %]
+        <p><span style="color: red;">[% field.label _ ': ' _ error %]</span></p>
     [% END %]
+[% END %]
 </div>
 <div class="warning">
 	<div class="w_img">

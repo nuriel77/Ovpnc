@@ -200,7 +200,8 @@ sub clients_GET : Local
     # Assign from post params if exists
     # This will override params in the path
     # =====================================
-    $client = $c->req->params->{client} if $c->req->params->{client};
+    $client = $c->req->params->{client}
+        if $c->req->params->{client};
 
     # client configuration dir
     # ========================
@@ -212,7 +213,8 @@ sub clients_GET : Local
     # we get the id of role type 'client'
     # ===================================
     my $_role_name =
-      $c->model('DB::Role')->search( { name => 'client' } )->single;
+        $c->model('DB::Role')->search( { name => 'client' } )
+            ->single;
 
     # Assign the flexgrid request params
     # ==================================
@@ -258,7 +260,15 @@ sub clients_GET : Local
     # Query resultset
     # ===============
     my @_clients = $c->model('DB::User')->search(
-        { 'user_roles.role_id' => $_role_name->id },
+        # If $client is provided, return
+        # only the result of $client
+        # Otherwise, only clients which
+        # have role_id of 'client'
+        # ==============================
+        ( $client
+            ? { username => { 'like', $client . '%' } }
+            : { 'user_roles.role_id' => $_role_name->id }
+        ),
         {
             order_by => ( $sort_by && $sort_order )
             ? "$sort_by $sort_order"
@@ -268,9 +278,6 @@ sub clients_GET : Local
         },
     )->all;
 
-    # Let's see who is online
-    # =======================
-    my $_online_clients = $c->forward('/api/server/status', $self->cfg );
 
     # Now let's start matching the list of
     # all users to those who are online
@@ -278,6 +285,15 @@ sub clients_GET : Local
     # for this response
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
+
+    if ( $client ) {
+        $self->status_ok( $c, entity => [ @_clients ] );
+        $c->detach;
+    }
+
+    # Let's see who is online
+    # =======================
+    my $_online_clients = $c->forward('/api/server/status', $self->cfg );
 
     my @_list;
 
