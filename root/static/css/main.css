@@ -78,7 +78,7 @@ legend {
 	min-height:15px;
 }
 #message_container {
-	
+    max-height:150px;
 }
 
 #msg_content{ margin-right:5px; max-height:72px; overflow:auto ;}
