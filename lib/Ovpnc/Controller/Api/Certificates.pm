@@ -300,7 +300,6 @@ sub _gen_ca : Private{
 sub _gen_cert : Private {
 
     my $_ret_val = shift->_roles->gen_ca_signed_certificate( @_ );
-
     if ( defined $_ret_val && ref $_ret_val ){
         return (
             ref $_ret_val eq 'ARRAY'

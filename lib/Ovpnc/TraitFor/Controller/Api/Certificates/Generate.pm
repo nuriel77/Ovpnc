@@ -201,14 +201,12 @@ sub gen_ca_signed_certificate {
     # Generate a new key and csr
     # ==========================
     my $_new_csr = $self->_ca->gen_certificate( $params, $self->_cfg );
-
     if ( $_new_csr ){
         return $_new_csr if ( ref $_new_csr eq 'HASH' && $_new_csr->{error} );
 
         # Sign the new CSR
         # ================
         my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg );
-
         return { status => 'ok' } if $_ret_val;
     } else {
         return { error => 'Did not create new certificate(s) for ' . $params->{name} };

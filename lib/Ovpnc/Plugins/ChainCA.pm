@@ -307,13 +307,13 @@ _OO_
         # openssl.conf
         # ================
         unlink $_openssl_conf;
-
-        if ( !$success ){
+        my $_buf = join( "\n", @{$full_buf} );
+        if ( !$success || $_buf =~ /error/g ){
             return { error => 'Failed to create csr and key: '
-                . join( "\n", @{$full_buf} ) . ", " . $error_code }
+                . $_buf . ", " . $error_code }
         }
     	else {
-	        return { status => join( "\n", @{$full_buf} ) };
+	        return { status => $_buf };
     	}
 
     }
@@ -351,10 +351,13 @@ _OO_
             # openssl.conf
             # ================
             unlink $_openssl_conf;
-
-            unless ( $success ){
+            my $_buf = join "", @{$full_buf};
+            if ( !$success || $_buf =~ /error/g ){
                 return { error => 'Failed to create csr and key: '
-                    . join( "\n", @{$full_buf} ) . ", " . $error_code }
+                    . $_buf . ", " . $error_code }
+            }
+            else {
+                return { status => $_buf };
             }
         }
     }
@@ -371,7 +374,7 @@ sub gen_crl {
     # ================
     if ( $params->{cert_type} eq 'server' ){
         my $_crl = Crypt::OpenSSL::CA::X509_CRL->new;
-        die 'Could not create a CRLv2 object'
+        return { error => 'Could not create a CRLv2 object' }
             unless $_crl->is_crlv2();
         $_crl->set_issuer_DN( $ca_cert->get_issuer_DN() );
 
@@ -387,7 +390,6 @@ sub gen_crl {
         print {$FH} $_crl_data;
         close $FH;
     }
-
     return 1;
 }
 
@@ -420,14 +422,14 @@ sub _get_ca_key_and_cert {
     # Get the Root CA key
     # ===================
     my $_ca_key = read_file ( $cfg->{home} . '/' . $ca_key_file, chomp => 1 )
-        or die "Cannot read CA key, make sure it has been created.";
+        or return { error => "Cannot read CA key, make sure it has been created." };
     my $ca_privkey = Crypt::OpenSSL::CA::PrivateKey->
         parse( $_ca_key );
 
     # Get the Root CA certificate
     # ===========================
     my $_ca_cert = read_file ( $cfg->{home} . '/' . $ca_cert_file, chomp => 1 )
-        or die "Cannot read CA certificate, make sure it has been created.";
+        or return { error => "Cannot read CA certificate, make sure it has been created." };
     my $ca_cert = Crypt::OpenSSL::CA::X509->
         parse( $_ca_cert );
 
