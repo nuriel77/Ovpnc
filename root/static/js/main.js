@@ -226,7 +226,6 @@
             var _checker = 0;
             $('#flexme').find('tr').children('td[abbr="username"]')
                         .children('div').each(function(k, v){
-                _checker++;
                 // we match the username from online_data
                 // to the current tr.td[abbr=username].div.text in the loop
                 // inner_text is in order to get only the username and not
@@ -234,6 +233,7 @@
                 var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                 var online_data = $.Ovpnc().check_client_match(r.rest.clients, inner_text);
                 if (online_data !== false) {
+                    _checker++;
                     // loop each td find the corresponding 'abbr'
                     // fill in the text from online_data
                     var mem_ip;

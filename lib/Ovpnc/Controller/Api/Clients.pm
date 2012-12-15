@@ -629,7 +629,7 @@ sub clients_UNREVOKE : Local
 
         unless ( $self->_match_revoked( $revoked, $client ) ) {
             push @{$_err}, "Unrevoke faild: client '"
-                        . $client . "' is not the revoked list";
+                        . $client . "' is not in the Revoked list";
             next CLIENT;
         }
 

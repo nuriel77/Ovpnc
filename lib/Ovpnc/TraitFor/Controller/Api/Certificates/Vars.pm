@@ -57,6 +57,7 @@ sub set_environment_vars
         KEY_PROVINCE       => $self->_req->{key_state}      || 'NH',
         KEY_CITY           => $self->_req->{key_location}   || 'Amsterdam',
         KEY_ORG            => $self->_req->{key_org}        || 'DeBar',
+        KEY_OU             => $self->_req->{key_org}        || 'DeBar',
         KEY_EMAIL          => $self->_req->{key_email}      || 'nuri@de-bar.com',
     );
 
