@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ -z $1 ]; then
+    echo Provide the directory of easy-rsa/2.0
+    echo Example: $0 /usr/share/doc/openvpn/examples/easy-rsa/2.0
+    exit 1
+fi
+
+cp -r $1 openvpn/conf/
+gunzip openvpn/conf/2.0/openssl-1.0.0.cnf.gz
+chmod o-rwx openvpn/conf/2.0/* -R
+chown openvpn.ovpnc openvpn/conf/2.0 -R
+chmod 770 openvpn/conf/2.0/

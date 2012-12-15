@@ -5,7 +5,8 @@ use Fcntl ':mode';
 use Linux::Distribution qw(distribution_name distribution_version);
 use vars qw/$errors $openvpn_user $os $distro/;
 
-sub cfg {
+sub cfg
+{
     my $self = shift;
     $self->{_cfg} = shift if @_;
     return $self->{_cfg};
@@ -174,12 +175,13 @@ sub action {
     sub check_config {
         my $self = shift;
 
-        if (   !-e $self->cfg->{ovpnc_conf}
-            || !-r $self->cfg->{ovpnc_conf}
-            || !-w $self->cfg->{ovpnc_conf} )
-        {
-            return $self->cfg->{ovpnc_conf}
-              . " not found or not readable or not writable (should be both)";
+        if ( !-e $self->cfg->{ovpnc_conf} ) {
+             return $self->cfg->{ovpnc_conf}
+              . " not found";
+        }
+        elsif ( !-r $self->cfg->{ovpnc_conf} || ! -w $self->cfg->{ovpnc_conf} ){
+             return $self->cfg->{ovpnc_conf}
+              . " must be readable and writable";
         }
 
         # Get the openvpn conf
@@ -319,4 +321,3 @@ sub action {
 }
 
 1;
-

@@ -94,7 +94,7 @@
                 headers: {
                     'Accept': 'application/json'
                 },
-                async: false,
+                async: true,
                 timeout: 3000,
                 data: data,
                 type: method ? method : 'GET',

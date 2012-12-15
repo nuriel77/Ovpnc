@@ -1,0 +1,16 @@
+#!/bin/bash
+echo -e "Warning! This script will restore the ovpnc database.\nAll data will be lost. Break now (^c) if you wish to cancel."
+echo Enter mysql pass for $USER:
+tm=$(stty -g)
+stty -echo
+read Passwd
+stty $tm
+PASSWD=$( echo $Passwd | sed 's/\\n//' )
+MYPASS=$( openssl rand -hex 24 )
+mysql -p"$PASSWD" -u $USER <<QUERY_INPUT
+drop database if exists ovpnc;
+create database ovpnc;
+grant all on ovpnc.* to 'ovpnc'@'localhost' identified by "$MYPASS";
+QUERY_INPUT
+mysql -p"$PASSWD" ovpnc < config/ovpnc.sql
+echo $MYPASS > config/.mysql

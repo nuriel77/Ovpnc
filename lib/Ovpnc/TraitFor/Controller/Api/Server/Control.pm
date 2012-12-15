@@ -6,6 +6,7 @@ scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 use String::MkPasswd 'mkpasswd';
 use Proc::Simple;
 use Proc::ProcessTable;
+use File::Touch;
 use Moose::Role;
 use namespace::autoclean;
 
@@ -36,6 +37,7 @@ has [
       openvpn_config
       openvpn_tmpdir
       openvpn_pid
+      openvpn_group
       mgmt_passwd_file
       /
   ] => (
@@ -166,6 +168,7 @@ sub stop {
 
         # Stopped? End this action
         # ========================
+        unlink $self->openvpn_pid;
         return $self->_stop_end_action
           unless $_pid;
 
@@ -242,12 +245,24 @@ sub _check_running {
         $_pid = read_file( $self->openvpn_pid, chomp => 1 );
     }
     else {
-        die "Pidfile does not exists: " . $self->openvpn_pid;
+        my (undef, undef, undef, $gid) = getpwnam(
+            $self->openvpn_group );
+        my (undef, undef, $uid) = getpwuid( $< );
+        my ($_rundir) = $self->openvpn_pid =~ /^(.*)\/.*$/;
+        unless ( -e $_rundir ) {
+            mkdir $_rundir;
+            chmod 0770, $_rundir;
+            chown $uid, $gid, $_rundir;
+        }
+        touch $self->openvpn_pid;
+        chmod 0660, $self->openvpn_pid;
+            $self->openvpn_group;
+        chown $uid, $gid, $self->openvpn_pid;
     }
 
     my $t = Proc::ProcessTable->new;
     foreach my $p ( @{ $t->table } ) {
-        if ( $p->cmndline =~ /$openvpn_bin/g && $_pid == $p->pid ) {
+        if ( $p->cmndline =~ /$openvpn_bin/g && ( $_pid && $_pid == $p->pid ) ){
             return $p->pid;
         }
     }
