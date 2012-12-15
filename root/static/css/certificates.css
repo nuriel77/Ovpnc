@@ -5,7 +5,6 @@ table.t_form tr { height:50px; }
 table.t_form td.left { min-width:120px; }
 table.t_form input { min-width:295px; }
 table.t_form select { max-width:35px; min-width:305px; }
-#certificate_set { width:96.5%; }
 select {
     -moz-border-radius: 5px;
     border-radius: 5px;

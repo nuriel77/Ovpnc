@@ -1,0 +1,90 @@
+action: /clients/add
+indicator: submit
+elements:
+      - type: Block
+        tag: fieldset
+        attributes_xml:
+          class: "box_shadow"
+          id: "middle_div"
+        elements:
+              - type: Block
+                tag: legend
+                content_xml: "Add Client"
+              # Username
+              - type: Block
+                tag: div
+                elements:
+                      - type: Text
+                        name: username
+                        label: "Username:"
+                        attributes_xml:
+                          style: "min-width:220px;float:right"
+                          id: "username"
+                          autofocus: "autofocus"
+                        constraints:
+                          - Required
+              # Password
+              - type: Block
+                tag: div
+                elements:
+                      - type: Password
+                        name: password
+                        label: "Password:"
+                        attributes_xml:
+                          id: "password"
+                          style: "min-width:220px;float:right"
+                        constraints:
+                          - Required
+              # Email
+              - type: Block
+                tag: div
+                elements:
+                      - type: Text
+                        name: email
+                        label: "Email:"
+                        attributes_xml:
+                          id: "email"
+                          style: "min-width:220px;float:right"
+                        constraints:
+                          - Required
+                          - Email
+              # Phone
+              - type: Block
+                tag: div
+                elements:
+                      - type: Text
+                        name: phone
+                        label: "Phone:"
+                        attributes_xml:
+                          id: "phone"
+                          style: "min-width:220px;float:right"
+                        constraints:
+                          - Required
+              # Address
+              - type: Block
+                tag: div
+                elements:
+                      - type: Text
+                        name: address
+                        label: "Address:"
+                        attributes_xml:
+                          id: "address"
+                          style: "min-width:220px;float:right"
+                        constraints:
+                          - Required
+        
+              # Submit
+              - type: Block
+                tag: div
+                elements:
+                      - type: Submit
+                        name: submit
+                        attributes_xml:
+                          id: "submit"
+                          class: "submit_form"
+                        value: Submit
+              # Clear div
+              - type: Block
+                tag: div
+                attributes_xml:
+                  class: "clear"

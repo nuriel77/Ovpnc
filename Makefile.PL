@@ -20,7 +20,9 @@ requires 'MooseX::NonMoose';
 requires 'MooseX::MarkAsMethods';
 requires 'Scalar::Util';
 requires 'Proc::ProcessTable'; 
-requires 'Proc::Simple';
+requires 'Proc::Simple'
+requires 'Set::Object';
+requires 'Object::Signature';
 requires 'Digest::MD5::File';
 requires 'Net::SSLeay';
 requires 'Crypt::OpenSSL::CA';

@@ -1,5 +1,6 @@
 apt-get install build-essential \
                 libmodule-install-perl \
+                libobject-signature-perl \
                 libmath-bigint-gmp-perl \
                 libstring-mkpasswd-perl \
                 libmath-gmp-perl \
@@ -25,6 +26,8 @@ apt-get install build-essential \
                 libfile-which-perl \
                 libfile-homedir-perl \
                 libtemplate-tiny-perl \
+                libset-object-perl \
+                libhtml-formfu-model-dbic-perl \
                 libfile-chdir-perl \
                 libcss-minifier-xs-perl \
                 libjavascript-minifier-xs-perl \

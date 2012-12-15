@@ -29,6 +29,7 @@
     // Ovpnc static items
     //
     mem = {
+        ajax_loader: '<img class="ajax_loader" src="/static/images/ajax-loader.gif" />',
         okay_icon: '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
         error_icon: '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
         alert_icon: '<img width=18 height=18 src="/static/images/alert_icon.png" />',
@@ -182,7 +183,7 @@
                     { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
                 ],
                 buttons : [
-                    { name: 'Add', bclass: 'add', onpress : console.log('add') },
+                    { name: 'Add', bclass: 'add', onpress : add_client },
                     { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
                     { name: 'Block', bclass: 'block', onpress : block_clients },
                     { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
@@ -342,7 +343,8 @@
             }
             else {
                 $(l).each(function(i) {
-                    if (pathname === $(this).text().toLowerCase()) {
+                    var _curret_link = $(this).text().toLowerCase();
+                    if (pathname.match(_curret_link)) {
                         $(this).css('font-weight', 'bold');
                         return;
                     }
@@ -654,6 +656,10 @@ function get_client_network_usage(name) {
         }
     }
 
+}
+
+function add_client() {
+    window.location = '/clients/add';
 }
 
 

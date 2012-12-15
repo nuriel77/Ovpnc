@@ -8,7 +8,6 @@ jQuery.validator.setDefaults({
 (function($){
 
 	items = new Object({
-		ajax_loader : '<img src="/static/images/ajax-loader.gif"></img>',
 		elems : [ 'country', 'state', 'city' ],
 	});
 

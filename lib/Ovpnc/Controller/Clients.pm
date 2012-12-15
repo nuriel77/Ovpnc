@@ -1,9 +1,8 @@
 package Ovpnc::Controller::Clients;
 use Moose;
 use namespace::autoclean;
-
-BEGIN { extends 'Catalyst::Controller'; }
-
+BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
+#use base 'Catalyst::Controller::HTML::FormFu';
 =head1 NAME
 
 Ovpnc::Controller::Clients - Catalyst Controller
@@ -66,10 +65,53 @@ sub index : Path
 
 }
 
+=head2 add
+
+Add a client
+
+=cut
+
+sub add : Path('add')
+        : Args(0)
+        : FormConfig
+        : Sitemap
+        : Does('NeedsLogin')
+{
+    my ( $self, $c ) = @_;
+    my $form = $c->stash->{form};
+    if ( $form->has_errors ) {
+        $c->response->headers->header('Content-Type' => 'text/html');
+        Ovpnc::Controller::Root->include_default_links( $c );
+        $c->forward('View::HTML');
+    }
+    if ( $form->submitted_and_valid ) {
+        my $_client = $c->model('DB::User')->new_result({});
+        # update dbic row with submitted values from form
+        $form->model->update( $_client );
+        my $_cid = $_client->{_column_data}->{id};
+        my $_client_role_id = $c->model('DB::Role')
+            ->search(
+                { name => 'client' },
+                { select   => 'id' },   
+            );
+        $c->model('DB::UserRole')
+            ->create(
+                {
+                    user_id => $_cid,
+                    role_id => $_client_role_id->next->id,
+                }
+            );
+        $c->response->redirect( $c->uri_for('/clients') );
+        return;
+    }
+
+}
+
 sub denied : Private {
     my ( $self, $c ) = @_;
 
     # Add js / css
+    # ============
     Ovpnc::Controller::Root->include_default_links($c);
     $c->stash->{this_link}     = 'clients';
     $c->stash->{title}         = ucfirst( $c->stash->{this_link} );

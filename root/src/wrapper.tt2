@@ -65,8 +65,8 @@
 					</div>
 					<div class="clear"></div>
 				[% END %]
-
 			</div><!-- outer_centered -->
+            <div id="pop-up" class="box_shadow"></div>
     	</div><!-- outer -->
 		<input id="username" type="hidden" name="[% username %]" />
 		<input id="geo_username" type="hidden" name="[% geo_username %]" />

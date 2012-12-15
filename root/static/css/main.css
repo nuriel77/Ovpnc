@@ -38,6 +38,17 @@ div#outer_centered{
 	margin:0 auto;
 }
 
+div#pop-up {
+    display: none;
+    position: fixed;
+    top:200px;
+    left:500px;
+    width: 400px;
+    padding: 10px;
+    font-size: 0.85em;
+    z-index:9001;
+}
+
 #left_frame{
 	float:left;
 }
@@ -107,12 +118,17 @@ img{
 	margin:90px 0px 0px 150px; 
 }
 .error{ color:#f00; }
+
 .error_message{ 
 	color: #f00; 
-	padding: 80px; 
-	max-width:200px; 
-	min-width:200px; 
+    position:absolute;
+    z-index:9001;
+    margin:3px 0 0 307px;  
+/*	padding: 80px; 
+	max-width:200px;
+	min-width:200px; */ 
 }
+
 .right_div{
 	min-width:220px;
 	max-width:220px;
@@ -123,7 +139,7 @@ img{
 	border:1px solid lightgray;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
-	background: #ccc;
+	background: #cccccc;
     box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
 	    inset 6px 8px 8px rgba(255,255,255,0.75);
     -o-box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
@@ -154,3 +170,7 @@ span.inner_flexi_text {
 	padding-top:2px;
 	color:#2BAB2B;
 }
+
+.label { min-width: 400px; max-width: 400px;  margin:20px;} 
+#middle_div { padding:10px 0 10px 10px; width:96.5%; }
+.submit_form { float:right;margin-right:70px;padding:4px 6px 4px 4px; }

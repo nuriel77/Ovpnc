@@ -1,7 +1,7 @@
 <!-- form -->
 <div id="form_container">
 	<form action="/api/certificates/set_vars" method="POST" name="main_form" id="main_form">
-		<fieldset id="certificate_set" class="box_shadow">
+		<fieldset id="middle_div" class="box_shadow">
 			<legend>Set CA Authority Details</legend>
 
 			<table class="t_form" border=0 colspan=0>
