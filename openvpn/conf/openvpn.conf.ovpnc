@@ -33,7 +33,7 @@ client-to-client				;client-to-client
 ;duplicate-cn				;duplicate-cn
 
 # [ Group id=4 ]
-auth-user-pass-verify				bin/auth-vpn.sh via-file ;AuthScript ;ScriptMethod
+auth-user-pass-verify			   bin/auth-vpn.sh via-env ;AuthScript ;ScriptMethod
 chroot						/home/ovpnc/Ovpnc/openvpn ;ChrootDir
 group						openvpn ;GroupName
 nice							0 ;ProcessPrio

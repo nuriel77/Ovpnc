@@ -1,10 +1,12 @@
 #!/bin/bash
+P=`pwd`;
 chmod o-rwx * -R
-chown ovpnc.ovpnc lib lib/* root root/* t t/ config/ config/.* -R
-find openvpn -type f -exec chmod 660 {} \;
-chmod 700 config t lib root
+chown ovpnc.ovpnc lib root t config config/.* -R
+chmod 600 config/.* ovpnc.*
+chmod 700 config t lib root script script/* tmp tmp/*
 chmod 770 openvpn
-chown openvpn.ovpnc openvpn -R
+chown openvpn.ovpnc openvpn
+chown openvpn.ovpnc openvpn/var openvpn/conf openvpn/tmp -R
 chown ovpnc.ovpnc openvpn/conf/.management
 chmod 600 openvpn/conf/.management
 if [ -d openvpn/conf/2.0/keys ]; then
@@ -19,7 +21,10 @@ if [ -d openvpn/conf/2.0/keys ]; then
             openvpn/conf/2.0/list-crl \
             openvpn/conf/2.0/inherit-inter \
             openvpn/conf/2.0/clean-all \
-            openvpn/conf/2.0/build* \
-            openvpn/bin/ \
-            openvpn/bin/*
+            openvpn/conf/2.0/build*
 fi
+chmod 770 .
+rm -rf openvpn/lib*
+cp -r /lib openvpn/.
+ln -s $P/openvpn/lib $P/openvpn/lib64
+chmod 755 $P/openvpn/bin -R
