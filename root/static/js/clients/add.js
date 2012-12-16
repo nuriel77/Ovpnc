@@ -1,7 +1,19 @@
 /* jquery validator settings */
 jQuery.validator.setDefaults({
     debug: true,
-    success: "valid"
+    success: "valid",
+    messages: {},
+    groups: {},
+    rules: {},
+    errorClass: "client_error",
+    validClass: "valid",
+    errorElement: "span",
+    focusInvalid: true,
+    errorContainer: $( [] ),
+    errorLabelContainer: $( [] ),
+    onsubmit: false,
+    ignore: ":hidden",
+    ignoreTitle: false
 });
 
 /* addClient namespace */
@@ -31,7 +43,8 @@ jQuery.validator.setDefaults({
                 $(this).parent('div').find('label').css('color','#000000');
             });
             // On form submission
-            $('form#add_client_form').submit(function(){
+            $('form#add_client_form').click( function(e){
+
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
@@ -51,6 +64,13 @@ jQuery.validator.setDefaults({
                     $('input#password').parent('div').find('label').css('color','#ff0000');
                     return false;
                 }
+
+                // Remove the warnings message
+                // when leaving this page
+                window.onbeforeunload = undefined;
+                // Save the current values
+                $.addClient().confirm_exit();
+                return true;
             });
             $('input#username').bind('keyup',function(){
                 var _name = this.value;
@@ -73,15 +93,21 @@ jQuery.validator.setDefaults({
             }).bind('mouseup',function(){
                 $('#generate_password').css('border','')
                                        .css('color','#000000');
-            }).click(function(){
-                var _token = $('#token').attr('value');
-                var _pass = $.Ovpnc().generate_password(_token);
-                $('#password2').parent('div').find('span').remove();
-                $('#password2').parent('div').find('label').css('color','#000000');
-                $('#password2').parent('div').prepend('<span class="error_message" style="color:#000000"><input name="generated_password" readonly type="text" value="' + _pass + '" style="width:90px;border:0" onClick="this.select()"></text></span>');
-                $('#password').attr('value', _pass ).keyup();
-                $('#password2').attr('value', _pass );
             });
+
+        },
+        // Generate password click
+        generate_password_click: function(){
+            var _token = $('#token').attr('value');
+            var _pass = $.Ovpnc().generate_password(_token);
+            $('#password2').parent('div').find('span').remove();
+            $('#password2').parent('div').find('label').css('color','#000000');
+            $('#password2').parent('div').prepend('<span class="error_message" style="color:#000000">'
+                + '<input id="generated_password_text" name="generated_password" readonly type="text" value="' + _pass + '" style="width:100px;border:0;font-size:1.2em" onClick="this.select()"></text>'
+                + '</span>'
+            );
+            $('#password').attr('value', _pass ).keyup();
+            $('#password2').attr('value', _pass );
         },
         // Form validation rules
         set_form_validation_rules: function(){
@@ -124,6 +150,7 @@ jQuery.validator.setDefaults({
                 email : $('#email').attr('value'),
                 address: $('#address').attr('value'),
                 phone: $('#phone').attr('value'),
+                password: ( $('#generated_password_text').is(':visible') ? '' : $('#password').attr('value') ),
                 fullname: $('#fullname').attr('value')
             };
 
@@ -187,6 +214,7 @@ $(document).ready( function() {
                 $('#'+k).attr('value',cookie_data[k]);
         }
     }
+    // Handler for exit
     $.addClient().set_confirm_exit();
 });
 

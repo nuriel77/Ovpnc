@@ -1,7 +1,7 @@
 table { font-size: 0.9em; }
 #form_container { margin: 0 25px 0 15px; display:none; }
 table.t_form { margin:10px 0px 10px 20px; }
-table.t_form tr { height:50px; }
+table.t_form tr { height:60px; }
 table.t_form td.left { min-width:120px; }
 table.t_form input { min-width:295px; }
 table.t_form select { max-width:35px; min-width:305px; }

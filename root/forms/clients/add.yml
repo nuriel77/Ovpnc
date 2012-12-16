@@ -12,6 +12,10 @@ elements:
               - type: Block
                 tag: legend
                 content_xml: "Add Client"
+              - type: Block
+                tag: div
+                attributes_xml:
+                  style: "padding:5px;"
               # Username
               - type: Block
                 tag: div
@@ -68,16 +72,16 @@ elements:
               # Generate password button
               - type: Block
                 tag: div
-                content_xml: "<div id='generate_password'>Generate Password</div>"
+                content_xml: "<div id='generate_password' onclick='$.addClient().generate_password_click();'>Generate Password</div>"
               # Clear div
               - type: Block
                 tag: div
                 attributes_xml:
                   class: "clear"
-              # HR
+              # HR / BR
               - type: Block
                 tag: div
-                content_xml: '<div style="border-bottom:1px solid gray;margin:10px 10px 0 6px;"></div>'
+                content_xml: '<div style="border-bottom:1px solid gray;margin:10px 10px 20px 6px;"></div>'
               # Fullname
               - type: Block
                 tag: div
@@ -110,7 +114,7 @@ elements:
                           - Required
                           - Email
                           - type: MinLength
-                            min: 8
+                            min: 6
                           - type: MaxLength
                             max: 72
               # Phone

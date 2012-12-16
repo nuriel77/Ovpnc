@@ -117,19 +117,24 @@ img{
 	max-width:320px;
 	margin:90px 0px 0px 150px; 
 }
+
 .error{
-    color:#555555;
-    z-index:9001;
-    float:right;
-    margin-top:3px;
+    margin-top:14px;
+    color:#8B0000;
+    float:left;
 }
 
+.client_error {
+    z-index:9001;
+    float:right;
+    color: #8B0000;
+}
 .error_message{ 
-	color: #ff0000; 
+	color: #8B0000; 
     position:absolute;
     z-index:9001;
     float:left;
-    font-size:0.75em;
+    font-size:0.85em;
     margin:4px 0 0 367px;
 }
 
@@ -175,7 +180,8 @@ span.inner_flexi_text {
 	color:#2BAB2B;
 }
 
-.label { min-width: 360px; max-width: 360px; margin:35px 0 35px 10px;} 
+.label { min-width: 360px; max-width: 360px; margin:0 0 30px 15px; */ } 
 #middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
 .submit_form { float:right;margin:5px 70px 0 0;padding:4px 6px 4px 4px; }
 .form_row { min-width:275px;float:right; }
+#add_client { font-size: 0.9em; }

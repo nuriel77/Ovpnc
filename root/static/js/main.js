@@ -205,7 +205,7 @@
                 ],
                 buttons : [
                     { name: 'Add', bclass: 'add', onpress : add_client },
-                    { name: 'Delete', bclass: 'delete', onpress : console.log('delete') },
+                    { name: 'Delete', bclass: 'delete', onpress : delete_client },
                     { name: 'Block', bclass: 'block', onpress : block_clients },
                     { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
                     { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
@@ -678,11 +678,6 @@ function get_client_network_usage(name) {
     }
 
 }
-
-function add_client() {
-    window.location = '/clients/add';
-}
-
 
 /* Helper functions */
 function ucfirst(str) {

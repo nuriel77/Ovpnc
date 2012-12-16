@@ -1,18 +1,80 @@
 // Global clients counter
 $.Ovpnc().count = 0;
+var total_count = 0;
+(function($) {
+
+    $.Client = function(options) {
+        var obj = $.extend({},
+        mem );
+        return obj;
+    };
+
+    var mem = {
+        processed: 0,
+        loop:  0,
+        total_count: 0
+    };
+
+})(jQuery);
+
 $(document).ready(function(){
 
 	// Declare flexigrid
 	// Will run a query
 	// to get clients
     $.Ovpnc().set_clients_table();
-
 	// Show the clients table
 	$('.flexigrid').slideDown(300);
-
+    
     function block_clients(button, grid) {}
     function unblock_clients(button, grid) {}
+    function delete_client(button, grid) {}
+    
 });
+
+function add_client() {
+    window.location = '/clients/add';
+}
+
+function delete_client(button, grid){
+
+    // Get total selected clients
+    total_count = $('.trSelected', grid).length;
+    var _clients = '';
+    $.each($('.trSelected', grid), function() {
+        // Get the client's name of this grid
+        var client = $('td:nth-child(2) div', this).html();
+        // Get rid of any html
+        client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+        _clients += client + ',';    
+        $.Client().loop = $.Client().loop + 1;
+    });
+    $.Ovpnc().get_data("/api/clients/", { client: _clients },
+    'REMOVE', client_delete_return, client_delete_error );
+}
+
+function client_delete_return(r){
+    console.log("%o",r.rest);    
+    if ( r.rest.deleted !== undefined  ){
+        if ( r.rest.deleted.length > 0 ){
+            alert( 'Total ' + r.rest.deleted.length
+                    + ' client' + ( r.rest.deleted.length === 1 ? ' ' : 's ' )
+                    + ' deleted' );
+        }
+        else {
+            alert( 'No clients deleted!' );
+            return;
+        }
+    }
+    if ( r.rest.failed !== undefined && r.rest.failed.length > 0 ){
+        alert( r.rest.failed.length + ' out of ' + total_count + ' clients failed delete' );
+    }
+    $('.pReload').click();
+}
+
+function client_delete_error(e){
+    console.log("Delete error: %o",e);
+}
 
 function block_clients(button, grid){
     block_unblock_clients(button, grid, 'revoke');
@@ -144,3 +206,4 @@ function check_complete_block(loop, processed, total_count, action){
         }
     }
 }
+

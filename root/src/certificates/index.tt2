@@ -9,7 +9,7 @@
 				<tr>
 					<td class="left"><label for="name">Name:</label></td>
 					<td style="min-width:20px;" id="t_name"></td>
-					<td><input id="name" name="name" type="text" placeholder="First and last name" required autofocus></span>
+					<td><input id="name" name="name" type="text" placeholder="First and last name" required autofocus="autofocus"></span>
 					<td style="min-width:15px;"></td>
 				</tr>
 

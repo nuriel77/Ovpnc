@@ -52,20 +52,30 @@ around [qw(index)] => sub {
 
 =cut
 
-sub index : Path : Args(0) : Does('ACL') AllowedRole('admine')
-  AllowedRole('can_edit') ACLDetachTo('denied') : Does('NeedsLogin') : Sitemap {
+sub index : Path
+          : Args(0)
+          : Does('ACL')
+            AllowedRole('admin')
+            AllowedRole('can_edit')
+            ACLDetachTo('denied')
+          : Does('NeedsLogin')
+          : Sitemap
+{
     my ( $self, $c ) = @_;
 
     # Get the country list (for certificates signing)
+    # ===============================================
     my @clist = @{ $self->get_country_list( $c->config->{country_list} ) };
 
     $c->stash->{title}     = 'Certificates';
     $c->stash->{this_link} = 'certificates';
 
     # Get geo username
+    # ================
     $c->stash->{geo_username} = $c->config->{geo_username};
 
     # stash country list
+    # ==================
     $c->stash->{countries} = [ sort { $a cmp $b } @clist ];
 }
 

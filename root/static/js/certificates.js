@@ -1,7 +1,19 @@
 /* jquery validator settings */
 jQuery.validator.setDefaults({
 	debug: true,
-	success: "valid"
+	success: "valid",
+    messages: {},
+    groups: {},
+    rules: {},
+    errorClass: "error",
+    validClass: "valid",
+    errorElement: "div",
+    focusInvalid: true,
+    errorContainer: $( [] ),
+    errorLabelContainer: $( [] ),
+    onsubmit: true,
+    ignore: ":hidden",
+    ignoreTitle: false
 });
 
 /* Ovpnc definitions */

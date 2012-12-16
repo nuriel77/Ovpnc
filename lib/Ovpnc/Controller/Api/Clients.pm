@@ -420,7 +420,50 @@ sub clients_REMOVE : Local
                    : Sitemap
                    #: Does('NeedsLogin')
 {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $client_list ) = @_;
+
+    my $_ccd_dir = $self->cfg->{openvpn_ccd} =~ /^\//
+        ? $self->cfg->{openvpn_ccd}
+        : $self->cfg->{openvpn_dir} . '/'
+            . $self->cfg->{openvpn_ccd};
+
+    # Verify that a client name was provided
+    # ======================================
+    $self->_client_error($c)
+      unless defined( $client_list // $c->request->params->{client} );
+
+    # Override anything in the path by setting
+    # params from post if they exists
+    # ========================================
+    $client_list = $c->request->params->{client} if $c->request->params->{client};
+
+    my @clients = split ',', $client_list;
+
+    my ( @_delete_ok , @_not_ok );
+    for my $client (@clients){
+        # Find client in database
+        # =======================
+        if ( my $_res = $c->model('DB::User')->find({ username => $client }) ){
+            # Delete entry
+            # ============
+            if ( $_res->delete ) {
+                push (@_delete_ok, $client);
+            }
+            else {
+                push (@_not_ok, $client);
+            }
+            # Remove any ccd file
+            # ===================
+            if ( -e $_ccd_dir . '/' . $client ){
+                unlink $_ccd_dir . '/' . $client
+                    or push (@_not_ok, $client);
+            }
+        }
+    }
+
+    $self->status_ok($c,
+        entity => { deleted => [ @_delete_ok ], failed => [ @_not_ok ] }
+    );
 }
 
 =head2 clients_DISABLE

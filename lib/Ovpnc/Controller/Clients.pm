@@ -1,4 +1,6 @@
 package Ovpnc::Controller::Clients;
+use File::Touch;
+use Try::Tiny;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -23,24 +25,41 @@ methods execute
 
 =cut
 
-around 'add' => sub {
-    my ( $orig, $self, $c ) = @_;
-    $c->stash->{token} = $c->get_session_id;
-    return $self->$orig($c);
-};
+#around 'add' => sub {
+#    my ( $orig, $self, $c ) = @_;
+#    return $self->$orig($c);
+#};
 
-around [qw(index)] => sub {
+around [qw(index add)] => sub {
     my ( $orig, $self, $c ) = @_;
+
+    $c->stash->{token} = $c->get_session_id;
 
     my $ovpnc_conf = $c->config->{ovpnc_conf} =~ /^\//
         ? $c->config->{ovpnc_conf}
         : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
+
+    # Openvpn dir
+    # ===========
+    $c->config->{openvpn_dir} = $c->config->{openvpn_dir} =~ /^\//
+        ? $c->config->{openvpn_dir}
+        : $c->config->{home} . '/' . $c->config->{openvpn_dir};
 
     # Assign config params
     # ====================
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
         $ovpnc_conf, 'UserName' );
+
+    # Openvpn ccd dir
+    # ===============
+    $c->config->{openvpn_ccd} = 
+        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        $ovpnc_conf, 'ClientDir' );
+
+    $c->config->{openvpn_ccd} = $c->config->{openvpn_ccd} =~ /^\//
+        ? $c->config->{openvpn_ccd}
+        : $c->config->{openvpn_dir} . '/' . $c->config->{openvpn_ccd};
 
     # Sanity check
     # ============
@@ -99,7 +118,17 @@ sub add : Path('add')
         # update dbic row with
         # submitted values from form
         # ==========================
-        $form->model->update( $_client );
+        try { 
+            $form->model->update( $_client );
+        }
+        catch {
+            $c->stash->{error} = "Failed adding new user: $_";
+            $c->response->headers->header('Content-Type' => 'text/html');
+            Ovpnc::Controller::Root->include_default_links( $c );
+            $c->forward('View::HTML');
+            $c->detach;
+        };
+
         my $_cid = $_client->{_column_data}->{id};
         my $_client_role_id = $c->model('DB::Role')
             ->search(
@@ -113,6 +142,7 @@ sub add : Path('add')
                     role_id => $_client_role_id->next->id,
                 }
             );
+        touch $c->config->{openvpn_ccd} . '/' . $_client->{_column_data}->{username};
         $c->response->redirect( $c->uri_for('/clients') );
         return;
     }
