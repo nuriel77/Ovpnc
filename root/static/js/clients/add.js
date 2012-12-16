@@ -25,19 +25,26 @@ function set_form_events(){
     $('input#username').bind('keyup',function(){
         var _name = this.value;
         if ( _name === undefined || _name == '' ) return;
-        $.Ovpnc().get_data('/api/clients', { client: _name }, 'GET', return_client_data, return_ajax_error );
+        $.Ovpnc().get_data('/api/clients', { username: _name }, 'GET', return_client_data, return_ajax_error );
     });
-    $('input#fullname').bind('keyup',function(){
+    $('input#email').bind('keyup',function(){
         var _name = this.value;
         if ( _name === undefined || _name == '' ) return;
-        $.Ovpnc().get_data('/api/clients', { fullname: _name }, 'GET', return_client_data, return_ajax_error );
+        $.Ovpnc().get_data('/api/clients', { email: _name }, 'GET', return_client_data, return_ajax_error );
     });
 }
 
 function return_client_data(r){
-    if ( r.rest !== undefined && r.rest.length > 0 ){
-        $('input#username').parent('div').prepend('<span class="error_message error_constraint_required">Name already exists</span>');
-        $('input#username').parent('div').find('label').css('color','#ff0000');
+    // Expect one field
+    if ( r.rest !== undefined ){
+        var keys = [];
+        for (var k in r.rest){
+            keys.push(k);
+        }
+        if ( r.rest[keys[0]] !== null  ){
+            $('input#' + keys[0]).parent('div').prepend('<span class="error_message error_constraint_required">' + keys[0] + ' already exists</span>');
+            $('input#' + keys[0]).parent('div').find('label').css('color','#ff0000');
+        }
     }
 }
 

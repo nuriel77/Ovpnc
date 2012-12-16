@@ -207,6 +207,7 @@ sub clients_GET : Local
     # ====================================
     my ( $param, $keyname );
     if ( $c->req->params && !$c->req->params->{page} ) {
+        delete $c->req->params->{_} if $c->req->params->{_};
         # We expect only one
         # parameter to be sent
         # ====================
@@ -312,7 +313,8 @@ sub clients_GET : Local
     @_clients = map { $_->{_column_data} } @_clients;
 
     if ( $param->{$keyname} ) {
-        $self->status_ok( $c, entity => [ @_clients ] );
+        my $_client_data = $_clients[0]->{$keyname};
+        $self->status_ok( $c, entity => { $keyname => $_client_data } );
         $c->detach;
     }
 

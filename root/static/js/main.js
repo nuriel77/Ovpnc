@@ -128,7 +128,7 @@
         // process error message
         process_err: function(e, m) {
             if (m === undefined) return false;
-            var msg = jQuery.parseJSON(m)
+            var msg = jQuery.parseJSON(m);
             // In order for update_server_status to accept
             // the data structure and display the status
             // becaue this returned not as status 200
