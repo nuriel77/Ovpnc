@@ -33,6 +33,7 @@ has vpn => (
 has [
     qw/
       app_root
+      openvpn_dir
       openvpn_bin
       openvpn_config
       openvpn_tmpdir
@@ -76,10 +77,9 @@ sub start {
             '--script-security',   '3',
             '--client-connect',    '/bin/client_connect',
             '--client-disconnect', '/bin/client_disconnect',
-            '--echo',              'on all',
-            '--tmp-dir',           '/tmp', #$self->openvpn_tmpdir,
+            '--tmp-dir',           '/tmp',
             '--ccd-exclusive',
-            '--cd',                '/',
+            '--cd',                $self->openvpn_dir . '/',
             '--config',            $self->app_root . '/' . $self->openvpn_config,
         );
 

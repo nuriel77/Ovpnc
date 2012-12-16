@@ -51,7 +51,7 @@
         <Directive status="1">
           <Name>cert</Name>
           <Params>
-            <Certificate>openvpn/conf/2.0/keys/someserver.crt</Certificate>
+            <Certificate>openvpn/conf/2.0/keys/server.crt</Certificate>
           </Params>
         </Directive>
         <Directive status="1">
@@ -63,7 +63,7 @@
         <Directive status="1">
           <Name>key</Name>
           <Params>
-            <Key>openvpn/conf/2.0/keys/someserver.key</Key>
+            <Key>openvpn/conf/2.0/keys/server.key</Key>
           </Params>
         </Directive>
         <Directive status="1">

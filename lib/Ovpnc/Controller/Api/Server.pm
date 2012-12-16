@@ -185,7 +185,7 @@ sub server_POST : Local
                 : Args(0)
                 : Sitemap
 #				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-#: Does('NeedsLogin')
+                #: Does('NeedsLogin')
 {
     my ( $self, $c, $command ) = @_;
 
@@ -202,6 +202,7 @@ sub server_POST : Local
 
     my $_role = $self->new_with_traits(
         traits         => ['Control'],
+        openvpn_dir    => $self->cfg->{openvpn_dir},
         openvpn_bin    => $self->cfg->{openvpn_bin},
         openvpn_pid    => $self->cfg->{openvpn_pid},
         openvpn_config => $self->cfg->{openvpn_config},

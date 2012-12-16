@@ -263,6 +263,13 @@ sub assign_params : Private {
             : $cfg->{openvpn_dir} . '/' . $cfg->{openssl_conf}
         ),
 
+        # Ovpnc Schema XSD
+        # ================
+        ovpnc_config_schema => ( $c->config->{ovpnc_config_schema} =~ /^\//
+            ? $c->config->{ovpnc_config_schema}
+            : $cfg->{home} . '/' . $c->config->{ovpnc_config_schema}
+        ),
+
         # OpenSSL binary
         # ==============
         ssl_bin => $cfg->{openssl_bin},

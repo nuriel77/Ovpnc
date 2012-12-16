@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Api::Configuration;
 use warnings;
 use strict;
+use Scalar::Util 'looks_like_number';
 use XML::Simple;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema;
@@ -72,6 +73,7 @@ Method modifier
 
 before [qw(
         configuration_GET
+        configuration_POST
     )] => sub {
     my ( $self, $c, $params ) = @_;
 
@@ -148,7 +150,7 @@ sub configuration_POST : Local
     # Will return a message if any error
     # =======================================
     my $message =
-      $self->_validate_xml( $xml_string, $c->config->{ovpnc_config_schema} );
+      $self->_validate_xml( $xml_string, $self->cfg->{ovpnc_config_schema} );
 
     if ($message) {
         $self->status_bad_request( $c, message => $message );
@@ -162,6 +164,10 @@ sub configuration_POST : Local
         # server config file
         # ========================
         my $config_file = $data{'-1_null_ConfigFile'};
+
+        $config_file = $config_file =~ /^\//
+            ? $config_file
+            : $self->cfg->{home} . '/' . $config_file;
 
         # Pretty fatal, but should not happen here
         # because we ran validation earlier on xml format
@@ -199,7 +205,7 @@ sub configuration_POST : Local
         if ( -e $config_file ) {
             $_ =
               $self->_manage_conf_backup(
-                [ $config_file, $c->config->{ovpnc_conf} ],
+                [ $config_file, $self->cfg->{ovpnc_conf} ],
                 $c->config->{keep_n_conf_backup} );
             $st_msg->{error} = $_->{error} if $_->{error};
         }
@@ -211,7 +217,7 @@ sub configuration_POST : Local
         unless ( $st_msg->{error} ) {
             open( $FILE, ">", $config_file )
               or $st_msg->{error} =
-              "Error: Configuration file could not be updated: $!";
+              "Error: Configuration file '" . $config_file . "' could not be updated: $!";
         }
 
         # If no errors so far, proceed
@@ -221,24 +227,27 @@ sub configuration_POST : Local
             $output .= $self->_prepare_conf_file_data( \%data );
             print $FILE $output;
             close $FILE;
-            if (   -e $c->config->{ovpnc_conf}
-                && -w $c->config->{ovpnc_conf} )
+            chmod 0600, $config_file;
+            if (   -e $self->cfg->{ovpnc_conf}
+                && -w $self->cfg->{ovpnc_conf} )
             {
                 XMLout(
                     $xml,
                     KeepRoot   => 1,
                     NoSort     => 0,
-                    OutputFile => $c->config->{ovpnc_conf},
+                    OutputFile => $self->cfg->{ovpnc_conf},
                     XMLDecl    => "<?xml version='1.0' encoding='UTF-8'?>",
                   )
                   or $self->_send_error( $c,
                     "Error generating xml configuration file: " . $!, 200 )
                   && $c->detach;
+
+                chmod 0600, $self->cfg->{ovpnc_conf};
             }
             else {
                 $st_msg->{error} =
                     "Cannot write xml configuration file "
-                  . $c->config->{ovpnc_conf}
+                  . $self->cfg->{ovpnc_conf}
                   . ".\r\nEither it does not exists or is not accessible.";
                 $self->_send_error( $c, $st_msg->{error}, 200 );
                 return;
@@ -278,8 +287,8 @@ sub configuration_UPDATE : Local
     $self->_role(
         $self->new_with_traits(
             traits      => [qw/RenewCiphers/],
-            schema_file => $c->config->{ovpnc_config_schema},
-            openvpn     => $c->config->{openvpn_bin}
+            schema_file => $self->cfg->{ovpnc_config_schema},
+            openvpn     => $self->cfg->{openvpn_bin}
         )
     );
 
@@ -345,6 +354,18 @@ sub _prepare_conf_file_data : Private {
     my @existing_keys;
     my $last_group = 0;
 
+    my @_pathtypes = qw/
+        ca
+        cert
+        dh
+        key
+        chroot
+        tls-auth
+        ifconfig-pool-persist
+        log-append
+        status
+    /;
+
   DATA:
     for my $key ( sort keys %data ) {
 
@@ -366,6 +387,15 @@ sub _prepare_conf_file_data : Private {
 
         $output .= "\n# [ Group id=" . $group . " ]\n"
           if $group > $last_group;
+
+        if ( $real ~~ @_pathtypes
+          && !looks_like_number($data{$key})
+          && $data{$key} !~ /via\-[env|file]/
+        ){
+            $data{$key} = $data{$key} =~ /^\//
+                ? $data{$key}
+                : $self->cfg->{home} . '/' . $data{$key};
+        }
 
         # If this is second (or more) value
         # we need to hold it until we can
@@ -461,8 +491,6 @@ sub _not_exists : Private {
     my ( $self, $keys, $real ) = @_;
     return 1 unless ref $keys eq 'ARRAY';
     if ( $real ~~ @{$keys} ) {
-
-        #warn "Do not hold: $real";
         return 0;
     }
     return 1;
@@ -717,9 +745,6 @@ Last auto-action
 
 sub end : Private {
     my ( $self, $c ) = @_;
-
-    # Debug if requested
-    die "forced debug" if $c->req->params->{dump_info};
 
     # Clean up the File::Assets
     # it is set to null but

@@ -89,7 +89,9 @@ $(document).ready(function() {
 				//	console.log( "At retry loop " + this.tryCount );
 				//},
 		        success: function(response){
-					if ( response.rest.status !== undefined ){
+					if ( response.rest !== undefined
+                        && response.rest.status !== undefined
+                    ){
 						alert( response.rest.status );
 						return false;
 					}
