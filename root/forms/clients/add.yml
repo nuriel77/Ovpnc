@@ -48,6 +48,27 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "1 lowercase, uppercase, digit and character" 
+              # Password repeated
+              - type: Block
+                tag: div
+                elements:
+                      - type: Password
+                        name: password2
+                        label: "Again:"
+                        attributes_xml:
+                          id: "password2"
+                          class: "form_row"
+                        constraints:
+                          - Required
+                          - type: MaxLength
+                            max: 72
+                          - type: Regex
+                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                            message: "" 
+              # HR
+              - type: Block
+                tag: div
+                content_xml: '<div style="border-bottom:1px solid gray;margin:10px 10px 0 6px;"></div>'
               # Fullname
               - type: Block
                 tag: div

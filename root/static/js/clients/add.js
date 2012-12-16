@@ -13,6 +13,7 @@ function set_form_events(){
             $('input#password').parent('div').find('label').css('color','#ff0000');
             return false;
         }
+        if ( ! verify_passwords_match() ) return false;
 
      });
     $('input').bind('keyup',function(e){
@@ -32,6 +33,21 @@ function set_form_events(){
         if ( _name === undefined || _name == '' ) return;
         $.Ovpnc().get_data('/api/clients', { email: _name }, 'GET', return_client_data, return_ajax_error );
     });
+    $('input#password2').bind('keyup',function(){
+        verify_passwords_match();
+    });
+}
+
+function verify_passwords_match(){
+    var _current = $('input#password2').attr('value');
+    var _first = $('input#password').attr('value');
+    if ( _current === undefined || _current == '' || _first === '' ) return true;
+    if ( _current !== _first ){
+        $('input#password2').parent('div').prepend('<span class="error_message error_constraint_required">Passwords do not match</span>');
+        $('input#password2').parent('div').find('label').css('color','#ff0000');
+        return false;
+    }
+    return true;
 }
 
 function return_client_data(r){

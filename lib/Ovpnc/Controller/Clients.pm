@@ -78,12 +78,15 @@ sub add : Path('add')
         : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
+
     my $form = $c->stash->{form};
+
     if ( $form->has_errors ) {
         $c->response->headers->header('Content-Type' => 'text/html');
         Ovpnc::Controller::Root->include_default_links( $c );
         $c->forward('View::HTML');
     }
+
     if ( $form->submitted_and_valid ) {
         my $_client = $c->model('DB::User')
             ->new_result({});
