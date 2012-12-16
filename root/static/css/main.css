@@ -120,10 +120,12 @@ img{
 .error{ color:#f00; }
 
 .error_message{ 
-	color: #f00; 
+	color: #ff0000; 
     position:absolute;
     z-index:9001;
-    margin:3px 0 0 407px;
+    float:left;
+    font-size:0.75em;
+    margin:4px 0 0 367px;
 }
 
 .right_div{
@@ -168,7 +170,7 @@ span.inner_flexi_text {
 	color:#2BAB2B;
 }
 
-.label { min-width: 400px; max-width: 400px;  margin:20px;} 
+.label { min-width: 360px; max-width: 360px; margin:30px 0 30px 10px;} 
 #middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
 .submit_form { float:right;margin:5px 70px 0 0;padding:4px 6px 4px 4px; }
-.form_row { min-width:270px;float:right; }
+.form_row { min-width:275px;float:right; }

@@ -1,4 +1,6 @@
 action: /clients/add
+attributes_xml:
+  id: "add_client_form"
 indicator: submit
 elements:
       - type: Block
@@ -22,7 +24,13 @@ elements:
                           id: "username"
                           autofocus: "autofocus"
                         constraints:
-                          - Required
+                           - Required
+                           - type: Regex
+                             regex: '^[-_a-zA-Z\d]*\z'
+                           - type: MinLength
+                             min: 2
+                           - type: MaxLength
+                             max: 42
               # Password
               - type: Block
                 tag: div
@@ -35,6 +43,11 @@ elements:
                           class: "form_row"
                         constraints:
                           - Required
+                          - type: MaxLength
+                            max: 72
+                          - type: Regex
+                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                            message: "1 lowercase, uppercase, digit and character" 
               # Email
               - type: Block
                 tag: div
@@ -48,6 +61,10 @@ elements:
                         constraints:
                           - Required
                           - Email
+                          - type: MinLength
+                            min: 8
+                          - type: MaxLength
+                            max: 72
               # Phone
               - type: Block
                 tag: div
@@ -60,6 +77,10 @@ elements:
                           class: "form_row"
                         constraints:
                           - Required
+                          - type: MinLength
+                            min: 8
+                          - type: MaxLength
+                            max: 32
               # Address
               - type: Block
                 tag: div
@@ -72,7 +93,10 @@ elements:
                           class: "form_row"
                         constraints:
                           - Required
-        
+                          - type: MinLength
+                            min: 8
+                          - type: MaxLength
+                            max: 128
               # Submit
               - type: Block
                 tag: div
@@ -80,7 +104,7 @@ elements:
                       - type: Submit
                         name: submit
                         attributes_xml:
-                          id: "submit"
+                          id: "submit_add_client_form"
                           class: "submit_form"
                         value: Submit
               # Clear div
@@ -88,3 +112,5 @@ elements:
                 tag: div
                 attributes_xml:
                   class: "clear"
+        constraints:
+              - SingleValue

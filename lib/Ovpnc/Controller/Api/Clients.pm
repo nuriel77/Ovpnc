@@ -266,7 +266,7 @@ sub clients_GET : Local
         # have role_id of 'client'
         # ==============================
         ( $client
-            ? { username => { 'like', $client . '%' } }
+            ? { username => $client }
             : { 'user_roles.role_id' => $_role_name->id }
         ),
         {
