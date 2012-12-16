@@ -51,6 +51,9 @@
 						[% IF this_link != 'root' %]
 							[% content %]
 						[% END %]
+                        [% IF c.user_exists %]
+                            <input type="hidden" name="token" id="token" value="[% token %]" />
+                        [% END %]
 					[% END %]
 				</div>
 

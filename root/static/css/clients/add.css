@@ -96,3 +96,19 @@
 .strongPass span{
     background:url(/static/images/green.png) no-repeat top right;
 }
+
+#generate_password{
+    font-size:0.75em;
+    float:left;
+    margin:-47px 0 10px 500px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background:#eeeeee;
+    padding:3px;
+    cursor:pointer;
+    max-width:50px;
+    border:1px solid #999999;
+    border-bottom:2px solid #999999;
+    border-bottom-left:2px solid #999999;
+    border-right:2px solid #999999;
+}

@@ -23,6 +23,12 @@ methods execute
 
 =cut
 
+around 'add' => sub {
+    my ( $orig, $self, $c ) = @_;
+    $c->stash->{token} = $c->get_session_id;
+    return $self->$orig($c);
+};
+
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 

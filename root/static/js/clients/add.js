@@ -60,6 +60,15 @@ function set_form_events(){
     $('input#password2').bind('keyup',function(){
         verify_passwords_match();
     });
+    $('#generate_password').bind('mousedown',function(){
+        $('#generate_password').css('border','1px solid #999999');
+    }).bind('mouseup',function(){
+        $('#generate_password').css('border','');
+    }).click(function(){
+        var _token = $('#token').attr('value');
+        var _pass = $.Ovpnc().generate_password(_token);
+        console.log(_pass);
+    });
 }
 
 function verify_passwords_match(){

@@ -47,7 +47,7 @@ elements:
                             max: 72
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
-                            message: "1 lowercase, uppercase, digit and character" 
+                            message: "1 lowercase, uppercase, digit and character"
               # Password repeated
               - type: Block
                 tag: div
@@ -65,6 +65,15 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "" 
+              # Generate password button
+              - type: Block
+                tag: div
+                content_xml: "<div id='generate_password'>Generate Password</div>"
+              # Clear div
+              - type: Block
+                tag: div
+                attributes_xml:
+                  class: "clear"
               # HR
               - type: Block
                 tag: div
