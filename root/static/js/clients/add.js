@@ -44,7 +44,6 @@ jQuery.validator.setDefaults({
             });
             // On form submission
             $('form#add_client_form').click( function(e){
-
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
@@ -57,14 +56,15 @@ jQuery.validator.setDefaults({
                 var current = $('input#password2').attr('value');
                 var first = $('input#password').attr('value');
                 if ( ! $.Ovpnc().verify_passwords_match(first, current, 'password2' ) ) return false;
-                // Don't submit if passwords are
                 if ( $('.top_badPass').is(':visible') ) {
                     $('input#password').parent('div').find('span').remove();
                     $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
                     $('input#password').parent('div').find('label').css('color','#ff0000');
                     return false;
                 }
-
+                $('input#email').keyup();
+                $('input#username').keyup();
+                if ( $('.error_message').is(':visible') ) return false;
                 // Remove the warnings message
                 // when leaving this page
                 window.onbeforeunload = undefined;
