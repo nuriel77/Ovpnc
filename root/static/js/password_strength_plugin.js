@@ -59,11 +59,12 @@
 		 	var opts = $.extend(defaults, options);  
 		      
 		 	return this.each(function() { 
-		 		 var obj = $(this);
-		 		
+		 		var obj = $(this);
 		 		$(obj).unbind().keyup(function()
 		 		{
-					
+                    $(obj).parent('div').find('span').remove();
+                    $(obj).parent('div').find('label').css('color','#000000');
+
 					var results = $.fn.teststrength($(this).val(),$(opts.userid).val(),opts);
 					
 					if(opts.messageloc === 1)

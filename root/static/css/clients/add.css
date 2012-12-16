@@ -1,16 +1,19 @@
 /*  ADVANCED STYLES */
 .top_testresult{
-    font-size:0.75pm;
+    font-size:0.75em;
     padding:2px;
-    margin:-13px 0 2px 380px;
+    margin:-12px 0 2px 370px;
     max-width:100px;
     position:absolute;
+    color:#000000;
 }
 .top_testresult span{
     padding:6px ;
     margin:0;
 }
 .top_shortPass{
+    -moz-border-radius: 5px;
+    border-radius: 5px;
     background:#edabab;
     border:1px solid #bc0000;
     display:block;
@@ -19,6 +22,8 @@
     
 }
 .top_badPass{
+    -moz-border-radius: 5px;
+    border-radius: 5px;
     background:#edabab;
     border:1px solid #bc0000;
     display:block;
@@ -27,6 +32,8 @@
     
 }
 .top_goodPass{
+    -moz-border-radius: 5px;
+    border-radius: 5px;
     background:#ede3ab;
     border:1px solid #bc9f00;
     display:block;
@@ -35,6 +42,8 @@
 
 }
 .top_strongPass{
+    -moz-border-radius: 5px;
+    border-radius: 5px;
     background:#d3edab;
     border:1px solid #73bc00;
     display:block;

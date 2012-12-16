@@ -14,28 +14,38 @@ $(document).ready( function() {
         baseStyle:      "top_testresult",
         userid:         "#username",
         messageloc:     1
-     });
+    });
+
 });
 
 function set_form_events(){
 
-    $('form#add_client_form').submit(function(){
-        var _pw_length = $('input#password').attr('value');
-        if ( _pw_length.length < 8 ) {
-             $('input#password').parent('div').find('span').remove();
-            $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
-            $('input#password').parent('div').find('label').css('color','#ff0000');
-            return false;
-        }
-        if ( ! verify_passwords_match() ) return false;
-
-     });
     $('input').bind('keyup',function(e){
         // Prevent submit by pressing enter
         if (e.which == 13) return false;
         // Remove previous warnings if any
-        $(this).parent('div').find('span').remove()
+        $(this).parent('div').find('span').remove();
         $(this).parent('div').find('label').css('color','#000000');
+    });
+
+    $('form#add_client_form').submit(function(){
+        // Check password length and strength
+        var _pw_length = $('input#password').attr('value');
+        if ( _pw_length.length < 8 ) {
+            $('input#password').parent('div').find('span').remove();
+            $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
+            $('input#password').parent('div').find('label').css('color','#ff0000');
+            return false;
+        }
+        // Don't submit if passwords don't match or weak
+        if ( ! verify_passwords_match() ) return false;
+        // Don't submit if passwords are
+        if ( $('.top_badPass').is(':visible') ) {
+            $('input#password').parent('div').find('span').remove();
+            $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
+            $('input#password').parent('div').find('label').css('color','#ff0000');
+            return false;
+        }
     });
     $('input#username').bind('keyup',function(){
         var _name = this.value;
