@@ -54,7 +54,7 @@ elements:
                 elements:
                       - type: Password
                         name: password2
-                        label: "Again:"
+                        label: "Repeat:"
                         attributes_xml:
                           id: "password2"
                           class: "form_row"

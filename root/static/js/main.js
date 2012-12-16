@@ -76,17 +76,25 @@
             });
 
         },
+        verify_passwords_match: function(first, current, f_input){
+            if ( current === undefined || current == '' || first == '' ) return true;
+            if ( current !== first ){
+                $('#'+f_input).parent('div').prepend('<span class="error_message error_constraint_required">Passwords do not match</span>');
+                $('#'+f_input).parent('div').find('label').css('color','#ff0000');
+                return false;
+            }
+            return true;
+        },
+        // Generate random password
         generate_password: function(a){
-            var chars = "abcdefhjmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWYXZ" + a;
+            var m = new MersenneTwister();
+            var randomNumber = m.random();
+            var chars = randomNumber + "abcdefhjmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWYXZ" + a;
             var _str = '';
             for (var i=0 ; i<16 ; i++ ){
                 var _rn = Math.floor( Math.random() * chars.length );
                 _str += chars.substring(_rn, _rn + 1);
             }
-            $('#password2').parent('div').find('span').remove();
-            $('#password2').parent('div').prepend('<span class="error_message" style="color:#000000">' + _str + '</span>');
-            $('#password').attr('value', _str ).keyup();
-            $('#password2').attr('value', _str );
             return _str;
         },
         // Init click events

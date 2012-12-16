@@ -81,6 +81,21 @@ function cert_exec_actions(){
 
 }
 
+// Set the input fields
+// from the cookie
+function set_form_from_cookie(data){
+
+    if ( data !== undefined ){
+        if ( data.name !== '' ){
+            $('#name').attr('value', data.name);
+        }
+        if ( data.email !== '' ){
+            $('#data').attr('value', data.email);
+        }
+    }
+
+}
+
 function set_confirm_exit(){
 
 	if (  $.Ovpnc.form_modified === 0 ) {
@@ -89,21 +104,6 @@ function set_confirm_exit(){
 		// On window unload
 		window.onbeforeunload = confirmExit;
 	}
-}
-
-// Set the input fields
-// from the cookie
-function set_form_from_cookie(data){
-
-	if ( data !== undefined ){
-		if ( data.name !== '' ){
-			$('#name').attr('value', data.name);
-		}
-		if ( data.email !== '' ){
-			$('#data').attr('value', data.email);
-		}
-	}
-
 }
 
 // Sets rules for form validation

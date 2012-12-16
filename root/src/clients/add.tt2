@@ -1,10 +1,10 @@
 [% CALL assets.include("js/password_strength_plugin.js") %]
+[% CALL assets.include("js/mersenne-twister.js") %]
 <div id="add_client">
     [% form %]
 </div>
 <script>
     // Set events for form
-    // input fields
-    // and submit
-    set_form_events();
+    // input fields and submit
+    $.addClient().set_form_events();
 </script>

@@ -117,7 +117,12 @@ img{
 	max-width:320px;
 	margin:90px 0px 0px 150px; 
 }
-.error{ color:#f00; }
+.error{
+    color:#555555;
+    z-index:9001;
+    float:right;
+    margin-top:3px;
+}
 
 .error_message{ 
 	color: #ff0000; 
@@ -170,7 +175,7 @@ span.inner_flexi_text {
 	color:#2BAB2B;
 }
 
-.label { min-width: 360px; max-width: 360px; margin:30px 0 30px 10px;} 
+.label { min-width: 360px; max-width: 360px; margin:35px 0 35px 10px;} 
 #middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
 .submit_form { float:right;margin:5px 70px 0 0;padding:4px 6px 4px 4px; }
 .form_row { min-width:275px;float:right; }
