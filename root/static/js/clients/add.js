@@ -4,7 +4,21 @@ jQuery.validator.setDefaults({
     success: "valid"
 });
 
+$(document).ready( function() {
+
+    $("#password").passStrength({
+        shortPass:      "top_shortPass",
+        badPass:        "top_badPass",
+        goodPass:       "top_goodPass",
+        strongPass:     "top_strongPass",
+        baseStyle:      "top_testresult",
+        userid:         "#username",
+        messageloc:     1
+     });
+});
+
 function set_form_events(){
+
     $('form#add_client_form').submit(function(){
         var _pw_length = $('input#password').attr('value');
         if ( _pw_length.length < 8 ) {

@@ -133,7 +133,7 @@ sub include_default_links : Private {
 
     return 1 if $c->stash->{no_self};
 
-# Include according to pathname
+    # Include according to pathname
     # not incase of 'main' ( path is undef )
     # ======================================
     if ( my $c_name = $c->req->path ) {
@@ -147,7 +147,8 @@ sub include_default_links : Private {
             );
         }
     }
-    $c->assets->include($_) for @_page_assets;
+
+    $c->assets->include( $_ ) for @_page_assets;
 
 }
 
