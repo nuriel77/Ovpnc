@@ -48,6 +48,24 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "1 lowercase, uppercase, digit and character" 
+              # Fullname
+              - type: Block
+                tag: div
+                elements:
+                      - type: Text
+                        name: fullname
+                        label: "Fullname:"
+                        attributes_xml:
+                          class: "form_row"
+                          id: "fullname"
+                        constraints:
+                           - Required
+                           - type: Regex
+                             regex: '^[-_a-zA-Z\d]*\z'
+                           - type: MinLength
+                             min: 2
+                           - type: MaxLength
+                             max: 42
               # Email
               - type: Block
                 tag: div

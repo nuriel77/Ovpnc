@@ -85,8 +85,11 @@ sub add : Path('add')
         $c->forward('View::HTML');
     }
     if ( $form->submitted_and_valid ) {
-        my $_client = $c->model('DB::User')->new_result({});
-        # update dbic row with submitted values from form
+        my $_client = $c->model('DB::User')
+            ->new_result({});
+        # update dbic row with
+        # submitted values from form
+        # ==========================
         $form->model->update( $_client );
         my $_cid = $_client->{_column_data}->{id};
         my $_client_role_id = $c->model('DB::Role')

@@ -195,13 +195,24 @@ sub clients_GET : Local
                 #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
                 #: Does('NeedsLogin')
 {
-    my ( $self, $c, $client ) = @_;
+    my ( $self, $c ) = @_;
 
-    # Assign from post params if exists
-    # This will override params in the path
-    # =====================================
-    $client = $c->req->params->{client}
-        if $c->req->params->{client};
+    # Assign the request param
+    # Only when param 'page' does not
+    # exists, because that would be
+    # a call originating from flexgrid
+    # When param (fieldname) is provided
+    # the action will return a result
+    # of a client which was found to match
+    # ====================================
+    my ( $param, $keyname );
+    if ( $c->req->params && !$c->req->params->{page} ) {
+        # We expect only one
+        # parameter to be sent
+        # ====================
+        $keyname = ( keys %{$c->req->params} )[0];
+        $param->{$keyname} = $c->req->params->{$keyname};
+    }
 
     # client configuration dir
     # ========================
@@ -235,6 +246,19 @@ sub clients_GET : Local
           modified/
     ];
 
+    # If req param 'page' we don't
+    # run this check, this means
+    # the call originated from 
+    # the flexgrid table
+    # ============================
+    if ( !$c->req->params->{page} && ! ( $keyname ~~ @{$_columns} ) ){
+        $self->status_not_found(
+            $c,
+            message => "Unknown field name: '" . $keyname . "'",
+        );
+        $c->detach;
+    }
+
     # Check if these are columns which exists
     # in the resultset, otherwise they are
     # from openvpn mgmt port status.
@@ -260,13 +284,14 @@ sub clients_GET : Local
     # Query resultset
     # ===============
     my @_clients = $c->model('DB::User')->search(
-        # If $client is provided, return
-        # only the result of $client
+        # If $param is provided, return
+        # only the result of $param
         # Otherwise, only clients which
-        # have role_id of 'client'
+        # have role_id of 'client', this
+        # is then for use by flexgrid
         # ==============================
-        ( $client
-            ? { username => $client }
+        ( $param->{$keyname}
+            ? { $keyname => $param->{$keyname} }
             : { 'user_roles.role_id' => $_role_name->id }
         ),
         {
@@ -286,7 +311,7 @@ sub clients_GET : Local
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
-    if ( $client ) {
+    if ( $param->{$keyname} ) {
         $self->status_ok( $c, entity => [ @_clients ] );
         $c->detach;
     }

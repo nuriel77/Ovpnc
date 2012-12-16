@@ -27,6 +27,11 @@ function set_form_events(){
         if ( _name === undefined || _name == '' ) return;
         $.Ovpnc().get_data('/api/clients', { client: _name }, 'GET', return_client_data, return_ajax_error );
     });
+    $('input#fullname').bind('keyup',function(){
+        var _name = this.value;
+        if ( _name === undefined || _name == '' ) return;
+        $.Ovpnc().get_data('/api/clients', { fullname: _name }, 'GET', return_client_data, return_ajax_error );
+    });
 }
 
 function return_client_data(r){
