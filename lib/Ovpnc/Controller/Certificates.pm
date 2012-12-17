@@ -31,6 +31,10 @@ methods execute
 around [qw(index)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+    $c->config->{ovpnc_conf} = $c->config->{ovpnc_conf} =~ /^\//
+        ? $c->config->{ovpnc_conf}
+        : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
+
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
         $c->config->{ovpnc_conf}, 'UserName' );
@@ -65,6 +69,9 @@ sub index : Path
 
     # Get the country list (for certificates signing)
     # ===============================================
+    $c->config->{country_list} = $c->config->{country_list} =~ /^\//
+        ? $c->config->{country_list}
+        : $c->config->{home} . '/' . $c->config->{country_list};
     my @clist = @{ $self->get_country_list( $c->config->{country_list} ) };
 
     $c->stash->{title}     = 'Certificates';
@@ -89,7 +96,8 @@ sub get_country_list : Private {
     my ( $self, $file ) = @_;
 
     die "No file specified" unless $file;
-    my $_list = read_file($file) or die "Cannot read '$file': $!";
+    my $_list = read_file( $file )
+        or die "Cannot read '$file': $!";
     my $json  = JSON::XS->new->ascii->allow_nonref;
     my @clist = map {
         {

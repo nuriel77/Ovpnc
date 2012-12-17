@@ -33,9 +33,9 @@
         ajax_loader: '<img class="ajax_loader" src="/static/images/ajax-loader.gif" />',
         okay_icon: '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
         error_icon: '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
-        alert_icon: '<div class="err_text"><img width=18 height=18 src="/static/images/alert_icon.png" /></div><div class="err_text">',
-        alert_ok: '<div class="err_text"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div><div class="err_text">',
-        alert_err: '<div class="err_text"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div><div class="err_text">',
+        alert_icon: '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 src="/static/images/alert_icon.png" /></div><div class="err_text">',
+        alert_ok: '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div><div class="err_text">',
+        alert_err: '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/error_icon.png" /></div><div class="err_text">',
     };
     //
     // Ovnpc config items
@@ -110,7 +110,7 @@
                 r.status = r.rest.status;
                 // Check returned /started/
                 if (r.status.match(/started/)) {
-                    alert($.Ovpnc().alert_ok + r.status + " at " + get_date() + '.</div><div class="clear"></div>');
+                    alert($.Ovpnc().alert_ok + ' ' + r.status + '.</div><div class="clear"></div>');
                     $('#on_icon').animate({
                         opacity: 1
                     },
@@ -119,7 +119,7 @@
                 }
                 // Check returned /stopped/
                 else if (r.status.match(/stopped/)) {
-                    alert($.Ovpnc().alert_err + "Server stopped at " + get_date() + '.</div><div class="clear"></div>');
+                    alert($.Ovpnc().alert_ok + ' Server stopped.</div><div class="clear"></div>');
                     $('#on_icon').animate({
                             opacity: 0
                         },
@@ -186,11 +186,11 @@
                 top:            '120px',
                 opacity:        '0.6',
                 'min-width':    '99%',
-                'min-height':   '99%',
+                'height':   '100%',
                 'background-color': '#ffffff'
             }).attr('id', 'oDiv');
-            $('body').prepend( oDiv );
-            $( oDiv ).fadeIn(1000);
+            $('#outer').prepend( oDiv );
+            $( oDiv ).fadeIn(500);
         },
         //
         // Generate random password
@@ -416,21 +416,30 @@
             }
         },
         //
-        // Check if client names match
+        // Set the width of the middle frame
         //
-        check_client_match: function(clients, current_client) {
-            for (var i in clients) {
-                if (clients[i].name === current_client) return clients[i];
+        set_middle_frame_w: function(){
+            var w = $(window).width();
+            var f = w < 1300 ? ( 0.5 * w ) : ( 0.6 * w );
+            var o = w < 1200 ? 7.5 : 10;
+            var o = w < 1100 ? 5 : 7.5;
+            var o = w < 1000 ? 0.5 : 5;
+            $('#outer_centered').css('margin-left', o + '%');
+            $('#middle_frame').css('min-width', f + 'px');
+            if ( $('.flexigrid').is(':visible') ){
+                $('.flexigrid').css('max-width', ( $('#middle_frame').width() - 40 ) + 'px' );
             }
-            return false;
         }
-
     };
 
 })(jQuery);
 
 
 $(document).ready(function() {
+    $.Ovpnc().set_middle_frame_w();
+    $(window).resize(function() {
+        $.Ovpnc().set_middle_frame_w();
+    });
     if ($.Ovpnc().pathname === '/login') return;
 
     // Set custom alert functionality
@@ -449,10 +458,10 @@ $(document).ready(function() {
         // Write
         $('#message').html('<div id="msg_content"><div style="float:left">['
             + get_time() + ']</div>'
-            + message + '</div>'
+            + message + '</div></div><div>'
             + '<img id="message_close"'
             + ' src="/static/images/close-gray.png"'
-            + ' class="hand_pointer"></img>').slideDown(300);
+            + ' class="hand_pointer"></img></div>').slideDown(300);
         $('#message_close').click(function() {
             $('#message').hide(300).empty();
         });

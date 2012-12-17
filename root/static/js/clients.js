@@ -71,7 +71,7 @@ var total_count = 0;
                 useRp: true,
                 rp: 15,
                 showTableToggleBtn: false,
-                width: 600,
+                width: $('#middle_frame').width() - 40,
                 height: 300
             });
         },
@@ -94,7 +94,7 @@ var total_count = 0;
                 // inner_text is in order to get only the username and not
                 // any span we might have appended previous loop
                 var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                var online_data = $.Ovpnc().check_client_match(r.rest.clients, inner_text);
+                var online_data = $.Client().check_clients_match(r.rest.clients, inner_text);
                 if (online_data !== false) {
                     _checker++;
                     // loop each td find the corresponding 'abbr'
@@ -138,7 +138,17 @@ var total_count = 0;
             if ( _checker === 0 && r.rest.clients.length > 0 ){
                 $('.pReload').click();
             }
+        },
+        //
+        // Check if client names match
+        //
+        check_clients_match: function(clients, current_client) {
+            for (var i in clients) {
+                if (clients[i].name === current_client) return clients[i];
+            }
+            return false;
         }
+
     };
 
 })(jQuery);
