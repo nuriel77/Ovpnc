@@ -29,6 +29,7 @@
     // Ovpnc static items
     //
     mem = {
+        ajax_loader_floating: '<div id="ajax_loader_floating" onClick="$.Ovpnc().remove_ajax_loading()">&nbsp;</div>',
         ajax_loader: '<img class="ajax_loader" src="/static/images/ajax-loader.gif" />',
         okay_icon: '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
         error_icon: '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
@@ -69,7 +70,7 @@
         hover_binds: function() {
             // Client action links hover
             $('.unkill_me').hover(function() {
-                $(this).css('text-shadow', '#999 1px -1px 1px');
+                $(this).css('text-shadow', '#999999 1px -1px 1px');
             },
             function() {
                 $(this).css('text-shadow', 'none');
@@ -84,6 +85,30 @@
                 return false;
             }
             return true;
+        },
+        set_ajax_loading: function(){
+            $('body').prepend( $.Ovpnc().ajax_loader_floating );
+            $.Ovpnc().apply_overlay();
+        },
+        remove_ajax_loading: function(){
+            $('#oDiv').fadeOut('slow').remove();
+            $('#ajax_loader_floating').fadeOut('slow').remove();
+        },
+        // Apply div overlay
+        apply_overlay: function(){
+            var oDiv = document.createElement('div');
+            $( oDiv ).css({
+                zIndex:         '9002',
+                display:        'none',
+                position:       'fixed',
+                top:            '120px',
+                opacity:        '0.6',
+                'min-width':    '99%',
+                'min-height':   '99%',
+                'background-color': '#ffffff'
+            }).attr('id', 'oDiv');
+            $('body').prepend( oDiv );
+            $( oDiv ).fadeIn(1000);
         },
         // Generate random password
         generate_password: function(a){
@@ -111,7 +136,7 @@
             }
         },
         // Get json data
-        get_data: function(url, data, method, success_func, error_func) {
+        get_data: function(url, data, method, success_func, error_func, loader) {
             return jQuery.ajax({
                 headers: {
                     'Accept': 'application/json'
@@ -126,9 +151,13 @@
                 url: url,
                 beforeSend: function() {
                     $.Ovpnc.ajax_lock = 1;
+                    if ( loader !== undefined )
+                        $.Ovpnc().set_ajax_loading();
                 },
                 complete: function() {
                     $.Ovpnc.ajax_lock = 0;
+                    if ( loader !== undefined )
+                        $.Ovpnc().remove_ajax_loading();
                 },
                 success: success_func ? success_func : function(rest) {
                     console.log("Ajax got back: %o", rest);
@@ -208,7 +237,7 @@
                     { name: 'Delete', bclass: 'delete', onpress : delete_client },
                     { name: 'Block', bclass: 'block', onpress : block_clients },
                     { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
-                    { name: 'Edit', bclass: 'edit', onpress : console.log('edit') },
+                    { name: 'Edit', bclass: 'edit', onpress : test_edit },
                     { separator: true}
                 ],
                 searchitems : [
@@ -260,13 +289,15 @@
                     // fill in the text from online_data
                     var mem_ip;
                     for (var i in online_data) {
-                        if (i !== 'name') {
-                            if ( i.match(/^bytes_.*$/) )
-                                online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
-                            $(this).parent().parent('tr')
-                                   .children('td[abbr="' + i + '"]')
-                                   .children('div')
-                                   .text( online_data[i] ).css('color','black');
+                        if ( online_data[i] !== 'UNDEF' ){
+                            if (i !== 'name') {
+                                if ( i.match(/^bytes_.*$/) )
+                                    online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
+                                $(this).parent().parent('tr')
+                                       .children('td[abbr="' + i + '"]')
+                                       .children('div')
+                                       .text( online_data[i] ).css('color','black');
+                            }
                         }
                     }
                     // mark the row which has been found to be online
@@ -716,3 +747,8 @@ function numberWithCommas(n) {
     return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
 }
 
+
+function test_edit(){
+$.Ovpnc().set_ajax_loading();
+
+}

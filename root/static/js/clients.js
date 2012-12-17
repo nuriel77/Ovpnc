@@ -5,7 +5,7 @@ var total_count = 0;
 
     $.Client = function(options) {
         var obj = $.extend({},
-        mem );
+        mem);
         return obj;
     };
 
@@ -18,7 +18,6 @@ var total_count = 0;
 })(jQuery);
 
 $(document).ready(function(){
-
 	// Declare flexigrid
 	// Will run a query
 	// to get clients
@@ -50,7 +49,7 @@ function delete_client(button, grid){
         $.Client().loop = $.Client().loop + 1;
     });
     $.Ovpnc().get_data("/api/clients/", { client: _clients },
-    'REMOVE', client_delete_return, client_delete_error );
+    'REMOVE', client_delete_return, client_delete_error, 1 );
 }
 
 function client_delete_return(r){
@@ -158,6 +157,7 @@ function block_unblock_clients(button, grid, action){
         // Get rid of any html
         client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
         // Revoke client/disconnect
+        $.Ovpnc().set_ajax_loading();
         $.ajax({
             url: '/api/clients/' + client,
             type: action,
@@ -184,6 +184,7 @@ function block_unblock_clients(button, grid, action){
             },
             complete : function(){
                 loop++;
+                $.Ovpnc().remove_ajax_loading();
                 check_complete_block(loop, processed, total_count, action);
             }
         });

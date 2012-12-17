@@ -44,13 +44,17 @@ jQuery.validator.setDefaults({
                 $(this).parent('div').find('label').css('color','#000000');
             });
             // On form submission
-            $('form#add_client_form').submit( function(e){
+            //$('form#add_client_form').submit( function(e){
+            $('#submit_add_client_form').click(function(e){
+                //e.preventDefault();
+                $.Ovpnc().set_ajax_loading();
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
                     $('input#password').parent('div').find('span').remove();
                     $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
                     $('input#password').parent('div').find('label').css('color','#8B0000');
+                    $.Ovpnc().remove_ajax_loading();
                     return false;
                 }
                 // Don't submit if passwords don't match or weak
@@ -61,6 +65,7 @@ jQuery.validator.setDefaults({
                     $('input#password').parent('div').find('span').remove();
                     $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
                     $('input#password').parent('div').find('label').css('color','#8B0000');
+                    $.Ovpnc().remove_ajax_loading();
                     return false;
                 }
                 $.addClient().check_username();
@@ -71,13 +76,18 @@ jQuery.validator.setDefaults({
                     clearInterval(_wait);
                 },
                 1000 );
-                if ( $('.error_message').is(':visible') ) { console.log('has errors'); return false; };
+                if ( $('.error_message').is(':visible') ) {
+                    console.log('has errors');
+                    $.Ovpnc().remove_ajax_loading();
+                    return false;
+                };
 
                 // Remove the warnings message
                 // when leaving this page
                 window.onbeforeunload = undefined;
                 // Save the current values
                 $.addClient().confirm_exit();
+                //$('form').submit();
                 return true;
             });
             $('input#username').bind('keyup',function(){

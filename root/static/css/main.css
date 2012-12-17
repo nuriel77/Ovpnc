@@ -192,3 +192,36 @@ span.inner_flexi_text {
 .submit_form { float:right;margin:5px 70px 0 0;padding:4px 6px 4px 4px; }
 .form_row { min-width:275px;float:right; }
 #add_client { font-size: 0.9em; }
+#ajax_loader_floating{
+    background-image: url(/static/images/ajax-loader-floating.gif);
+    background-repeat: no-repeat;
+    background-position: center center; 
+    position:fixed;
+    z-index:9003;
+    left:50%;
+    top:50%;
+    min-width:40px;
+    min-height:40px;
+    padding:4px;
+    border:1px solid lightgray;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color:#cccccc;
+    box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -o-box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -webkit-box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -moz-box-shadow: 8px 10px 10px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
+
+}
+#overlay_div{
+    position: fixed;
+    min-width:99%;
+    min-height:99%;
+    background-color:#ffffff;
+    opacity:0.7;
+}
