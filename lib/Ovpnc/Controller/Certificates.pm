@@ -113,6 +113,7 @@ sub denied : Private {
     my ( $self, $c ) = @_;
 
     # Add js / css
+    # ============
     Ovpnc::Controller::Root->include_default_links($c);
     $c->stash->{this_link}     = 'certificates';
     $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
@@ -130,6 +131,7 @@ sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
     # Add js / css
+    # ============
     Ovpnc::Controller::Root->include_default_links($c);
 
     $c->stash->{username} = $c->user->get("username")

@@ -384,44 +384,6 @@ sub clients_GET : Local
       if @_list > 0;
 }
 
-=head2 list_recent
-    
-List recently created books
-    
-=cut
-    
-sub list_recent : Path('clients/list_recent')
-                : Args(1)
-                : Sitemap
-                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-                #: Does('NeedsLogin')
-{
-    my ($self, $c, $mins) = @_;
-    
-    $mins ||= $c->req->params->{time};
-
-    # Verify the minutes provided
-    # ===========================
-    $self->_client_error($c,'204') unless defined $mins;
-    $self->_client_error($c,'400', 'Not a number')
-        unless looks_like_number($mins);
-    $self->_client_error($c,'400', 'Invalid range')
-        if $mins > 5259487;
-
-    my $res = $c->model('DB::User')
-                   ->created_after( DateTime->now->subtract(minutes => $mins) );
-    my $_data = [];
-    for ( $res->all ){
-        push @{$_data},
-            {
-                created  => '' . $_->created,
-                username => '' . $_->username,
-                id       => '' . $_->id,
-            };
-    }
-    
-    $self->status_ok($c, entity => $_data );
-}
 
 =head2 clients_POST
 
@@ -774,6 +736,47 @@ sub clients_UNREVOKE : Local
     $self->_disconnect_vpn if $self->_has_vpn;
     delete $c->stash->{status};
 }
+
+
+=head2 list_recent
+    
+List recently created books
+    
+=cut
+    
+sub list_recent : Path('clients/list_recent')
+                : Args(1)
+                : Sitemap
+                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                #: Does('NeedsLogin')
+{
+    my ($self, $c, $mins) = @_;
+    
+    $mins ||= $c->req->params->{time};
+
+    # Verify the minutes provided
+    # ===========================
+    $self->_client_error($c,'204') unless defined $mins;
+    $self->_client_error($c,'400', 'Not a number')
+        unless looks_like_number($mins);
+    $self->_client_error($c,'400', 'Invalid range')
+        if $mins > 5259487;
+
+    my $res = $c->model('DB::User')
+                   ->created_after( DateTime->now->subtract(minutes => $mins) );
+    my $_data = [];
+    for ( $res->all ){
+        push @{$_data},
+            {
+                created  => '' . $_->created,
+                username => '' . $_->username,
+                id       => '' . $_->id,
+            };
+    }
+    
+    $self->status_ok($c, entity => $_data );
+}
+
 
 =head2
 
