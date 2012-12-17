@@ -73,7 +73,7 @@ jQuery.validator.setDefaults({
                 $.addClient().check_email();
 
                 var _wait =  setInterval(function() {
-                    clearInterval(_wait);
+                    window.clearInterval(_wait);
                 },
                 1000 );
                 if ( $('.error_message').is(':visible') ) {

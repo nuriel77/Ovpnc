@@ -5,7 +5,7 @@ var total_count = 0;
 
     $.Client = function(options) {
         var obj = $.extend({},
-        mem);
+        mem, actions);
         return obj;
     };
 
@@ -14,6 +14,132 @@ var total_count = 0;
         loop:  0,
         total_count: 0
     };
+    
+    var actions = {
+        set_clients_table: function() {
+            $.ajaxSetup({
+                cache: false,
+                async: true
+            });
+            $('#flexme').flexigrid({
+                url: '/api/clients',
+                dataType: 'json',
+                method: "GET",
+                preProcess: format_client_results,
+                colModel: [
+                // TODO: Save table proportions in cookie
+                    { display: 'ID', name : 'id', width: 15, sortable : true, align: 'right', hide: true },
+                    { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
+                    { display: 'Virtual IP', name : 'virtual_ip', width : 85, sortable : true, align: 'left'},
+                    { display: 'Remote IP', name : 'remote_ip', width : 85, sortable : true, align: 'left'},
+                    { display: 'Remote Port', name : 'remote_port', width : 40, sortable : true, align: 'left', hide: true },
+                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'center'},
+                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'center'},
+                    { display: 'Connected Since', name : 'conn_since', width : 150, sortable : true, align: 'left' },
+                    { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left' },
+                    { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
+                    { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
+                    { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
+                    { display: 'Enabled', name : 'enabled', width: 20, sortable : true, align: 'right', hide: false },
+                    { display: 'Revoked', name : 'revoked', width: 20, sortable : true, align: 'right', hide: false },
+                    { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
+                    { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
+                ],
+                buttons : [
+                    { name: 'Add', bclass: 'add', onpress : add_client },
+                    { name: 'Delete', bclass: 'delete', onpress : delete_client },
+                    { name: 'Block', bclass: 'block', onpress : block_clients },
+                    { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
+                    { name: 'Edit', bclass: 'edit', onpress : test_edit },
+                    { separator: true}
+                ],
+                searchitems : [
+                    { display: 'Virtual IP', name : 'virtual_ip'},
+                    { display: 'Remote IP', name : 'remote_ip'},
+                    { display: 'Remote Port', name : 'remote_port'},
+                    { display: 'Created', name : 'created'},
+                    { display: 'Modified', name : 'modified'},
+                    { display: 'Fullname', name : 'fullname'},
+                    { display: 'Email', name : 'email'},
+                    { display: 'Since', name : 'conn_since'},
+                    { display: 'Username', name : 'username', isdefault: true}
+                ],
+                sortname: "username",
+                sortorder: "asc",
+                usepager: true,
+                title: 'Clients',
+                useRp: true,
+                rp: 15,
+                showTableToggleBtn: false,
+                width: 600,
+                height: 300
+            });
+        },
+        update_flexgrid : function(r){
+            // Color unknown client in red
+            $('#flexme').find('tr').children('td[abbr="id"]')
+                        .children('div').each(function(k, v){
+                if ( v.innerHTML === 'unknown' ){
+                    $(this).parent().parent('tr').children('td[abbr="username"]')
+                        .children('div').css('color','red');
+                }
+            });
+            // Set the right color - on/off notice according
+            // to client's status
+            var _checker = 0;
+            $('#flexme').find('tr').children('td[abbr="username"]')
+                        .children('div').each(function(k, v){
+                // we match the username from online_data
+                // to the current tr.td[abbr=username].div.text in the loop
+                // inner_text is in order to get only the username and not
+                // any span we might have appended previous loop
+                var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                var online_data = $.Ovpnc().check_client_match(r.rest.clients, inner_text);
+                if (online_data !== false) {
+                    _checker++;
+                    // loop each td find the corresponding 'abbr'
+                    // fill in the text from online_data
+                    var mem_ip;
+                    for (var i in online_data) {
+                    if ( online_data[i] !== 'UNDEF' ){
+                            if (i !== 'name') {
+                                if ( i.match(/^bytes_.*$/) )
+                                    online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
+                                $(this).parent().parent('tr')
+                                       .children('td[abbr="' + i + '"]')
+                                       .children('div')
+                                       .text( online_data[i] ).css('color','black');
+                            }
+                        }
+                    }
+                    // mark the row which has been found to be online
+                    if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
+                        $(this).append('<span class="inner_flexi_text">on</span>');
+                    }
+                }
+                else {
+                    // Clean up td's with online data
+                    // for client which is not online
+                    $(this).children('span.inner_flexi_text').hide(300).remove();
+                    if ( $(this).parent().parent('tr')
+                                .children('td').children('div')
+                                .text() !== '-'
+                    ) {
+                        var removable =
+                            [ "remote_ip", "virtual_ip", "conn_since", "remote_port", "bytes_recv", "bytes_sent" ];
+                        for (var z in removable) {
+                            $(this).parent().parent('tr')
+                            .children('td[abbr="' + removable[z] + '"]')
+                                   .children('div').css('color','lightgray');
+                        }
+                    }
+                }
+            });
+            if ( _checker === 0 && r.rest.clients.length > 0 ){
+                $('.pReload').click();
+            }
+        }
+    };
 
 })(jQuery);
 
@@ -21,7 +147,8 @@ $(document).ready(function(){
 	// Declare flexigrid
 	// Will run a query
 	// to get clients
-    $.Ovpnc().set_clients_table();
+    $.Client().set_clients_table();
+
 	// Show the clients table
 	$('.flexigrid').slideDown(300);
     
@@ -56,17 +183,18 @@ function client_delete_return(r){
     console.log("%o",r.rest);    
     if ( r.rest.deleted !== undefined  ){
         if ( r.rest.deleted.length > 0 ){
-            alert( 'Total ' + r.rest.deleted.length
+            alert($.Ovpnc().alert_ok
+                    + ' Total ' + r.rest.deleted.length
                     + ' client' + ( r.rest.deleted.length === 1 ? ' ' : 's ' )
-                    + ' deleted' );
+                    + ' deleted</div><div class="clear"></div>' );
         }
         else {
-            alert( 'No clients deleted!' );
+            alert( $.Ovpnc().alert_err + 'No clients deleted!</div><div class="clear"></div>' );
             return;
         }
     }
     if ( r.rest.failed !== undefined && r.rest.failed.length > 0 ){
-        alert( r.rest.failed.length + ' out of ' + total_count + ' clients failed delete' );
+        alert( $.Ovpnc().alert_icon + r.rest.failed.length + ' out of ' + total_count + ' clients failed delete</div><div class="clear"></div>' );
     }
     $('.pReload').click();
 }
@@ -94,7 +222,7 @@ function format_client_results(obj){
 	var is_felxgrid_ready =
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){
-				$.Ovpnc().get_data( "/api/server/status", { }, 'GET', update_server_status );
+				$.Ovpnc().get_data( "/api/server/status", { }, 'GET', $.Ovpnc().update_server_status );
 				window.clearInterval(is_felxgrid_ready);
 			}
 		}, 100);
@@ -164,23 +292,28 @@ function block_unblock_clients(button, grid, action){
             data: {},
             dataType: 'json',
             success: function( msg ) {
-                if ( msg && msg.rest !== undefined ){
+                if ( msg === undefined ) return;
+                if ( msg.error !== undefined
+                  && typeof msg.error.length !== undefined 
+                  && Object.prototype.toString.call( msg.error ) === '[object Array]'
+                  && msg.error.length > 0
+                ){
+                    alert( $.Ovpnc().alert_err + " '" + client + "' " + action + " failed: " + msg.error.join() + '</div><div class="clear"></div>');
+                }
+                if ( msg.error === undefined && typeof msg.rest !== "undefined" ){
                     if ( msg.rest.match( /revoked ok.*SUCCESS/g )
                       || msg.rest.match( /Un-revocation success/g )
                     ){
                         processed++;
                     }
                     else {
-                        alert( "'" + client + "' " + action + " failed: " + msg.rest );
+                        alert( $.Ovpnc().alert_err + " '" + client + "' " + action + " failed: " + msg.rest + '</div><div class="clear"></div>');
                     }
-                }
-                else {
-                    alert( "'" + client + "' " + action + " failed: " + msg.rest );
                 }
             },
             error: function(xhr, ajaxOptions, thrownError){
                 var err = xhr.responseText;
-                alert( "Failed command " + action + " for '" + client + "': " + xhr.responseText );
+                alert( $.Ovpnc().alert_err + " Failed command " + action + " for '" + client + "': " + xhr.responseText + '</div><div class="clear"></div>');
             },
             complete : function(){
                 loop++;
@@ -193,17 +326,18 @@ function block_unblock_clients(button, grid, action){
 
 function check_complete_block(loop, processed, total_count, action){
     if ( processed === total_count ){
-        alert( 'Total ' + processed
+        alert($.Ovpnc().alert_ok
+                + ' Total ' + processed
                 + ' client' + ( processed === 1 ? ' ' : 's ' )
-                + action + 'd' );
+                + action + 'd</div><div class="clear"></div>' );
         return;
     }
     if ( loop === total_count ){
         if ( processed === 0 ){
-            alert( 'No clients ' + action + 'd!' );
+            alert( $.Ovpnc().alert_err + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
         }
         else {
-            alert( 'Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd' );
+            alert( $.Ovpnc().alert_icon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
         }
     }
 }

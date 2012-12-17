@@ -85,14 +85,14 @@ legend {
 	display:none;
 	margin:10px 10px 5px 0;
 	padding:10px 10px 7px 15px;
-	font-size: 0.85em;
+	font-size: 0.9em;
 	min-height:15px;
 }
 #message_container {
     max-height:150px;
 }
 
-#msg_content{ margin-right:5px; max-height:72px; overflow:auto ;}
+#msg_content{ margin-right:5px; max-height:72px; overflow: auto; }
 
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }
@@ -170,7 +170,6 @@ img{
 }
 
 /* .ok_icon{ margin: 3px 2px 0 0 ; } */
-.err_icon{ margin: 5px 2px 0 0 ; }
 
 /* Server status class */
 #server_status_content{ margin:8px 0px 4px 10px; float:left; }
@@ -179,7 +178,6 @@ img{
 #server_on_off{ float:right; }
 #online_clients { margin-top:28px; }
 #off_icon { float:right; }
-#on_icon { position:absolute;margin-right: 5px; opacity: 0; }
 span.inner_flexi_text {
 	float:right;
 	font-size:0.7em;
@@ -225,3 +223,6 @@ span.inner_flexi_text {
     background-color:#ffffff;
     opacity:0.7;
 }
+
+#on_icon { position:absolute;margin-right: 5px; opacity: 0; }
+.err_text { float:left; margin:1.5px 0 1.5px 3px; }

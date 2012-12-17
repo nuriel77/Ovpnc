@@ -33,15 +33,15 @@
         ajax_loader: '<img class="ajax_loader" src="/static/images/ajax-loader.gif" />',
         okay_icon: '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
         error_icon: '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
-        alert_icon: '<img width=18 height=18 src="/static/images/alert_icon.png" />',
-        alert_ok: '<div style="float:left;"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div>' + '<div style="float:left;margin:5px 0 0 6px;"></div>',
-        alert_err: '<div style="float:left;"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div>' + '<div style="float:left;margin:5px 0 0 6px;"></div>',
+        alert_icon: '<div class="err_text"><img width=18 height=18 src="/static/images/alert_icon.png" /></div><div class="err_text">',
+        alert_ok: '<div class="err_text"><img width=17 height=17 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div><div class="err_text">',
+        alert_err: '<div class="err_text"><img width=18 height=18 style="margin-top:-2px" src="/static/images/alert_icon.png" /></div><div class="err_text">',
     };
     //
     // Ovnpc config items
     //
     config = {
-        poll_freq: 5000,
+        poll_freq: 10000,
         // Get server status from api every n milliseconds
         opacity_effect: 3000,
         // Sets the timing of the opacity fadein/out effect
@@ -54,19 +54,23 @@
     // Ovpnc's js actions
     //
     actions = {
-        // Get server status
+        //
+        // Get server status loop
+        //
         poll_status: function() {
             // run first query to status
             // before starting the setInterval
-            get_server_status();
+            $.Ovpnc().get_server_status();
 
             // Then loop every n miliseconds
             setInterval(function() {
-                get_server_status();
+                $.Ovpnc().get_server_status();
             },
             $.Ovpnc().poll_freq );
         },
+        //
         // Init hover events
+        //
         hover_binds: function() {
             // Client action links hover
             $('.unkill_me').hover(function() {
@@ -77,6 +81,76 @@
             });
 
         },
+        //
+        // Get server status
+        //
+        get_server_status: function() {
+            $.Ovpnc().get_data("/api/server/status", {},
+            'GET', $.Ovpnc().update_server_status);
+        },
+        //
+        // Server control call
+        //
+        server_ajax_control: function(cmd) {
+            $.Ovpnc().get_data(
+                "/api/server/",
+                { command: cmd },
+                'POST',
+                function success_ajax_server_control(r,cmd){ return $.Ovpnc().success_ajax_server_control( r, cmd ) },
+                function error_ajax_server_control(r,cmd){ return $.Ovpnc().error_ajax_server_control( r, cmd ) },
+                1
+            );
+        },
+        //
+        // Server control success
+        //
+        success_ajax_server_control: function(r,cmd){
+            if (r !== undefined && r.rest !== undefined) {
+                r.status = new Object();
+                r.status = r.rest.status;
+                // Check returned /started/
+                if (r.status.match(/started/)) {
+                    alert($.Ovpnc().alert_ok + r.status + " at " + get_date() + '.</div><div class="clear"></div>');
+                    $('#on_icon').animate({
+                        opacity: 1
+                    },
+                    $.Ovpnc().opacity_effect);
+                    return;
+                }
+                // Check returned /stopped/
+                else if (r.status.match(/stopped/)) {
+                    alert($.Ovpnc().alert_err + "Server stopped at " + get_date() + '.</div><div class="clear"></div>');
+                    $('#on_icon').animate({
+                            opacity: 0
+                        },
+                        $.Ovpnc().opacity_effect);
+                    if ($('#client_status_container').is(':visible'))
+                        $('#client_status_container').hide(300).empty();
+                    return;
+                } else {
+                    alert('Server did not stop? ' + r.status);
+                    return
+                }
+            }
+            else {
+                alert("Server control did not reply to action '" + cmd + "'");
+                console.log("Server control did not reply");
+                return false;
+            }
+        },
+        //
+        // Server control error
+        //
+        error_ajax_server_control : function(r) {
+            r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
+            r = r.rest.error !== undefined ? r.rest.error : r;
+            console.log( "Error executing command: " + r );
+            alert( $.Ovpnc().error_icon + " Error executing command: " + r );
+            return false;
+        },
+        //
+        // Verify password inputs match
+        //
         verify_passwords_match: function(first, current, f_input){
             if ( current === undefined || current == '' || first == '' ) return true;
             if ( current !== first ){
@@ -86,15 +160,23 @@
             }
             return true;
         },
+        //
+        // Set processing overlay div and ajax loader
+        //
         set_ajax_loading: function(){
             $('body').prepend( $.Ovpnc().ajax_loader_floating );
             $.Ovpnc().apply_overlay();
         },
+        //
+        // Remove overlay div and ajax loader
+        //
         remove_ajax_loading: function(){
             $('#oDiv').fadeOut('slow').remove();
             $('#ajax_loader_floating').fadeOut('slow').remove();
         },
+        //
         // Apply div overlay
+        //
         apply_overlay: function(){
             var oDiv = document.createElement('div');
             $( oDiv ).css({
@@ -110,7 +192,9 @@
             $('body').prepend( oDiv );
             $( oDiv ).fadeIn(1000);
         },
+        //
         // Generate random password
+        //
         generate_password: function(a){
             var m = new MersenneTwister();
             var randomNumber = m.random();
@@ -122,20 +206,26 @@
             }
             return _str;
         },
+        //
         // Init click events
+        //
         click_binds: function() {
-            // Only if hand_pointer was assigned
-            // via template, this user has
-            // rights to control. In any case
-            // user cannot call api functions
-            // to which he doesnt have rights for.
+            /*
+             * Only if hand_pointer was assigned
+             * via template, this user has
+             * rights to control. In any case
+             * user cannot call api functions
+             * to which he doesnt have rights for.
+             */
             if ($('#on_off_click_area').hasClass('hand_pointer')) {
                 $('#on_off_click_area').click(function() {
                     server_on_off();
                 });
             }
         },
-        // Get json data
+        //
+        // Get json data generic function
+        //
         get_data: function(url, data, method, success_func, error_func, loader) {
             return jQuery.ajax({
                 headers: {
@@ -175,7 +265,9 @@
                 }
             })
         },
+        //
         // process error message
+        //
         process_err: function(e, m) {
             if (m === undefined) return false;
             var msg = jQuery.parseJSON(m);
@@ -189,7 +281,7 @@
                 $.each(msg.rest, function(k, v) {
                     if (k == "error" && v == "Server offline") {
                     obj.rest.status = v;
-                        update_server_status( obj );
+                        $.Ovpnc().update_server_status( obj );
 						return;
                     }
                     else {
@@ -199,135 +291,52 @@
                 });
             }
         },
+        //
+        // The version title of the server status div
+        //
         populate_version : function (version) {
             $('#server_status_content').attr('title', version ? version : '');
         },
-        // On client page start the flexgrid plugin
-        set_clients_table: function() {
-            $.ajaxSetup({
-                cache: false,
-                async: true
-            });
-            $('#flexme').flexigrid({
-                url: '/api/clients',
-                dataType: 'json',
-                method: "GET",
-                preProcess: format_client_results,
-                colModel: [
-                // TODO: Save table proportions in cookie
-                    { display: 'ID', name : 'id', width: 15, sortable : true, align: 'right', hide: true },
-                    { display: 'Username', name : 'username', width : 100, sortable : true, align: 'left'},
-                    { display: 'Virtual IP', name : 'virtual_ip', width : 85, sortable : true, align: 'left'},
-                    { display: 'Remote IP', name : 'remote_ip', width : 85, sortable : true, align: 'left'},
-                    { display: 'Remote Port', name : 'remote_port', width : 40, sortable : true, align: 'left', hide: true },
-                    { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'center'},
-                    { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'center'},
-                    { display: 'Connected Since', name : 'conn_since', width : 150, sortable : true, align: 'left' },
-                    { display: 'Fullname', name : 'fullname', width : 100, sortable : true, align: 'left' },
-                    { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
-                    { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
-                    { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
-                    { display: 'Enabled', name : 'enabled', width: 20, sortable : true, align: 'right', hide: false },
-                    { display: 'Revoked', name : 'revoked', width: 20, sortable : true, align: 'right', hide: false },
-                    { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
-                    { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
-                ],
-                buttons : [
-                    { name: 'Add', bclass: 'add', onpress : add_client },
-                    { name: 'Delete', bclass: 'delete', onpress : delete_client },
-                    { name: 'Block', bclass: 'block', onpress : block_clients },
-                    { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
-                    { name: 'Edit', bclass: 'edit', onpress : test_edit },
-                    { separator: true}
-                ],
-                searchitems : [
-                    { display: 'Virtual IP', name : 'virtual_ip'},
-                    { display: 'Remote IP', name : 'remote_ip'},
-                    { display: 'Remote Port', name : 'remote_port'},
-                    { display: 'Created', name : 'created'},
-                    { display: 'Modified', name : 'modified'},
-                    { display: 'Fullname', name : 'fullname'},
-                    { display: 'Email', name : 'email'},
-                    { display: 'Since', name : 'conn_since'},
-                    { display: 'Username', name : 'username', isdefault: true}
-                ],
-                sortname: "username",
-                sortorder: "asc",
-                usepager: true,
-                title: 'Clients',
-                useRp: true,
-                rp: 15,
-                showTableToggleBtn: false,
-                width: 600,
-                height: 300
-            });
-        },
-        // Update the client's tables
-        update_flexgrid : function(r){
-            // Color unknown client in red
-            $('#flexme').find('tr').children('td[abbr="id"]')
-                        .children('div').each(function(k, v){
-                if ( v.innerHTML === 'unknown' ){
-                    $(this).parent().parent('tr').children('td[abbr="username"]')
-                        .children('div').css('color','red');
+        //
+        // Update server status data
+        //
+        update_server_status: function(r) {
+            if (r !== undefined && r.rest !== undefined) {
+                // If we get status back, display
+                if (r.rest.status !== undefined) {
+                    r.status = r.rest.status; // Make "more" accessible
+                    $('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray');
+                    // hand_pointer is only applied when this user
+                    // has ACL to control the server. (in the tt2 template)
+                    if ( $('#on_off_click_area').hasClass('hand_pointer') )
+                        $('#on_off_click_area').attr('title', (r.status.match(/online/i) ? 'Shutdown' : 'Poweron') + ' OpenVPN server');
+                    // reference used to determine status on click events
+                    $('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off');
+                    // Show or dont show the green on icon
+                    $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
                 }
-            });
-            // Set the right color - on/off notice according
-            // to client's status
-            var _checker = 0;
-            $('#flexme').find('tr').children('td[abbr="username"]')
-                        .children('div').each(function(k, v){
-                // we match the username from online_data
-                // to the current tr.td[abbr=username].div.text in the loop
-                // inner_text is in order to get only the username and not
-                // any span we might have appended previous loop
-                var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                var online_data = $.Ovpnc().check_client_match(r.rest.clients, inner_text);
-                if (online_data !== false) {
-                    _checker++;
-                    // loop each td find the corresponding 'abbr'
-                    // fill in the text from online_data
-                    var mem_ip;
-                    for (var i in online_data) {
-                        if ( online_data[i] !== 'UNDEF' ){
-                            if (i !== 'name') {
-                                if ( i.match(/^bytes_.*$/) )
-                                    online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
-                                $(this).parent().parent('tr')
-                                       .children('td[abbr="' + i + '"]')
-                                       .children('div')
-                                       .text( online_data[i] ).css('color','black');
-                            }
-                        }
-                    }
-                    // mark the row which has been found to be online
-                    if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
-                        $(this).append('<span class="inner_flexi_text">On</span>');
-                    }
+        
+                // Show number of connected clients if any
+                $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
+        
+                // In the title of the server status
+                if (r.rest.title !== undefined) $.Ovpnc().populate_version(r.rest.title);
+        
+                // Update the table with any online clients data
+                // This applies only to path /clients
+        
+                if (r.rest.clients !== undefined
+                    && $.Ovpnc().pathname === '/clients'
+                    && $('#flexme').is(':visible')
+                ) {
+                    $.Client().update_flexgrid(r);
                 }
-                else {
-                    // Clean up td's with online data
-                    // for client which is not online
-                    $(this).children('span.inner_flexi_text').hide(300).remove();
-                    if ( $(this).parent().parent('tr')
-                                .children('td').children('div')
-                                .text() !== '-'
-                    ) {
-                        var removable =
-                            [ "remote_ip", "virtual_ip", "conn_since", "remote_port", "bytes_recv", "bytes_sent" ];
-                        for (var z in removable) {
-                            $(this).parent().parent('tr')
-                                   .children('td[abbr="' + removable[z] + '"]')
-                                   .children('div').css('color','lightgray');
-                        }
-                    }
-                }
-            });
-            if ( _checker === 0 && r.rest.clients.length > 0 ){
-                $('.pReload').click();
             }
+            return false;
         },
+        //
         // The navigation menu
+        //
         slide: function(nav_id, pad_out, pad_in, time, multiplier) {
             var li_elem = nav_id + " li.sliding-element";
             var links = li_elem + " a";
@@ -384,6 +393,9 @@
             });
             $.Ovpnc().set_select_tab(li_elem);
         },
+        //
+        // Set the selected tab
+        //
         set_select_tab: function(l) {
             // Check which page this is
             // then set text bolder on the selected
@@ -403,6 +415,9 @@
                 });
             }
         },
+        //
+        // Check if client names match
+        //
         check_client_match: function(clients, current_client) {
             for (var i in clients) {
                 if (clients[i].name === current_client) return clients[i];
@@ -414,8 +429,8 @@
 
 })(jQuery);
 
-$(document).ready(function() {
 
+$(document).ready(function() {
     if ($.Ovpnc().pathname === '/login') return;
 
     // Set custom alert functionality
@@ -425,15 +440,19 @@ $(document).ready(function() {
         if ($('#message').is(':visible')) {
             // Remove first welcome message.
             var old_content = $('#msg_content').html();
-            old_content = old_content.replace('<br>', '');
             if (old_content.match(/Hello/g) || old_content === message) {
                 $('#msg_content').empty();
             } else {
-                message += "<br/>" + $('#msg_content').html();
+                message += '' + $('#msg_content').html();
             }
         }
         // Write
-        $('#message').html('<div id="msg_content">[' + get_time() + '] ' + message + '</div>' + '<img id="message_close"' + ' src="/static/images/close-gray.png"' + ' class="hand_pointer"></img>').slideDown(300);
+        $('#message').html('<div id="msg_content"><div style="float:left">['
+            + get_time() + ']</div>'
+            + message + '</div>'
+            + '<img id="message_close"'
+            + ' src="/static/images/close-gray.png"'
+            + ' class="hand_pointer"></img>').slideDown(300);
         $('#message_close').click(function() {
             $('#message').hide(300).empty();
         });
@@ -472,99 +491,6 @@ function canJSON(value) {
     }
 }
 
-function update_server_status(r) {
-    if (r !== undefined && r.rest !== undefined) {
-        // If we get status back, display
-        if (r.rest.status !== undefined) {
-            r.status = r.rest.status; // Make "more" accessible
-            $('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray');
-            // hand_pointer is only applied when this user
-            // has ACL to control the server. (in the tt2 template)
-            if ( $('#on_off_click_area').hasClass('hand_pointer') )
-                $('#on_off_click_area').attr('title', (r.status.match(/online/i) ? 'Shutdown' : 'Poweron') + ' OpenVPN server');
-            // reference used to determine status on click events
-            $('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off');
-            // Show or dont show the green on icon
-            $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
-        }
-
-        // Show number of connected clients if any
-        $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
-
-        // In the title of the server status
-        if (r.rest.title !== undefined) $.Ovpnc().populate_version(r.rest.title);
-
-        // Update the table with any online clients data
-        // This applies only to path /clients
-
-        if (r.rest.clients !== undefined
-            && $.Ovpnc().pathname === '/clients'
-            && $('#flexme').is(':visible')
-        ) {
-            $.Ovpnc().update_flexgrid(r);
-        }
-    }
-    return false;
-}
-
-function get_server_status() {
-    $.Ovpnc().get_data("/api/server/status", {},
-    'GET', update_server_status);
-}
-
-
-function server_ajax_control(cmd) {
-
-    $.post('/api/server/', {
-        command: cmd
-    },
-    function(r) {
-        if (r !== undefined && r.rest !== undefined) {
-            r.status = new Object();
-            r.status = r.rest.status;
-            // Check returned /started/
-            if (cmd == 'start') {
-                if (r.status.match(/started/)) {
-                    alert($.Ovpnc().alert_ok + r.status + " at " + get_date() + ".</div>" + '<div class="clear">');
-                    $('#on_icon').animate({
-                        opacity: 1
-                    },
-                    $.Ovpnc().opacity_effect);
-                    return;
-                } else {
-                    alert('Server did not start? ' + r.status);
-                    return;
-                }
-                // Check returned /stopped/
-            } else if (cmd == 'stop') {
-                if (r.status.match(/stopped/)) {
-                    alert($.Ovpnc().alert_err + "Server stopped at " + get_date() + ".</div>" + '<div class="clear">');
-                    $('#on_icon').animate({
-                        opacity: 0
-                    },
-                    $.Ovpnc().opacity_effect);
-                    if ($('#client_status_container').is(':visible')) $('#client_status_container').hide(300).empty();
-                    return;
-                } else {
-                    alert('Server did not stop? ' + r.status);
-                    return
-                }
-            }
-        }
-        else {
-            alert("Server control did not reply to action '" + cmd + "'");
-            console.log("Server control did not reply");
-            return false;
-        }
-    }).error(function(xhr, ajaxOptions, thrownError) {
-        console.log("Error executing command " + cmd + " server: " + thrownError.toString());
-        var msg = jQuery.parseJSON(xhr.responseText);
-        alert($.Ovpnc().error_icon + " Error executing command " + cmd + " server: " + thrownError.toString() + (msg.rest.error !== undefined ? ": " + msg.rest.error : ''));
-        return false;
-    });
-
-}
-
 function server_on_off() {
     // Turn off:
     if ($('#server_on_off').attr('ref') == 'on') {
@@ -574,11 +500,11 @@ function server_on_off() {
         if (cr != true) return;
 
         // Stop
-        server_ajax_control('stop');
+        $.Ovpnc().server_ajax_control('stop');
         return;
     } else {
         // Turn on:
-        server_ajax_control('start');
+        $.Ovpnc().server_ajax_control('start');
         return;
     }
 }
