@@ -233,7 +233,7 @@ __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 16:49:48
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K7BjqjPkD1pfAeIZLanKYw
-
+ 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 
 __PACKAGE__->add_columns(

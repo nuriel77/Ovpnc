@@ -1,6 +1,5 @@
 package Ovpnc::Controller::Clients;
 use File::Touch;
-use Try::Tiny;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -24,11 +23,6 @@ before any of the listed
 methods execute
 
 =cut
-
-#around 'add' => sub {
-#    my ( $orig, $self, $c ) = @_;
-#    return $self->$orig($c);
-#};
 
 around [qw(index add)] => sub {
     my ( $orig, $self, $c ) = @_;
@@ -104,30 +98,31 @@ sub add : Path('add')
 {
     my ( $self, $c ) = @_;
 
+    $c->response->headers->header('Content-Type' => 'text/html');
+    Ovpnc::Controller::Root->include_default_links( $c );
+
     my $form = $c->stash->{form};
 
     if ( $form->has_errors ) {
-        $c->response->headers->header('Content-Type' => 'text/html');
-        Ovpnc::Controller::Root->include_default_links( $c );
         $c->forward('View::HTML');
+        $c->detach;
     }
 
     if ( $form->submitted_and_valid ) {
         my $_client = $c->model('DB::User')
             ->new_result({});
+ 
         # update dbic row with
         # submitted values from form
         # ==========================
-        try { 
+        try {
             $form->model->update( $_client );
         }
         catch {
-            $c->stash->{error} = "Failed adding new user: $_";
-            $c->response->headers->header('Content-Type' => 'text/html');
-            Ovpnc::Controller::Root->include_default_links( $c );
-            $c->forward('View::HTML');
+            $c->stash->{errors} = $_;
+            warn "MySQL Error: " . $_;
             $c->detach;
-        };
+        }; 
 
         my $_cid = $_client->{_column_data}->{id};
         my $_client_role_id = $c->model('DB::Role')

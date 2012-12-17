@@ -2,6 +2,7 @@ package Ovpnc::Controller::Api::Clients;
 use warnings;
 use strict;
 use Ovpnc::Plugins::Connector;
+use Scalar::Util 'looks_like_number';
 use Moose;
 use namespace::autoclean;
 use vars qw( $REGEX );
@@ -206,7 +207,7 @@ sub clients_GET : Local
     # of a client which was found to match
     # ====================================
     my ( $param, $keyname );
-    if ( $c->req->params && !$c->req->params->{page} ) {
+    if ( ref $c->req->params eq 'ARRAY' && !$c->req->params->{page} ) {
         delete $c->req->params->{_} if $c->req->params->{_};
         # We expect only one
         # parameter to be sent
@@ -252,7 +253,9 @@ sub clients_GET : Local
     # the call originated from 
     # the flexgrid table
     # ============================
-    if ( !$c->req->params->{page} && ! ( $keyname ~~ @{$_columns} ) ){
+    if ( $keyname && !$c->req->params->{page}
+        && ! ( $keyname ~~ @{$_columns} )
+    ){
         $self->status_not_found(
             $c,
             message => "Unknown field name: '" . $keyname . "'",
@@ -291,7 +294,7 @@ sub clients_GET : Local
         # have role_id of 'client', this
         # is then for use by flexgrid
         # ==============================
-        ( $param->{$keyname}
+        ( $keyname && $param->{$keyname}
             ? { $keyname => $param->{$keyname} }
             : { 'user_roles.role_id' => $_role_name->id }
         ),
@@ -312,7 +315,7 @@ sub clients_GET : Local
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
-    if ( $param->{$keyname} ) {
+    if ( $keyname && $param->{$keyname} ) {
         my $_client_data = $_clients[0]->{$keyname};
         $self->status_ok( $c, entity => { $keyname => $_client_data } );
         $c->detach;
@@ -379,6 +382,48 @@ sub clients_GET : Local
 
     $self->status_ok( $c, entity => [ @_list ] )
       if @_list > 0;
+}
+
+=head2 list_recent
+    
+List recently created books
+    
+=cut
+    
+sub list_recent : Path('clients/list_recent')
+                : Args(1)
+                : Sitemap
+                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                #: Does('NeedsLogin')
+{
+    my ($self, $c, $mins) = @_;
+    
+    $mins ||= $c->req->params->{time};
+
+    # Verify that a time was provided
+    # ===============================
+    $self->_client_error($c,'204') unless defined $mins;
+    $self->_client_error($c,'400', 'Not a number')
+        unless looks_like_number($mins);
+
+    my $res = $c->model('DB::User')
+                       ->created_after( DateTime->now->subtract(minutes => $mins) );
+
+    my $_data = [];
+
+    for ( $res->all ){
+        push (
+            @{$_data},
+            {
+                created  => '' . $_->created,
+                username => '' . $_->username,
+                id       => '' . $_->id,
+            }
+        );
+    }
+    
+    $self->status_ok($c, entity => $_data );
+
 }
 
 =head2 clients_POST
@@ -893,8 +938,17 @@ and disconnect the mgmt port
 =cut
 
 sub _client_error : Private {
-    my ( $self, $c ) = @_;
-    $self->status_no_content($c);
+    my ( $self, $c, $status, $msg ) = @_;
+    $status ||= 204;
+    if ( $status == 204 ){
+        $self->status_no_content( $c );
+    }
+    elsif ( $status == 400 ){
+        $self->status_bad_request(
+            $c,
+            message => 'Invalid request: ' . ( $msg ? $msg : '' )
+        );
+    }
     $self->_disconnect_vpn if $self->_has_vpn;
     $c->detach;
 }

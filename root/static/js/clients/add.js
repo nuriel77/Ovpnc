@@ -43,7 +43,7 @@ jQuery.validator.setDefaults({
                 $(this).parent('div').find('label').css('color','#000000');
             });
             // On form submission
-            $('form#add_client_form').click( function(e){
+            $('form#add_client_form').submit( function(e){
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
@@ -62,9 +62,16 @@ jQuery.validator.setDefaults({
                     $('input#password').parent('div').find('label').css('color','#ff0000');
                     return false;
                 }
-                $('input#email').keyup();
-                $('input#username').keyup();
-                if ( $('.error_message').is(':visible') ) return false;
+                $.addClient().check_username();
+                $.addClient().check_passwords();
+                $.addClient().check_email();
+
+                var _wait =  setInterval(function() {
+                    clearInterval(_wait);
+                },
+                1000 );
+                if ( $('.error_message').is(':visible') ) { console.log('has errors'); return false; };
+
                 // Remove the warnings message
                 // when leaving this page
                 window.onbeforeunload = undefined;
@@ -73,41 +80,35 @@ jQuery.validator.setDefaults({
                 return true;
             });
             $('input#username').bind('keyup',function(){
-                var _name = this.value;
-                if ( _name === undefined || _name == '' ) return;
-                $.Ovpnc().get_data('/api/clients', { username: _name }, 'GET', return_client_data, return_ajax_error );
+                $.addClient().check_username();
             });
             $('input#email').bind('keyup',function(){
-                var _name = this.value;
-                if ( _name === undefined || _name == '' ) return;
-                $.Ovpnc().get_data('/api/clients', { email: _name }, 'GET', return_client_data, return_ajax_error );
+                $.addClient().check_email();
             });
             $('input#password2').bind('keyup',function(){
-                var current = $('input#password2').attr('value');
-                var first = $('input#password').attr('value');
-                $.Ovpnc().verify_passwords_match( first, current, 'password2' );
+                $.addClient().check_passwords();
             });
             $('#generate_password').bind('mousedown',function(){
-                $('#generate_password').css('border','1px solid #999999')
-                                       .css('color','#555555');
+                $('#generate_password').css('border','1px solid #999999').css('color','#555555');
             }).bind('mouseup',function(){
-                $('#generate_password').css('border','')
-                                       .css('color','#000000');
+                $('#generate_password').css('border','').css('color','#000000');
             });
 
         },
-        // Generate password click
-        generate_password_click: function(){
-            var _token = $('#token').attr('value');
-            var _pass = $.Ovpnc().generate_password(_token);
-            $('#password2').parent('div').find('span').remove();
-            $('#password2').parent('div').find('label').css('color','#000000');
-            $('#password2').parent('div').prepend('<span class="error_message" style="color:#000000">'
-                + '<input id="generated_password_text" name="generated_password" readonly type="text" value="' + _pass + '" style="width:100px;border:0;font-size:1.2em" onClick="this.select()"></text>'
-                + '</span>'
-            );
-            $('#password').attr('value', _pass ).keyup();
-            $('#password2').attr('value', _pass );
+        check_username: function(){
+            var _name = $('input#username').attr('value');
+            if ( _name === undefined || _name == '' ) return;
+            $.Ovpnc().get_data('/api/clients', { username: _name }, 'GET', return_client_data, return_ajax_error );
+        },
+        check_passwords: function(){
+            var current = $('input#password2').attr('value');
+            var first = $('input#password').attr('value');
+            $.Ovpnc().verify_passwords_match( first, current, 'password2' );
+        },
+        check_email: function(){
+            var _name = $('input#email').attr('value');
+            if ( _name === undefined || _name == '' ) return;
+            $.Ovpnc().get_data('/api/clients', { email: _name }, 'GET', return_client_data, return_ajax_error );
         },
         // Form validation rules
         set_form_validation_rules: function(){
@@ -236,4 +237,39 @@ function return_client_data(r){
             $('input#' + keys[0]).parent('div').find('label').css('color','#ff0000');
         }
     }
+}
+
+function generate_password_click(){
+    var _token = $('#token').attr('value');
+    var _pass = $.Ovpnc().generate_password(_token);
+    $('#password2').parent('div').find('span').remove();
+    $('#password2').parent('div').find('label').css('color','#000000');
+    $('#password2').parent('div').prepend('<span class="generated_password" style="color:#000000">'
+        + '<div id="generated_password_text" class="generated_password" onClick="fnSelect(this.id);" style="width:100%;border:0"'
+        + '>'+ _pass + '</div>'
+        + '</span>'
+    );
+    $('#password').attr('value', _pass ).keyup();
+    $('#password2').attr('value', _pass );
+    return;
+}
+
+function fnSelect(objId) {
+    fnDeSelect();
+    if (document.selection) {
+    var range = document.body.createTextRange();
+        range.moveToElementText(document.getElementById(objId));
+    range.select();
+    }
+    else if (window.getSelection) {
+    var range = document.createRange();
+    range.selectNode(document.getElementById(objId));
+    window.getSelection().addRange(range);
+    }
+}
+ 
+function fnDeSelect() {
+    if (document.selection) document.selection.empty(); 
+    else if (window.getSelection)
+            window.getSelection().removeAllRanges();
 }

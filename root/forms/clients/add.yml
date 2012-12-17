@@ -72,7 +72,7 @@ elements:
               # Generate password button
               - type: Block
                 tag: div
-                content_xml: "<div id='generate_password' onclick='$.addClient().generate_password_click();'>Generate Password</div>"
+                content_xml: "<div id='generate_password' onclick='generate_password_click();return false;'>Generate Password</div>"
               # Clear div
               - type: Block
                 tag: div
