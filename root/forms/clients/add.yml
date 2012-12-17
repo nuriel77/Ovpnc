@@ -28,6 +28,8 @@ elements:
                           id: "username"
                           autofocus: "autofocus"
                         constraints:
+                           - type: Callback
+                             message: "Username already exists"
                            - Required
                            - type: Regex
                              regex: '^[-_a-zA-Z\d]*\z'
@@ -111,6 +113,8 @@ elements:
                           id: "email"
                           class: "form_row"
                         constraints:
+                          - type: Callback
+                            message: "Email already exists"
                           - Required
                           - Email
                           - type: MinLength

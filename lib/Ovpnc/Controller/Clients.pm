@@ -1,5 +1,6 @@
 package Ovpnc::Controller::Clients;
 use File::Touch;
+use Try::Tiny;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -115,13 +116,23 @@ sub add : Path('add')
         # update dbic row with
         # submitted values from form
         # ==========================
-        try {
-            $form->model->update( $_client );
-        }
-        catch {
-            $c->stash->{errors} = $_;
-            warn "MySQL Error: " . $_;
+        try   { $form->model->update( $_client ) }
+        catch { 
+            if ( $_ =~ /duplicate entry '(.*)' for key '(.*)' /i ){
+                $c->stash->{errors} = $2;
+                warn "MySQL Error: " . $1 . ", " . $2;
+                $form->get_field( $2 )
+                    ->get_constraint({ type => 'Callback' })
+                    ->force_errors(1);
+        
+        $form->process;
+            }
+            else {
+                $c->stash->{errors} = "Error while adding client to database";
+            }
+            $c->forward('View::HTML');
             $c->detach;
+            return;
         }; 
 
         my $_cid = $_client->{_column_data}->{id};

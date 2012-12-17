@@ -80,7 +80,7 @@
             if ( current === undefined || current == '' || first == '' ) return true;
             if ( current !== first ){
                 $('#'+f_input).parent('div').prepend('<span class="error_message error_constraint_required">Passwords do not match</span>');
-                $('#'+f_input).parent('div').find('label').css('color','#ff0000');
+                $('#'+f_input).parent('div').find('label').css('color','#8B0000');
                 return false;
             }
             return true;

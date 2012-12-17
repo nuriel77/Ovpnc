@@ -121,7 +121,7 @@ img{
 .error{
     margin-top:14px;
     color:#8B0000;
-    float:left;
+/*    float:left; */
 }
 
 .client_error {
@@ -133,7 +133,7 @@ img{
 	color: #8B0000; 
     position:absolute;
     z-index:9001;
-    float:left;
+ /*   float:left; */
     font-size:0.85em;
     margin:4px 0 0 367px;
 }

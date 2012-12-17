@@ -32,6 +32,7 @@ jQuery.validator.setDefaults({
     //
     actions = {
         set_form_events: function(){
+
             // Set validation rules
             $.addClient().set_form_validation_rules();
             // Set keyup for all inputs
@@ -49,7 +50,7 @@ jQuery.validator.setDefaults({
                 if ( _pw_length.length < 8 ) {
                     $('input#password').parent('div').find('span').remove();
                     $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
-                    $('input#password').parent('div').find('label').css('color','#ff0000');
+                    $('input#password').parent('div').find('label').css('color','#8B0000');
                     return false;
                 }
                 // Don't submit if passwords don't match or weak
@@ -59,7 +60,7 @@ jQuery.validator.setDefaults({
                 if ( $('.top_badPass').is(':visible') ) {
                     $('input#password').parent('div').find('span').remove();
                     $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
-                    $('input#password').parent('div').find('label').css('color','#ff0000');
+                    $('input#password').parent('div').find('label').css('color','#8B0000');
                     return false;
                 }
                 $.addClient().check_username();
@@ -215,6 +216,14 @@ $(document).ready( function() {
                 $('#'+k).attr('value',cookie_data[k]);
         }
     }
+
+    if ( $('input#username').attr('value') != '' && !$('.error_message').is(':visible') )
+        $.addClient().check_username();
+    if ( $('input#password').attr('value') != '' && !$('.error_message').is(':visible') )
+        $.addClient().check_passwords();
+    if ( $('input#email').attr('value') != '' && !$('.error_message').is(':visible') )
+        $.addClient().check_email();
+
     // Handler for exit
     $.addClient().set_confirm_exit();
 });
@@ -234,7 +243,7 @@ function return_client_data(r){
         }
         if ( r.rest[keys[0]] !== null  ){
             $('input#' + keys[0]).parent('div').prepend('<span class="error_message error_constraint_required">' + keys[0] + ' already exists</span>');
-            $('input#' + keys[0]).parent('div').find('label').css('color','#ff0000');
+            $('input#' + keys[0]).parent('div').find('label').css('color','#8B0000');
         }
     }
 }

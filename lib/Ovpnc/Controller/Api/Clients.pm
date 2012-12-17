@@ -207,7 +207,7 @@ sub clients_GET : Local
     # of a client which was found to match
     # ====================================
     my ( $param, $keyname );
-    if ( ref $c->req->params eq 'ARRAY' && !$c->req->params->{page} ) {
+    if ( ref $c->req->params && !$c->req->params->{page} ) {
         delete $c->req->params->{_} if $c->req->params->{_};
         # We expect only one
         # parameter to be sent
@@ -400,30 +400,27 @@ sub list_recent : Path('clients/list_recent')
     
     $mins ||= $c->req->params->{time};
 
-    # Verify that a time was provided
-    # ===============================
+    # Verify the minutes provided
+    # ===========================
     $self->_client_error($c,'204') unless defined $mins;
     $self->_client_error($c,'400', 'Not a number')
         unless looks_like_number($mins);
+    $self->_client_error($c,'400', 'Invalid range')
+        if $mins > 5259487;
 
     my $res = $c->model('DB::User')
-                       ->created_after( DateTime->now->subtract(minutes => $mins) );
-
+                   ->created_after( DateTime->now->subtract(minutes => $mins) );
     my $_data = [];
-
     for ( $res->all ){
-        push (
-            @{$_data},
+        push @{$_data},
             {
                 created  => '' . $_->created,
                 username => '' . $_->username,
                 id       => '' . $_->id,
-            }
-        );
+            };
     }
     
     $self->status_ok($c, entity => $_data );
-
 }
 
 =head2 clients_POST
