@@ -123,7 +123,6 @@
                         opacity: 1
                     },
                     $.Ovpnc().opacity_effect);
-                    return;
                 }
                 // Check returned /stopped/
                 else if (r.status.match(/stopped/)) {
@@ -134,11 +133,11 @@
                         $.Ovpnc().opacity_effect);
                     if ($('#client_status_container').is(':visible'))
                         $('#client_status_container').hide(300).empty();
-                    return;
                 } else {
                     alert('Server did not stop? ' + r.status);
                     return
                 }
+                $.Ovpnc().get_server_status();
             }
             else {
                 alert("Server control did not reply to action '" + cmd + "'");
@@ -291,7 +290,7 @@
             if (msg.rest !== undefined) {
                 $.each(msg.rest, function(k, v) {
                     if (k == "error" && v == "Server offline") {
-                    obj.rest.status = v;
+                        obj.rest.status = v;
                         $.Ovpnc().update_server_status( obj );
 						return;
                     }
@@ -406,7 +405,7 @@
         },
         server_on_off: function() {
             // Turn off:
-            if ($('#server_on_off').attr('ref') == 'on') {
+            if ( $('#server_on_off').attr('ref') == 'on' ) {
                 var _online = $('#online_clients_number').text();
                 var _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's ' : ' ' )
                             + 'online';
@@ -510,25 +509,6 @@ function canJSON(value) {
         return false;
     }
 }
-/*
-function server_on_off() {
-    // Turn off:
-    if ($('#server_on_off').attr('ref') == 'on') {
-
-        // Ask confirmation
-        var cr = confirm("Are you sure you want to turn the server off?");
-        if (cr != true) return;
-
-        // Stop
-        $.Ovpnc().server_ajax_control('stop');
-        return;
-    } else {
-        // Turn on:
-        $.Ovpnc().server_ajax_control('start');
-        return;
-    }
-}
-*/
 
 function kill_client(c) {
 

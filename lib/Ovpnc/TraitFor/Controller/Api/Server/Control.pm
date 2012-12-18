@@ -41,7 +41,6 @@ has [
       openvpn_pid
       openvpn_group
       mgmt_passwd_file
-      mysql_passwd_file
       /
   ] => (
     is       => 'ro',
@@ -77,15 +76,14 @@ sub start {
             '--daemon', 'ovpn-server',
             '--setenv',            'PATH', '/bin',
             '--setenv',            'OVPNC_USER', $self->app_user,
-            '--setenv',            'MYSQL_PASSFILE', $self->mysql_passwd_file,
             '--script-security',   '3',
-            '--client-connect',    '/bin/client_connect',
-            '--client-disconnect', '/bin/client_disconnect',
+            '--client-connect',    'bin/client_connect',
+            '--client-disconnect', 'bin/client_disconnect',
             '--tmp-dir',           '/tmp',
             '--ccd-exclusive',
             '--cd',                $self->openvpn_dir . '/',
             '--up',                'bin/up.pl',
-            '--down',              'bin/down.sh',
+            '--up-restart',
             '--config',            $self->app_root . '/' . $self->openvpn_config,
         );
 

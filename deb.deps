@@ -2,6 +2,8 @@ apt-get install build-essential \
                 libmodule-install-perl \
                 libobject-signature-perl \
                 libmath-bigint-gmp-perl \
+                libconfig-any-perl \
+                libconfig-general-perl \
                 libstring-mkpasswd-perl \
                 libmath-gmp-perl \
                 libssl-dev \

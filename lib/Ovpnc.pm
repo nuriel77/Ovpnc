@@ -1,7 +1,9 @@
 package Ovpnc;
 use Moose;
 use Cwd;
+use Config::Any;
 use File::Slurp;
+use vars '$cfg';
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
 use v5.10.1;
@@ -207,21 +209,27 @@ __PACKAGE__->config(
     },
 );
 
-# - Currently in ovpnc.json -
+{
+    $cfg = Config::Any->load_files({
+              files => ['../ovpnc.json'], use_ext => 1 })
+                  ->[0]->{'../ovpnc.json'}->{'Model::DB'}->{'connect_info'};
+}
+# - Currently overridden in ovpnc.json -
 # Database
 # ========
-#__PACKAGE__->config(
-#    'Model::DB' => {
-#        schema_class => 'Ovpnc::Schema',
-#        connect_info => {
-#            dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
-#            user        => $ENV{MYSQL_USER} ||= 'ovpnc',
-#            password    => { return 'test' },
-#            AutoCommit  => q{1},
-#        }
-#    }
-#);
+__PACKAGE__->config(
+    'Model::DB' => {
+        schema_class => 'Ovpnc::Schema',
+        connect_info => {
+            dsn         => $cfg->{dsn},
+            user        => $cfg->{user},
+            password    => $cfg->{password},
+            AutoCommit  => q{1},
+        }
+    }
+);
 
+$cfg = '';
 
 # Start the application
 # =====================

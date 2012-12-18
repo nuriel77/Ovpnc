@@ -2,27 +2,47 @@
 use warnings;
 use strict;
 use File::Slurp;
-use lib '../lib';
-
-BEGIN { $ENV{CATALYST_DEBUG} = 1 }
-
+use Config::Any;
 use DateTime;
+use lib '../lib';
 use Ovpnc::Schema;
 
-my $mysql_passwd = read_file ($ENV{MYSQL_PASSWD_FILE}, chomp => 1)
-    or die "Cannot read mysql password file: $!";
+$ENV{OVPNC_USER} ||= 'ovpncuser';
 
-my $schema = Ovpnc::Schema->connect('dbi:mysql:ovpnc;host=localhost;user=ovpnc;password=' . $mysql_passwd);
+=head1 DESCRIPTION
+
+Script to log when openvpn
+server goes up.
+--up option specified
+in /api/server/control
+
+=cut
+
+my $config_file = '../ovpnc.json';
+my $cfg = Config::Any->load_files({
+            files => [$config_file], use_ext => 1 })
+                ->[0]->{"$config_file"}->{'Model::DB'}->{'connect_info'};
+
+=head2 comment
+
+Get the ovpnc current logged in
+user's name to log the action
+
+=cut
+
+my $schema = Ovpnc::Schema->connect(
+    $cfg->{dsn} . ';user=' . $cfg->{user} . ';password=' . $cfg->{password}
+);
+
 my $user_id = $schema->resultset('User')->find(
     { username => $ENV{OVPNC_USER} },
     { search => 'id' }
 );
+
+die "Unknown user: " . $ENV{OVPNC_USER} . "\n"
+    unless $user_id;
+
 my $admin = $schema->resultset('Log')->create({
     message => "Server started" . ( $ENV{daemon_pid} ? " with pid " . $ENV{daemon_pid} : '' ),
     user_id => $user_id->id,
 });
-
-
-open (my $F, '>>/home/ovpnc/Ovpnc/openvpn/tmp/up.txt') or die "Cannot open up.txt: $!";
-print {$F} join "\n", map { $_ . " -> " . $ENV{$_} if $ENV{$_} } sort keys %{ENV};
-close $F;

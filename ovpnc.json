@@ -2,9 +2,9 @@
     "Model::DB" : {
         "schema_class" :  "Ovpnc::Schema",
         "connect_info" : {
-            "dsn"         : "dbi:mysql:ovpnc",
+            "dsn"         : "dbi:mysql:ovpnc;host=localhost",
             "user"        : "ovpnc",
-            "password"    : "283a6c310877c53d09f79f9bc9d9e089c382819ade2f933d",
+            "password"    : "fbc8ef7dde5c60b5c2fb76dea046911a176839b9b42449d2",
             "AutoCommit"  : "1",
         }
     },

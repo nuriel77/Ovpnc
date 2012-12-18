@@ -35,7 +35,7 @@ requires 'Gepok';
 requires 'Plack::Handler::Gepok';
 requires 'namespace::autoclean';
 requires 'Config::General';
-requires 'Config::Divide';
+requires 'Config::Any';
 requires 'XML::LibXML';
 requires 'XML::LibXSLT';
 requires 'XML::Validator::Schema';
