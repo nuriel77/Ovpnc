@@ -180,7 +180,7 @@
         //
         remove_ajax_loading: function(){
             $('#oDiv').fadeOut('slow').remove();
-            $('#ajax_loader_floating').fadeOut('slow').remove();
+            $('#ajax_loader_floating').remove();
         },
         //
         // Apply div overlay

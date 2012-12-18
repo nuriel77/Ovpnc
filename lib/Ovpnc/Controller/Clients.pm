@@ -103,6 +103,8 @@ sub add : Path('add')
     # ==================
     $c->req->params->{'submit'} ||= 'Submit';
 
+    $c->stash->{title}     = 'Clients: Add a new client';
+
     my $form = $c->stash->{form};
 
     # Verify all fields have been submitted
@@ -121,17 +123,26 @@ sub add : Path('add')
 
         # Check if any errors in form
         # FormFu handles this automatically
+        # but we are using ajax for this
+        # call, so we need to override
+        # FormFu and send the errors back
         # =================================
         if ( $form->has_errors ) {
-            $form->process;
-            $c->forward('View::HTML');
+            for ( @{$form->get_errors} ){
+                push @{$c->stash->{fields_error}} , $_->name;
+                push @{$c->stash->{error}} , "Error in field: '" . $_->name . "'";
+                delete $c->stash->{$_} for ( qw/assets form token/ );
+                delete $c->req->params->{submit};
+            }
+            $c->response->status(400);
+            $c->forward('View::JSON');
+            $c->detach;
         }
 
         if ( $form->submitted_and_valid ) {
 
             # If submitted we go "JSON"
             # =========================
-            $c->response->headers->header('Content-Type' => 'application/json');
             delete $c->stash->{$_} for ( qw/assets form token/ );
             delete $c->req->params->{submit};
             # New resultset

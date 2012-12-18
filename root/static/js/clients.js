@@ -330,7 +330,7 @@ function block_unblock_clients(button, grid, action){
                   && Object.prototype.toString.call( msg.error ) === '[object Array]'
                   && msg.error.length > 0
                 ){
-                    alert( $.Ovpnc().alert_err + " '" + client + "' " + action + " failed: " + msg.error.join() + '</div><div class="clear"></div>');
+                    alert( $.Ovpnc().alert_err + " " + msg.error.join() + '</div><div class="clear"></div>');
                 }
                 if ( msg.error === undefined && typeof msg.rest !== "undefined" ){
                     if ( msg.rest.match( /revoked ok.*SUCCESS/g )
@@ -342,7 +342,7 @@ function block_unblock_clients(button, grid, action){
                         processed++;
                     }
                     else {
-                        alert( $.Ovpnc().alert_err + " '" + client + "' " + action + " failed: " + msg.rest + '</div><div class="clear"></div>');
+                        alert( $.Ovpnc().alert_err + " " + msg.rest.replace(';','') + '</div><div class="clear"></div>');
                     }
                 }
             },

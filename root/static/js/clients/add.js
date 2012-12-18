@@ -31,6 +31,33 @@ jQuery.validator.setDefaults({
     // addClient actions
     //
     actions = {
+        validation_rules: function() {
+            return {
+                rules: {
+                    username: {
+                        required: true,
+                        maxlength: 42
+                    },
+                    password: {
+                        required: true,
+                        maxlength: 72
+                    },
+                    email: {
+                        required: true,
+                        maxlength: 72,
+                        email: true
+                    },
+                    phone: {
+                        required: true,
+                        maxlength: 42
+                    },
+                    address: {
+                        required: true,
+                        maxlength: 128
+                    }
+                }
+            }
+        },
         set_form_events: function(){
 
             // Set validation rules
@@ -72,12 +99,12 @@ jQuery.validator.setDefaults({
                 $.addClient().check_username();
                 $.addClient().check_passwords();
                 $.addClient().check_email();
+                $("#add_client_form").valid();
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
                 },
                 1000 );
-                if ( $('.error_message').is(':visible') ) {
-                    console.log('has errors');
+                if ( $('.error_message').is(':visible') || $('.client_error').is(':visible') ) {
                     $.Ovpnc().remove_ajax_loading();
                     return false;
                 };
@@ -137,31 +164,9 @@ jQuery.validator.setDefaults({
         // Form validation rules
         set_form_validation_rules: function(){
             // Form validation rules
-            $("#add_client_form").validate({
-                rules: {
-                    username: {
-                        required: true,
-                        maxlength: 42
-                    },
-                    password: {
-                        required: true,
-                        maxlength: 72
-                    },
-                    email: {
-                        required: true,
-                        maxlength: 72,
-                        email: true
-                    },
-                    phone: {
-                        required: true,
-                        maxlength: 42
-                    },
-                    address: {
-                        required: true,
-                        maxlength: 128
-                    }
-                }
-            });
+            $("#add_client_form").validate(
+                $.addClient().validation_rules()
+            );
         },
         // Confirm unsaved modifications
         // on user leave page
@@ -208,11 +213,11 @@ jQuery.validator.setDefaults({
                     && msg.error.length > 0 
                 ){
                     for ( var e in msg.error ){
-                        alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error[e] + '</div><div class="clear"></div>');
+                        alert($.Ovpnc().alert_err + ' ' + msg.error[e] + '</div><div class="clear"></div>');
                     }
                 }
                 else {
-                    alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error + '</div><div class="clear"></div>');
+                    alert($.Ovpnc().alert_err + ' ' + msg.error + '</div><div class="clear"></div>');
                 }
             }
             // Success
@@ -229,16 +234,25 @@ jQuery.validator.setDefaults({
         error_client_add: function(r){
             if ( r.responseText ){
                 var msg = jQuery.parseJSON(r.responseText);
+
+                if ( msg.fields_error !== undefined
+                    && Object.prototype.toString.call( msg.fields_error ) === '[object Array]'
+                ){
+                    $("#add_client_form").valid();
+                    for ( var i in msg.fields_error ){
+                        $('label[for="' + msg.fields_error[i] + '"]').css('color','#8B0000');
+                    }
+                }
                 if ( msg.error ){
                     if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
                         && msg.error.length > 0 
                     ){
                         for ( var e in msg.error ){
-                            alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error[e] + '</div><div class="clear"></div>');
+                            alert($.Ovpnc().alert_err + ' ' + msg.error[e] + '</div><div class="clear"></div>');
                         }
                     }
                     else {
-                        alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error + '</div><div class="clear"></div>');
+                        alert($.Ovpnc().alert_err + ' ' + msg.error + '</div><div class="clear"></div>');
                     }
                 }
                 else {
