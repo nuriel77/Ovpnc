@@ -118,12 +118,12 @@ sub status_GET : Local
                : Sitemap
 #               : Does('NeedsLogin')
 {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dont_detach ) = @_;
 
     # Verify can run
     # ==============
     return 'Server offline'
-        if ( $c->config->{dont_detach} && ! $self->vpn->connect );
+        if ( $dont_detach && ! $self->vpn->connect );
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
     undef $_server if $_server && $_server->sanity($c);
 

@@ -323,8 +323,7 @@ sub clients_GET : Local
 
     # Let's see who is online
     # =======================
-    $c->config->{dont_detach} = 1;
-    my $_online_clients = $c->visit('/api/server/status');
+    my $_online_clients = $c->visit('/api/server/status/dont_detach');
     my @_list;
 
     if ( ref $_online_clients && $_online_clients->{clients} ){

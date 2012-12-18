@@ -315,10 +315,12 @@
         // Update server status data
         //
         update_server_status: function(r) {
+console.log("%o",r);
             if (r !== undefined ) {
                 if (r.status !== undefined)
                     r.rest.status = r.status;
                 // If we get status back, display
+console.log("%o",r);
                 if (r.rest.status !== undefined) {
                     r.status = r.rest.status; // Make "more" accessible
                     $('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray');
