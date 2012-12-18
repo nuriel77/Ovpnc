@@ -82,17 +82,25 @@
 
         },
         //
+        // Reset form fields
+        //
+        reset_form: function(id){
+            $('#'+id).each(function(){
+                this.reset();
+            });
+        },
+        //
         // Get server status
         //
         get_server_status: function() {
-            $.Ovpnc().get_data("/api/server/status", {},
+            $.Ovpnc().ajax_call("/api/server/status", {},
             'GET', $.Ovpnc().update_server_status);
         },
         //
         // Server control call
         //
         server_ajax_control: function(cmd) {
-            $.Ovpnc().get_data(
+            $.Ovpnc().ajax_call(
                 "/api/server/",
                 { command: cmd },
                 'POST',
@@ -219,20 +227,20 @@
              */
             if ($('#on_off_click_area').hasClass('hand_pointer')) {
                 $('#on_off_click_area').click(function() {
-                    server_on_off();
+                    $.Ovpnc().server_on_off();
                 });
             }
         },
         //
         // Get json data generic function
         //
-        get_data: function(url, data, method, success_func, error_func, loader) {
+        ajax_call: function(url, data, method, success_func, error_func, loader, timeout) {
             return jQuery.ajax({
                 headers: {
                     'Accept': 'application/json'
                 },
                 async: true,
-                timeout: 3000,
+                timeout: timeout ? timeout : 5000,
                 data: data,
                 type: method ? method : 'GET',
                 tryCount: 0,
@@ -249,10 +257,10 @@
                     if ( loader !== undefined )
                         $.Ovpnc().remove_ajax_loading();
                 },
-                success: success_func ? success_func : function(rest) {
+                success: success_func ? function(rest){ return success_func(rest); } : function(rest) {
                     console.log("Ajax got back: %o", rest);
                 },
-                error: error_func ? error_func : function(xhr, ajaxOptions, thrownError) {
+                error: error_func ? function(rest,xhr,throwError){ return error_func(rest,xhr,throwError); } : function(xhr, ajaxOptions, thrownError) {
                     this.tryCount++;
                     if (this.tryCount <= this.retryLimit) {
                         //try again
@@ -393,6 +401,28 @@
             });
             $.Ovpnc().set_select_tab(li_elem);
         },
+        server_on_off: function() {
+            // Turn off:
+            if ($('#server_on_off').attr('ref') == 'on') {
+                var _online = $('#online_clients_number').text();
+                var _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's' : '' )
+                            + 'online';
+                // Ask confirmation
+                var cr = confirm(
+                    ( _online > 0 ? _cond + "\r\n" : '' ) + "Are you sure you want to turn the server off?");
+
+                // Cancelled?
+                if (cr == false) return;
+
+                // Stop
+                $.Ovpnc().server_ajax_control('stop');
+                return;
+            } else {
+                // Turn on:
+                $.Ovpnc().server_ajax_control('start');
+                return;            
+            }
+        },
         //
         // Set the selected tab
         //
@@ -434,40 +464,18 @@
 
 })(jQuery);
 
-
+/*
+ * Document Ready
+ */
 $(document).ready(function() {
+    // Set width of middle frame
     $.Ovpnc().set_middle_frame_w();
     $(window).resize(function() {
         $.Ovpnc().set_middle_frame_w();
     });
-    if ($.Ovpnc().pathname === '/login') return;
-
-    // Set custom alert functionality
-    window.alert = function(message) {
-        // Check if message is already visible,
-        // If yes, save current content and append
-        if ($('#message').is(':visible')) {
-            // Remove first welcome message.
-            var old_content = $('#msg_content').html();
-            if (old_content.match(/Hello/g) || old_content === message) {
-                $('#msg_content').empty();
-            } else {
-                message += '' + $('#msg_content').html();
-            }
-        }
-        // Write
-        $('#message').html('<div id="msg_content"><div style="float:left">['
-            + get_time() + ']</div>'
-            + message + '</div></div><div>'
-            + '<img id="message_close"'
-            + ' src="/static/images/close-gray.png"'
-            + ' class="hand_pointer"></img></div>').slideDown(300);
-        $('#message_close').click(function() {
-            $('#message').hide(300).empty();
-        });
+    // Exit on login page
+    if ($.Ovpnc().pathname === '/login')
         return false;
-    };
-
     // Set up the navigation
     $.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);
 
@@ -489,8 +497,8 @@ $(document).ready(function() {
 });
 
 /*
-	- Functions -
-*/
+ *	- Functions -
+ */
 function canJSON(value) {
     try {
         JSON.stringify(value);
@@ -499,7 +507,7 @@ function canJSON(value) {
         return false;
     }
 }
-
+/*
 function server_on_off() {
     // Turn off:
     if ($('#server_on_off').attr('ref') == 'on') {
@@ -517,7 +525,7 @@ function server_on_off() {
         return;
     }
 }
-
+*/
 
 function kill_client(c) {
 

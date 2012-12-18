@@ -46,7 +46,7 @@ jQuery.validator.setDefaults({
             // On form submission
             //$('form#add_client_form').submit( function(e){
             $('#submit_add_client_form').click(function(e){
-                //e.preventDefault();
+                e.preventDefault();
                 $.Ovpnc().set_ajax_loading();
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
@@ -71,7 +71,6 @@ jQuery.validator.setDefaults({
                 $.addClient().check_username();
                 $.addClient().check_passwords();
                 $.addClient().check_email();
-
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
                 },
@@ -85,10 +84,20 @@ jQuery.validator.setDefaults({
                 // Remove the warnings message
                 // when leaving this page
                 window.onbeforeunload = undefined;
+
                 // Save the current values
                 $.addClient().confirm_exit();
-                //$('form').submit();
-                return true;
+
+                $.Ovpnc().ajax_call(
+                    '/clients/add',
+                     $("form#add_client_form").serialize(),
+                    'POST',
+                    $.addClient().return_client_add,
+                    $.addClient().error_client_add,
+                    1,
+                    10000
+                );
+
             });
             $('input#username').bind('keyup',function(){
                 $.addClient().check_username();
@@ -109,7 +118,7 @@ jQuery.validator.setDefaults({
         check_username: function(){
             var _name = $('input#username').attr('value');
             if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().get_data('/api/clients', { username: _name }, 'GET', return_client_data, return_ajax_error );
+            $.Ovpnc().ajax_call('/api/clients', { username: _name }, 'GET', return_client_data, error_ajax_return );
         },
         check_passwords: function(){
             var current = $('input#password2').attr('value');
@@ -119,7 +128,7 @@ jQuery.validator.setDefaults({
         check_email: function(){
             var _name = $('input#email').attr('value');
             if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().get_data('/api/clients', { email: _name }, 'GET', return_client_data, return_ajax_error );
+            $.Ovpnc().ajax_call('/api/clients', { email: _name }, 'GET', return_client_data, error_ajax_return );
         },
         // Form validation rules
         set_form_validation_rules: function(){
@@ -154,9 +163,7 @@ jQuery.validator.setDefaults({
         // on user leave page
         confirm_exit: function(){
             if ( $.addClient.form_modified === 0 ) return true;
-
             var data = new Object();
-
             data = {
                 username : $('#username').attr('value'),
                 email : $('#email').attr('value'),
@@ -165,7 +172,6 @@ jQuery.validator.setDefaults({
                 password: ( $('#generated_password_text').is(':visible') ? '' : $('#password').attr('value') ),
                 fullname: $('#fullname').attr('value')
             };
-
             if ( $.cookie( "Ovpnc_addClient_Form_Settings" ) !== null ){
                 console.log('removed old cookie');
                 $.removeCookie("Ovpnc_addClient_Form_Settings");
@@ -194,6 +200,58 @@ jQuery.validator.setDefaults({
                     $('#email').attr('value', data.email);
                 }
             }
+        },
+        return_client_add: function(msg){
+            if ( msg.error ){
+                if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
+                    && msg.error.length > 0 
+                ){
+                    for ( var e in msg.error ){
+                        alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error[e] + '</div><div class="clear"></div>');
+                    }
+                }
+                else {
+                        alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error + '</div><div class="clear"></div>');
+                }
+            }
+            // Success
+            if ( msg.status ){
+                alert( $.Ovpnc().alert_ok + ' ' + msg.status + '</div><div class="clear"></div>' );
+                var _wait =  setInterval(function() {
+                    window.location = '/clients';
+                    window.clearInterval(_wait);
+                },
+                2000 );
+            }
+            $.Ovpnc().remove_ajax_loading();
+        },
+        error_client_add: function(r){
+            if ( r.responseText ){
+                var msg = jQuery.parseJSON(r.responseText);
+                if ( msg.error ){
+                    if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
+                        && msg.error.length > 0 
+                    ){
+                        for ( var e in msg.error ){
+                            alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error[e] + '</div><div class="clear"></div>');
+                        }
+                    }
+                    else {
+                        alert($.Ovpnc().alert_err + ' Error adding client: ' + msg.error + '</div><div class="clear"></div>');
+                    }
+                }
+                else {
+                    alert($.Ovpnc().alert_err + ' Error adding client: unknown error</div><div class="clear"></div>');
+                }
+            }
+            else if ( r.statusText !== undefined ){ 
+                alert($.Ovpnc().alert_err + ' Error adding client: ' + r.statusText + '</div><div class="clear"></div>');
+            }
+            else { 
+                console.log( "%o", r );
+                alert($.Ovpnc().alert_err + ' Error adding client: unknown error</div><div class="clear"></div>');
+            }
+            $.Ovpnc().remove_ajax_loading();
         }
     };
 })(jQuery);
@@ -239,7 +297,7 @@ $(document).ready( function() {
 });
 
 // Handle returned error
-function return_ajax_error(e){
+function error_ajax_return(e){
     console.log("error: %o",e);
 }
 

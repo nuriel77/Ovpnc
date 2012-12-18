@@ -19,6 +19,34 @@
 
 		<!-- JS and CSS -->
 		[% assets.export %]
+        
+        <!-- Default Alert -->
+        <script type="text/javascript">
+            window.alert = function(message) {
+                // Check if message is already visible,
+                // If yes, save current content and append
+                if ($('#message').is(':visible')) {
+                    // Remove first welcome message.
+                    var old_content = $('#msg_content').html();
+                    if (old_content.match(/Hello/g) || old_content === message) {
+                        $('#msg_content').empty();
+                    } else {
+                        message += '' + $('#msg_content').html();
+                    }
+                }
+                // Write
+                $('#message').html('<div id="msg_content"><div style="float:left">['
+                    + get_time() + ']</div>'
+                    + message + '</div></div><div>'
+                    + '<img id="message_close"'
+                    + ' src="/static/images/close-gray.png"'
+                    + ' class="hand_pointer"></img></div>').slideDown(300);
+                $('#message_close').click(function() {
+                    $('#message').hide(300).empty();
+                });
+                return false;
+            };
+        </script>
     </head>
     <body>
 		<div id="top_header">
@@ -45,8 +73,19 @@
 
 				<!-- middle frame -->
 				<div id="middle_frame">
+                    [% IF error %]
+                         <script type="text/javascript">
+                            alert(
+                            [% FOR err IN error %]
+                                [% FOR e IN err %]
+                                '<div class="err_text" style="margin:-1px 1.5px 0 1.5px;"><img width="16" height="16" src="/static/images/alert_icon.png" /></div><div class="err_text"> [% e %]</div><div class="clear"></div>'
+                                [% END %]
+                            [% END %]
+                            );
+                         </script>
+                    [% END %]
 					[% IF error_message %]
-						<div class="error_message">[% error_message %]</div>
+						<div class="error_message">Error: [% error_message %]</div>
 					[% ELSE %]
 						[% IF this_link != 'root' %]
 							[% content %]

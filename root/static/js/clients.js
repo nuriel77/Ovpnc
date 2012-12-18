@@ -82,6 +82,9 @@ var total_count = 0;
                 if ( v.innerHTML === 'unknown' ){
                     $(this).parent().parent('tr').children('td[abbr="username"]')
                         .children('div').css('color','red');
+                    if ( $(this).parent().parent('tr').children('td[abbr="id"]').text() === 'unknown' ){
+                        $(this).parent().parent('tr').remove();
+                    }                    
                 }
             });
             // Set the right color - on/off notice according
@@ -101,22 +104,20 @@ var total_count = 0;
                     // fill in the text from online_data
                     var mem_ip;
                     for (var i in online_data) {
-                    if ( online_data[i] !== 'UNDEF' ){
-                            if (i !== 'name') {
-                                if ( i.match(/^bytes_.*$/) )
-                                    online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
+                         if (i !== 'name') {
+                            if ( i.match(/^bytes_.*$/) )
+                                online_data[i] = ( online_data[i] / 1024 ).toFixed(2) + 'KB';
                                 $(this).parent().parent('tr')
                                        .children('td[abbr="' + i + '"]')
                                        .children('div')
                                        .text( online_data[i] ).css('color','black');
                             }
                         }
+                        // mark the row which has been found to be online
+                        if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
+                            $(this).append('<span class="inner_flexi_text">on</span>');
+                        }
                     }
-                    // mark the row which has been found to be online
-                    if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
-                        $(this).append('<span class="inner_flexi_text">on</span>');
-                    }
-                }
                 else {
                     // Clean up td's with online data
                     // for client which is not online
@@ -185,7 +186,7 @@ function delete_client(button, grid){
         _clients += client + ',';    
         $.Client().loop = $.Client().loop + 1;
     });
-    $.Ovpnc().get_data("/api/clients/", { client: _clients },
+    $.Ovpnc().ajax_call("/api/clients/", { client: _clients },
     'REMOVE', client_delete_return, client_delete_error, 1 );
 }
 
@@ -211,6 +212,10 @@ function client_delete_return(r){
 
 function client_delete_error(e){
     console.log("Delete error: %o",e);
+    if ( e.responseText !== undefined ){
+        var msg = jQuery.parseJSON( e.responseText );
+        alert( $.Ovpnc().alert_err + 'Clients failed delete: ' + msg + '</div><div class="clear"></div>' );
+    }
 }
 
 function block_clients(button, grid){
@@ -232,7 +237,7 @@ function format_client_results(obj){
 	var is_felxgrid_ready =
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){
-				$.Ovpnc().get_data( "/api/server/status", { }, 'GET', $.Ovpnc().update_server_status );
+				$.Ovpnc().ajax_call( "/api/server/status", { }, 'GET', $.Ovpnc().update_server_status );
 				window.clearInterval(is_felxgrid_ready);
 			}
 		}, 100);
