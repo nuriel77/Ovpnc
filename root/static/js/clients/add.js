@@ -123,7 +123,7 @@ jQuery.validator.setDefaults({
                     $.addClient().return_client_add,
                     $.addClient().error_client_add,
                     1,
-                    10000
+                    15000
                 );
 
             });

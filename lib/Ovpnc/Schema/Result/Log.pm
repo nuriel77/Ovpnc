@@ -46,7 +46,7 @@ __PACKAGE__->table("log");
 
 =head2 message
 
-  data_type: 'integer'
+  data_type: 'text'
   is_nullable: 0
 
 =head2 user_id
@@ -68,7 +68,7 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "message",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "text", is_nullable => 0 },
   "user_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "timestamp",
@@ -106,12 +106,12 @@ __PACKAGE__->belongs_to(
   "user",
   "Ovpnc::Schema::Result::User",
   { id => "user_id" },
-  { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 16:51:01
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+4Ru1zcFrb0inmdsVGC4kg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-18 11:37:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IhwidMdQtAHwzJeFFa2d8g
 
 __PACKAGE__->load_components("InflateColumn::DateTime","TimeStamp");
 

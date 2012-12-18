@@ -203,7 +203,7 @@ function delete_client(button, grid){
         $.Client().loop = $.Client().loop + 1;
     });
     $.Ovpnc().ajax_call("/api/clients/", { client: _clients },
-    'REMOVE', client_delete_return, client_delete_error, 1 );
+    'REMOVE', client_delete_return, client_delete_error, 1, 15000 );
 }
 
 function client_delete_return(r){
@@ -321,6 +321,7 @@ function block_unblock_clients(button, grid, action){
         $.ajax({
             url: '/api/clients/' + client,
             type: action,
+            timeout: 5000,
             data: {},
             dataType: 'json',
             success: function( msg ) {

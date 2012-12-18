@@ -80,6 +80,8 @@ sub start {
             '--tmp-dir',           '/tmp',
             '--ccd-exclusive',
             '--cd',                $self->openvpn_dir . '/',
+            '--up',                'bin/up.pl',
+            '--down',              'bin/down.sh',
             '--config',            $self->app_root . '/' . $self->openvpn_config,
         );
 

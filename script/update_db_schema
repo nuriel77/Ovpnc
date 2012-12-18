@@ -1,2 +1,3 @@
 #!/bin/bash
-./script/ovpnc_create.pl model DB DBIC::Schema Ovpnc::Schema create=static dbi:mysql:ovpnc 'ovpnc' 'ovpncadmin' '{ AutoCommit => 1 }'
+PASSWD=$(cat config/.mysql)
+./script/ovpnc_create.pl model DB DBIC::Schema Ovpnc::Schema create=static dbi:mysql:ovpnc 'ovpnc' $PASSWD '{ AutoCommit => 1 }'
