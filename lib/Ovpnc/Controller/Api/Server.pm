@@ -66,6 +66,17 @@ of these actions
 
 =cut
 
+around 'server_GET' => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $c    = shift;
+
+    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+      unless $self->_has_conf;
+
+    return $self->$orig( $c, @_ )
+};
+
 around [
     qw/
       server_POST
@@ -86,7 +97,7 @@ around [
         if $self->_has_vpn;
 
     # Establish connection to management port
-    # =======================================
+    # ========================================
     $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
@@ -208,7 +219,7 @@ sub server_POST : Local
         openvpn_config => $self->cfg->{openvpn_config},
         openvpn_tmpdir => $self->cfg->{tmp_dir},
         app_root       => $c->config->{home},
-        app_user       => $c->user->get("username"),
+        app_user       => $c->user_exists ? $c->user->get("username") : '',
         mgmt_passwd_file  => $self->cfg->{mgmt_passwd_file},
         openvpn_group  =>  $self->cfg->{openvpn_group},
     ) or die "Could not get role 'Control': $!";
@@ -218,7 +229,7 @@ sub server_POST : Local
     my $_cmds = {
         start   => sub { $_role->start( $self->_has_vpn ? $self->vpn : undef ) },
         stop    => sub { $_role->stop( $self->_has_vpn ? $self->vpn : undef ) },
-        restart => sub { $_role->restart( $self->_has_vpn ? $self->vpn : undef ) }
+        restart => sub { $_role->restart( $self->_has_vpn ? $self->vpn : undef ) },
     };
 
     my ( $_found_command, $_ret_val );
@@ -254,6 +265,46 @@ sub server_POST : Local
 
     $self->status_ok( $c, entity => $_ret_val );
     $self->_disconnect_vpn;
+}
+
+=head2 server_GET
+
+Get pid of running server
+or return server offline
+
+=cut
+
+sub server_GET : Local
+               : Args(0)
+               : Sitemap
+               #: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
+               #: Does('NeedsLogin')
+{
+    my ( $self, $c ) = @_;
+
+    my $_role = $self->new_with_traits(
+        traits         => ['Control'],
+        openvpn_dir    => $self->cfg->{openvpn_dir},
+        openvpn_bin    => $self->cfg->{openvpn_bin},
+        openvpn_pid    => $self->cfg->{openvpn_pid},
+        openvpn_config => $self->cfg->{openvpn_config},
+        openvpn_tmpdir => $self->cfg->{tmp_dir},
+        app_root       => $c->config->{home},
+        app_user       => $c->user_exists ? $c->user->get("username") : '',
+        mgmt_passwd_file  => $self->cfg->{mgmt_passwd_file},
+        openvpn_group  =>  $self->cfg->{openvpn_group},
+    ) or die "Could not get role 'Control': $!";
+
+    my $_pid = $_role->_check_running( $self->_has_vpn ? $self->vpn : undef );
+
+    if ( $_pid ){
+        $self->status_ok($c, entity => { pid => $_pid } );
+        return $_pid;
+    }
+    else {
+        $self->status_not_found($c, message => "Server offline");
+        return;
+    }
 }
 
 =head2 sanity
@@ -317,12 +368,11 @@ sub end : Private {
     # Clean up the File::Assets
     # it is set to null but
     # is not needed in JSON output
+    # ============================
     delete $c->stash->{assets};
 
-    # Debug if requested
-    die "forced debug" if $c->req->params->{dump_info};
-
     # Forward to JSON view
+    # ====================
     $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }

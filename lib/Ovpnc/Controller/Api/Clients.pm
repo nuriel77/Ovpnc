@@ -321,9 +321,18 @@ sub clients_GET : Local
         $c->detach;
     }
 
+    # Check if server is online
+    # this is to know if to check
+    # for online clients or skip
+    # ===========================
+    my $_pid = $c->forward('/api/server' , $self->cfg );
+
     # Let's see who is online
     # =======================
-    my $_online_clients = $c->visit('/api/server/status/dont_detach');
+    my $_online_clients;
+    $_online_clients = $c->forward('/api/server/status', $self->cfg )
+        if $_pid != 0;
+
     my @_list;
 
     if ( ref $_online_clients && $_online_clients->{clients} ){
@@ -1003,18 +1012,18 @@ and forward to the view
 sub end : Private {
     my ( $self, $c ) = @_;
 
-    # Debug if requested
-    die "forced debug" if $c->req->params->{dump_info};
-
     # Clean up the File::Assets
     # it is set to null but
     # is not needed in JSON output
+    # ============================
     delete $c->stash->{assets};
 
     # disconnect if exists
+    # ====================
     $self->_disconnect_vpn if $self->_has_vpn;
 
     # Forward to JSON view
+    # ====================
     $c->forward(
         ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
 }

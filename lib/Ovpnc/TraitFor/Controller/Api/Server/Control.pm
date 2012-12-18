@@ -102,12 +102,14 @@ sub start {
         unless ( $self->_check_running ) {
 
             # Not running?
+            # ============
             return { error =>
                   "Server failed to start up! Please check the log files." };
         }
         else {
 
             # Compare active and file pid numbers
+            # ===================================
             if ( -e $self->openvpn_pid and -r $self->openvpn_pid ) {
                 undef $_pid;
                 $_pid = $self->_check_running;
@@ -225,7 +227,7 @@ sub restart {
 
     $self->stop if $self->_check_running || $self->vpn->{objects};
     sleep 1;
-    if ( $self->_check_running ) {
+    if ( $self->check_running ) {
         $self->stop;
         sleep 1;
     }
@@ -260,7 +262,6 @@ sub _check_running {
         }
         touch $self->openvpn_pid;
         chmod 0660, $self->openvpn_pid;
-            $self->openvpn_group;
         chown $uid, $gid, $self->openvpn_pid;
     }
 
