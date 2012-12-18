@@ -23,6 +23,7 @@ requires 'Proc::ProcessTable';
 requires 'Proc::Simple';
 requires 'Set::Object';
 requires 'Object::Signature';
+requires 'Digest::MD5';
 requires 'Digest::MD5::File';
 requires 'Net::SSLeay';
 requires 'Crypt::OpenSSL::CA';

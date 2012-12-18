@@ -2,6 +2,7 @@ package Ovpnc::Controller::Api::Clients;
 use warnings;
 use strict;
 use Ovpnc::Plugins::Connector;
+use Try::Tiny;
 use Scalar::Util 'looks_like_number';
 use Moose;
 use namespace::autoclean;
@@ -674,8 +675,16 @@ sub clients_REVOKE : Local
 
     # Update database
     # ===============
-    $c->model('DB::User')->find({ username => $_ })
-        ->update({ revoked => 1 }) for @clients;
+    for my $client (@clients){
+        try {
+            $c->model('DB::User')->find({ username => $client })
+                ->update({ revoked => 1 });
+        }
+        catch {
+            push @{$c->stash->{error}},
+                "Failed to update database for '$client': " . $_;
+        };
+    }
 
     $self->status_ok( $c, entity => $_ret_val );
     $self->_disconnect_vpn if $self->_has_vpn;
@@ -740,8 +749,13 @@ sub clients_UNREVOKE : Local
 
         # Update database
         # ===============
-        $c->model('DB::User')->find({ username => $client })
-            ->update({ revoked => 0 });
+        try {
+            $c->model('DB::User')->find({ username => $client })
+                ->update({ revoked => 0 });
+        }
+        catch {
+            push @{$c->stash->{error}}, "Failed to update database for '$client': " . $_;
+        };
 
         # Unrevoke a revoked client's certificate
         # =======================================

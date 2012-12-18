@@ -97,7 +97,7 @@ elements:
                         constraints:
                            - Required
                            - type: Regex
-                             regex: '^[-_a-zA-Z\d]*\z'
+                             regex: '^[-_a-zA-Z\d\s]*\z'
                            - type: MinLength
                              min: 2
                            - type: MaxLength

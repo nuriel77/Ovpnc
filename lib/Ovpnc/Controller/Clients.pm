@@ -1,6 +1,6 @@
 package Ovpnc::Controller::Clients;
-use File::Touch;
 use Try::Tiny;
+use Digest::MD5 'md5_hex';
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -130,7 +130,11 @@ sub add : Path('add')
         if ( $form->has_errors ) {
             for ( @{$form->get_errors} ){
                 push @{$c->stash->{fields_error}} , $_->name;
-                push @{$c->stash->{error}} , "Error in field: '" . $_->name . "'";
+                push @{$c->stash->{error}} ,
+                    "Error in field: '" . $_->name . "': " . $_->message
+                    . " - " . $_->type
+                    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
                 delete $c->stash->{$_} for ( qw/assets form token/ );
                 delete $c->req->params->{submit};
             }
@@ -185,7 +189,7 @@ sub add : Path('add')
 
             # Create client configuration file
             # ================================
-            if ( ! -w $c->config->{openvpn_ccd} ){
+            if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
                 $self->_error($c,
                     "Cannot create ccd file for " . $_client->username
                     . ": directory '" . $c->config->{openvpn_ccd}
@@ -194,10 +198,15 @@ sub add : Path('add')
 
             my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
 
-            touch $_file
+            open (my $FILE, '>', $_file)
                 or $self->_error($c, "Cannot create ccd file for "
                     . $_client->username . ': ' . $!);
-    
+            print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
+
+            ## For Debug: --
+            print $FILE "\n#Generated from:\n" . $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n";
+
+            close $FILE;
             # Set permissions and ownership
             # =============================
             my ( $uid, $gid ) = $self->_get_user_group_id( $c );

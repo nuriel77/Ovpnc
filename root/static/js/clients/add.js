@@ -206,6 +206,9 @@ jQuery.validator.setDefaults({
                 }
             }
         },
+        //
+        // Successful return from adding client
+        //
         return_client_add: function(msg){
             if ( msg.error ){
                 if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
@@ -230,6 +233,9 @@ jQuery.validator.setDefaults({
             }
             $.Ovpnc().remove_ajax_loading();
         },
+        //
+        // Returned error from add client
+        //
         error_client_add: function(r){
             if ( r.responseText ){
                 var msg = jQuery.parseJSON(r.responseText);
@@ -237,6 +243,7 @@ jQuery.validator.setDefaults({
                 if ( msg.fields_error !== undefined
                     && Object.prototype.toString.call( msg.fields_error ) === '[object Array]'
                 ){
+                    console.log("%o",msg.fields_error);
                     $("#add_client_form").valid();
                     for ( var i in msg.fields_error ){
                         $('label[for="' + msg.fields_error[i] + '"]').css('color','#8B0000');

@@ -1,13 +1,7 @@
-#!/bin/sh
-export PATH=/bin
+#!/bin/bash
 
 echo $1 > /tmp/client_connect.txt
-cat $1 >> /tmp/client_connect.txt
+env >> /tmp/client_connect.txt
+test=`md5sum < $1 | sed 's/[\t +|\-]//g'`
+echo $test >> /tmp/client_connect.txt
 exit 0;
-
-realSum=$(grep '^#.*' /conf/ccd/$common_name | sed 's/#//')
-case $(md5sum < $1 | sed 's/[\t +|\-]//g') in
-  ( $realSum ) { echo `date` $common_name connected  >> /tmp/log.txt; exit 0; } ;;
-esac
-
-exit 1
