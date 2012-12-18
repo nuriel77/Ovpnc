@@ -1,4 +1,13 @@
 {
+    "Model::DB" : {
+        "schema_class" :  "Ovpnc::Schema",
+        "connect_info" : {
+            "dsn"         : "dbi:mysql:ovpnc",
+            "user"        : "ovpnc",
+            "password"    : "283a6c310877c53d09f79f9bc9d9e089c382819ade2f933d",
+            "AutoCommit"  : "1",
+        }
+    },
     "Plugin::Authentication":{
         "default_realm":"users",
         "realms":{

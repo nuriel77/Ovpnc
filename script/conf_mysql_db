@@ -5,12 +5,18 @@ tm=$(stty -g)
 stty -echo
 read Passwd
 stty $tm
+
 PASSWD=$( echo $Passwd | sed 's/\\n//' )
 MYPASS=$( openssl rand -hex 24 )
+OVPNCUSER=`grep '"user".*:[\s +]".*"' ovpnc.json | sed 's/"user".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
+
 mysql -p"$PASSWD" -u $USER <<QUERY_INPUT
 drop database if exists ovpnc;
 create database ovpnc;
-grant all on ovpnc.* to 'ovpnc'@'localhost' identified by "$MYPASS";
+grant all on ovpnc.* to "$OVPNCUSER"@'localhost' identified by "$MYPASS";
 QUERY_INPUT
-mysql -p"$PASSWD" ovpnc < config/ovpnc.sql
-echo $MYPASS > config/.mysql
+
+mysql -p"$PASSWD" $OVPNCUSER < config/ovpnc.sql
+sed -i "s/\(^.*\"password\".*:.*\"\)\(.*\)\(\".*\)$/\1$MYPASS\3/" ovpnc.json
+chown ovpnc.ovpnc ovpnc.json ovpnc.conf
+chmod 400 ovpnc.json ovpnc.conf

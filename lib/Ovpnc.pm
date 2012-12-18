@@ -73,30 +73,13 @@ __PACKAGE__->config(
                                                         #
                                                         # ConfigLoader
                                                         #
-    'Plugin::ConfigLoader' => { config_local_suffix => 'local' },
-
-);
-
-# Database
-# ========
-__PACKAGE__->config(
-    'Model::DB' => {
-        schema_class => 'Ovpnc::Schema',
-        connect_info => {
-            dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
-            user        => $ENV{MYSQL_USER} ||= 'ovpnc',
-            password    => ( $ENV{MYSQL_PASSFILE}
-                ? read_file( $ENV{MYSQL_PASSFILE}, chomp => 1 )
-                : read_file(
-                    getcwd . '/'
-                    . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : '' )
-                    . ( getcwd =~ /Ovpnc$/ ? '' : '/Ovpnc' )
-                    . '/config/.mysql', chomp => 1
-                )
-            ),
-            AutoCommit  => q{1},
+    'Plugin::ConfigLoader' => {
+        config_local_suffix => 'local',
+        driver => {
+            'General' => { -LowerCaseNames => 1 }
         }
-    }
+    },
+
 );
 
 # Cache
@@ -224,6 +207,20 @@ __PACKAGE__->config(
     },
 );
 
+# - Currently in ovpnc.json -
+# Database
+# ========
+#__PACKAGE__->config(
+#    'Model::DB' => {
+#        schema_class => 'Ovpnc::Schema',
+#        connect_info => {
+#            dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
+#            user        => $ENV{MYSQL_USER} ||= 'ovpnc',
+#            password    => { return 'test' },
+#            AutoCommit  => q{1},
+#        }
+#    }
+#);
 
 
 # Start the application

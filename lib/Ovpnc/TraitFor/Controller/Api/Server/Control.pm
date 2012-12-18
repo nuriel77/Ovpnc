@@ -33,6 +33,7 @@ has vpn => (
 has [
     qw/
       app_root
+      app_user
       openvpn_dir
       openvpn_bin
       openvpn_config
@@ -40,6 +41,7 @@ has [
       openvpn_pid
       openvpn_group
       mgmt_passwd_file
+      mysql_passwd_file
       /
   ] => (
     is       => 'ro',
@@ -74,6 +76,8 @@ sub start {
             '--tls-server',
             '--daemon', 'ovpn-server',
             '--setenv',            'PATH', '/bin',
+            '--setenv',            'OVPNC_USER', $self->app_user,
+            '--setenv',            'MYSQL_PASSFILE', $self->mysql_passwd_file,
             '--script-security',   '3',
             '--client-connect',    '/bin/client_connect',
             '--client-disconnect', '/bin/client_disconnect',

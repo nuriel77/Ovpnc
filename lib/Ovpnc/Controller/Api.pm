@@ -154,12 +154,11 @@ sub assign_params : Private {
     # private methods as well
     # ============================
 
-    # Mysql passwd file
-    # =================
+    # Openvpn management passwd file
+    # ==============================
     $mgmt_passwd_file = $c->config->{mgmt_passwd_file} =~ /^\//
         ? $c->config->{mgmt_passwd_file}
         : $c->config->{home} . '/' . $c->config->{mgmt_passwd_file};
-
 
     # Check build if ovpnc_conf
     # =========================

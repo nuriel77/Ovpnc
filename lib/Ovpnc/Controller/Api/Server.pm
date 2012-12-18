@@ -208,7 +208,9 @@ sub server_POST : Local
         openvpn_config => $self->cfg->{openvpn_config},
         openvpn_tmpdir => $self->cfg->{tmp_dir},
         app_root       => $c->config->{home},
-        mgmt_passwd_file => $self->cfg->{mgmt_passwd_file},
+        app_user       => $c->user->get("username"),
+        mgmt_passwd_file  => $self->cfg->{mgmt_passwd_file},
+        mysql_passwd_file => $self->cfg->{xxx}, 
         openvpn_group  =>  $self->cfg->{openvpn_group},
     ) or die "Could not get role 'Control': $!";
 
