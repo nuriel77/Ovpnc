@@ -178,7 +178,6 @@ jQuery.validator.setDefaults({
                 email : $('#email').attr('value'),
                 address: $('#address').attr('value'),
                 phone: $('#phone').attr('value'),
-                password: ( $('#generated_password_text').is(':visible') ? '' : $('#password').attr('value') ),
                 fullname: $('#fullname').attr('value')
             };
             if ( $.cookie( "Ovpnc_addClient_Form_Settings" ) !== null ){

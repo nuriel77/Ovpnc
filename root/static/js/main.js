@@ -134,14 +134,13 @@
                     if ($('#client_status_container').is(':visible'))
                         $('#client_status_container').hide(300).empty();
                 } else {
-                    alert('Server did not stop? ' + r.status);
+                    alert($.Ovpnc().alert_err + ' Server did not stop? ' + r.status + '</div><div class="clear"></div>');
                     return
                 }
                 $.Ovpnc().get_server_status();
             }
             else {
-                alert("Server control did not reply to action '" + cmd + "'");
-                console.log("Server control did not reply");
+                alert( $.Ovpnc().alert_err + ' Server control did not reply to action ' + cmd + '</div><div class="clear"></div>' );
                 return false;
             }
         },
@@ -151,8 +150,7 @@
         error_ajax_server_control : function(r) {
             r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
             r = r.rest.error !== undefined ? r.rest.error : r;
-            console.log( "Error executing command: " + r );
-            alert( $.Ovpnc().error_icon + " Error executing command: " + r );
+            alert( $.Ovpnc().alert_err + ' Error executing command: ' + r + '</div><div class="clear"></div>' );
             return false;
         },
         //
@@ -296,7 +294,7 @@
                     }
                     else {
                         console.log( k + " -> " + v );
-                        alert( 'Error: ' + k + " -> " + v );
+                        alert($.Ovpnc().alert_ok + ' Error: ' + k + ' -> ' + v +'</div><div class="clear"></div>');
                     }
                 });
             }

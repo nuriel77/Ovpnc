@@ -40,8 +40,8 @@ var total_count = 0;
                     { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
                     { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
                     { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
-                    { display: 'Enabled', name : 'enabled', width: 20, sortable : true, align: 'right', hide: false },
-                    { display: 'Revoked', name : 'revoked', width: 20, sortable : true, align: 'right', hide: false },
+                    { display: 'Enabled', name : 'enabled', width: 35, sortable : true, align: 'right', hide: false },
+                    { display: 'Blocked', name : 'revoked', width: 35, sortable : true, align: 'right', hide: false },
                     { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
                     { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
                 ],
@@ -79,7 +79,8 @@ var total_count = 0;
             // Color unknown client in red
             $('#flexme').find('tr').children('td[abbr="id"]')
                         .children('div').each(function(k, v){
-                if ( v.innerHTML === 'unknown' ){
+                var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                if ( inner_text === 'unknown' ){
                     $(this).parent().parent('tr').children('td[abbr="username"]')
                         .children('div').css('color','red');
                     if ( $(this).parent().parent('tr').children('td[abbr="id"]').text() === 'unknown' ){
@@ -155,11 +156,14 @@ var total_count = 0;
                         + ' Total ' + processed
                         + ' client' + ( processed === 1 ? ' ' : 's ' )
                         + action + 'd</div><div class="clear"></div>' );
+                $('.pReload').click();
                 return;
             }
             if ( loop === total_count ){
+                $('.pReload').click();
                 if ( processed === 0 ){
-                    alert( $.Ovpnc().alert_err + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
+                    if ( total_count > 1 )
+                        alert( $.Ovpnc().alert_icon + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
                 }
                 else {
                     alert( $.Ovpnc().alert_icon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
@@ -334,12 +338,23 @@ function block_unblock_clients(button, grid, action){
                     alert( $.Ovpnc().alert_err + " " + msg.error.join() + '</div><div class="clear"></div>');
                 }
                 if ( msg.error === undefined && typeof msg.rest !== "undefined" ){
-                    if ( msg.rest.match( /revoked ok.*SUCCESS/g )
+                    if ( msg.rest.match( /revoked ok/g )
                       || msg.rest.match( /Un-revocation success/g )
                     ){
                         // Remove select class from tr
                         // and append to processed
                         $(_tr).removeClass('trSelected');
+                        // Update the revoked column
+/*
+                        $('#flexme').find('tr').children('td[abbr="username"]')
+                            .children('div').each(function(k, v){
+                            var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                            if ( inner_text === client ){
+                                $(this).parent().parent('tr').children('td[abbr="revoked"]')
+                                       .children('div').text( ( action === 'revoke' ? '1' : '0' ) );
+                            }
+                        });
+*/
                         processed++;
                     }
                     else {

@@ -26,7 +26,6 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
     my ( $orig, $self, $c ) = @_;
-
     # Redirect to https if user specified
     # a port in config under 'redirect_https_port'
     # ============================================

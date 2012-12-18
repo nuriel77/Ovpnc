@@ -662,6 +662,11 @@ sub clients_REVOKE : Local
         }
     }
 
+    # Update database
+    # ===============
+    $c->model('DB::User')->find({ username => $_ })
+        ->update({ revoked => 1 }) for @clients;
+
     $self->status_ok( $c, entity => $_ret_val );
     $self->_disconnect_vpn if $self->_has_vpn;
 }
@@ -723,6 +728,11 @@ sub clients_UNREVOKE : Local
             next CLIENT;
         }
 
+        # Update database
+        # ===============
+        $c->model('DB::User')->find({ username => $client })
+            ->update({ revoked => 0 });
+
         # Unrevoke a revoked client's certificate
         # =======================================
         $_ret_val .= ';' . $self->_roles->unrevoke_certificate(
@@ -732,6 +742,7 @@ sub clients_UNREVOKE : Local
         );
     }
     $c->stash->{error} = $_err if @{$_err} > 0;
+
     $self->status_ok( $c, entity => $_ret_val );
     $self->_disconnect_vpn if $self->_has_vpn;
     delete $c->stash->{status};

@@ -63,7 +63,6 @@ sub revoke_certificate {
 
             my $_check_ret_val = join( "\n", @{$full_buf} );
             $_check_ret_val =~ s/\n/;/g;
-            warn $client . ": ". $_check_ret_val;
             if ( $success ){
                 # Already in revoke list
                 # ======================
