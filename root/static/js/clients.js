@@ -40,8 +40,8 @@ var total_count = 0;
                     { display: 'Email', name : 'email', width : 80, sortable : true, align: 'left', hide: true },
                     { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right', hide: true },
                     { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right', hide: true },
-                    { display: 'Enabled', name : 'enabled', width: 35, sortable : true, align: 'right', hide: false },
-                    { display: 'Blocked', name : 'revoked', width: 35, sortable : true, align: 'right', hide: false },
+                    { display: 'Enabled', name : 'enabled', width: 40, sortable : true, align: 'right', hide: false },
+                    { display: 'Blocked', name : 'revoked', width: 40, sortable : true, align: 'right', hide: false },
                     { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
                     { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
                 ],
@@ -253,7 +253,6 @@ function format_client_results(obj){
 
 	// This will force to update
 	// online_data and not wait
-
 	var is_felxgrid_ready =
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){

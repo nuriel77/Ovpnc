@@ -90,11 +90,17 @@
             });
         },
         //
+        // Server status returns error
+        //
+        error_server_status: function(e){
+            console.log("Server status error: %o", e);
+        },
+        //
         // Get server status
         //
         get_server_status: function() {
             $.Ovpnc().ajax_call("/api/server/status", {},
-            'GET', $.Ovpnc().update_server_status);
+            'GET', $.Ovpnc().update_server_status, $.Ovpnc().error_server_status);
         },
         //
         // Server control call
@@ -309,7 +315,9 @@
         // Update server status data
         //
         update_server_status: function(r) {
-            if (r !== undefined && r.rest !== undefined) {
+            if (r !== undefined ) {
+                if (r.status !== undefined)
+                    r.rest.status = r.status;
                 // If we get status back, display
                 if (r.rest.status !== undefined) {
                     r.status = r.rest.status; // Make "more" accessible

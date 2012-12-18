@@ -26,6 +26,7 @@ has '+_trait_namespace' => (
     # get the correct namespace.
     # Wanted to keep traits out of
     # the Controller directory
+    # ============================
     default => sub {
         my ( $P, $SP ) = __PACKAGE__ =~ /^(\w+)::(.*)::\w+$/;
         return $P . '::TraitFor::' . $SP;
@@ -117,15 +118,18 @@ sub status_GET : Local
                : Sitemap
 #               : Does('NeedsLogin')
 {
-    my ( $self, $c, $cfg_params ) = @_;
+    my ( $self, $c ) = @_;
 
     # Verify can run
     # ==============
+    return 'Server offline'
+        if ( $c->config->{dont_detach} && ! $self->vpn->connect );
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
-    undef $_server if $_server->sanity($c);
+    undef $_server if $_server && $_server->sanity($c);
 
     # Trait names should match action name
     # Ovpnc::TraitFor::Controller::Api::Server::Status
+    # ================================================
     my ($_fn) = ( caller(0) )[3] =~ /::(\w+)::\w+_.*$/;
     my $_role = $self->new_with_traits(
         traits => [$_fn],

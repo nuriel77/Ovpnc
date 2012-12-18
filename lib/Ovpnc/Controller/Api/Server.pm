@@ -270,6 +270,7 @@ sub sanity : Private {
 
     # Check permitted method for
     # non Catalyst REST complient
+    # ===========================
     my $_flag = 0;
     if ( $params && ref $params->{permitted} ) {
         for ( @{ $params->{permitted} } ) {
@@ -288,6 +289,7 @@ sub sanity : Private {
     }
 
     # Check connection
+    # ================
     if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
         $self->_disconnect_vpn;    # Just to clear the handle
         $self->status_ok( $c, entity => { status => 'Server offline' });

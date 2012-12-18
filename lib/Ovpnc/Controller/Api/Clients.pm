@@ -323,67 +323,69 @@ sub clients_GET : Local
 
     # Let's see who is online
     # =======================
-    my $_online_clients = $c->forward('/api/server/status', $self->cfg );
-
+    $c->config->{dont_detach} = 1;
+    my $_online_clients = $c->visit('/api/server/status');
     my @_list;
 
-    # Simple login uses hardcoded 'username'
-    # and openvpn returns 'name'
-    # here we first map so they two
-    # arrays match, we can run a simple comparison
-    # to find out to which client's data
-    # to append the online data.
-    # ============================================
-    $_online_clients->{clients} = [
-        map {
+    if ( ref $_online_clients && $_online_clients->{clients} ){
 
-            # match to second hash's keyname
-            # ==============================
-            $_->{username} = $_->{name};
-            delete $_->{name};
-            my $_found;
-          LP: for my $i ( 0 .. @_clients ) {
-                if ( $_clients[$i]->{username}
-                    && $_clients[$i]->{username} eq $_->{username}
-                ) {
-                    # Merge the two hashes
-                    # ====================
-                    my %temp_hash = ( %{ $_clients[$i] }, %{$_} );
-                    $_clients[$i] = \%temp_hash;
-                    $_found++;
+        # Simple login uses hardcoded 'username'
+        # and openvpn returns 'name'
+        # here we first map so they two
+        # arrays match, we can run a simple comparison
+        # to find out to which client's data
+        # to append the online data.
+        # ============================================
+        $_online_clients->{clients} = [
+            map {
+    
+                # match to second hash's keyname
+                # ==============================
+                $_->{username} = $_->{name};
+                delete $_->{name};
+                my $_found;
+              LP: for my $i ( 0 .. @_clients ) {
+                    if ( $_clients[$i]->{username}
+                        && $_clients[$i]->{username} eq $_->{username}
+                    ) {
+                        # Merge the two hashes
+                        # ====================
+                        my %temp_hash = ( %{ $_clients[$i] }, %{$_} );
+                        $_clients[$i] = \%temp_hash;
+                        $_found++;
+                    }
                 }
-            }
-            push @_list, $_
-                unless $_found;
-          } @{ $_online_clients->{clients} }
-    ];
-
-    # Here we sort the hashes inside the array
-    # according to what is specified in the
-    # request. The sort is being done here
-    # if these are columns which do not originate
-    # in the database but from server status
-    # ===========================================
-    if ( $_dont_sort_in_query && $sort_by ) {
-        my @_sorted = sort {
-                ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
-            cmp
-                ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
-        } @_clients;
-        @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+                push @_list, $_
+                    unless $_found;
+              } @{ $_online_clients->{clients} }
+        ];
     }
-
-    # Remove any empty elements
-    # Merge any unknown clients
-    # =========================
-    for ( @_clients ){
-        push @_list, $_ if scalar keys %{$_} != 0;
-    }
-
-    $self->status_ok( $c, entity => [ @_list ] )
-      if @_list > 0;
+        # Here we sort the hashes inside the array
+        # according to what is specified in the
+        # request. The sort is being done here
+        # if these are columns which do not originate
+        # in the database but from server status
+        # ===========================================
+        if ( $_dont_sort_in_query && $sort_by ) {
+            my @_sorted = sort {
+                    ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
+                cmp
+                    ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
+            } @_clients;
+            @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+        }
+    
+        # Remove any empty elements
+        # Merge any unknown clients
+        # =========================
+        for ( @_clients ){
+            push @_list, $_ if scalar keys %{$_} != 0;
+        }
+    
+        $self->status_ok( $c, entity => [ @_list ] )
+          if @_list > 0;
 }
-
+    
 
 =head2 clients_POST
 
