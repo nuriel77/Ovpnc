@@ -148,8 +148,24 @@ var total_count = 0;
                 if (clients[i].name === current_client) return clients[i];
             }
             return false;
+        },
+        check_complete_block: function(loop, processed, total_count, action){
+            if ( processed === total_count ){
+                alert($.Ovpnc().alert_ok
+                        + ' Total ' + processed
+                        + ' client' + ( processed === 1 ? ' ' : 's ' )
+                        + action + 'd</div><div class="clear"></div>' );
+                return;
+            }
+            if ( loop === total_count ){
+                if ( processed === 0 ){
+                    alert( $.Ovpnc().alert_err + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
+                }
+                else {
+                    alert( $.Ovpnc().alert_icon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
+                }
+            }
         }
-
     };
 
 })(jQuery);
@@ -297,6 +313,7 @@ function block_unblock_clients(button, grid, action){
     $.each($('.trSelected', grid), function() {
         // Get the client's name of this grid
         var client = $('td:nth-child(2) div', this).html();
+        var _tr = this;
         // Get rid of any html
         client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
         // Revoke client/disconnect
@@ -319,6 +336,9 @@ function block_unblock_clients(button, grid, action){
                     if ( msg.rest.match( /revoked ok.*SUCCESS/g )
                       || msg.rest.match( /Un-revocation success/g )
                     ){
+                        // Remove select class from tr
+                        // and append to processed
+                        $(_tr).removeClass('trSelected');
                         processed++;
                     }
                     else {
@@ -333,27 +353,8 @@ function block_unblock_clients(button, grid, action){
             complete : function(){
                 loop++;
                 $.Ovpnc().remove_ajax_loading();
-                check_complete_block(loop, processed, total_count, action);
+                $.Client().check_complete_block(loop, processed, total_count, action);
             }
         });
     });
 }
-
-function check_complete_block(loop, processed, total_count, action){
-    if ( processed === total_count ){
-        alert($.Ovpnc().alert_ok
-                + ' Total ' + processed
-                + ' client' + ( processed === 1 ? ' ' : 's ' )
-                + action + 'd</div><div class="clear"></div>' );
-        return;
-    }
-    if ( loop === total_count ){
-        if ( processed === 0 ){
-            alert( $.Ovpnc().alert_err + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
-        }
-        else {
-            alert( $.Ovpnc().alert_icon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
-        }
-    }
-}
-

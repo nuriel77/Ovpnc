@@ -218,6 +218,9 @@
         // Init click events
         //
         click_binds: function() {
+            $('#message').dblclick(function(){
+                $(this).hide(300);
+            });
             /*
              * Only if hand_pointer was assigned
              * via template, this user has
@@ -405,7 +408,7 @@
             // Turn off:
             if ($('#server_on_off').attr('ref') == 'on') {
                 var _online = $('#online_clients_number').text();
-                var _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's' : '' )
+                var _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's ' : ' ' )
                             + 'online';
                 // Ask confirmation
                 var cr = confirm(
