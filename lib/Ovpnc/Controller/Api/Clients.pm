@@ -82,6 +82,33 @@ has vpn => (
 );
 
 
+=head2 begin
+
+Automatic first
+action to run
+
+=cut
+
+sub begin : Private {
+    my ( $self, $c ) = @_;
+
+    # Log user in if login params are provided
+    # =======================================
+    Ovpnc::Controller::Api->auth_user( $c )
+        unless $c->user_exists();
+
+    # Set the expiration time
+    # if user is logged in okay
+    # =========================
+    if ( $c->user_exists() && !$c->req->params->{_} ){
+        $c->log->info('Setting session expire to '
+            . $c->config->{'api_session_expires'});
+        $c->change_session_expires(
+            $c->config->{'api_session_expires'} )
+    }
+
+}
+
 =head2 Method Modifiers
 
 Run before other actions
@@ -100,28 +127,6 @@ around [
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
-
-    # Authenticate user if 
-    # password/username exists
-    # ========================
-    #Ovpnc::Controller::Api->auth($c);
-    if ( my $user     = $c->req->params->{username}
-        and my $password = $c->req->params->{password}
-    ){
-        delete $c->req->params->{$_} for qw/username password/;
-        if ( $c->authenticate( { username => $user,
-                                 password => $password }, 'users' )
-        ) {
-            $c->stash->{expires1} = $c->session_expires;
-            $c->change_session_expires( 90 );
-
-            $c->stash->{api_logged_in} = 1;
-            $c->change_session_id;
-            $c->stash->{expires2} = $c->session_expires;
-
-        }
-    }
-
 
     # Assign global config params
     # ===========================
@@ -145,11 +150,6 @@ around [
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
-
-    # Authenticate user if 
-    # password/username exists
-    # ========================
-    Ovpnc::Controller::Api->auth($c);
 
     # File::Assets might leave an empty hash
     # so we better delete it, no need in api
@@ -225,8 +225,7 @@ of Ovpnc/OpenVPN
 sub clients_GET : Local
                 : Args(0)
                 : Sitemap
-                #: Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
-                #: Does('NeedsLogin')
+                : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
 {
     my ( $self, $c ) = @_;
 
@@ -361,9 +360,10 @@ sub clients_GET : Local
     # Let's see who is online
     # =======================
     my $_online_clients;
-    $_online_clients = $c->forward('/api/server/status', $self->cfg )
-        if $_pid != 0;
-
+    if ( $_pid != 0 ){
+        $_online_clients = $c->forward('/api/server/status', $self->cfg );
+    }
+    
     my @_list;
 
     if ( ref $_online_clients && $_online_clients->{clients} ){
@@ -399,30 +399,31 @@ sub clients_GET : Local
               } @{ $_online_clients->{clients} }
         ];
     }
-        # Here we sort the hashes inside the array
-        # according to what is specified in the
-        # request. The sort is being done here
-        # if these are columns which do not originate
-        # in the database but from server status
-        # ===========================================
-        if ( $_dont_sort_in_query && $sort_by ) {
-            my @_sorted = sort {
-                    ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
-                cmp
-                    ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
-            } @_clients;
-            @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
-        }
+
+    # Here we sort the hashes inside the array
+    # according to what is specified in the
+    # request. The sort is being done here
+    # if these are columns which do not originate
+    # in the database but from server status
+    # ===========================================
+    if ( $_dont_sort_in_query && $sort_by ) {
+        my @_sorted = sort {
+                ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
+            cmp
+                ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
+        } @_clients;
+        @_clients = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+    }
+  
+    # Remove any empty elements
+    # Merge any unknown clients
+    # =========================
+    for ( @_clients ){
+        push @_list, $_ if scalar keys %{$_} != 0;
+    }
     
-        # Remove any empty elements
-        # Merge any unknown clients
-        # =========================
-        for ( @_clients ){
-            push @_list, $_ if scalar keys %{$_} != 0;
-        }
-    
-        $self->status_ok( $c, entity => [ @_list ] )
-          if @_list > 0;
+    $self->status_ok( $c, entity => [ @_list ] )
+      if @_list > 0;
 }
     
 

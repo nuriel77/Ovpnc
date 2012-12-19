@@ -3,6 +3,7 @@ use Moose;
 use Cwd;
 use Config::Any;
 use File::Slurp;
+use File::Basename;
 use vars '$cfg';
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
@@ -38,7 +39,8 @@ use Catalyst qw/
   Compress::Deflate
   Cache
   Session
-  Session::Store::File
+  Session::DynamicExpiry
+  Session::Store::DBIC
   Session::State::Cookie
   Authentication
   Authentication::Store::Minimal
@@ -69,7 +71,9 @@ __PACKAGE__->config(
     name         => 'Ovpnc',
     default_view => 'HTML',
 
-    # Disable deprecated behavior needed by old applications
+    # Disable deprecated behavior
+    # needed by old applications
+    # ==========================
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header                      => 1,   # Send X-Catalyst header
                                                         #
@@ -125,14 +129,24 @@ __PACKAGE__->config(
 __PACKAGE__->config(
     'View::XSLT' => {
 
-        # relative paths to the directories with templates
+        # relative paths to the
+        # directories with templates
+        # ==========================
         INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'xslt' ), ],
-        TEMPLATE_EXTENSION => '.xsl'
-        , # default extension when getting template name from the current action
+
+        # default extension when getting
+        # template name from the current action
+        # =====================================
+        TEMPLATE_EXTENSION => '.xsl',
         FORCE_TRANSFORM => 1,
-        DUMP_CONFIG     => 0
-        , # use for Debug. Will dump the final (merged) configuration for XSLT view
-        LibXSLT => {    # XML::LibXSLT specific parameters
+
+        # use for Debug. Will dump the final
+        # (merged) configuration for XSLT view
+        # ====================================
+        DUMP_CONFIG     => 0,
+        # XML::LibXSLT specific parameters
+        # ================================
+        LibXSLT => {
             register_function => [
                 {
                     uri    => 'urn:ovpnc',
@@ -151,10 +165,14 @@ __PACKAGE__->config(
         TEMPLATE_EXTENSION => '.tt2',
         INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'src' ), ],
 
-        # Set to 1 for detailed timer stats in your HTML as comments
+        # Set to 1 for detailed timer
+        # stats in your HTML as comments
+        # ==============================
         TIMER => 0,
 
-        # This is your wrapper template located in the 'root/src'
+        # This is your wrapper template
+        # located in the 'root/src'
+        # =============================
         WRAPPER    => 'wrapper.tt2',
         ENCODING   => 'utf-8',
         render_die => 1,
@@ -200,16 +218,35 @@ __PACKAGE__->config(
     },
 );
 
+{
+    $cfg = {
+        database => Config::Any->load_files({
+              files => [ __PACKAGE__->config->{home}
+                    . '/ovpnc.json'], use_ext => 1 })
+                    ->[0]->{ __PACKAGE__->config->{home}
+                    . '/ovpnc.json' }
+                    ->{'Model::DB'}->{'connect_info'},
+    };
+}
+
+
 # Session config
 # ==============
 __PACKAGE__->config(
     'Plugin::Session' => {
         flash_to_stash => 1,
-        storage        => 'tmp/session',
+
+        # Session via file
+        #storage        => 'tmp/session',
+
+        # Session via database
+        dbic_class => 'DB::Session',
+
         # Default low value
         # will be extended
         # upon login
-        expires => 20,
+        expires => 10,
+
         # Setting this to 1
         # will break ajax calls
         # Todo: set ajax calls
@@ -218,21 +255,17 @@ __PACKAGE__->config(
     },
 );
 
-{
-    $cfg = Config::Any->load_files({
-              files => ['../ovpnc.json'], use_ext => 1 })
-                  ->[0]->{'../ovpnc.json'}->{'Model::DB'}->{'connect_info'};
-}
 # - Currently overridden in ovpnc.json -
 # Database
 # ========
+
 __PACKAGE__->config(
     'Model::DB' => {
         schema_class => 'Ovpnc::Schema',
         connect_info => {
-            dsn         => $cfg->{dsn},
-            user        => $cfg->{user},
-            password    => $cfg->{password},
+            dsn         => $cfg->{database}->{dsn},
+            user        => $cfg->{database}->{user},
+            password    => $cfg->{database}->{password},
             AutoCommit  => q{1},
         }
     }

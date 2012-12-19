@@ -53,6 +53,35 @@ $REGEX = {
     verb_line => '^SUCCESS: verb=(\d+)\n',
 };
 
+
+=head2 begin
+
+Automatic first
+action to run
+
+=cut
+
+sub begin : Private {
+    my ( $self, $c ) = @_;
+
+    # Log user in if login params are provided
+    # =======================================
+    Ovpnc::Controller::Api->auth_user( $c )
+        unless $c->user_exists();
+
+    # Set the expiration time
+    # if user is logged in okay
+    # Ignore if ajax call
+    # =========================
+    if ( $c->user_exists() && !$c->req->params->{_} ){
+        $c->log->info('Setting session expire to '
+            . $c->config->{'api_session_expires'});
+        $c->change_session_expires(
+            $c->config->{'api_session_expires'} );
+    }
+
+}
+
 =head2 around modifier
 
 Make sure to establish
@@ -117,7 +146,6 @@ sub status_GET : Local
                : Args(0)
                : Sitemap
                : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
-               : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -140,20 +168,21 @@ sub status_GET : Local
     # =============================
     if ( my $_status = $_role->get_status ) {
         $self->_disconnect_vpn;
-        $self->status_ok( $c, entity => $_status );
+        $self->status_ok($c, entity => $_status );
         return $_status;
     }
     else {
         $self->_disconnect_vpn;
-        $self->status_ok( $c,
-            entity =>
-            {
-                status => 'Server offline'
-            }
-        );
+        $self->status_ok($c, entity => { status => 'Server offline' } );
         return undef;
     }
 }
+
+=head2 end
+
+Automatic last action
+
+=cut
 
 sub end : Private {
     my ( $self, $c ) = @_;

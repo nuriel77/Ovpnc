@@ -76,8 +76,6 @@ around [qw(ovpnc_config index)] => sub {
     }
 };
 
-
-
 =head2 index
 
 Default main page
@@ -130,6 +128,11 @@ sub include_default_links : Private {
     # Optional :
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
+
+    $c->stash->{expires} = scalar(localtime($c->session_expires))
+        if $c->session_expires;
+
+    warn $c->stash->{expires};
 
     return 1 if $c->stash->{no_self};
 
@@ -203,7 +206,6 @@ sub end : ActionClass('RenderView') {
     $self->_apply_username_to_stash($c)
         unless $c->stash->{username};
 }
-
 
 =head2 _apply_username_to_stash
 

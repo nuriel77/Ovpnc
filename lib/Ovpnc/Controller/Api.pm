@@ -29,12 +29,15 @@ has cfg => (
     predicate => '_has_cfg',
 );
 
-=head1 METHOS MODIFIERS
+before 'api' => sub {
+    my ( $self, $c ) = @_;
 
-Run after actions...
-
-=cut
-
+    # Authenticate user if
+    # password/username exists
+    # ========================
+    $self->auth_user( $c )
+        unless $c->user_exists();
+};
 
 =head1 METHODS
 
@@ -46,10 +49,7 @@ For REST action class
 =cut
 
 sub api : Local : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-    $self->auth($c) unless $c->user_exists;
 }
-
 
 =head2 api_GET
 
@@ -147,32 +147,6 @@ sub sanity : Path('api/sanity')
 
     $c->forward('View::JSON');
 
-}
-
-=head2 auth
-
-API Authentication
-
-=cut
-
-sub auth : Path('api/auth')
-         : Args(0)
-         : Sitemap
-{
-    my ( $self, $c ) = @_;
-
-    if ( my $user     = $c->req->params->{username}
-        and my $password = $c->req->params->{password}
-    ){
-        delete $c->req->params->{$_} for qw/username password/;
-        if ( $c->authenticate( { username => $user,
-                                 password => $password }, 'users' )
-        ) {
-
-            $c->stash->{api_logged_in} = 1;
-            $c->change_session_id;
-        }
-    }
 }
 
 =head2 detach_error
@@ -350,6 +324,39 @@ sub assign_params : Private {
 
     return $_cfg;
 }
+
+
+=head2 auth_user
+
+API Authentication
+
+=cut
+
+sub auth_user : Private
+{
+    my ( $self, $c ) = @_;
+
+    if ( my $user        = $c->req->params->{username}
+        and my $password = $c->req->params->{password}
+        and ! $c->user_exists
+    ){
+        if ( $c->authenticate( { username => $user,
+                                 password => $password }, 'users' )
+        ) {
+            delete $c->req->params->{$_} for qw/username password/;
+        }
+        else {
+            $c->stash->{error} = 'Invalid username / password combination' ;
+        }
+    }
+    $c->stash->{error} = 'Session expired' if $c->request->params->{_} && !$c->user_exists;
+}
+
+=head2 end
+
+Auto end action
+
+=cut 
 
 sub end : Private {
     my ( $self, $c ) = @_;

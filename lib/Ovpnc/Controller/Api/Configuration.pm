@@ -64,6 +64,32 @@ For REST action class
 sub configuration : Local : ActionClass('REST') {
 }
 
+=head2 begin
+
+Automatic first
+action to run
+
+=cut
+
+sub begin : Private {
+    my ( $self, $c ) = @_;
+
+    # Log user in if login params are provided
+    # =======================================
+    Ovpnc::Controller::Api->auth_user( $c )
+        unless $c->user_exists();
+
+    # Set the expiration time
+    # if user is logged in okay
+    # =========================
+    if ( $c->user_exists() && !$c->req->params->{_} ){
+        $c->log->info('Setting session expire to '
+            . $c->config->{'api_session_expires'});
+        $c->change_session_expires(
+            $c->config->{'api_session_expires'} )
+    }
+
+}
 
 =head2 before...
 

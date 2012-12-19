@@ -328,6 +328,7 @@ sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
     # Add js / css
+    # ============
     Ovpnc::Controller::Root->include_default_links($c);
 
     $c->stash->{username} = $c->user->get("username")

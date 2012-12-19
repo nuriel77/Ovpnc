@@ -215,7 +215,7 @@ function delete_client(button, grid){
     if ( cnf == false ) return false;
 
     // Execute
-    $.Ovpnc().ajax_call("/api/clients/", { client: _clients },
+    $.Ovpnc().ajax_call("/api/clients/", { client: _clients, _ : '1' },
     'REMOVE', client_delete_return, client_delete_error, 1, 15000 );
 }
 
@@ -352,7 +352,7 @@ function block_unblock_clients(button, grid, action){
             url: '/api/clients/' + client,
             type: action,
             timeout: 5000,
-            data: {},
+            data: { _ : '1' },
             dataType: 'json',
             success: function( msg ) {
                 if ( msg === undefined ) return;
@@ -380,7 +380,7 @@ function block_unblock_clients(button, grid, action){
             error: function(xhr, ajaxOptions, thrownError){
                 var _err = jQuery.parseJSON(xhr.responseText);
                 var _msg = '';
-                if ( typeof _err === 'object' ){
+                if ( typeof _err === 'object' && _err !== null ){
                     if ( _err.rest !== undefined ){
                         _msg = _err.rest.error ? _err.rest.error : _err.rest.status;
                     }

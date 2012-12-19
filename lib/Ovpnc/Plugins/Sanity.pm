@@ -70,7 +70,7 @@ sub action {
                         )
                     ),
                     $config->{"Plugin::Cache"}->{backend}->{cache_root},
-                    $config->{"Plugin::Session"}->{storage},
+                    ( $config->{"Plugin::Session"}->{storage} ? $config->{"Plugin::Session"}->{storage} : undef ),
                 ]
             );
         },
@@ -308,6 +308,7 @@ sub action {
         return unless $dirs or ref $dirs ne 'ARRAY';
 
         for my $dir ( @{$dirs} ) {
+            next if !$dir || $dir eq '';
             return "Directory '$dir' does not exists"     if ( !-e $dir );
             return "Directory '$dir' is not a directory?" if ( !-d $dir );
             return "Directory '$dir' is not writable"     if ( !-w $dir );

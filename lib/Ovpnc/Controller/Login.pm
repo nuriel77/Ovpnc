@@ -26,6 +26,7 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
     my ( $orig, $self, $c ) = @_;
+
     # Redirect to https if user specified
     # a port in config under 'redirect_https_port'
     # ============================================
@@ -51,19 +52,24 @@ around 'login' => sub {
     # ====================
     if ( my $user        = $c->req->params->{username}
         and my $password = $c->req->params->{password}
+        and ! $c->user_exists
+        and ! $c->req->params->{_}
     ){
         if ( $c->authenticate( { username => $user,
                                  password => $password }, 'users' )
         ) {
             $c->stash->{logged_in} = 1;
-            $c->change_session_id;
-            $c->change_session_expires( $c->config->{web_session_expires} || 1440 );
+            #$c->change_session_id;
+            $c->change_session_expires( $c->config->{web_session_expires} )
+                if $c->user_exists;
+        } else {
+            $c->stash->{logged_in} = 0;
         }
     }
-
     $c->response->headers->header('Content-Type', 'text/html');
     Ovpnc::Controller::Root->include_default_links($c);
     $c->forward('View::HTML');
+
     return $self->$orig($c);
 };
 

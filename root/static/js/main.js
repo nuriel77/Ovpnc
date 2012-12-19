@@ -94,6 +94,30 @@
         //
         error_server_status: function(e){
             console.log("Server status error: %o", e);
+            if ( e.responseText !== undefined
+                && e.responseText !== null
+                && e.responseText != ''
+            ){
+                var _msg = jQuery.parseJSON(e.responseText);
+                if ( _msg !== undefined && _msg.error !== undefined ){
+                    // Redirec to logout if session expired
+                    if ( _msg.error === 'Session expired' ) {
+                        alert($.Ovpnc().alert_icon + ' ' + _msg.error + ', redirecting to logout...</div><div class="clear"></div>');
+                        var _wait_logout = setInterval(function() {
+                                window.clearInterval(_wait_logout);
+                                window.location = '/login';
+                            }, 3000 );
+                    }
+                    alert($.Ovpnc().alert_icon + ' ' + _msg.error + '.</div><div class="clear"></div>');
+                } else if ( _msg.rest !== undefined && _msg.rest.error !== undefined ){
+                    alert($.Ovpnc().alert_err + ' ' + _msg.rest.error + '.</div><div class="clear"></div>');
+                } else {
+                    alert($.Ovpnc().alert_err + ' Unknown result from server!</div><div class="clear"></div>');
+                }
+            }
+            else {
+                alert($.Ovpnc().alert_err + ' Unknown result from backend!</div><div class="clear"></div>');
+            }
         },
         //
         // Get server status
@@ -137,6 +161,7 @@
                             opacity: 0
                         },
                         $.Ovpnc().opacity_effect);
+
                     if ($('#client_status_container').is(':visible'))
                         $('#client_status_container').hide(300).empty();
                 } else {
@@ -154,6 +179,7 @@
         // Server control error
         //
         error_ajax_server_control : function(r) {
+            console.log( "error_ajax_server_control: %o", r);
             r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
             r = r.rest.error !== undefined ? r.rest.error : r;
             alert( $.Ovpnc().alert_err + ' Error executing command: ' + r + '</div><div class="clear"></div>' );
@@ -316,10 +342,9 @@
         //
         update_server_status: function(r) {
             if (r !== undefined ) {
-                if (r.status !== undefined)
-                    r.rest.status = r.status;
                 // If we get status back, display
-                if (r.rest.status !== undefined) {
+                if ( r.rest !== undefined && r.rest.status !== undefined) {
+                    r.status = new Object();
                     r.status = r.rest.status; // Make "more" accessible
                     $('#server_status').text(r.status).css('color', r.status.match(/online/i) ? 'green' : 'gray');
                     // hand_pointer is only applied when this user
@@ -330,8 +355,10 @@
                     $('#server_on_off').attr('ref', r.status.match(/online/i) ? 'on' : 'off');
                     // Show or dont show the green on icon
                     $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
+                } else {
+                    console.log("Server status got %o",r);
                 }
-        
+    
                 // Show number of connected clients if any
                 $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
         
@@ -424,6 +451,16 @@
 
                 // Stop
                 $.Ovpnc().server_ajax_control('stop');
+
+                // Wait 5 seconds to refresh the table
+                // Only on clients table page
+                if ( $('.flexigrid').is(':visible') ){
+                    var _wait_refresh = setInterval(function() {
+                        $('.pReload').click();
+                        window.clearInterval(_wait_refresh);
+                    }, 5000 );
+                }
+
                 return;
             } else {
                 // Turn on:
