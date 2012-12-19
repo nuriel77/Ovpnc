@@ -26,6 +26,15 @@
         <p><span style="color: red;">[% field.label _ ': ' _ error %]</span></p>
     [% END %]
 [% END %]
+[% IF errors %]
+    <script type="text/javascript">
+        $('#login_form').remove();
+        $('.login_box.box_shadow').remove();
+    </script>
+    [% FOR error IN errors %]
+        <p><span style="color: red;">[% error %]</span></p>
+    [% END %]
+[% END %]
 </div>
 <div class="warning">
 	<div class="w_img">

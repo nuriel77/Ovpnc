@@ -39,8 +39,7 @@ use Catalyst qw/
   Compress::Deflate
   Cache
   Session
-  Session::DynamicExpiry
-  Session::Store::DBIC
+  Session::Store::File
   Session::State::Cookie
   Authentication
   Authentication::Store::Minimal
@@ -237,10 +236,10 @@ __PACKAGE__->config(
         flash_to_stash => 1,
 
         # Session via file
-        #storage        => 'tmp/session',
+        storage        => 'tmp/session',
 
         # Session via database
-        dbic_class => 'DB::Session',
+        #dbic_class => 'DB::Session',
 
         # Default low value
         # will be extended
@@ -258,7 +257,6 @@ __PACKAGE__->config(
 # - Currently overridden in ovpnc.json -
 # Database
 # ========
-
 __PACKAGE__->config(
     'Model::DB' => {
         schema_class => 'Ovpnc::Schema',
@@ -285,7 +283,6 @@ Make version accessible
 =cut
 
 sub get_version{ return $VERSION; }
-
 
 =head1 AUTHOR
 

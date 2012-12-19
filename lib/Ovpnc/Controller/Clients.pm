@@ -153,8 +153,14 @@ sub add : Path('add')
             delete $c->req->params->{submit};
             # New resultset
             # =============
-            my $_client = $c->model('DB::User')
-                ->new_result({});
+
+            my $_client;
+            try {
+                $_client = $c->model('DB::User')->new_result({});
+            }
+            catch {
+                push @{$c->stash->{error}}, $_;
+            };
 
             # update dbic row with
             # submitted values from form
@@ -168,11 +174,18 @@ sub add : Path('add')
                 $c->detach;
             }; 
     
-            my $_client_role_id = $c->model('DB::Role')
+            my $_client_role_id;
+            try {
+               $_client_role_id = $c->model('DB::Role')
                 ->search(
                     { name => 'client' },
                     { select   => 'id' },   
                 );
+            }
+            catch {
+                push @{$c->stash->{error}}, $_;
+            };
+
             try {
                 $c->model('DB::UserRole')
                     ->create(

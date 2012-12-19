@@ -313,29 +313,42 @@ sub clients_GET : Local
     # return only role 'client'
     # we get the id of role type 'client'
     # ===================================
-    my @_role_names = $c->model('DB::Role')->search({ name => ['admin', 'client'] });
+    my @_role_names;
+    try {
+        @_role_names = $c->model('DB::Role')->search({ name => ['admin', 'client'] });
+    }
+    catch {
+        push @{$c->stash->{error}}, $_;
+    };
 
     # Query resultset
     # ===============
-    my @_clients = $c->model('DB::User')->search_rs(
-        # If $param is provided, return
-        # only the result of $param
-        # Otherwise, only clients which
-        # have role_id of 'client', this
-        # is then for use by flexgrid
-        # ==============================
-        ( $keyname && $param->{$keyname}
-            ? { $keyname => $param->{$keyname} }
-            : { 'user_roles.role_id' => [ map { $_->id } @_role_names ] }
-        ),
-        {
-            order_by => ( $sort_by && $sort_order )
-            ? "$sort_by $sort_order"
-            : "username ASC",
-            join   => 'user_roles',
-            select => $_columns
-        },
-    )->all;
+
+    my @_clients;
+    try {
+            @_clients = $c->model('DB::User')->search_rs(
+            # If $param is provided, return
+            # only the result of $param
+            # Otherwise, only clients which
+            # have role_id of 'client', this
+            # is then for use by flexgrid
+            # ==============================
+            ( $keyname && $param->{$keyname}
+                ? { $keyname => $param->{$keyname} }
+                : { 'user_roles.role_id' => [ map { $_->id } @_role_names ] }
+            ),
+            {
+                order_by => ( $sort_by && $sort_order )
+                ? "$sort_by $sort_order"
+                : "username ASC",
+                join   => 'user_roles',
+                select => $_columns
+            },
+        )->all;
+    }
+    catch {
+        push @{$c->stash->{error}}, $_;
+    };
 
     # - Now let's start matching the list of
     # all users to those who are online
@@ -492,7 +505,15 @@ sub clients_REMOVE : Local
     for my $client (@clients){
         # Find client in database
         # =======================
-        if ( my $_res = $c->model('DB::User')->find({ username => $client }) ){
+        my $_res;
+        try {
+             $_res = $c->model('DB::User')->find({ username => $client });
+        }
+        catch {
+            push @{$c->stash->{error}}, $_;
+        };
+
+        if ( $_res ){
             # Delete entry
             # ============
             if ( $_res->delete ) {
@@ -834,8 +855,15 @@ sub list_recent : Path('clients/list_recent')
     $self->_client_error($c,'400', 'Invalid range')
         if $mins > 5259487;
 
-    my $res = $c->model('DB::User')
+    my $res;
+    try {
+        $res = $c->model('DB::User')
                    ->created_after( DateTime->now->subtract(minutes => $mins) );
+    }
+    catch {
+        push @{$c->stash->{error}}, $_;
+    };
+
     my $_data = [];
     for ( $res->all ){
         push @{$_data},

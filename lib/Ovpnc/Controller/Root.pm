@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Root;
 use warnings;
 use strict;
+use Try::Tiny;
 use Cwd;
 use Ovpnc::Plugins::Sanity;
 use Moose;
@@ -31,6 +32,42 @@ Chain actions to login page
 =cut
 
 sub base : Chained('/login/required') PathPart('') CaptureArgs(0) {
+}
+
+=head2 auto
+
+Automatic function
+Runs before all actions
+and test connection to database
+is valid and okay
+
+=cut
+
+sub auto : Private {
+    my ( $self, $c ) = @_;
+
+    # Verify that the database is accessible
+    # ======================================
+    try { $c->model('DB::User')->count; }
+    catch {
+        if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
+            $c->log->error( $1 );
+            push @{$c->stash->{errors}}, "Warning! Can't connecto to MySQL server!";
+        }
+        elsif ( $_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Access denied for user.*\(using password: [A-Z]*\))/g ){
+            $c->log->error( $1 );
+            push @{$c->stash->{errors}}, "Error: No connection to database! User denied.";
+        }
+        else {
+            $c->log->error( $_ );
+            push @{$c->stash->{errors}}, "Error: No connection to database!";
+        }
+        $c->response->headers->header('Content-Type' => 'text/html');
+        $self->include_default_links( $c );
+#        $c->logout;
+        $c->forward('View::HTML');
+        $c->detach;
+    };
 }
 
 =head2 Method modifier
@@ -120,6 +157,7 @@ sub include_default_links : Private {
       js/Flexigrid/js/flexigrid.js
       js/jquery.cookie.js
       js/jquery.validate.js
+      js/functions.js
     );
 
     push @_page_assets, 'js/main.js'

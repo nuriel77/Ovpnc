@@ -2,23 +2,6 @@ package Ovpnc::Model::DB;
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 
-=comment
-
-Currently in ovpnc.json:
-
-__PACKAGE__->config(
-    schema_class => 'Ovpnc::Schema',
-
-    connect_info => {
-        dsn         => $ENV{OVPNC_DSN} ||= 'dbi:mysql:ovpnc',
-        user        => $ENV{MYSQL_USER} ||= 'ovpnc',
-        password    => '',
-        AutoCommit  => q{1},
-    }
-);
-
-=cut
-
 =head1 NAME
 
 Ovpnc::Model::DB - Catalyst DBIC Schema Model
