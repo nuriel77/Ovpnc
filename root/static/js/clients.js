@@ -206,6 +206,12 @@ function delete_client(button, grid){
         _clients += client + ',';    
         $.Client().loop = $.Client().loop + 1;
     });
+
+    // Confirm
+    var cnf = confirm('Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ) );
+    if ( cnf == false ) return false;
+
+    // Execute
     $.Ovpnc().ajax_call("/api/clients/", { client: _clients },
     'REMOVE', client_delete_return, client_delete_error, 1, 15000 );
 }

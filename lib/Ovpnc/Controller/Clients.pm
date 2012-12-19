@@ -4,7 +4,7 @@ use Digest::MD5 'md5_hex';
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
-#use base 'Catalyst::Controller::HTML::FormFu';
+
 =head1 NAME
 
 Ovpnc::Controller::Clients - Catalyst Controller
@@ -203,7 +203,7 @@ sub add : Path('add')
                     . $_client->username . ': ' . $!);
             print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
 
-            ## For Debug: --
+            ## For Debug: -- remove
             print $FILE "\n#Generated from:\n" . $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n";
 
             close $FILE;
