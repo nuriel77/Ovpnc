@@ -62,11 +62,25 @@ sub auto : Private {
             $c->log->error( $_ );
             push @{$c->stash->{errors}}, "Error: No connection to database!";
         }
-        $c->response->headers->header('Content-Type' => 'text/html');
-        $self->include_default_links( $c );
-#        $c->logout;
-        $c->forward('View::HTML');
-        $c->detach;
+
+        if ( $c->req->headers->{'accept'} =~ /text\/html|xhtml/
+            or $c->req->headers->{'accept'} eq '*/*'
+        ){
+            $c->response->headers->header('Content-Type' => 'text/html');
+            $self->include_default_links( $c );
+            $c->detach('View::HTML');
+        }
+        if ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
+            $c->response->headers->header('Content-Type' => $1.'/xml');
+            $c->res->body( $c->stash->{errors} );
+            $c->forward('View::XML::Simple');
+            $c->detach;
+        }
+        if ( $c->req->headers->{'accept'} eq 'application/json' ){
+            $c->response->headers->header('Content-Type' => 'application/json');
+            $c->detach('View::JSON');
+        }
+        return;
     };
 }
 

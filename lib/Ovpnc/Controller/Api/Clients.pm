@@ -92,6 +92,10 @@ action to run
 sub begin : Private {
     my ( $self, $c ) = @_;
 
+    # Test database connection
+    # ========================
+    Ovpnc::Controller::Root->auto( $c );
+
     # Log user in if login params are provided
     # =======================================
     Ovpnc::Controller::Api->auth_user( $c )

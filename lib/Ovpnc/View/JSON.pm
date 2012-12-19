@@ -24,9 +24,25 @@ has 'encoder' => (
 
 sub encode_json 
 {
-	# Todo: See how to get rid of the
-	# defaulting $c-assets
 	my( $self, $c, $data ) = @_;
+
+    # Remove default assets
+    # is only used in HTML view
+    # =========================
+    delete $c->stash->{assets} if $c->stash->{assets};
+
+    # Verify the request headers
+    # some controllers will end
+    # up here when user requested XML
+    # ===============================
+    if ( $c->req->headers->{'accept'} =~ /xml/gi ){
+        $c->forward('View::XML::Simple');
+        $c->detach;
+        return;
+    }
+
+    # Return JSON
+    # ===========
 	$self->encoder->encode( $data );
 }
 
