@@ -50,6 +50,7 @@ Api Usage
 sub api_GET : Local
             : Args(0)
             : Sitemap
+            : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
             : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;

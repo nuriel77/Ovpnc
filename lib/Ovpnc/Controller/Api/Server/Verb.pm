@@ -89,9 +89,11 @@ For example:
 
 =cut
 
-sub verb_POST : Local : Args(0) : Sitemap
-
-  #: Does('NeedsLogin')
+sub verb_POST : Local
+              : Args(0)
+              : Sitemap
+              : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+              : Does('NeedsLogin')
 {
     my ( $self, $c, $level ) = @_;
 
@@ -143,8 +145,9 @@ Gets the verbosity level
 =cut
 
 sub verb_GET : Local
-             : Sitemap
              : Args(0)
+             : Sitemap
+             : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
              : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;

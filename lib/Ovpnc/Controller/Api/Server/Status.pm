@@ -116,7 +116,8 @@ and title (version)
 sub status_GET : Local
                : Args(0)
                : Sitemap
-#               : Does('NeedsLogin')
+               : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+               : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

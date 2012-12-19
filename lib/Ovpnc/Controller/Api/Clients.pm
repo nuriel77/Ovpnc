@@ -194,8 +194,8 @@ of Ovpnc/OpenVPN
 sub clients_GET : Local
                 : Args(0)
                 : Sitemap
-                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-                #: Does('NeedsLogin')
+                : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+                : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -405,7 +405,8 @@ Add new client(s)
 sub clients_POST : Local
                  : Args(0)
                  : Sitemap
-                 #: Does('NeedsLogin')
+                 : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                 : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -419,7 +420,8 @@ Update client(s) data
 sub clients_UPDATE : Local
                    : Args(0)
                    : Sitemap
-                   #:Does('NeedsLogin')
+                   : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                   : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 }
@@ -433,7 +435,8 @@ Delete client(s)
 sub clients_REMOVE : Local
                    : Args(0)
                    : Sitemap
-                   #: Does('NeedsLogin')
+                   : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                   : Does('NeedsLogin')
 {
     my ( $self, $c, $client_list ) = @_;
 
@@ -500,7 +503,8 @@ client.)
 sub clients_DISABLE : Local
                     : Args(1)
                     : Sitemap
-                   #: Does('NeedsLogin')
+                    : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                    : Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -563,7 +567,8 @@ Re-enable a disabled client
 sub clients_ENABLE : Local
                    : Args(1)
                    : Sitemap
-                   #: Does('NeedsLogin')
+                   : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                   : Does('NeedsLogin')
 {
     my ( $self, $c, $client ) = @_;
 
@@ -614,7 +619,8 @@ using crl.pem
 sub clients_REVOKE : Local
                    : Args(0)
                    : Sitemap
-                  #: Does('NeedsLogin')
+                   : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                   : Does('NeedsLogin')
 {
     my ( $self, $c, $client_list ) = @_;
 
@@ -702,8 +708,8 @@ in ccd
 sub clients_UNREVOKE : Local
                      : Args(0)
                      : Sitemap
-#: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-#: Does('NeedsLogin')
+                     : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                     : Does('NeedsLogin')
 {
     my ( $self, $c, $client_list ) = @_;
 
@@ -782,8 +788,8 @@ List recently created books
 sub list_recent : Path('clients/list_recent')
                 : Args(1)
                 : Sitemap
-                #: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-                #: Does('NeedsLogin')
+                : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                : Does('NeedsLogin')
 {
     my ($self, $c, $mins) = @_;
     
@@ -822,7 +828,8 @@ Get revoked client list
 sub list_revoked : Path('clients/list_revoked')
                  : Args(0)
                  : Sitemap
-                 #: Does('NeedsLogin')
+                 : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                 : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

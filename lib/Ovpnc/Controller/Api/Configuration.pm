@@ -102,7 +102,8 @@ in the conf file manually
 sub configuration_GET : Local
                       : Args(0)
                       : Sitemap
-                      #: Does('NeedsLogin')
+                      : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                      : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
     $self->status_ok( $c, entity => { status => 'ok' } );
@@ -120,7 +121,8 @@ and run validataions via the xsd schema
 sub configuration_POST : Local
                        : Args(0)
                        : Sitemap
-                       #: Does('NeedsLogin')
+                       : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                       : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -278,7 +280,8 @@ XSD schema from openvpn
 sub configuration_UPDATE : Local
                          : Args(0)
                          : Sitemap
-                         #: Does('NeedsLogin')
+                         : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                         : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

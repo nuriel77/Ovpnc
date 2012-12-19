@@ -84,7 +84,8 @@ requires user to provide options
 sub certificates_POST : Local
                       : Args(0)
                       : Sitemap
-#                      : Does('NeedsLogin')
+                      : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                      : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -179,7 +180,8 @@ Get certificate(s) data
 sub certificates_GET : Local
                      : Args(0)
                      : Sitemap
-#                     : Does('NeedsLogin')
+                     : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                     : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
     $self->status_ok(
@@ -199,7 +201,8 @@ Delete certificate(s)
 sub certificates_DELETE : Local
                         : Args(0)
                         : Sitemap
-                        #: Does('NeedsLogin')
+                        : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                        : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
     $self->status_ok(

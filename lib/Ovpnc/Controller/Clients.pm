@@ -78,6 +78,7 @@ sub index : Path
           : Args(0)
           : Sitemap
           : Does('NeedsLogin')
+          : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
 {
     my ( $self, $c ) = @_;
     $c->stash->{title}     = 'Clients';
@@ -95,6 +96,7 @@ sub add : Path('add')
         : Args(0)
         : FormConfig
         : Sitemap
+        : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
         : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;

@@ -132,9 +132,11 @@ or 'all':  ?lines=20
 
 =cut
 
-sub logs_GET : Path('server/logs') : Args(0) : Sitemap(*)
-
-  #	 : Does('NeedsLogin')
+sub logs_GET : Path('server/logs')
+             : Args(0)
+             : Sitemap(*)
+		     : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+          	 : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -195,8 +197,8 @@ command=[...]
 sub server_POST : Local
                 : Args(0)
                 : Sitemap
-#				: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-                #: Does('NeedsLogin')
+				: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                : Does('NeedsLogin')
 {
     my ( $self, $c, $command ) = @_;
 
@@ -277,8 +279,8 @@ or return server offline
 sub server_GET : Local
                : Args(0)
                : Sitemap
-               #: Does('ACL') AllowedRole('admine') AllowedRole('can_edit') ACLDetachTo('denied')
-               #: Does('NeedsLogin')
+               : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+               : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 

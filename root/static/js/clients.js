@@ -226,21 +226,39 @@ function client_delete_return(r){
                     + ' deleted</div><div class="clear"></div>' );
         }
         else {
-            alert( $.Ovpnc().alert_err + 'No clients deleted!</div><div class="clear"></div>' );
+            alert( $.Ovpnc().alert_err + ' No clients deleted!</div><div class="clear"></div>' );
             return;
         }
     }
     if ( r.rest.failed !== undefined && r.rest.failed.length > 0 ){
-        alert( $.Ovpnc().alert_icon + r.rest.failed.length + ' out of ' + total_count + ' clients failed delete</div><div class="clear"></div>' );
+        alert( $.Ovpnc().alert_icon + r.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
     }
     $('.pReload').click();
 }
 
 function client_delete_error(e){
-    console.log("Delete error: %o",e);
     if ( e.responseText !== undefined ){
         var msg = jQuery.parseJSON( e.responseText );
-        alert( $.Ovpnc().alert_err + 'Clients failed delete: ' + msg + '</div><div class="clear"></div>' );
+        var _msg;
+        if ( msg.rest && msg.rest.error ) {
+            _msg = msg.rest.error;
+        }
+        else if ( msg.rest && msg.rest.status ){
+            _msg = msg.rest.status;
+        }
+        else if ( msg.rest && msg.rest.status ){
+            _msg = msg.rest.status;
+        }
+        else if ( msg.status ){
+            _msg = msg.status;
+        }
+        else if ( msg.error ){
+            _msg = msg.error;
+        }
+        alert( $.Ovpnc().alert_err + ' Client'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
+    }
+    else {
+        alert( $.Ovpnc().alert_err + ' Error: No clients deleted!</div><div class="clear"></div>' );
     }
 }
 
@@ -349,17 +367,6 @@ function block_unblock_clients(button, grid, action){
                         // Remove select class from tr
                         // and append to processed
                         $(_tr).removeClass('trSelected');
-                        // Update the revoked column
-/*
-                        $('#flexme').find('tr').children('td[abbr="username"]')
-                            .children('div').each(function(k, v){
-                            var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                            if ( inner_text === client ){
-                                $(this).parent().parent('tr').children('td[abbr="revoked"]')
-                                       .children('div').text( ( action === 'revoke' ? '1' : '0' ) );
-                            }
-                        });
-*/
                         processed++;
                     }
                     else {
@@ -368,8 +375,21 @@ function block_unblock_clients(button, grid, action){
                 }
             },
             error: function(xhr, ajaxOptions, thrownError){
-                var err = xhr.responseText;
-                alert( $.Ovpnc().alert_err + " Failed command " + action + " for '" + client + "': " + xhr.responseText + '</div><div class="clear"></div>');
+                var _err = jQuery.parseJSON(xhr.responseText);
+                var _msg = '';
+                if ( typeof _err === 'object' ){
+                    if ( _err.rest !== undefined ){
+                        _msg = _err.rest.error ? _err.rest.error : _err.rest.status;
+                    }
+                    else if ( _err.error !== undefined ){
+                        _msg = _err.error;
+                    }
+                    else if ( _err.status !== undefined ){
+                        _msg = _err.error;
+                    }
+                }
+                if ( _msg == '' ) _msg = xhr.responseText;
+                alert( $.Ovpnc().alert_err + " Failed command " + action + " for '" + client + "': " + _msg + '</div><div class="clear"></div>');
             },
             complete : function(){
                 loop++;
