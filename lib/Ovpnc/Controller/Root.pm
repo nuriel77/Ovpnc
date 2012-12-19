@@ -129,11 +129,6 @@ sub include_default_links : Private {
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
 
-    $c->stash->{expires} = scalar(localtime($c->session_expires))
-        if $c->session_expires;
-
-    warn $c->stash->{expires};
-
     return 1 if $c->stash->{no_self};
 
     # Include according to pathname

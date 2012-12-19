@@ -62,7 +62,6 @@
 			</div><!-- top_header_centered -->
 		</div><!-- top header -->
     	<div id="outer">
-            <div id="sess_exp" style="color:#999999;margin:20px;padding:4px;">[% expires %]</div>
 			<div id="outer_centered">
 				[% IF c.user_exists %]
 					<!-- left frame -->
