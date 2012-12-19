@@ -180,6 +180,9 @@ $(document).ready(function(){
 	// to get clients
     $.Client().set_clients_table();
 
+    // Disable / grayout actions
+    // disallowed by this role
+
 	// Show the clients table
 	$('.flexigrid').slideDown(300);
     

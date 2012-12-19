@@ -29,7 +29,15 @@ has cfg => (
     predicate => '_has_cfg',
 );
 
+=head1 METHOS MODIFIERS
+
+Run after actions...
+
+=cut
+
+
 =head1 METHODS
+
 
 =head2 api
 
@@ -38,6 +46,8 @@ For REST action class
 =cut
 
 sub api : Local : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    $self->auth($c) unless $c->user_exists;
 }
 
 
@@ -62,6 +72,33 @@ sub api_GET : Local
     delete $c->stash->{assets} if $c->stash->{assets};
     $c->forward('View::JSON');
 
+}
+
+=head2 api_POST
+
+General api commands
+
+=cut
+
+sub api_POST : Local
+             : Args(0)
+             : Sitemap
+             : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+             : Does('NeedsLogin')
+{
+    my ( $self, $c, $cmd ) = @_;
+    my $_check = 0;
+
+    $_check++ && $self->status_ok($c, entity => { status => 'Session ended' })
+        if $c->req->params->{end_session} or $cmd eq 'end_session';
+
+    $self->status_bad_request($c, message => "Unknown command"
+        . ( $cmd ? " '" . $cmd . "'" : '' ) )
+            if $_check == 0;
+
+    delete $c->stash->{assets} if $c->stash->{assets};
+    $c->response->headers->header('Content-Type' => 'application/json');
+    $c->forward('View::JSON');
 }
 
 
@@ -110,6 +147,32 @@ sub sanity : Path('api/sanity')
 
     $c->forward('View::JSON');
 
+}
+
+=head2 auth
+
+API Authentication
+
+=cut
+
+sub auth : Path('api/auth')
+         : Args(0)
+         : Sitemap
+{
+    my ( $self, $c ) = @_;
+
+    if ( my $user     = $c->req->params->{username}
+        and my $password = $c->req->params->{password}
+    ){
+        delete $c->req->params->{$_} for qw/username password/;
+        if ( $c->authenticate( { username => $user,
+                                 password => $password }, 'users' )
+        ) {
+
+            $c->stash->{api_logged_in} = 1;
+            $c->change_session_id;
+        }
+    }
 }
 
 =head2 detach_error
@@ -290,10 +353,6 @@ sub assign_params : Private {
 
 sub end : Private {
     my ( $self, $c ) = @_;
-
-    # Debug if requested
-    # ==================
-    die "forced debug" if $c->req->params->{dump_info};
 
     # Clean up the File::Assets
     # it is set to null but

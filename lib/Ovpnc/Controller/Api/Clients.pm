@@ -70,13 +70,6 @@ $REGEX = {
     }
 };
 
-=head2 Method Modifiers
-
-Run before other actions
-or after, or around...
-
-=cut
-
 # For methods requiring
 # management port connection
 # ==========================
@@ -88,17 +81,50 @@ has vpn => (
     required  => 0
 );
 
+
+=head2 Method Modifiers
+
+Run before other actions
+or after, or around...
+
+=cut
+
 around [
     qw(
       clients_UNREVOKE
       clients_DISABLE
       clients_ENABLE
       clients_GET
+      clients_POST
       list_revoked
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
 
+    # Authenticate user if 
+    # password/username exists
+    # ========================
+    #Ovpnc::Controller::Api->auth($c);
+    if ( my $user     = $c->req->params->{username}
+        and my $password = $c->req->params->{password}
+    ){
+        delete $c->req->params->{$_} for qw/username password/;
+        if ( $c->authenticate( { username => $user,
+                                 password => $password }, 'users' )
+        ) {
+            $c->stash->{expires1} = $c->session_expires;
+            $c->change_session_expires( 90 );
+
+            $c->stash->{api_logged_in} = 1;
+            $c->change_session_id;
+            $c->stash->{expires2} = $c->session_expires;
+
+        }
+    }
+
+
+    # Assign global config params
+    # ===========================
     $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
       unless $self->_has_conf;
 
@@ -119,6 +145,11 @@ around [
       )
   ] => sub {
     my ( $orig, $self, $c, $params ) = @_;
+
+    # Authenticate user if 
+    # password/username exists
+    # ========================
+    Ovpnc::Controller::Api->auth($c);
 
     # File::Assets might leave an empty hash
     # so we better delete it, no need in api
@@ -194,8 +225,8 @@ of Ovpnc/OpenVPN
 sub clients_GET : Local
                 : Args(0)
                 : Sitemap
-                : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
-                : Does('NeedsLogin')
+                #: Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+                #: Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -214,7 +245,8 @@ sub clients_GET : Local
         # parameter to be sent
         # ====================
         $keyname = ( keys %{$c->req->params} )[0];
-        $param->{$keyname} = $c->req->params->{$keyname};
+        $param->{$keyname} = $c->req->params->{$keyname}
+            if $keyname;
     }
 
     # client configuration dir
@@ -222,13 +254,6 @@ sub clients_GET : Local
     my $_ccd_dir = $self->cfg->{openvpn_ccd}  =~ /^\//
         ? $self->cfg->{openvpn_ccd}
         : $self->cfg->{home} . '/' . $self->cfg->{openvpn_ccd};
-
-    # return only role 'client'
-    # we get the id of role type 'client'
-    # ===================================
-    my $_role_name =
-        $c->model('DB::Role')->search( { name => 'client' } )
-            ->single;
 
     # Assign the flexgrid request params
     # ==================================
@@ -286,9 +311,14 @@ sub clients_GET : Local
     # =========================================
     $sort_by =~ s/\bname\b/username/ if $sort_by;
 
+    # return only role 'client'
+    # we get the id of role type 'client'
+    # ===================================
+    my @_role_names = $c->model('DB::Role')->search({ name => ['admin', 'client'] });
+
     # Query resultset
     # ===============
-    my @_clients = $c->model('DB::User')->search(
+    my @_clients = $c->model('DB::User')->search_rs(
         # If $param is provided, return
         # only the result of $param
         # Otherwise, only clients which
@@ -297,7 +327,7 @@ sub clients_GET : Local
         # ==============================
         ( $keyname && $param->{$keyname}
             ? { $keyname => $param->{$keyname} }
-            : { 'user_roles.role_id' => $_role_name->id }
+            : { 'user_roles.role_id' => [ map { $_->id } @_role_names ] }
         ),
         {
             order_by => ( $sort_by && $sort_order )
@@ -308,11 +338,11 @@ sub clients_GET : Local
         },
     )->all;
 
-
-    # Now let's start matching the list of
+    # - Now let's start matching the list of
     # all users to those who are online
     # we shall append the online data
     # for this response
+    # - Simplify the resultset array.
     # =====================================
     @_clients = map { $_->{_column_data} } @_clients;
 
@@ -355,7 +385,7 @@ sub clients_GET : Local
                 my $_found;
               LP: for my $i ( 0 .. @_clients ) {
                     if ( $_clients[$i]->{username}
-                        && $_clients[$i]->{username} eq $_->{username}
+                      && $_clients[$i]->{username} eq $_->{username}
                     ) {
                         # Merge the two hashes
                         # ====================

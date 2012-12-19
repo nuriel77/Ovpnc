@@ -45,7 +45,22 @@ around 'login' => sub {
           . " Check the configuration manual on how to set this up.";
     }
 
-    $c->stash->{logged_in} = $c->user_exists ? 1 : 0;
+    # Authenticate user if
+    # username/password
+    # have been provided
+    # ====================
+    if ( my $user        = $c->req->params->{username}
+        and my $password = $c->req->params->{password}
+    ){
+        if ( $c->authenticate( { username => $user,
+                                 password => $password }, 'users' )
+        ) {
+            $c->stash->{logged_in} = 1;
+            $c->change_session_id;
+            $c->change_session_expires( $c->config->{web_session_expires} || 1440 );
+        }
+    }
+
     $c->response->headers->header('Content-Type', 'text/html');
     Ovpnc::Controller::Root->include_default_links($c);
     $c->forward('View::HTML');

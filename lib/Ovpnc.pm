@@ -205,7 +205,16 @@ __PACKAGE__->config(
 __PACKAGE__->config(
     'Plugin::Session' => {
         flash_to_stash => 1,
-        storage        => 'tmp/session'
+        storage        => 'tmp/session',
+        # Default low value
+        # will be extended
+        # upon login
+        expires => 20,
+        # Setting this to 1
+        # will break ajax calls
+        # Todo: set ajax calls
+        # to user's user agent
+        verify_user_agent => 0,
     },
 );
 
