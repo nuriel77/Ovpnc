@@ -2,9 +2,19 @@
 jQuery.validator.setDefaults({
     debug: true,
     success: "valid",
-    messages: {},
+    messages: {
+        username: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9_]</div>",
+        address: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9\\-\\.\\(\\) ]</div>",
+        fullname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
+        phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
+    },
     groups: {},
-    rules: {},
+    rules: {
+        username: { test_regex: "([a-zA-Z0-9_]*)" },
+        phone: { test_regex: "([0-9\-\.\(\) ]*)" },
+        fullname: { test_regex: "[a-zA-Z\-\'\. ]*" },
+        address: { test_regex: "([a-zA-Z0-9\-\.\'\(\) ]*)" }
+    },
     errorClass: "client_error",
     validClass: "valid",
     errorElement: "span",
@@ -14,6 +24,10 @@ jQuery.validator.setDefaults({
     onsubmit: false,
     ignore: ":hidden",
     ignoreTitle: false
+});
+
+jQuery.validator.addMethod("test_regex", function(value, element, param) {
+    return value.match(new RegExp("^." + param + "$"));
 });
 
 /* addClient namespace */
@@ -36,7 +50,7 @@ jQuery.validator.setDefaults({
                 rules: {
                     username: {
                         required: true,
-                        maxlength: 42
+                        maxlength: 42,
                     },
                     password: {
                         required: true,
@@ -353,22 +367,4 @@ function generate_password_click(){
     return;
 }
 
-function fnSelect(objId) {
-    fnDeSelect();
-    if (document.selection) {
-    var range = document.body.createTextRange();
-        range.moveToElementText(document.getElementById(objId));
-    range.select();
-    }
-    else if (window.getSelection) {
-    var range = document.createRange();
-    range.selectNode(document.getElementById(objId));
-    window.getSelection().addRange(range);
-    }
-}
- 
-function fnDeSelect() {
-    if (document.selection) document.selection.empty(); 
-    else if (window.getSelection)
-            window.getSelection().removeAllRanges();
-}
+

@@ -42,7 +42,7 @@
 						</select>
 					</td>
 					<td id="edit_country" title="Edit manually" style="cursor:pointer">
-						<img style="margin-left:4px;" src="[% c.uri_for('/static/images/edit-icon.png') %]"></img>
+						<img style="margin:0px 0 0 4px;" src="[% c.uri_for('/static/images/edit-icon.png') %]"></img>
 					</td>
 				</tr>
 

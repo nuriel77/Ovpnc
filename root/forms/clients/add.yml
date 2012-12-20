@@ -26,13 +26,14 @@ elements:
                         attributes_xml:
                           class: "form_row"
                           id: "username"
+                          placeholder: "someuser"
                           autofocus: "autofocus"
                         constraints:
                            - type: Callback
                              message: "Username already exists"
                            - Required
                            - type: Regex
-                             regex: '^[-_a-zA-Z\d]*\z'
+                             regex: '^[\-_a-zA-Z\d]*\z'
                            - type: MinLength
                              min: 2
                            - type: MaxLength
@@ -92,12 +93,13 @@ elements:
                         name: fullname
                         label: "Fullname:"
                         attributes_xml:
+                          placeholder: "Some User-Name"
                           class: "form_row"
                           id: "fullname"
                         constraints:
                            - Required
                            - type: Regex
-                             regex: '^[-_a-zA-Z\d\s]*\z'
+                             regex: '^[\-_a-zA-Z\d\s]*\z'
                            - type: MinLength
                              min: 2
                            - type: MaxLength
@@ -112,6 +114,7 @@ elements:
                         attributes_xml:
                           id: "email"
                           class: "form_row"
+                          placeholder: "user@email.com"
                         constraints:
                           - type: Callback
                             message: "Email already exists"
@@ -131,7 +134,10 @@ elements:
                         attributes_xml:
                           id: "phone"
                           class: "form_row"
+                          placeholder: "00972 (8) 6374843"
                         constraints:
+                          - type: Regex
+                            regex: '^[\-\d]*\z'
                           - Required
                           - type: MinLength
                             min: 8
@@ -146,6 +152,7 @@ elements:
                         label: "Address:"
                         attributes_xml:
                           id: "address"
+                          placeholder: "Planet earth, Antarctica"
                           class: "form_row"
                         constraints:
                           - Required

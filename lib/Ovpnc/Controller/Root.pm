@@ -71,16 +71,15 @@ sub auto : Private {
             $c->detach('View::HTML');
         }
         if ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
-            $c->response->headers->header('Content-Type' => $1.'/xml');
             $c->res->body( $c->stash->{errors} );
-            $c->forward('View::XML::Simple');
             $c->detach;
         }
-        if ( $c->req->headers->{'accept'} eq 'application/json' ){
-            $c->response->headers->header('Content-Type' => 'application/json');
-            $c->detach('View::JSON');
+        if ( $c->req->headers->{'accept'} =~ /json/ ){
+            delete $c->stash->{assets} if $c->stash->{assets};
+            $c->response->headers->header('Content-Type' => 'text/html');
+            $c->forward('View::JSON');
         }
-        return;
+        $c->detach;
     };
 }
 

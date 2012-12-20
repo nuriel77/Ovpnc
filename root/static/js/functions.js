@@ -1,6 +1,6 @@
 /* Global functions */
 function ucfirst(str) {
-    var f = str.chrAt(0).toUpperCase();
+    var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
 }
 
@@ -35,3 +35,22 @@ function numberWithCommas(n) {
     return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
 }
 
+function fnSelect(objId) {
+    fnDeSelect();
+    if (document.selection) {
+    var range = document.body.createTextRange();
+        range.moveToElementText(document.getElementById(objId));
+    range.select();
+    }
+    else if (window.getSelection) {
+    var range = document.createRange();
+    range.selectNode(document.getElementById(objId));
+    window.getSelection().addRange(range);
+    }
+}
+
+function fnDeSelect() {
+    if (document.selection) document.selection.empty();
+    else if (window.getSelection)
+            window.getSelection().removeAllRanges();
+}

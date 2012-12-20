@@ -35,11 +35,20 @@ sub encode_json
     # some controllers will end
     # up here when user requested XML
     # ===============================
-    if ( $c->req->headers->{'accept'} =~ /xml/gi ){
-        $c->forward('View::XML::Simple');
+    if ( $c->req->headers->{'accept'} !~ /json/gi ){
+        if ( $c->req->headers->{'accept'} =~ /xml/gi ){
+            $c->response->headers->header('Content-Type' => $c->req->headers->{'accept'} );
+            $c->forward('View::XML::Simple');
+        }
+        elsif ( $c->req->headers->{'accept'} =~ /html/gi ){
+            $c->response->headers->header('Content-Type' => $c->req->headers->{'accept'} );
+            $c->forward('View::HTML');
+        }
         $c->detach;
         return;
     }
+    
+    $c->response->headers->header('Content-Type' => 'application/json');
 
     # Return JSON
     # ===========
