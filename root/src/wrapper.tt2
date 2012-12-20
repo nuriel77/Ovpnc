@@ -78,7 +78,7 @@
                             alert(
                             [% FOR err IN error %]
                                 [% FOR e IN err %]
-                                '<div class="err_text" style="margin:-1px 1.5px 0 1.5px;"><img width="16" height="16" src="/static/images/alert_icon.png" /></div><div class="err_text"> [% e %]</div><div class="clear"></div>'
+                                '<div class="err_text" style="margin:-1px 1.5px 0 1.5px;"><img width="16" height="16" src="/static/images/alert_err.png" /></div><div class="err_text"> [% e %]</div><div class="clear"></div>'
                                 [% END %]
                             [% END %]
                             );

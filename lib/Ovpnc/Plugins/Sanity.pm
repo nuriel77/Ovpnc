@@ -2,15 +2,41 @@ package Ovpnc::Plugins::Sanity;
 use warnings;
 use strict;
 use Fcntl ':mode';
+use File::Slurp;
 use Linux::Distribution qw(distribution_name distribution_version);
 use vars qw/$errors $openvpn_user $os $distro/;
 
+=head1 NAME
+
+Ovpnc::Plugins::Sanity - Sanity check plugin
+
+=head1 DESCRIPTION
+
+Runs various test to check
+if the application is okay 
+to run, otherwise return
+error message to user.
+
+=cut
+
+=head2
+
+cfg - accessor
+
+=cut
 sub cfg
 {
     my $self = shift;
     $self->{_cfg} = shift if @_;
     return $self->{_cfg};
 }
+
+
+=head2 action
+
+Main action for this plugin
+
+=cut
 
 sub action {
     my ( $inv, $config ) = @_;
@@ -49,10 +75,6 @@ sub action {
         ? $self->cfg->{openssl_conf}
         : $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openssl_conf};
 
-    # Application submodules
-    # ======================
-    my @submodules = @{$self->cfg->{js_submodules}};
-
     # Get the root of static content dir
     # ==================================
     my $static_dir = join "/", @{$self->cfg->{static}->{include_path}->[0]->{dirs}};
@@ -66,7 +88,7 @@ sub action {
         app_user      => sub { return $self->_check_app_user },
         distro        => sub { return $self->_check_dist },
         ovpnc_user    => sub { return $self->_check_ovpnc_user },
-        submodules    => sub { return $self->_check_submodules(\@submodules, $static_dir . '/static/js' ) },
+        submodules    => sub { return $self->_check_submodules },
         configuration => sub { return $self->_check_config if $config },
         check_scripts => sub { return $self->_check_openvpn_scripts if $config },
         check_tmp_dirs => sub {
@@ -89,7 +111,10 @@ sub action {
     # ===============================
     for my $check ( keys %{$checks} ) {
         if ( my $ret_val = $checks->{$check}->() ) {
-            push( @{$errors}, 'Check error - ' . $check . ': ' . $ret_val );
+            push( @{$errors}, 'Check error - ' . $check . ': '
+                . ( ref $ret_val eq 'ARRAY'
+                        ? join ", ", @{$ret_val}
+                        : $ret_val )  );
         }
     }
     return $errors if ref $errors eq 'ARRAY';
@@ -179,21 +204,6 @@ sub action {
             ? "This application should not be run under root user!"
             : 0
         );
-    }
-
-    sub _check_submodules {
-        my ( $self, $submodules, $dir ) = @_;
-
-        for ( @{$submodules} ){
-
-            my ($submodule) = $_ =~ /^.*\/(.*)\.git$/;
-
-            return "Invalid git submodule or syntax error: " . $_
-                unless $submodule;
-            return $dir . '/' . $submodule
-                    . " - Submodule not added. Run 'git submodule update --init'"
-                unless ( -e $dir . '/' . $submodule and -d $dir . '/' . $submodule);
-        }
     }
 
     sub _check_config {
@@ -340,9 +350,48 @@ sub action {
             return "Directory '$dir' should not be world accessibe ($mode)!"
               if $mode eq '0777';
         }
+    }
 
+    sub _check_submodules {
+        my ( $self, $git_file ) = @_;
+
+        $git_file ||= '.gitmodules';
+
+        return $git_file . ' not found or not readable'
+            unless -e $git_file;
+
+        my $data = read_file( $git_file )
+            or die "Error while reading " . $git_file . ": " . $_;
+
+        # Remove possible comments
+        # ========================
+        $data =~ s/^#//g;
+
+        # Get the pathnames
+        # =================
+        my @paths = $data =~ /path = (.*)/g;
+
+        return undef unless @paths;
+
+        my @errors;
+        for ( @paths ){
+            push @errors, $self->cfg->{home} . '/' . $_
+                unless -d $self->cfg->{home} . '/' . $_;
+        }
+
+        if (@errors){
+            push @errors, " not added. Run \"git submodule update --init\" to add all submodules.";
+            return \@errors;
+        }
+        return undef;
     }
 
 }
+
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
 
 1;

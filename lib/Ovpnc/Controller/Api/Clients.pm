@@ -815,7 +815,7 @@ sub clients_UNREVOKE : Local
     CLIENT: for my $client ( @clients ){
 
         unless ( $self->_match_revoked( $revoked, $client ) ) {
-            push @{$_err}, "Unrevoke faild: client '"
+            push @{$_err}, "Unrevoke failed: client '"
                         . $client . "' is not in the Revoked list";
             next CLIENT;
         }

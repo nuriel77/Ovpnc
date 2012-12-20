@@ -112,16 +112,18 @@ around [qw(ovpnc_config index)] => sub {
     # Sanity check
     # ============
     my $_err = Ovpnc::Plugins::Sanity->action( $c->config );
-
     if ( $_err and ref $_err eq 'ARRAY' ) {
-        push @{$c->stash->{errors}}, $_err;
         if ( $c->namespace eq 'api' ){
+            push @{$c->stash->{error}}, $_err;
             delete $c->stash->{assets} if $c->stash->{assets};
             $c->response->status(500);
             $c->forward('View::JSON');
         }
         else {
-            $c->forward('View::HTML');
+            $c->response->status(500);
+            $c->response->body( join "<br>", @{$_err} );
+            $c->forward('end');
+            return;
         }
         $c->detach;
     }

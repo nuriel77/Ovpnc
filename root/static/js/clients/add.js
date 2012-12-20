@@ -70,6 +70,14 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 }
             }
         },
+        reset_form: function(form){
+            $('input[type="text"]').each(function(k,v){ $(v).attr('value',''); });
+            $('input[type="password"]').each(function(k,v){ $(v).attr('value',''); });
+            $('.generated_password').remove()
+            $('.error').remove()
+            $('.error_message').remove();
+            $('label').each(function(){ $(this).css('color','#000000'); });
+        },
         set_form_events: function(){
 
             // Set validation rules
@@ -236,12 +244,19 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             }
             // Success
             if ( msg.status ){
-                alert( $.Ovpnc().alert_ok + ' ' + msg.status + ', redirecting...' + '</div><div class="clear"></div>' );
-                var _wait =  setInterval(function() {
-                    window.clearInterval(_wait);
-                    window.location = '/clients';
-                },
-                2000 );
+                // Confirm
+                var cnf = confirm( msg.status + '. Would you like to add one more?' );
+                if ( cnf == false ){
+                    alert( $.Ovpnc().alert_ok + ' ' + msg.status + ', redirecting...' + '</div><div class="clear"></div>' );
+                    var _wait =  setInterval(function() {
+                        window.clearInterval(_wait);
+                        window.location = '/clients';
+                    },
+                    1000 );
+                }
+                else {
+//xxx
+                }
             }
             $.Ovpnc().remove_ajax_loading();
         },

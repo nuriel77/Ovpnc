@@ -51,10 +51,11 @@ has serial => (
 
 =head1 NAME
 
-Generates RSA X509 certificate chain
+Ovpnc::Plugins::ChainCA - Chain CA Creator
 
 =head1 DESCRIPTION
 
+Generates RSA X509 certificates chain
 This plugin will provide Ovpnc
 the ability to manage certificates
 

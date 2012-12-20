@@ -160,6 +160,15 @@ elements:
                             min: 8
                           - type: MaxLength
                             max: 128
+              # Reset
+              - type: Block
+                tag: div
+                elements:
+                      - type: Reset
+                        name: reset
+                        attributes_xml:
+                          onclick: "$.addClient().reset_form( $('#add_client_form') );"
+                        value: "Reset"
               # Submit
               - type: Block
                 tag: div

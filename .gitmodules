@@ -10,6 +10,3 @@
 [submodule "root/static/js/jquery-cookie"]
 	path = root/static/js/jquery-cookie
 	url = https://github.com/carhartl/jquery-cookie.git
-[submodule "root/static/js/mersenne-twister"]
-	path = root/static/js/mersenne-twister
-	url = https://gist.github.com/300494.git

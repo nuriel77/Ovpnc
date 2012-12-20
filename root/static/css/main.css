@@ -97,6 +97,7 @@ legend {
 	padding:10px 10px 7px 15px;
 	font-size: 0.9em;
 	min-height:15px;
+    max-width:90%;
     z-index:9006;
 }
 #message_container {
