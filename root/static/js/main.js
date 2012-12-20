@@ -341,6 +341,7 @@
         // Update server status data
         //
         update_server_status: function(r) {
+            console.log("%o",r);
             if (r !== undefined ) {
                 // If we get status back, display
                 if ( r.rest !== undefined && r.rest.status !== undefined) {
@@ -541,143 +542,12 @@ $(document).ready(function() {
 
 });
 
-/*
- *	- Functions -
- */
-function canJSON(value) {
-    try {
-        JSON.stringify(value);
-        return JSON.stringify(value);
-    } catch(ex) {
-        return false;
-    }
-}
+// Add a custom dynamic regex checker to jquery.validate
+jQuery.validator.addMethod("test_regex", function(value, element, param) {
+    return value.match(new RegExp("^." + param + "$"));
+});
 
-function kill_client(c) {
 
-    $.getJSON('/api/server/kill/' + c, function(r) {
-        append_dead_client(c);
-        alert($.Ovpnc().okay_icon + " Client '" + c + "' killed successfully.");
-        return true;
-    }).error(function(xhr, ajaxOptions, thrownError) {
-        console.log("Error killing client '" + c + "': " + thrownError.toString());
-        alert($.Ovpnc().error_icon + " Error killing client '" + c + "': " + thrownError.toString());
-        return false;
-    });
-
-}
-
-function unkill_client(c) {
-
-    $.getJSON('/api/server/unkill/' + c, function(r) {
-        $('#unkill_' + c).remove();
-        if (!$('#killed_clients').text().match(/\w+/)) $('#killed_clients_container').hide(250);
-        alert($.Ovpnc().okay_icon + " Client '" + c + "' unkilled successfully");
-        return true;
-    }).error(function(xhr, ajaxOptions, thrownError) {
-        console.log("Error unkilling client '" + c + "': " + thrownError.toString());
-        alert($.Ovpnc().error_icon + " Error unkilling client '" + c + "': " + thrownError.toString());
-        return false;
-    });
-
-}
-
-// Check for pending ajax calls
-function checkPendingRequest() {
-
-    //console.log('Checking for pending ajax calls');
-    if ($.active > 0) {
-        //console.log( $.active + " ajax call(s) still active");
-        //window.setTimeout(checkPendingRequest, 1000); // run again
-        return true;
-    }
-    else {
-        //console.log("No pending ajax calls");
-        return false;
-    }
-
-}
-
-$.Ovpnc().tfc = new Object();
-$.Ovpnc().tfc = { in :0,
-    out: 0,
-    old_in: 0,
-    old_out: 0
-};
-
-function get_client_network_usage(name) {
-
-    //console.debug('In: ' + Ovpnc.tfc.in + ', Out: ' + Ovpnc.tfc.out );
-    // Build client's traffic div container if it never existed
-    // Here we record the values for next loop to pick them up
-    // and calculate the delta
-    if (!$('#tfc_' + name).is(':visible')) {
-        //console.log( 'Build client traffic div first record for '  + name);
-        // build for this client a traffic div
-        $('#traffic').append('<div class="client_tfc" id="tfc_' + name + '"></div>');
-
-        // Record the in/out packets, use as a starting point for delta calculation
-        $('#tfc_' + name).html('<input style="opacity:0" id="rec_in_' + name + '" value="' + $.Ovpnc().tfc. in +'" />' + '<input style="opacity:0" id="rec_out_' + name + '" value="' + $.Ovpnc().tfc.out + '" />');
-        // This is the first loop because we created the
-        // tfc_+name div, second loop will already
-        // see this div is created.
-        return;
-    }
-    else {
-        // If the tfc_+name is already created, get
-        // the values (these have been recorded from the previous cycle)
-        $.Ovpnc().tfc.old_in = $('#rec_in_' + name).val();
-        $.Ovpnc().tfc.old_out = $('#rec_out_' + name).val();
-        $('#rec_in_' + name).val($.Ovpnc().tfc. in );
-        $('#rec_out_' + name).val($.Ovpnc().tfc.out);
-    }
-
-    var fixDeltaOut;
-    var fixDeltaIn;
-
-    if ($.Ovpnc().tfc.old_in !== '' || $.Ovpnc().tfc.old_in !== 0) {
-        var real_deltaIn = $.Ovpnc().tfc. in -$.Ovpnc().tfc.old_in;
-        var real_deltaOut = $.Ovpnc().tfc.out - $.Ovpnc().tfc.old_out;
-
-        var bytes_in_avg = real_deltaIn / ($.Ovpnc().poll_freq / 1000);
-        var bytes_out_avg = real_deltaOut / ($.Ovpnc().poll_freq / 1000);
-
-        var output = '';
-        var in_setter = 'KB/s';
-        var out_setter = 'KB/s';
-        if (bytes_in_avg > 0) {
-            var flDIn = bytes_in_avg / 1024;
-            if (flDIn > 1000) {
-                in_setter = 'MB/s';
-                flDIn = flDIn / 1024;
-            }
-            fixDeltaIn = flDIn.toFixed(2);
-            output += '<div style="float:left" id="tfc_in_' + name + '">' + '<img src="/static/images/red_down.png" />' + '<span style="margin-left:3px;" id="inner_in_' + name + '">' + fixDeltaIn + '</span>' + '<span id="din_setter_' + name + '">' + in_setter + '</span>' + '</div>';
-        }
-        if (bytes_out_avg > 0) {
-            var flDOut = bytes_out_avg / 1024;
-            if (flDOut > 1000) {
-                out_setter = 'MB/s';
-                flDOut = flDOut / 1024;
-            }
-            fixDeltaOut = flDOut.toFixed(2);
-            output += '<div style="float:left;margin-left:5px;" id="tfc_out_' + name + '">' + '<img src="/static/images/green_up.png" />' + '<span style="margin-left:3px;" id="inner_out_' + name + '">' + fixDeltaOut + '</span>' + '<span id="dout_setter_' + name + '">' + out_setter + '</span>' + '</div>';
-        }
-
-        $.Ovpnc().tfc.old_in = $.Ovpnc().tfc. in ;
-        $.Ovpnc().tfc.old_out = $.Ovpnc().tfc.out;
-        if ($('#inner_in_' + name).is(':visible') && $('#inner_out_' + name).is(':visible')) {
-            $('#inner_in_' + name).text(fixDeltaIn);
-            $('#inner_out_' + name).text(fixDeltaOut);
-            $('#din_setter_' + name).text(in_setter);
-            $('#dout_setter_' + name).text(out_setter);
-        }
-        else {
-            $('#in_out_' + name).html(output);
-        }
-    }
-
-}
 function test_edit(){
     $.Ovpnc().set_ajax_loading();
 }

@@ -1,17 +1,27 @@
 /* jquery validator settings */
+/* jquery validator settings */
 jQuery.validator.setDefaults({
-	debug: true,
-	success: "valid",
-    messages: {},
-    groups: {},
-    rules: {},
-    errorClass: "error",
+    debug: true,
+    success: "valid",
+    messages: {
+        username: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9_]</div>",
+        address: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9\\-\\.\\(\\) ]</div>",
+        fullname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
+        phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
+    },
+    rules: {
+        username: { test_regex: "([a-zA-Z0-9_]*)" },
+        phone: { test_regex: "([0-9\-\.\(\) ]*)" },
+        fullname: { test_regex: "[a-zA-Z\-\'\. ]*" },
+        address: { test_regex: "([a-zA-Z0-9\-\.\'\(\) ]*)" }
+    },
+    errorClass: "client_error",
     validClass: "valid",
     errorElement: "div",
     focusInvalid: true,
     errorContainer: $( [] ),
     errorLabelContainer: $( [] ),
-    onsubmit: true,
+    onsubmit: false,
     ignore: ":hidden",
     ignoreTitle: false
 });

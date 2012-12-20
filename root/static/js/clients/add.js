@@ -8,7 +8,6 @@ jQuery.validator.setDefaults({
         fullname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
         phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
     },
-    groups: {},
     rules: {
         username: { test_regex: "([a-zA-Z0-9_]*)" },
         phone: { test_regex: "([0-9\-\.\(\) ]*)" },
@@ -25,7 +24,6 @@ jQuery.validator.setDefaults({
     ignore: ":hidden",
     ignoreTitle: false
 });
-
 jQuery.validator.addMethod("test_regex", function(value, element, param) {
     return value.match(new RegExp("^." + param + "$"));
 });

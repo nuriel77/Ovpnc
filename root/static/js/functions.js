@@ -54,3 +54,14 @@ function fnDeSelect() {
     else if (window.getSelection)
             window.getSelection().removeAllRanges();
 }
+
+function checkPendingRequest() {
+    // Check for pending ajax calls
+    if ($.active > 0) {
+        //console.log( $.active + " ajax call(s) still active");
+        //window.setTimeout(checkPendingRequest, 1000); // run again
+        return true;
+    }
+    return false;
+}
+

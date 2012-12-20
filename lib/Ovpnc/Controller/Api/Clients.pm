@@ -518,6 +518,17 @@ sub clients_REMOVE : Local
         };
 
         if ( $_res ){
+            
+            # Deny removal of default
+            # administrator user
+            # =======================
+            if ( $_res->id == 1 ){
+                push @{$c->stash->{error}}, "Denied: Cannot delete default administrator!";
+                $c->res->status(400);
+                $c->detach;
+                return;
+            }
+
             # Delete entry
             # ============
             if ( $_res->delete ) {

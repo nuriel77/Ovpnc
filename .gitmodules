@@ -4,3 +4,6 @@
 [submodule "/home/ovpnc/Ovpnc/root/static/js/JSON-js"]
 	path = /home/ovpnc/Ovpnc/root/static/js/JSON-js
 	url = https://github.com/douglascrockford/JSON-js.git
+[submodule "/home/ovpnc/Ovpnc/root/static/js/jQuery-contextMenu"]
+	path = /home/ovpnc/Ovpnc/root/static/js/jQuery-contextMenu
+	url = https://github.com/medialize/jQuery-contextMenu.git

@@ -75,6 +75,9 @@ var total_count = 0;
                 height: 300
             });
         },
+        //
+        // Update / modify data in the client's table
+        //
         update_flexgrid : function(r){
             // Color unknown client in red
             $('#flexme').find('tr').children('td[abbr="id"]')
@@ -82,10 +85,7 @@ var total_count = 0;
                 var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                 if ( inner_text === 'unknown' ){
                     $(this).parent().parent('tr').children('td[abbr="username"]')
-                        .children('div').css('color','red');
-                    if ( $(this).parent().parent('tr').children('td[abbr="id"]').text() === 'unknown' ){
-                        $(this).parent().parent('tr').remove();
-                    }                    
+                        .children('div').css('color','red').attr('title','Unknown user?!');
                 }
             });
             // Set the right color - on/off notice according
@@ -116,7 +116,8 @@ var total_count = 0;
                         }
                         // mark the row which has been found to be online
                         if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
-                            $(this).append('<span class="inner_flexi_text">on</span>');
+                            $(this).prepend('<div class="context-menu-client box menu-1">')
+                                   .append('<span class="inner_flexi_text">on</span></div>');
                         }
                     }
                 else {
@@ -138,6 +139,7 @@ var total_count = 0;
                 }
             });
             if ( _checker === 0 && r.rest.clients.length > 0 ){
+                // Update the table
                 $('.pReload').click();
             }
         },
@@ -150,12 +152,16 @@ var total_count = 0;
             }
             return false;
         },
+        //
+        // Check if a series of ajax calls completed
+        //
         check_complete_block: function(loop, processed, total_count, action){
             if ( processed === total_count ){
                 alert($.Ovpnc().alert_ok
                         + ' Total ' + processed
                         + ' client' + ( processed === 1 ? ' ' : 's ' )
                         + action + 'd</div><div class="clear"></div>' );
+                // Update the table
                 $('.pReload').click();
                 return;
             }
@@ -174,13 +180,36 @@ var total_count = 0;
 
 })(jQuery);
 
+$(function(){
+    $.contextMenu({
+        selector: '.context-menu-client', 
+        callback: function(key, options) {
+            var m = "clicked: " + key;
+            window.console && console.log(m) || alert(m); 
+        },
+        items: {
+            "edit": {name: "Edit", icon: "edit"},
+            "cut": {name: "Cut", icon: "cut"},
+            "copy": {name: "Copy", icon: "copy"},
+            "paste": {name: "Paste", icon: "paste"},
+            "delete": {name: "Delete", icon: "delete"},
+            "sep1": "---------",
+            "quit": {name: "Quit", icon: "quit"}
+        }
+    });
+    
+    $('.context-menu-one').on('click', function(e){
+        console.log('clicked', this);
+    })
+});
+
 $(document).ready(function(){
 	// Declare flexigrid
 	// Will run a query
 	// to get clients
     $.Client().set_clients_table();
 
-    // Disable / grayout actions
+    // TODO: Disable / grayout actions
     // disallowed by this role
 
 	// Show the clients table
