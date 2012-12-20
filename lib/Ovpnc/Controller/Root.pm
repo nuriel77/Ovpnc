@@ -172,7 +172,7 @@ sub include_default_links : Private {
       css/main.css
       js/jquery-latest.js
       js/jquery.cookie.js
-      js/jquery.validate.js
+      js/jQuery-Validation/jquery.validate.js
       js/functions.js
     );
 
