@@ -1,6 +1,6 @@
 [submodule "root/static/js/Flexigrid"]
 	path = root/static/js/Flexigrid
 	url = https://github.com/paulopmx/Flexigrid.git
-[submodule "/home/ovpnc/Ovpnc/root/static/js/jQuery-contextMenu"]
-	path = /home/ovpnc/Ovpnc/root/static/js/jQuery-contextMenu
+[submodule "root/static/js/jQuery-contextMenu"]
+	path = root/static/js/jQuery-contextMenu
 	url = https://github.com/medialize/jQuery-contextMenu.git

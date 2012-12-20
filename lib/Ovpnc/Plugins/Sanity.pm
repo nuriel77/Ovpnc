@@ -190,9 +190,9 @@ sub action {
 
             return "Invalid git submodule or syntax error: " . $_
                 unless $submodule;
-            return $dir . '/' . $submodule . " - Submodule not added. Run git submodule add https://github.com/" . $_
-                . " " . $dir . '/' . $submodule
-                    unless ( -e $dir . '/' . $submodule and -d $dir . '/' . $submodule);
+            return $dir . '/' . $submodule
+                    . " - Submodule not added. Run 'git submodule update --init'"
+                unless ( -e $dir . '/' . $submodule and -d $dir . '/' . $submodule);
         }
     }
 
