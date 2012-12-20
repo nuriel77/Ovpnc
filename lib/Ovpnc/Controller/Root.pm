@@ -171,8 +171,8 @@ sub include_default_links : Private {
       css/slider.css
       css/main.css
       js/jquery-latest.js
-      js/jquery.cookie.js
-      js/jQuery-Validation/jquery.validate.js
+      js/jquery-cookie/jquery.cookie.js
+      js/jquery-validation/jquery.validate.js
       js/functions.js
     );
 

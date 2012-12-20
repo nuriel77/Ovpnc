@@ -4,6 +4,9 @@
 [submodule "root/static/js/jQuery-contextMenu"]
 	path = root/static/js/jQuery-contextMenu
 	url = https://github.com/medialize/jQuery-contextMenu.git
-[submodule "root/static/js/jQuery-Validation"]
-	path = root/static/js/jQuery-Validation
+[submodule "root/static/js/jquery-validation"]
+	path = root/static/js/jquery-validation
 	url = https://github.com/jzaefferer/jquery-validation.git
+[submodule "root/static/js/jquery-cookie"]
+	path = root/static/js/jquery-cookie
+	url = https://github.com/carhartl/jquery-cookie.git
