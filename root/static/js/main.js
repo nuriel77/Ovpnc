@@ -22,6 +22,7 @@
     //
     // Global items
     //
+    $.Ovpnc._server_interval = '';
     $.Ovpnc.ajax_lock = 0;
     $.Ovpnc.user_data = new Object();
 
@@ -63,7 +64,7 @@
             $.Ovpnc().get_server_status();
 
             // Then loop every n miliseconds
-            setInterval(function() {
+            $.Ovpnc._server_interval = setInterval(function() {
                 $.Ovpnc().get_server_status();
             },
             $.Ovpnc().poll_freq );

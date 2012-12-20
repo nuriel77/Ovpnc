@@ -49,17 +49,26 @@ sub action {
         ? $self->cfg->{openssl_conf}
         : $self->cfg->{openvpn_dir} . '/' . $self->cfg->{openssl_conf};
 
+    # Application submodules
+    # ======================
+    my @submodules = @{$self->cfg->{js_submodules}};
+
+    # Get the root of static content dir
+    # ==================================
+    my $static_dir = join "/", @{$self->cfg->{static}->{include_path}->[0]->{dirs}};
+
     # Prepare hash with
     # list of all checks
     # ==================
     my $checks = {
-        os            => sub { return $self->check_os },
-        openvpn_user  => sub { return $self->check_openvpn_user },
-        app_user      => sub { return $self->check_app_user },
-        distro        => sub { return $self->check_dist },
-        ovpnc_user    => sub { return $self->check_ovpnc_user },
-        configuration => sub { return $self->check_config if $config },
-        check_scripts => sub { return $self->check_openvpn_scripts if $config },
+        os            => sub { return $self->_check_os },
+        openvpn_user  => sub { return $self->_check_openvpn_user },
+        app_user      => sub { return $self->_check_app_user },
+        distro        => sub { return $self->_check_dist },
+        ovpnc_user    => sub { return $self->_check_ovpnc_user },
+        submodules    => sub { return $self->_check_submodules(\@submodules, $static_dir . '/static/js' ) },
+        configuration => sub { return $self->_check_config if $config },
+        check_scripts => sub { return $self->_check_openvpn_scripts if $config },
         check_tmp_dirs => sub {
             return $self->check_temp_directories(
                 [
@@ -88,7 +97,7 @@ sub action {
 
 {
 
-    sub check_os {
+    sub _check_os {
         return (
             $^O eq $os
             ? 0
@@ -96,7 +105,7 @@ sub action {
         );
     }
 
-    sub check_dist {
+    sub _check_dist {
         return (
             $distro =~ /debian|ubuntu/gi
             ? 0
@@ -104,7 +113,7 @@ sub action {
         );
     }
 
-    sub check_openvpn_user {
+    sub _check_openvpn_user {
         my $self = shift;
 
         # Check if user exists
@@ -130,7 +139,7 @@ sub action {
         }
     }
 
-    sub check_ovpnc_user {
+    sub _check_ovpnc_user {
         my $self = shift;
 
         #Example: ovpnc:x:1011:1012::/home/ovpnc:/bin/sh
@@ -164,7 +173,7 @@ sub action {
         }
     }
 
-    sub check_app_user {
+    sub _check_app_user {
         return (
             $< == 0
             ? "This application should not be run under root user!"
@@ -172,7 +181,25 @@ sub action {
         );
     }
 
-    sub check_config {
+    sub _check_submodules {
+        my ( $self, $submodules, $dir ) = @_;
+
+        for ( @{$submodules} ){
+
+            my ($submodule) = $_ =~ /^.*\/(.*)\.git$/;
+
+            return "Invalid git submodule or syntax error: " . $_
+                unless $submodule;
+            return $_ . " - Submodule not added. Run git submodule add https://github.com/" . $_
+                . " " . $dir . '/' . $submodule
+                    unless ( -d $dir . '/' . $submodule );
+            return $_ . " - Submodule not added. Run git submodule add https://github.com/" . $_
+                . " " . $dir . '/' . $submodule
+                    unless ( glob( $dir . '/' . $submodule . '/*') );
+        }
+    }
+
+    sub _check_config {
         my $self = shift;
 
         if ( !-e $self->cfg->{ovpnc_conf} ) {
@@ -261,7 +288,7 @@ sub action {
 
     }
 
-    sub check_openvpn_scripts {
+    sub _check_openvpn_scripts {
 
         my $self = shift;
 

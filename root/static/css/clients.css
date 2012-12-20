@@ -5,6 +5,14 @@
     max-width:24px;
     float:left;
 }
+.context-menu-one{
+    border-top:0;
+    border:1px solid red;
+    max-height:5px;
+    float:left;
+    padding:0;
+}
+
 #client_status_container{ margin:30px 0 20px 25px; float:left;min-width:250px; }
 #killed_clients_container{ margin:30px 0 10px 20px; float:left; min-width:250px;}
 #killed_clients{ font-size: .85em; margin-bottom:40px; }
@@ -58,4 +66,7 @@
     background: url(/static/images/edit-icon.png) no-repeat center left;
 }
 
-
+.flexigrid div.fbutton .properties {
+    background: url(/static/images/properties.png) no-repeat center left;
+    margin-top:1px;
+}

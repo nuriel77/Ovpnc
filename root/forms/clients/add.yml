@@ -137,7 +137,7 @@ elements:
                           placeholder: "00972 (8) 6374843"
                         constraints:
                           - type: Regex
-                            regex: '^[\-\d]*\z'
+                            regex: '^[ \-\d\(\)\.]*\z'
                           - Required
                           - type: MinLength
                             min: 8

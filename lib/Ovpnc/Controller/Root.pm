@@ -114,10 +114,15 @@ around [qw(ovpnc_config index)] => sub {
     my $_err = Ovpnc::Plugins::Sanity->action( $c->config );
 
     if ( $_err and ref $_err eq 'ARRAY' ) {
-        $c->response->status(500);
-        delete $c->stash->{assets} if $c->stash->{assets};
-        $c->stash->{error} = $_err;
-        $c->forward('View::JSON');
+        push @{$c->stash->{errors}}, $_err;
+        if ( $c->namespace eq 'api' ){
+            delete $c->stash->{assets} if $c->stash->{assets};
+            $c->response->status(500);
+            $c->forward('View::JSON');
+        }
+        else {
+            $c->forward('View::HTML');
+        }
         $c->detach;
     }
     else {
@@ -165,17 +170,29 @@ sub include_default_links : Private {
       css/normalize.css
       css/slider.css
       css/main.css
-      js/Flexigrid/css/flexigrid.css
       js/jquery-latest.js
-      js/Flexigrid/js/flexigrid.js
       js/jquery.cookie.js
       js/jquery.validate.js
       js/functions.js
     );
 
-    push @_page_assets, 'js/main.js'
-      if $c->user_exists;
+    # Include the following only if user exists
+    # =========================================
+    if ( $c->user_exists ){
+        # Include main javascript file
+        # ============================
+        push @_page_assets, 'js/main.js';
 
+        # Default links for clients controller
+        # ====================================
+        push @_page_assets, qw(
+                js/jQuery-contextMenu/src/jquery.contextMenu.css
+                js/jQuery-contextMenu/src/jquery.ui.position.js
+                js/jQuery-contextMenu/src/jquery.contextMenu.js
+                js/Flexigrid/css/flexigrid.css
+                js/Flexigrid/js/flexigrid.js
+            ) if $c->req->path eq 'clients';
+    }
     # Optional :
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
@@ -185,13 +202,14 @@ sub include_default_links : Private {
     # Include according to pathname
     # not incase of 'main' ( path is undef )
     # ======================================
+    my $root_dir = join '/', @{$c->config->{static}->{include_path}->[0]->{dirs}};
     if ( my $c_name = $c->req->path ) {
         $c_name =~ s/\/$//;
         for my $type (qw/ css js /) {
             push(
                 @_page_assets,
                 $type . '/' . $c_name . '.' . $type
-            ) if ( -e $c->config->{home} . '/root/static/'
+            ) if ( -e $root_dir .'/static/'
                     . $type . '/' . $c_name . '.' . $type
             );
         }

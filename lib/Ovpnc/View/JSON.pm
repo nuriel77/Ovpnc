@@ -36,13 +36,14 @@ sub encode_json
     # up here when user requested XML
     # ===============================
     if ( $c->req->headers->{'accept'} !~ /json/gi ){
-        if ( $c->req->headers->{'accept'} =~ /xml/gi ){
+        if ( $c->req->headers->{'accept'} =~ /html/gi ){
+            $c->response->headers->header('Content-Type' => 'text/html' );
+            Ovpnc::Controller::Root->include_default_links( $c );
+            $c->forward('View::HTML');
+        }
+        elsif ( $c->req->headers->{'accept'} =~ /[text|application]\/xml/gi ){
             $c->response->headers->header('Content-Type' => $c->req->headers->{'accept'} );
             $c->forward('View::XML::Simple');
-        }
-        elsif ( $c->req->headers->{'accept'} =~ /html/gi ){
-            $c->response->headers->header('Content-Type' => $c->req->headers->{'accept'} );
-            $c->forward('View::HTML');
         }
         $c->detach;
         return;

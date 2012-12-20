@@ -50,7 +50,7 @@ var total_count = 0;
                     { name: 'Delete', bclass: 'delete', onpress : delete_client },
                     { name: 'Block', bclass: 'block', onpress : block_clients },
                     { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
-                    { name: 'Edit', bclass: 'edit', onpress : test_edit },
+                    { name: 'Properties', bclass: 'properties', onpress : test_edit },
                     { separator: true}
                 ],
                 searchitems : [
@@ -116,8 +116,12 @@ var total_count = 0;
                         }
                         // mark the row which has been found to be online
                         if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
-                            $(this).prepend('<div class="context-menu-client box menu-1">')
-                                   .append('<span class="inner_flexi_text">on</span></div>');
+                            var _text = $(this).text();
+                            $(this).html( //xxx
+                                '<div class="context-menu-one box menu-1">'
+                                + '<div style="float:left">'+_text+'</div></div>'
+                                + '<span class="inner_flexi_text">on</span>'
+                            );
                         }
                     }
                 else {
@@ -179,28 +183,29 @@ var total_count = 0;
     };
 
 })(jQuery);
-
 $(function(){
     $.contextMenu({
-        selector: '.context-menu-client', 
+        selector: '.context-menu-one', 
+        trigger: 'hover',
+        delay: 500,
+        autoHide: true,
         callback: function(key, options) {
             var m = "clicked: " + key;
             window.console && console.log(m) || alert(m); 
         },
         items: {
-            "edit": {name: "Edit", icon: "edit"},
-            "cut": {name: "Cut", icon: "cut"},
-            "copy": {name: "Copy", icon: "copy"},
-            "paste": {name: "Paste", icon: "paste"},
+            "properties": {name: "Edit", icon: "edit"},
             "delete": {name: "Delete", icon: "delete"},
             "sep1": "---------",
-            "quit": {name: "Quit", icon: "quit"}
+            "block": {name: "Block", icon: "copy"},
+            "unblock": {name: "Unblock", icon: "paste"}
+//            "quit": {name: "Quit", icon: "quit"}
         }
     });
-    
+    //$('.context-menu-one').css('display', 'block').position({ my: "left bottom", at: "center bottom", of: this, offset: "80 85"}).css('display', 'none');
     $('.context-menu-one').on('click', function(e){
         console.log('clicked', this);
-    })
+    });
 });
 
 $(document).ready(function(){
