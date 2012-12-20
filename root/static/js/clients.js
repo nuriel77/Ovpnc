@@ -74,29 +74,54 @@ var total_count = 0;
                 width: $('#middle_frame').width() - 40,
                 height: 300
             });
+            //var _p = $(this).position();
+            //console.log( inner_text + " position: %o",_p);
+            //$('#flexme').addClass('context-menu-one box menu-1');
         },
         //
         // Update / modify data in the client's table
         //
         update_flexgrid : function(r){
-            // Color unknown client in red
-            $('#flexme').find('tr').children('td[abbr="id"]')
-                        .children('div').each(function(k, v){
-                var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                if ( inner_text === 'unknown' ){
-                    $(this).parent().parent('tr').children('td[abbr="username"]')
-                        .children('div').css('color','red').attr('title','Unknown user?!');
-                }
-            });
             // Set the right color - on/off notice according
             // to client's status
             var _checker = 0;
             $('#flexme').find('tr').children('td[abbr="username"]')
                         .children('div').each(function(k, v){
-                // we match the username from online_data
-                // to the current tr.td[abbr=username].div.text in the loop
-                // inner_text is in order to get only the username and not
-                // any span we might have appended previous loop
+
+                // Apply select field also on right-click
+                // right-click will also remove all other
+                // selected elements
+                $(this).parent('td').parent('tr').bind("contextmenu",function(e){
+                    $('#flexme').find('.trSelected').each( function(t,m) {
+                        $(m).removeClass('trSelected');
+                    });
+                    $(this).addClass('trSelected');
+                });
+                // One more loop to find all neighbor td's
+                // set them up with context menu class
+                // Add parent name to each so we can easily
+                // access / know which name it is when clicking
+                // any of the td's
+                $(this).parent('td').parent('tr').children('td')
+                            .children('div').each(function(z, x){
+                    var inner_text = x.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                    // Color unknown client in red
+                    if ( inner_text === 'unknown' ){
+                        $(this).parent().parent('tr').children('td[abbr="username"]')
+                            .children('div').css('color','red').attr('title','Unknown user?!');
+                    }
+                    // Add context menu
+                    var _username = $(this).parent().parent('tr').children('td[abbr="username"]').children('div').text();
+                    _username = _username.replace(/^(.*)<span class="inner_flexi_text">on<\/span>$/gi, "$1");
+                    $(this).addClass('context-menu-one box menu-1')
+                           .css('cursor','cell').attr('parent', _username );
+                });
+               /*
+                * we match the username from online_data
+                * to the current tr.td[abbr=username].div.text in the loop
+                * inner_text is in order to get only the username and not
+                * any span we might have appended previous loop
+                */
                 var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                 var online_data = $.Client().check_clients_match(r.rest.clients, inner_text);
                 if (online_data !== false) {
@@ -111,17 +136,12 @@ var total_count = 0;
                                 $(this).parent().parent('tr')
                                        .children('td[abbr="' + i + '"]')
                                        .children('div')
-                                       .text( online_data[i] ).css('color','black');
+                                       .text( online_data[i] ).css('color','#000000');
                             }
                         }
                         // mark the row which has been found to be online
                         if ( ! $(this).children('span.inner_flexi_text').is(':visible') ){
-                            var _text = $(this).text();
-                            $(this).html( //xxx
-                                '<div class="context-menu-one box menu-1">'
-                                + '<div style="float:left">'+_text+'</div></div>'
-                                + '<span class="inner_flexi_text">on</span>'
-                            );
+                            $(this).append('<span class="inner_flexi_text">on</span>');
                         }
                     }
                 else {
@@ -186,12 +206,21 @@ var total_count = 0;
 $(function(){
     $.contextMenu({
         selector: '.context-menu-one', 
-        trigger: 'hover',
+        trigger: 'right',
         delay: 500,
         autoHide: true,
         callback: function(key, options) {
-            var m = "clicked: " + key;
-            window.console && console.log(m) || alert(m); 
+            var elem = options.$trigger;
+            var client = elem.context.getAttribute("parent");
+            if ( key.match(/block|unblock/i) ){
+                block_unblock_clients(key, $('.flexigrid'));
+            }
+            else if ( key.match(/delete/i) ){
+                delete_client(key, $('.flexigrid'));
+            }
+            else if ( key.match(/edit/i) ){
+                // TODO
+            }
         },
         items: {
             "properties": {name: "Edit", icon: "edit"},
@@ -223,7 +252,8 @@ $(document).ready(function(){
     function block_clients(button, grid) {}
     function unblock_clients(button, grid) {}
     function delete_client(button, grid) {}
-    
+
+   
 });
 
 function add_client() {
@@ -343,12 +373,14 @@ function format_client_results(obj){
 
 function prepare_client_col_data(c){
 
-    // Some fields have to contain
-    // placeholders '-' because they
-    // only get updated when server
-    // status request returns
-    // this keeps flexgrid from
-    // messing up the order
+   /*
+    * Some fields need to contain
+    * placeholders '-' because they
+    * only get updated when server
+    * status request returns
+    * this keeps flexigrid from
+    * messing up the order
+    */
 	return [
         c.id ? c.id : 'unknown',
         c.username ? c.username : 'unknown',
@@ -370,6 +402,10 @@ function prepare_client_col_data(c){
 }
 
 function block_unblock_clients(button, grid, action){
+    if ( action === undefined ){
+        action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
+    }
+
     // Get total selected clients
     var total_count = $('.trSelected', grid).length;
     var processed = 0;

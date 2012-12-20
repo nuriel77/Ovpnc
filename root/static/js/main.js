@@ -523,6 +523,18 @@ $(document).ready(function() {
     // Exit on login page
     if ($.Ovpnc().pathname === '/login')
         return false;
+
+    /*
+    if ( $.cookie('Ovpnc_User_Settings') !== null ) {
+        var _cookie_data = jQuery.parseJSON( $.cookie('Ovpnc_User_Settings') );
+        if ( _cookie_data.last_page !== undefined ){
+            var _last_location = _cookie_data.last_page;
+            if ( pathname !== _last_location )
+                window.location = _last_location;
+        }
+    }
+    */
+
     // Set up the navigation
     $.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);
 

@@ -7,8 +7,10 @@
 		<div id="on_off_click_area"
 
 			[% IF c.check_any_user_role('admin') %]
-				 class="hand_pointer"
-				 title="Powerup OpenVPN server"
+				class="hand_pointer"
+				title="Powerup OpenVPN server"
+            [% ELSE %]
+                style="cursor:not-allowed"
 			[% END %]
         >
 			<div id="server_status_content" >
