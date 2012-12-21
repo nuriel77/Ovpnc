@@ -121,6 +121,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         check_changes: function(){
             $('input').bind('keyup',function(){
                 console.log('input detected');
+                $(this).parent('div').find('span.error_message').remove();
                 $.addClient.form_modified = $.Ovpnc().set_confirm_exit( $.addClient.form_modified, $.addClient().confirm_exit );
             });
             $('select').change(function(){
@@ -147,14 +148,15 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             // Set validation rules
             $.addClient().set_form_validation_rules();
 
-            // Set keyup for all inputs
-            $('input').bind('keyup',function(e){
+            // Set keyup for all inputs (not #password)
+            $('input:not(#password)').bind('keyup',function(e){
                 // Prevent submit by pressing enter
                 if (e.which == 13) return false;
                 // Remove previous warnings if any
                 $(this).parent('div').find('span').remove();
                 $(this).parent('div').find('label').css('color','#000000');
             });
+
             // On form submission
             $('#submit_add_client_form').click(function(e){
                 e.preventDefault();
@@ -222,6 +224,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             });
             $('input#password2').bind('keyup',function(){
                 //$.addClient.form_modified = 1;
+                $('#generated_password_text').empty();
                 $.Ovpnc().check_passwords();
             });
             $('#generate_password').bind('mousedown',function(){
@@ -333,16 +336,6 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
 })(jQuery);
 
 $(document).ready( function() {
-
-    $("#password").passStrength({
-        shortPass:      "top_shortPass",
-        badPass:        "top_badPass",
-        goodPass:       "top_goodPass",
-        strongPass:     "top_strongPass",
-        baseStyle:      "top_testresult",
-        userid:         "#username",
-        messageloc:     1
-    });
 
     var cookie_data = new Object();
 

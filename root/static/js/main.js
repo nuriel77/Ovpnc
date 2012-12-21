@@ -267,7 +267,7 @@
             var _token = $('#token').attr('value');
             var _pass = $.Ovpnc().generate_password(_token);
             // Clean any previous messages
-            $('#password2').parent('div').find('div').remove();
+            $('#password2').parent('div').find('span.error_message').empty();
             // Color the elements black, if it was
             // red because of previous error..
             $('#password2').parent('div').find('label').css('color','#000000');

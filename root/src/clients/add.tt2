@@ -7,4 +7,15 @@
     // Set events for form
     // input fields and submit
     $.addClient().set_form_events();
+
+    // Set password strengh checker
+    $("#password").passStrength({
+        shortPass:      "top_shortPass",
+        badPass:        "top_badPass",
+        goodPass:       "top_goodPass",
+        strongPass:     "top_strongPass",
+        baseStyle:      "top_testresult",
+        userid:         "#username",
+        messageloc:     1
+    });
 </script>

@@ -53,6 +53,18 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "1 lowercase, uppercase, digit and character"
+                      - type: Block
+                        tag: div
+                        attributes_xml:
+                          class: "generated_password"
+                          style: "color:#000000"
+                        elements:
+                          - type: Block
+                            tag: span
+                            attributes_xml:
+                              id: "generated_password_text"
+                              class: "generated_password"
+                              onclick: "fnSelect(this.id);"
               # Password repeated
               - type: Block
                 tag: div
@@ -70,11 +82,6 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "" 
-                      - type: Block
-                        tag: div
-                        attributes_xml:
-                          class: "generated_password"
-                          style: "color:#000000"
               # Generate password button
               - type: Block
                 tag: div

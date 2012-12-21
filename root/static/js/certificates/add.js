@@ -148,7 +148,8 @@ jQuery.validator.setDefaults({
         // Set check changes on form fields
         // 
         check_changes: function(){
-            $('input').bind('keyup',function(){
+            // Set keyup for all inputs (not #password)
+            $('input:not(#password)').bind('keyup',function(e){
                 console.log('input detected');
                 $.addCertificate.form_modified = $.Ovpnc().set_confirm_exit( $.addCertificate.form_modified, $.addCertificate().confirm_exit );
             });
@@ -275,6 +276,7 @@ jQuery.validator.setDefaults({
             });
             $('input#password2').bind('keyup',function(){
                 //$.addCertificate.form_modified = 1;
+                $('#generated_password_text').empty();
                 $.Ovpnc().check_passwords();
             });
             $('#generate_password').bind('mousedown',function(){
