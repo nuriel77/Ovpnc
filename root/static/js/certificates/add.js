@@ -1,4 +1,4 @@
-/* jquery validator settings */
+w/* jquery validator settings */
 /* jquery validator settings */
 jQuery.validator.setDefaults({
     debug: true,
@@ -49,27 +49,6 @@ jQuery.validator.setDefaults({
 
     var actions = {
         //
-        // Confirm leaving page
-        //
-        confirm_exit: function(){
-        	if ( $.addCertificate.form_modified === 0 ) return true;
-
-        	var data = {
-        		name : $('#name').attr('value'),
-        		email : $('#email').attr('value'),
-        		country : ( $.addCertificate.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
-        		state :  ( $.addCertificate.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
-        		city :   ( $.addCertificate.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') )
-        	}
-
-        	if ( $.cookie( "Ovpnc_addCertificate_Form_Settings" ) !== null ){
-        		$.removeCookie("Ovpnc_addCeritifcate_Form_Settings");
-        	}
-          	var Settings = JSON.stringify( data );
-        	$.cookie( "Ovpnc_addCeritifcate_Form_Settings", Settings, { expires: 30, path: $.addCertificate.pathname } );
-            return "Unsaved modifications";
-        },
-        //
         // Reset the form
         // 
         reset_form: function(form){
@@ -119,6 +98,85 @@ jQuery.validator.setDefaults({
             }
         },
         //
+        // Sets bindings for click events
+        // 
+        function set_click_bind(){
+        	if(typeof(events) !== "function"){
+        		$('#edit_country').click(function(){
+        			if ( $.addCertificate.edit_country === 0 ){
+        				$.addCertificate.edit_country = 1;
+	
+        				$('.r_auto').each(function(f,g){
+        					$.addCertificate.html_mem.push(g);
+        				});
+        				build_location_inputs();
+        				update_select_rules();
+        				$.addCertificate().check_changes();
+        				return;
+        			}
+        	 		else {
+        				$.addCertificate.edit_country = 0;
+        				build_location_selects();
+        				update_select_rules();
+        				$.addCertificate().check_changes();
+        				return;
+        			}
+        		});
+        	}
+        	$.addCertificate().check_changes();
+        },
+        //
+        // Confirm leaving page
+        // save state to cookie
+        // [data, cookie_name, path_name, modified, expires]
+        confirm_exit: function(){
+            console.log("Confirm exit got: %o",p);
+            if ( $.cookie( p.cookie_name ) !== null ){
+                $.removeCookie( p.cookie_name );
+            }
+            console.log('Cookie saved');
+            // Set the cookie data
+            var Settings = JSON.stringify( p.data );
+            $.cookie( p.cookie_name, Settings, {
+                expires: p.expires ? p.expires : 30,
+                path: p.path_name ? p.path_name : ''
+            });
+            // Warn user about changes [for debug only]
+            return "Unsaved modifications";
+        },
+        //
+        // Set check changes on form fields
+        // 
+        check_changes: function(){
+            $('input').bind('keyup',function(){
+                console.log('input detected');
+                $.addCertificate.form_modified = $.Ovpnc().set_confirm_exit( $.addCertificate.form_modified, $.addCertificate().confirm_exit );
+            });
+            $('select').change(function(){
+                console.log('change detected');
+                $.addCertificate.form_modified = $.Ovpnc().set_confirm_exit( $.addCertificate.form_modified, $.addCertificate().confirm_exit );
+            });
+        },
+        //
+        // Sets events for select changes
+        //
+        set_select_bind: function(){
+        	$('select#country').change(function(){	
+        		// Ajax loader
+        		$('#t_state').html( $.Ovpnc().ajax_loader );	
+        		var geonameId = $("select#country option:selected").attr('value');
+        		get_state_list( geonameId );
+        		$.addCertificate.form_modified = $.Ovpnc().set_confirm_exit( $.addCertificate.form_modified );
+        	});
+        	$('select#state').change(function(){
+        		// Ajax loader
+        		$('#t_city').html( $.Ovpnc().ajax_loader );
+        		var geonameId = $("select#state option:selected").attr('value');
+        		get_city_list( geonameId );
+        		$.addCertificate.form_modified = $.Ovpnc().set_confirm_exit( $.addCertificate.form_modified );
+        	});
+        },
+        //
         // Set event handlers for the form 
         //
         set_form_events: function(){
@@ -133,7 +191,8 @@ jQuery.validator.setDefaults({
                 // Remove previous warnings if any
                 $(this).parent('div').find('span').remove();
                 $(this).parent('div').find('label').css('color','#000000');
-                $.addCertificate.form_modified = 1;
+                //console.log('input detected - keyup');
+                //$.addCertificate.form_modified = 1;
             });
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
@@ -159,9 +218,9 @@ jQuery.validator.setDefaults({
                     $.Ovpnc().remove_ajax_loading();
                     return false;
                 }
-                $.addCertificate().check_username();
-                $.addCertificate().check_passwords();
-                $.addCertificate().check_email();
+                $.Ovpnc().check_username();
+                $.Ovpnc().check_passwords();
+                $.Ovpnc().check_email();
                 $("#add_certificate_form").valid();
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
@@ -177,7 +236,20 @@ jQuery.validator.setDefaults({
                 window.onbeforeunload = undefined;
 
                 // Save the current values
-                $.addCertificate().confirm_exit();
+                // (data, cookie_name, path_name, modified, expires)
+                $.addCertificate().confirm_exit({
+                    data: {
+                        name : $('#name').attr('value'),
+                        email : $('#email').attr('value'),
+                        country : ( $.addCertificate.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
+                        state :  ( $.addCertificate.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
+                        city :   ( $.addCertificate.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') ) 
+                    },
+                    cookie_name: "Ovpnc_addCertificate_Form_Settings",
+                    path_name: $.addCertificate.pathname,
+                    modified: $.addCertificate.form_modified,
+                    expires: 14
+                });
 
                 $.Ovpnc().ajax_call(
                     '/certificates/add',
@@ -191,16 +263,19 @@ jQuery.validator.setDefaults({
 
             });
             $('input#username').bind('keyup',function(){
-                $.addCertificate.form_modified = 1;
-                $.addCertificate().check_username();
+                //$.addCertificate.form_modified = 1;
+                $.Ovpnc().check_username();
+            });
+            $('input#certname').bind('keyup',function(){
+                //$.addCertificate.form_modified = 1;
             });
             $('input#email').bind('keyup',function(){
-                $.addClient.form_modified = 1;
-                $.addClient().check_email();
+                //$.addCertificate.form_modified = 1;
+                $.Ovpnc().check_email();
             });
             $('input#password2').bind('keyup',function(){
-                $.addClient.form_modified = 1;
-                $.addClient().check_passwords();
+                //$.addCertificate.form_modified = 1;
+                $.Ovpnc().check_passwords();
             });
             $('#generate_password').bind('mousedown',function(){
                 $('#generate_password').css('border','1px solid #999999').css('color','#555555');
@@ -233,14 +308,13 @@ function cert_exec_actions(){
 		set_form_from_cookie( cookie_data );
 	}
 
-	set_select_bind();
-	set_click_bind();
+	$.addCertificate().set_select_bind();
+	$.addCertificate().set_click_bind();
 
     // First check if a country has already been set
     // by Catalyst FormFu, where 0 means not.
-    if ( $("#country option:selected").attr('value').match(/\d+/)
-      && $("#country option:selected").attr('value') > 0
-    ) {
+    var _selected = $("#country option:selected").attr('value');
+    if ( _selected !== undefined && _selected != 0 ){
         // We can get the state list,
         // since the country was already
         // set by Catalyst FormFu
@@ -269,7 +343,10 @@ function cert_exec_actions(){
 	else {
 		// Check user's location
 		// and set it as default
-		//console.log( 'Setting default user location' );
+		console.log( 'Setting default user location' );
+        if ( $("#country option:selected").attr('value') == 0 ){
+            $("#country option:selected").remove();
+        }
 		get_user_geolocation();
 	}
 
@@ -291,16 +368,6 @@ function set_form_from_cookie(data){
         }
     }
 
-}
-
-function set_confirm_exit(){
-
-	if (  $.addCertificate.form_modified === 0 ) {
-		//console.log('Set check saved config');
-		$.addCertificate.form_modified = 1;
-		// On window unload
-		window.onbeforeunload = $.addCertificate().confirm_exit;
-	}
 }
 
 // Sets rules for form validation
@@ -347,33 +414,6 @@ function update_select_rules(){
 
 }
 
-function set_click_bind(){
-
-	if(typeof(events) !== "function"){
-		$('#edit_country').click(function(){
-			if ( $.addCertificate.edit_country === 0 ){
-				$.addCertificate.edit_country = 1;
-	
-				$('.r_auto').each(function(f,g){
-					$.addCertificate.html_mem.push(g);
-				});
-				build_location_inputs();
-				update_select_rules();
-				check_changes();
-				return;
-			}
-	 		else {
-				$.addCertificate.edit_country = 0;
-				build_location_selects();
-				update_select_rules();
-				check_changes();
-				return;
-			}
-		});
-	}
-	check_changes();
-}
-
 function NASort(a, b) {    
     if (a.innerHTML == 'NA') {
         return 1;   
@@ -384,23 +424,12 @@ function NASort(a, b) {
     return (a.innerHTML > b.innerHTML) ? 1 : -1;
 };
 
-function check_changes(){
-	$('input').bind('keyup',function(){
-		//console.log('input detected');
-		set_confirm_exit();
-	});
-	$('select').change(function(){
-		//console.log('change detected');
-		set_confirm_exit();
-	});
-}
-
 function build_location_selects(){
 	var inn = $.Ovpnc().elems;
 	for ( var i in $.addCertificate.html_mem ){
 		$('#s_' + inn[i]).html( $.addCertificate.html_mem[i] );
 	}
-	set_select_bind();
+	$.addCertificate().set_select_bind();
 }
 
 function build_location_inputs(){
@@ -410,26 +439,6 @@ function build_location_inputs(){
 			'<input name="'+inn[i]+'" id="'+inn[i]+'" placeholder="'+inn[i]+' name" />'
 		);
 	}
-}
-
-function set_select_bind(){
-
-	$('select#country').change(function(){	
-		// Ajax loader
-		$('#t_state').html( $.Ovpnc().ajax_loader );	
-		var geonameId = $("select#country option:selected").attr('value');
-		get_state_list( geonameId );
-		set_confirm_exit();
-	});
-
-	$('select#state').change(function(){
-		// Ajax loader
-		$('#t_city').html( $.Ovpnc().ajax_loader );
-		var geonameId = $("select#state option:selected").attr('value');
-		get_city_list( geonameId );
-		set_confirm_exit();
-	});
-
 }
 
 function get_state_list( geonameId ){
@@ -564,7 +573,7 @@ function get_user_geolocation(){
 	        }, function( result ) {
 
 				$('#t_country').empty();
-				//console.log('CountryName: ' + result.countryName );
+				console.log('CountryName: ' + result.countryName );
 				set_select_country_geonameId( result.countryName )		
 
 	        }).error(function(xhr, ajaxOptions, thrownError) {

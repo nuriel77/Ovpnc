@@ -84,6 +84,35 @@
 
         },
         //
+        // Confirm leaving page
+        //
+        set_confirm_exit: function(modified, action){
+            if ( modified === undefined || modified === 0 ) {
+                // On window unload
+                console.log('Form modified, setting confirm_on_exit');
+                window.onbeforeunload = action;
+            }
+            else {
+                console.log('Already modified');
+            }
+            return 1;
+        },
+        check_username: function(){
+            var _name = $('input#username').attr('value');
+            if ( _name === undefined || _name == '' ) return;
+            $.Ovpnc().ajax_call('/api/clients', { username: _name }, 'GET', return_client_data, error_ajax_return );
+        },
+        check_passwords: function(){
+            var current = $('input#password2').attr('value');
+            var first = $('input#password').attr('value');
+            $.Ovpnc().verify_passwords_match( first, current, 'password2' );
+        },
+        check_email: function(){
+            var _name = $('input#email').attr('value');
+            if ( _name === undefined || _name == '' ) return;
+            $.Ovpnc().ajax_call('/api/clients', { email: _name }, 'GET', return_client_data, error_ajax_return );
+        },
+        //
         // Reset form fields
         //
         reset_form: function(id){

@@ -71,6 +71,66 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 }
             }
         },
+        cookie_data : {
+            cookie_name: "Ovpnc_addClient_Form_Settings",
+            path_name: $.addClient.pathname,
+            modified: $.addClient.form_modified,
+            expires: 14
+        },
+        set_click_bind: function(){
+        //    if(typeof(events) !== "function"){
+        //        $('#generate_password').click(function(){
+        //                $.Ovpnc().check_changes();
+        //        });
+        //    }
+            $.addClient().check_changes();
+        },
+        //
+        // Confirm leaving page
+        // save state to cookie
+        // [data, cookie_name, path_name, modified, expires]
+        confirm_exit: function(){
+            var p = $.addClient().cookie_data;
+            if ( p === undefined ) return true;
+            if ( $.cookie( p.cookie_name ) !== null ){
+                $.removeCookie( p.cookie_name );
+            }
+
+            // Set the cookie data
+            var Settings = JSON.stringify({
+                username: $('#username').attr('value'),
+                email: $('#email').attr('value'),
+                address: $('#address').attr('value'),
+                phone: $('#phone').attr('value'),
+                fullname: $('#fullname').attr('value')
+            });
+            console.log("Cookie data: %o",Settings);
+            $.cookie( p.cookie_name, Settings, {
+                expires: p.expires ? p.expires : 30,
+                path: p.path_name ? p.path_name : ''
+            });
+            console.log('Cookie saved');
+
+            // Warn user about changes [for debug only]
+            return "Unsaved modifications";
+        },
+        //
+        // Set check changes and modified
+        // form variable for confirm_exit
+        //
+        check_changes: function(){
+            $('input').bind('keyup',function(){
+                console.log('input detected');
+                $.addClient.form_modified = $.Ovpnc().set_confirm_exit( $.addClient.form_modified, $.addClient().confirm_exit );
+            });
+            $('select').change(function(){
+                console.log('change detected');
+                $.addClient.form_modified = $.Ovpnc().set_confirm_exit( $.addClient.form_modified, $.addClient().confirm_exit );    
+            });
+        },
+        //
+        // Reset form fields
+        //
         reset_form: function(form){
             $('input[type="text"]').each(function(k,v){ $(v).attr('value',''); });
             $('input[type="password"]').each(function(k,v){ $(v).attr('value',''); });
@@ -91,10 +151,8 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 // Remove previous warnings if any
                 $(this).parent('div').find('span').remove();
                 $(this).parent('div').find('label').css('color','#000000');
-                $.addClient.form_modified = 1;
             });
             // On form submission
-            //$('form#add_client_form').submit( function(e){
             $('#submit_add_client_form').click(function(e){
                 e.preventDefault();
                 $.Ovpnc().set_ajax_loading();
@@ -118,9 +176,9 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                     $.Ovpnc().remove_ajax_loading();
                     return false;
                 }
-                $.addClient().check_username();
-                $.addClient().check_passwords();
-                $.addClient().check_email();
+                $.Ovpnc().check_username();
+                $.Ovpnc().check_passwords();
+                $.Ovpnc().check_email();
                 $("#add_client_form").valid();
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
@@ -136,8 +194,10 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 window.onbeforeunload = undefined;
 
                 // Save the current values
+                // (data, cookie_name, path_name, modified, expires)
                 $.addClient().confirm_exit();
 
+                // Add client - submit to controller
                 $.Ovpnc().ajax_call(
                     '/clients/add',
                      $("form#add_client_form").serialize(),
@@ -150,16 +210,16 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
 
             });
             $('input#username').bind('keyup',function(){
-                $.addClient.form_modified = 1;
-                $.addClient().check_username();
+                //$.addClient.form_modified = 1;
+                $.Ovpnc().check_username();
             });
             $('input#email').bind('keyup',function(){
-                $.addClient.form_modified = 1;
-                $.addClient().check_email();
+                //$.addClient.form_modified = 1;
+                $.Ovpnc().check_email();
             });
             $('input#password2').bind('keyup',function(){
-                $.addClient.form_modified = 1;
-                $.addClient().check_passwords();
+                //$.addClient.form_modified = 1;
+                $.Ovpnc().check_passwords();
             });
             $('#generate_password').bind('mousedown',function(){
                 $('#generate_password').css('border','1px solid #999999').css('color','#555555');
@@ -168,58 +228,16 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             });
 
         },
-        check_username: function(){
-            var _name = $('input#username').attr('value');
-            if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().ajax_call('/api/clients', { username: _name }, 'GET', return_client_data, error_ajax_return );
-        },
-        check_passwords: function(){
-            var current = $('input#password2').attr('value');
-            var first = $('input#password').attr('value');
-            $.Ovpnc().verify_passwords_match( first, current, 'password2' );
-        },
-        check_email: function(){
-            var _name = $('input#email').attr('value');
-            if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().ajax_call('/api/clients', { email: _name }, 'GET', return_client_data, error_ajax_return );
-        },
         // Form validation rules
         set_form_validation_rules: function(){
             $("#add_client_form").validate(
                 $.addClient().validation_rules()
             );
         },
-        // Confirm unsaved modifications
-        // on user leave page
-        confirm_exit: function(){
-        
-            console.log(  $.addClient.pathname + ', form mod: ' + $.addClient.form_modified );
-    
-            if ( $.addClient.form_modified === 0 ) return;
-            var data = {
-                username : $('#username').attr('value'),
-                email : $('#email').attr('value'),
-                address: $('#address').attr('value'),
-                phone: $('#phone').attr('value'),
-                fullname: $('#fullname').attr('value')
-            };
-            if ( $.cookie( "Ovpnc_addClient_Form_Settings" ) !== null ){
-                $.removeCookie("Ovpnc_addClient_Form_Settings");
-            }
-            var Settings = JSON.stringify( data );
-            $.cookie( "Ovpnc_addClient_Form_Settings", Settings, { expires: 30, path: $.addClient.pathname } );
-            return "Unsaved modifications";
-        },
-        // Confirm leave page
-        set_confirm_exit: function(){
-            if (  $.addClient.form_modified === 0 ) {
-                // On window unload
-                window.onbeforeunload = $.addClient().confirm_exit;
-            }
-        },
         // Set the input fields
         // from the cookie
         set_form_from_cookie: function(data){
+            console.log("Setting fields from cookie");
             if ( data !== undefined ){
                 if ( data.username !== '' ){
                     $('#username').attr('value', data.name);
@@ -326,8 +344,8 @@ $(document).ready( function() {
     var cookie_data = new Object();
 
     // Preload cookie
-    if ( $.cookie('Ovpnc_addClient_Form_Settings') !== null ){
-        cookie_data = jQuery.parseJSON( $.cookie('Ovpnc_addClient_Form_Settings') );
+    if ( $.cookie( $.addClient().cookie_data.cookie_name ) !== null ){
+        cookie_data = jQuery.parseJSON( $.cookie( $.addClient().cookie_data.cookie_name ) );
         $.addClient().set_form_from_cookie( cookie_data );
     }
     // If we saved the previous fields in a
@@ -341,14 +359,15 @@ $(document).ready( function() {
     }
 
     if ( $('input#username').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.addClient().check_username();
+        $.Ovpnc().check_username();
     if ( $('input#password').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.addClient().check_passwords();
+        $.Ovpnc().check_passwords();
     if ( $('input#email').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.addClient().check_email();
+        $.Ovpnc().check_email();
+
 
     // Handler for exit
-    $.addClient().set_confirm_exit();
+    $.addClient().set_click_bind();
 
 });
 
@@ -371,3 +390,5 @@ function return_client_data(r){
         }
     }
 }
+
+
