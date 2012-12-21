@@ -34,8 +34,6 @@ elements:
                            - Required
                            - type: Regex
                              regex: '^[\-_a-zA-Z\d]*\z'
-                           - type: MinLength
-                             min: 2
                            - type: MaxLength
                              max: 42
               # Password
@@ -72,10 +70,15 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "" 
+                      - type: Block
+                        tag: div
+                        attributes_xml:
+                          class: "generated_password"
+                          style: "color:#000000"
               # Generate password button
               - type: Block
                 tag: div
-                content_xml: "<div id='generate_password' onclick='generate_password_click();return false;'>Generate Password</div>"
+                content_xml: "<div id='generate_password' onclick='$.Ovpnc().generate_password_click();return false;'>Generate Password</div>"
               # Clear div
               - type: Block
                 tag: div
@@ -100,8 +103,6 @@ elements:
                            - Required
                            - type: Regex
                              regex: '^[\-_a-zA-Z\d\s]*\z'
-                           - type: MinLength
-                             min: 2
                            - type: MaxLength
                              max: 42
               # Email
@@ -138,9 +139,6 @@ elements:
                         constraints:
                           - type: Regex
                             regex: '^[ \-\d\(\)\.]*\z'
-                          - Required
-                          - type: MinLength
-                            min: 8
                           - type: MaxLength
                             max: 32
               # Address
@@ -155,9 +153,6 @@ elements:
                           placeholder: "Planet earth, Antarctica"
                           class: "form_row"
                         constraints:
-                          - Required
-                          - type: MinLength
-                            min: 8
                           - type: MaxLength
                             max: 128
               # Reset
@@ -184,5 +179,3 @@ elements:
                 tag: div
                 attributes_xml:
                   class: "clear"
-        constraints:
-              - SingleValue

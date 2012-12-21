@@ -41,7 +41,7 @@ sub set_environment_vars
     # ===================================
     my %_oe = (
         KEY_CN             => $self->_req->{CN}             || 'server',
-        KEY_NAME           => $self->_req->{CN}             || 'Ovpnc',
+        KEY_NAME           => $self->_req->{name}           || 'Ovpnc',
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},
         PKCS11TOOL         => $_tools_dir . '/pkcs11-tool',

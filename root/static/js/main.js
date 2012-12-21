@@ -225,11 +225,27 @@
                 top:            '120px',
                 opacity:        '0.6',
                 'min-width':    '99%',
-                'height':   '100%',
+                'height':       '100%',
                 'background-color': '#ffffff'
             }).attr('id', 'oDiv');
             $('#outer').prepend( oDiv );
             $( oDiv ).fadeIn(500);
+        },
+        //
+        // Generate password click event handler
+        //
+        generate_password_click: function(){
+            var _token = $('#token').attr('value');
+            var _pass = $.Ovpnc().generate_password(_token);
+            // Clean any previous messages
+            $('#password2').parent('div').find('div').remove();
+            // Color the elements black, if it was
+            // red because of previous error..
+            $('#password2').parent('div').find('label').css('color','#000000');
+            $('#generated_password_text').text(_pass);
+            $('#password').attr('value', _pass ).keyup();
+            $('#password2').attr('value', _pass );
+            return;
         },
         //
         // Generate random password
@@ -499,11 +515,18 @@
         set_middle_frame_w: function(){
             var w = $(window).width();
             var f = w < 1300 ? ( 0.5 * w ) : ( 0.6 * w );
-            var o = w < 1200 ? 7.5 : 10;
-            var o = w < 1100 ? 5 : 7.5;
-            var o = w < 1000 ? 0.5 : 5;
+            var o;
+            o = w < 1200 ? 7.5 : 10;
+            o = w < 1100 ? 3 : 7.5;
+            o = w < 1000 ? 0.5 : 3;
+            var m = 3;
+//            m = w < 1200 ? 2 : 3;
+//            m = w < 1100 ? 0.5 : 3;
+            
+//            $('#outer_centered').css('margin-right', ( w < 1100 ? 0.5 : 4.5 ) + '%');
             $('#outer_centered').css('margin-left', o + '%');
-            $('#middle_frame').css('min-width', f + 'px');
+            if ( f > 601 )
+                $('#middle_frame').css('min-width', f + 'px');
             if ( $('.flexigrid').is(':visible') ){
                 $('.flexigrid').css('max-width', ( $('#middle_frame').width() - 40 ) + 'px' );
             }

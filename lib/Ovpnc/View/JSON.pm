@@ -48,7 +48,7 @@ sub encode_json
         $c->detach;
         return;
     }
-    
+
     $c->response->headers->header('Content-Type' => 'application/json');
 
     # Return JSON

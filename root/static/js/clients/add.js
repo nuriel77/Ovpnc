@@ -38,6 +38,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
     };
 
     $.addClient.form_modified = 0;
+    $.addClient.pathname = window.location.pathname;
 
     //
     // addClient actions
@@ -82,6 +83,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
 
             // Set validation rules
             $.addClient().set_form_validation_rules();
+
             // Set keyup for all inputs
             $('input').bind('keyup',function(e){
                 // Prevent submit by pressing enter
@@ -183,7 +185,6 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         },
         // Form validation rules
         set_form_validation_rules: function(){
-            // Form validation rules
             $("#add_client_form").validate(
                 $.addClient().validation_rules()
             );
@@ -191,9 +192,11 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Confirm unsaved modifications
         // on user leave page
         confirm_exit: function(){
+        
+            console.log(  $.addClient.pathname + ', form mod: ' + $.addClient.form_modified );
+    
             if ( $.addClient.form_modified === 0 ) return;
-            var data = new Object();
-            data = {
+            var data = {
                 username : $('#username').attr('value'),
                 email : $('#email').attr('value'),
                 address: $('#address').attr('value'),
@@ -204,7 +207,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 $.removeCookie("Ovpnc_addClient_Form_Settings");
             }
             var Settings = JSON.stringify( data );
-            $.cookie( "Ovpnc_addClient_Form_Settings", Settings, { expires: 30, path: '/' } );
+            $.cookie( "Ovpnc_addClient_Form_Settings", Settings, { expires: 30, path: $.addClient.pathname } );
             return "Unsaved modifications";
         },
         // Confirm leave page
@@ -246,7 +249,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             if ( msg.status ){
                 // Confirm
                 var cnf = confirm( msg.status + '. Would you like to add one more?' );
-                if ( cnf == false ){
+                if ( cnf != true ){
                     alert( $.Ovpnc().alert_ok + ' ' + msg.status + ', redirecting...' + '</div><div class="clear"></div>' );
                     var _wait =  setInterval(function() {
                         window.clearInterval(_wait);
@@ -255,7 +258,11 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                     1000 );
                 }
                 else {
-//xxx
+                    window.onbeforeunload = undefined;
+                    console.log('removing Ovpnc_addClient_Form_Settings cookie');
+                    $.removeCookie('Ovpnc_addClient_Form_Settings');
+                    $.cookie('Ovpnc_addClient_Form_Settings', null);
+                    $.addClient().reset_form();
                 }
             }
             $.Ovpnc().remove_ajax_loading();
@@ -364,20 +371,3 @@ function return_client_data(r){
         }
     }
 }
-
-function generate_password_click(){
-    var _token = $('#token').attr('value');
-    var _pass = $.Ovpnc().generate_password(_token);
-    $('#password2').parent('div').find('span').remove();
-    $('#password2').parent('div').find('label').css('color','#000000');
-    $('#password2').parent('div').prepend('<span class="generated_password" style="color:#000000">'
-        + '<div id="generated_password_text" class="generated_password" onClick="fnSelect(this.id);" style="width:100%;border:0"'
-        + '>'+ _pass + '</div>'
-        + '</span>'
-    );
-    $('#password').attr('value', _pass ).keyup();
-    $('#password2').attr('value', _pass );
-    return;
-}
-
-

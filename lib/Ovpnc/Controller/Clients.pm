@@ -72,6 +72,8 @@ around [qw(index add)] => sub {
 
 =head2 index
 
+Main action
+
 =cut
 
 sub index : Path
@@ -81,9 +83,8 @@ sub index : Path
           : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
 {
     my ( $self, $c ) = @_;
-    $c->stash->{title}     = 'Clients';
-    $c->stash->{this_link} = 'clients';
-
+    $c->stash->{title}     = ucfirst($c->action);
+    $c->stash->{this_link} = $c->action;
 }
 
 =head2 add
@@ -131,14 +132,19 @@ sub add : Path('add')
         # =================================
         if ( $form->has_errors ) {
             for ( @{$form->get_errors} ){
-                push @{$c->stash->{fields_error}} , $_->name;
-                push @{$c->stash->{error}} ,
-                    "Error in field: '" . $_->name . "': " . $_->message
-                    . " - " . $_->type
-                    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
-                delete $c->stash->{$_} for ( qw/assets form token/ );
-                delete $c->req->params->{submit};
+                try  { 
+                    push @{$c->stash->{fields_error}} , $_->name;
+                    push @{$c->stash->{error}},
+                        "Error in field: '" . $_->name . "': " . $_->message
+                        . " - " . $_->type
+                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
+                    delete $c->stash->{$_} for ( qw/assets form token/ );
+                    delete $c->req->params->{submit};
+                }
+                catch {
+                     push @{$c->stash->{error}}, $_;
+                };
             }
             $c->response->status(400);
             $c->forward('View::JSON');

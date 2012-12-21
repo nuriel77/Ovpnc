@@ -36,16 +36,180 @@ jQuery.validator.setDefaults({
 
 	// Append to main namespace
 	var temp_ns = $.Ovpnc();
-	$.Ovpnc = function(options){
-        var obj = $.extend( {}, temp_ns, items);
+	$.addCertificate = function(options){
+        var obj = $.extend( {}, actions, items);
         return obj;
     };
 
 	// New global vars:
-	$.Ovpnc.edit_country = 0;
-	$.Ovpnc.form_modified = 0;
-	$.Ovpnc.html_mem = new Array();
-	
+	$.addCertificate.edit_country = 0;
+	$.addCertificate.form_modified = 0;
+    $.addCertificate.pathname = window.location.pathname;
+	$.addCertificate.html_mem = new Array();
+
+    var actions = {
+        //
+        // Confirm leaving page
+        //
+        confirm_exit: function(){
+        	if ( $.addCertificate.form_modified === 0 ) return true;
+
+        	var data = {
+        		name : $('#name').attr('value'),
+        		email : $('#email').attr('value'),
+        		country : ( $.addCertificate.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
+        		state :  ( $.addCertificate.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
+        		city :   ( $.addCertificate.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') )
+        	}
+
+        	if ( $.cookie( "Ovpnc_Form_Settings" ) !== null ){
+        		$.removeCookie("Ovpnc_Form_Settings");
+        	}
+          	var Settings = JSON.stringify( data );
+        	$.cookie( "Ovpnc_Form_Settings", Settings, { expires: 30, path: $.addCertificate.pathname } );
+            return "Unsaved modifications";
+        },
+        //
+        // Reset the form
+        // 
+        reset_form: function(form){
+            $('input[type="text"]').each(function(k,v){ $(v).attr('value',''); });
+            $('input[type="password"]').each(function(k,v){ $(v).attr('value',''); });
+            $('.generated_password').remove()
+            $('.error').remove()
+            $('.error_message').remove();
+            $('label').each(function(){ $(this).css('color','#000000'); });
+        },
+        //
+        // Apply the validation rules onto the form
+        //
+        set_form_validation_rules: function(){
+            $("#add_client_form").validate(
+                $.addCertificate().validation_rules()
+            );
+        },
+        //
+        // The rules/constraints
+        //
+        validation_rules: function() {
+            return {
+                rules: {
+                    username: {
+                        required: true,
+                        maxlength: 42,
+                    },
+                    password: {
+                        required: true,
+                        maxlength: 72
+                    },
+                    email: {
+                        required: true,
+                        maxlength: 72,
+                        email: true
+                    },
+                    phone: {
+                        required: true,
+                        maxlength: 42
+                    },
+                    address: {
+                        required: true,
+                        maxlength: 128
+                    }
+                }
+            }
+        },
+        //
+        // Set event handlers for the form 
+        //
+        set_form_events: function(){
+
+            // Set validation rules
+            $.addCertificate().set_form_validation_rules();
+
+            // Set keyup for all inputs
+            $('input').bind('keyup',function(e){
+                // Prevent submit by pressing enter
+                if (e.which == 13) return false;
+                // Remove previous warnings if any
+                $(this).parent('div').find('span').remove();
+                $(this).parent('div').find('label').css('color','#000000');
+                $.addCertificate.form_modified = 1;
+            });
+            // On form submission
+            $('#submit_add_certificate_form').click(function(e){
+                e.preventDefault();
+                $.Ovpnc().set_ajax_loading();
+                // Check password length and strength
+                var _pw_length = $('input#password').attr('value');
+                if ( _pw_length.length < 8 ) {
+                    $('input#password').parent('div').find('span').remove();
+                    $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
+                    $('input#password').parent('div').find('label').css('color','#8B0000');
+                    $.Ovpnc().remove_ajax_loading();
+                    return false;
+                }
+                // Don't submit if passwords don't match or weak
+                var current = $('input#password2').attr('value');
+                var first = $('input#password').attr('value');
+                if ( ! $.Ovpnc().verify_passwords_match(first, current, 'password2' ) ) return false;
+                if ( $('.top_badPass').is(':visible') ) {
+                    $('input#password').parent('div').find('span').remove();
+                    $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
+                    $('input#password').parent('div').find('label').css('color','#8B0000');
+                    $.Ovpnc().remove_ajax_loading();
+                    return false;
+                }
+                $.addCertificate().check_username();
+                $.addCertificate().check_passwords();
+                $.addCertificate().check_email();
+                $("#add_certificate_form").valid();
+                var _wait =  setInterval(function() {
+                    window.clearInterval(_wait);
+                },
+                1000 );
+                if ( $('.error_message').is(':visible') || $('.client_error').is(':visible') ) {
+                    $.Ovpnc().remove_ajax_loading();
+                    return false;
+                };
+
+                // Remove the warnings message
+                // when leaving this page
+                window.onbeforeunload = undefined;
+
+                // Save the current values
+                $.addCertificate().confirm_exit();
+
+                $.Ovpnc().ajax_call(
+                    '/certificates/add',
+                     $("form#add_client_form").serialize(),
+                    'POST',
+                    $.addCertificate().return_certificate_add,
+                    $.addCertificate().error_certificate_add,
+                    1,
+                    15000
+                );
+
+            });
+            $('input#username').bind('keyup',function(){
+                $.addCertificate.form_modified = 1;
+                $.addCertificate().check_username();
+            });
+            $('input#email').bind('keyup',function(){
+                $.addClient.form_modified = 1;
+                $.addClient().check_email();
+            });
+            $('input#password2').bind('keyup',function(){
+                $.addClient.form_modified = 1;
+                $.addClient().check_passwords();
+            });
+            $('#generate_password').bind('mousedown',function(){
+                $('#generate_password').css('border','1px solid #999999').css('color','#555555');
+            }).bind('mouseup',function(){
+                $('#generate_password').css('border','').css('color','#000000');
+            });
+
+        }
+    };	
 })(jQuery);
 
 
@@ -120,11 +284,11 @@ function set_form_from_cookie(data){
 
 function set_confirm_exit(){
 
-	if (  $.Ovpnc.form_modified === 0 ) {
+	if (  $.addCertificate.form_modified === 0 ) {
 		//console.log('Set check saved config');
-		$.Ovpnc.form_modified = 1;
+		$.addCertificate.form_modified = 1;
 		// On window unload
-		window.onbeforeunload = confirmExit;
+		window.onbeforeunload = $.addCertificate().confirm_exit;
 	}
 }
 
@@ -164,7 +328,7 @@ function update_select_rules(){
 		});
 	}
 
-	if ($.Ovpnc.edit_country === 0){
+	if ($.addCertificate.edit_country === 0){
 		for (var i in $.Ovpnc().elems){
 			$("#"+$.Ovpnc().elems[i]).rules("remove", "required rangelength");
 		}
@@ -172,38 +336,15 @@ function update_select_rules(){
 
 }
 
-function confirmExit(){
-
-	if ( $.Ovpnc.form_modified === 0 ) return true;
-
-	var data = new Object();
-
-	data = {
-		name : $('#name').attr('value'),
-		email : $('#email').attr('value'),
-		country : ( $.Ovpnc.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
-		state :  ( $.Ovpnc.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
-		city :   ( $.Ovpnc.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') )
-	}
-
-	if ( $.cookie( "Ovpnc_Form_Settings" ) !== null ){
-		console.log('removed old cookie');
-		$.removeCookie("Ovpnc_Form_Settings");
-	}
-	var Settings = JSON.stringify( data );
-	$.cookie( "Ovpnc_Form_Settings", Settings, { expires: 30, path: '/' } );
-    return "Unsaved modifications";
-}
-
 function set_click_bind(){
 
 	if(typeof(events) !== "function"){
 		$('#edit_country').click(function(){
-			if ( $.Ovpnc.edit_country === 0 ){
-				$.Ovpnc.edit_country = 1;
+			if ( $.addCertificate.edit_country === 0 ){
+				$.addCertificate.edit_country = 1;
 	
 				$('.r_auto').each(function(f,g){
-					$.Ovpnc.html_mem.push(g);
+					$.addCertificate.html_mem.push(g);
 				});
 				build_location_inputs();
 				update_select_rules();
@@ -211,7 +352,7 @@ function set_click_bind(){
 				return;
 			}
 	 		else {
-				$.Ovpnc.edit_country = 0;
+				$.addCertificate.edit_country = 0;
 				build_location_selects();
 				update_select_rules();
 				check_changes();
@@ -245,8 +386,8 @@ function check_changes(){
 
 function build_location_selects(){
 	var inn = $.Ovpnc().elems;
-	for ( var i in $.Ovpnc.html_mem ){
-		$('#s_' + inn[i]).html( $.Ovpnc.html_mem[i] );
+	for ( var i in $.addCertificate.html_mem ){
+		$('#s_' + inn[i]).html( $.addCertificate.html_mem[i] );
 	}
 	set_select_bind();
 }

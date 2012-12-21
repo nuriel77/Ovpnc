@@ -30,3 +30,4 @@ openvpn/lib
 openvpn/bin/
 openvpn/conf/2.0/*
 *.pid
+DB.pm.new

@@ -174,7 +174,8 @@ sub gen_ca_certificate {
 
     # x509 object
     # ===========
-    my $ca_cert = Crypt::OpenSSL::CA::X509->new( $ca_pubkey );
+    my $ca_cert = Crypt::OpenSSL::CA::X509
+        ->new( $ca_pubkey );
 
     # Set random seed,
     # Get 16 bytes random data

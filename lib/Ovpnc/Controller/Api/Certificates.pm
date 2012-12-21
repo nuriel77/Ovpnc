@@ -125,7 +125,7 @@ sub certificates_POST : Local
             "Missing param 'cmd'"
         );
         delete $c->stash->{assets};
-        $c->detach;
+        $c->detach('View::JSON');
     }
 
     # Set roles
@@ -172,7 +172,7 @@ sub certificates_POST : Local
         $self->status_bad_request($c,
             message => 'Unknown option ' . $req->{cmd}
         );
-        $c->detach;
+        $c->detach('View::JSON');
     }
     # Process return value
     # ====================
@@ -185,7 +185,7 @@ sub certificates_POST : Local
         # be the newely generated filename(s)
         elsif ( ref $_ret_val eq 'HASH' ){
             $self->status_ok($c, entity => $_ret_val );
-            $c->detach;
+            $c->detach('View::JSON');
         }
         else {
            $self->_send_err($c, "Something went wrong with command " . $req->{cmd} );
@@ -327,6 +327,13 @@ sub _gen_ca : Private{
     return undef;
 }
 
+=head2
+
+Generate a signed certificate
+Needs a root CA
+
+=cut
+
 sub _gen_cert : Private {
 
     my $_ret_val = shift->_roles->gen_ca_signed_certificate( @_ );
@@ -344,17 +351,21 @@ sub _gen_cert : Private {
 
 =head2 _send_err
 
-detach with status 500
+detach with status 400
 and the error message
 
 =cut
 
 sub _send_err : Private {
     my ( $self, $c, $msg ) = @_;
-    $c->response->status(500);
+
     delete $c->stash->{assets};
     $c->stash->{error} = $msg ? $msg : 'An unknown error has occured';
-    $c->detach;
+    $self->status_bad_request($c, message =>
+            ( $msg ? $msg : 'An unknown error has occured' )
+        );
+    $c->detach('View::JSON');
+
 }
 
 sub default : Private {

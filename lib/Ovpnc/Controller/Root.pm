@@ -46,41 +46,46 @@ is valid and okay
 sub auto : Private {
     my ( $self, $c ) = @_;
 
-    # Verify that the database is accessible
-    # ======================================
-    try { $c->model('DB::User')->count; }
-    catch {
-        if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
-            $c->log->error( $1 );
-            push @{$c->stash->{errors}}, "Warning! Can't connecto to MySQL server!";
-        }
-        elsif ( $_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Access denied for user.*\(using password: [A-Z]*\))/g ){
-            $c->log->error( $1 );
-            push @{$c->stash->{errors}}, "Error: No connection to database! User denied.";
-        }
-        else {
-            $c->log->error( $_ );
-            push @{$c->stash->{errors}}, "Error: No connection to database!";
-        }
+    unless ( $c->stash->{db_connected} ){
+        # Verify that the database is accessible
+        # ======================================
+        try { $c->model('DB::User')->count; }
+        catch {
+            if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
+                $c->log->error( $1 );
+                push @{$c->stash->{errors}}, "Warning! Can't connecto to MySQL server!";
+            }
+            elsif ( $_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Access denied for user.*\(using password: [A-Z]*\))/g ){
+                $c->log->error( $1 );
+                push @{$c->stash->{errors}}, "Error: No connection to database! User denied.";
+            }
+            else {
+                $c->log->error( $_ );
+                push @{$c->stash->{errors}}, "Error: No connection to database!";
+            }
 
-        if ( $c->req->headers->{'accept'} =~ /text\/html|xhtml/
-            or $c->req->headers->{'accept'} eq '*/*'
-        ){
-            $c->response->headers->header('Content-Type' => 'text/html');
-            $self->include_default_links( $c );
-            $c->detach('View::HTML');
-        }
-        if ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
-            $c->res->body( $c->stash->{errors} );
+            if ( $c->req->headers->{'accept'} =~ /text\/html|xhtml/
+                or $c->req->headers->{'accept'} eq '*/*'
+            ){
+                $c->response->headers->header('Content-Type' => 'text/html');
+                $self->include_default_links( $c );
+                $c->detach('View::HTML');
+            }
+            if ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
+                $c->res->body( $c->stash->{errors} );
+                $c->detach;
+            }
+            if ( $c->req->headers->{'accept'} =~ /json/ ){
+                delete $c->stash->{assets} if $c->stash->{assets};
+                $c->response->headers->header('Content-Type' => 'text/html');
+                $c->forward('View::JSON');
+            }
             $c->detach;
-        }
-        if ( $c->req->headers->{'accept'} =~ /json/ ){
-            delete $c->stash->{assets} if $c->stash->{assets};
-            $c->response->headers->header('Content-Type' => 'text/html');
-            $c->forward('View::JSON');
-        }
-        $c->detach;
-    };
+        };
+
+        $c->stash->{db_connected} = 1;
+
+    }
 }
 
 =head2 Method modifier

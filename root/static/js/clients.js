@@ -264,6 +264,7 @@ function delete_client(button, grid){
 
     // Get total selected clients
     total_count = $('.trSelected', grid).length;
+    $.Client().loop = 0;
     var _clients = '';
     $.each($('.trSelected', grid), function() {
         // Get the client's name of this grid
@@ -273,6 +274,9 @@ function delete_client(button, grid){
         _clients += client + ',';    
         $.Client().loop = $.Client().loop + 1;
     });
+
+    // Return if no selected clients
+    if ( $.Client().loop == 0 ) return;
 
     // Confirm
     var cnf = confirm('Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ) );
