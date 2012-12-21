@@ -96,17 +96,18 @@ elements:
                         tag: div
                         content_xml: "<div id='generate_password' onclick='$.Ovpnc().generate_password_click();return false;'>Generate Password</div>"
                   -
-                      # Fullname
+                      # Certificate name
                       - type: Block
                         tag: div
                         elements:
                               - type: Text
-                                name: fullname
-                                label: "Fullname:"
+                                name: certname
+                                label: "Cert Name:"
                                 attributes_xml:
-                                  placeholder: "Some User-Name"
+                                  title: "Certificate's name"
+                                  placeholder: "my_certificate_1"
                                   class: "form_row"
-                                  id: "fullname"
+                                  id: "certname"
                                 constraints:
                                    - Required
                                    - type: Regex
@@ -125,8 +126,39 @@ elements:
                                   id: "country"
                                   class: "form_row_select r_auto styled"
                                 options:
-                                  - [ 's', 'Serb' ]
-                                  - [ 'c', 'che' ]
+                                  - [ 'placeholder', 'Loading country list...' ]
+                                constraints:
+                                  - Required
+                  -   
+                      # State
+                      - type: Block
+                        tag: div
+                        elements:
+                              - type: Select
+                                name: ST
+                                label: "State:"
+                                attributes_xml:
+                                  id: "state"
+                                  class: "form_row_select r_auto styled"
+                                options:
+                                  - [ 'placeholder', '-' ]
+                                constraints:
+                                  - Required
+                  -
+                      # City / Location
+                      - type: Block
+                        tag: div
+                        elements:
+                              - type: Select
+                                name: L
+                                label: "Location:"
+                                attributes_xml:
+                                  id: "city"
+                                  class: "form_row_select r_auto styled"
+                                options:
+                                  - [ 'placeholder', '-' ]
+                                constraints:
+                                  - Required
                   -
                       # Email
                       - type: Block

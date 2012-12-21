@@ -53,13 +53,19 @@ sub encode_json
 
     # Return JSON
     # ===========
-	$self->encoder->encode( $data );
+	return $self->encoder->encode( $data );
 }
 
 sub to_json
 {
 	my( $self, $c, $data ) = @_;
-	$self->encoder->encode( $data );
+	return $self->encoder->encode( $data );
+}
+
+sub from_json
+{
+    my( $self, $c, $data ) = @_;
+    $self->encoder->decode( $data );
 }
 
 =head1 NAME 

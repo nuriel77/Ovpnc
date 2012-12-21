@@ -38,6 +38,7 @@ use Catalyst qw/
   Compress::Gzip
   Compress::Deflate
   Cache
+  SecureCookies
   Session
   Session::Store::File
   Session::State::Cookie
@@ -176,6 +177,15 @@ __PACKAGE__->config(
         ENCODING   => 'utf-8',
         render_die => 1,
     }
+);
+
+# SecureCookies
+# =============
+__PACKAGE__->config(
+    'SecureCookies' => {
+        key       => 'Ooc4ohphahN-ah6Aij)aith7zoe2Aineinae7quuaR',
+        ssl       => 0,
+    },
 );
 
 # Assets Plugin

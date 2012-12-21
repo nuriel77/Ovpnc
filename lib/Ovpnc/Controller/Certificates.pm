@@ -7,6 +7,11 @@ use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
 
+has 'json' => (
+    is => 'ro',
+    isa => 'Object',
+    default => sub { return JSON::XS->new->ascii->allow_nonref  },
+);
 
 =head1 NAME
 
@@ -113,7 +118,7 @@ sub add : Path('add')
     $c->stash->{title}     = 'Clients: Add a new client';
 
     my $form = $c->stash->{form};
-
+    
     # Verify all fields have been submitted
     # FixMe: FormFu doesn't like ajax, check why
     # ->submitted doesn't work (although forced
@@ -206,6 +211,66 @@ sub add : Path('add')
         # stash country list
         # ==================
         $c->stash->{countries} = [ sort { $a cmp $b } @clist ];
+
+=comment Countries datastructure
+
+[
+  {
+    Andorra => {
+      code => "AD",
+      id => 3041565
+    }
+  },
+]
+
+=cut
+
+        my $form_elem_country = $form->get_field({name => 'C'});
+
+        # Set default value for country
+        # if it exists in the cookie
+        # =============================
+        my $cookie  = $c->request->cookie("Ovpnc_addCeritifcate_Form_Settings");
+        my $last_country = $cookie ? $self->json->decode( $cookie->value ) : undef;
+
+        # Populate the options
+        # state and city will
+        # be done by ajax/js
+        # ====================
+        my @_formatted_countries;
+        my $_country_got_selected;
+        C: for ( @{$c->stash->{countries}} ){
+            # We should not have such
+            # a situation with two keys
+            next C if scalar keys %{$_} > 1;
+            my $key = (keys %{$_})[0];
+            my $data = {
+                value       => $_->{$key}->{id},
+                label       => $_->{$key}->{code} . ' - ' . $key
+            };
+
+            if ( defined $last_country
+                 and $last_country->{country} == $_->{$key}->{id}
+            ){
+                $data->{attributes} =
+                    { style => 'highlighted', selected => 'selected' };
+                $_country_got_selected = 1;
+            }
+
+            push @_formatted_countries, $data;
+        }
+
+        unshift (@_formatted_countries, {
+            value => '0',
+            label => '-',
+            attributes => {
+                style => 'highlighted',
+                selected => 'selected'
+            } 
+        }) unless $_country_got_selected;
+
+        $form_elem_country->options( \@_formatted_countries )
+            if @_formatted_countries;
     }
 }
     
@@ -222,7 +287,7 @@ sub get_country_list : Private {
     die "No file specified" unless $file;
     my $_list = read_file( $file )
         or die "Cannot read '$file': $!";
-    my $json  = JSON::XS->new->ascii->allow_nonref;
+
     my @clist = map {
         {
             $_->{countryName} => {
@@ -230,7 +295,7 @@ sub get_country_list : Private {
                 id   => $_->{geonameId},
               }
         }
-    } @{ ( $json->decode($_list) ) };
+    } @{ ( $self->json->decode($_list) ) };
     return \@clist;
 }
 

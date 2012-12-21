@@ -6,13 +6,13 @@ jQuery.validator.setDefaults({
     messages: {
         username: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9_]</div>",
         address: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9\\-\\.\\(\\) ]</div>",
-        fullname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
+        certname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
         phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
     },
     rules: {
         username: { test_regex: "([a-zA-Z0-9_]*)" },
         phone: { test_regex: "([0-9\-\.\(\) ]*)" },
-        fullname: { test_regex: "[a-zA-Z\-\'\. ]*" },
+        certname: { test_regex: "[a-zA-Z\-\'\. ]*" },
         address: { test_regex: "([a-zA-Z0-9\-\.\'\(\) ]*)" }
     },
     errorClass: "client_error",
@@ -62,11 +62,11 @@ jQuery.validator.setDefaults({
         		city :   ( $.addCertificate.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') )
         	}
 
-        	if ( $.cookie( "Ovpnc_Form_Settings" ) !== null ){
-        		$.removeCookie("Ovpnc_Form_Settings");
+        	if ( $.cookie( "Ovpnc_addCertificate_Form_Settings" ) !== null ){
+        		$.removeCookie("Ovpnc_addCeritifcate_Form_Settings");
         	}
           	var Settings = JSON.stringify( data );
-        	$.cookie( "Ovpnc_Form_Settings", Settings, { expires: 30, path: $.addCertificate.pathname } );
+        	$.cookie( "Ovpnc_addCeritifcate_Form_Settings", Settings, { expires: 30, path: $.addCertificate.pathname } );
             return "Unsaved modifications";
         },
         //
@@ -228,21 +228,32 @@ function cert_exec_actions(){
 	var cookie_data = new Object();
 
 	// Preload cookie
-	if ( $.cookie('Ovpnc_Form_Settings') !== null ){
-		cookie_data = jQuery.parseJSON( $.cookie('Ovpnc_Form_Settings') );
+	if ( $.cookie("Ovpnc_addCeritifcate_Form_Settings") !== null ){
+		cookie_data = jQuery.parseJSON( $.cookie("Ovpnc_addCeritifcate_Form_Settings") );
 		set_form_from_cookie( cookie_data );
 	}
 
 	set_select_bind();
 	set_click_bind();
 
-	// If we saved the previous fields in a 
-	// cookie, load from the cookie.
-	if ( cookie_data !== undefined && cookie_data.country !== undefined ){
+    // First check if a country has already been set
+    // by Catalyst FormFu, where 0 means not.
+    if ( $("#country option:selected").attr('value').match(/\d+/)
+      && $("#country option:selected").attr('value') > 0
+    ) {
+        // We can get the state list,
+        // since the country was already
+        // set by Catalyst FormFu
+        console.log('We got a default: ' + $("#country option:selected").attr('value'));
+        get_state_list( $("#country option:selected").attr('value') );
+    }    
+    // If no country has been set,
+	// load from the cookie.
+	else if ( cookie_data !== undefined && cookie_data.country !== undefined ){
 		$.Ovpnc.cookie = cookie_data;
 		//console.log("Found country in saved cookie: ", $.Ovpnc.cookie.country);
 		// If these are numbers, it is a geonameId
-		if ( ! isNaN( cookie_data.country) ){
+		if ( ! isNaN(cookie_data.country) ){
 			get_country_name_from_id( cookie_data.country );
 		}
 		else {
@@ -602,21 +613,21 @@ function set_select_country_geonameId( country ){
 
 function get_country_name_from_id( geonameId ){
 
-	//console.log( 'get country id: ' + geonameId + ' with username ' + $.Ovpnc().geo_username() );
+	 //console.log( 'get country id: ' + geonameId + ' with username ' + $.Ovpnc().geo_username() );
 
 	 $.ajaxSetup({ async: true, cache: true });
 	 $.getJSON('http://api.geonames.org/childrenJSON', {
         geonameId: geonameId,
         maxRows : 1,
         username : $.Ovpnc().geo_username()
-    }, function( result ) {
+     }, function( result ) {
 		if ( result.geonames !== undefined && result.geonames.length > 0 ) {
 			set_select_country_geonameId(result.geonames[0].countryName);
 		}
 		else {
 			console.debug('Error getting country name '  + $.Ovpnc().geo_username() );
 		}
-    }).error(function(xhr, ajaxOptions, thrownError) {
+     }).error(function(xhr, ajaxOptions, thrownError) {
         console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
         return false;
     }).complete(function(){
