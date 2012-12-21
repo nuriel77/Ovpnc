@@ -1,6 +1,10 @@
 package Ovpnc::Model::DB;
 use strict;
-use base 'Catalyst::Model::DBIC::Schema';
+use warnings;
+use Moose;
+extends 'Catalyst::Model::DBIC::Schema';
+with 'Catalyst::TraitFor::Model::DBIC::Schema::RequestConnectionPool';
+
 
 =head1 NAME
 
@@ -18,7 +22,23 @@ L<Catalyst::Model::DBIC::Schema> Model using schema L<Ovpnc::Schema>
 
 Catalyst::Helper::Model::DBIC::Schema - 0.6
 
+=head2 RequestConnectionPool
+
+Two subs required for the above
+will create persistant connection
+per user/session
+
 =cut
+
+sub build_connect_key {
+    my ($self, $c) = @_;
+    return $c->sessionid;
+}
+
+sub build_connect_info {
+    my ($self, $c) = @_;
+    return $c->config->{'Model::DB'}->{connect_info};
+}
 
 
 =head1 AUTHOR

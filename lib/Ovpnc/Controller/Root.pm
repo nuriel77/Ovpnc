@@ -43,13 +43,24 @@ is valid and okay
 
 =cut
 
+
 sub auto : Private {
+
     my ( $self, $c ) = @_;
 
-    unless ( $c->stash->{db_connected} ){
+    if ( ! $c->flash->{_db_tested}
+      && ! $c->model('DB')->storage->connected
+    ){
+ 
+        $c->log->debug('Database not connected. Testing initial connection.');
+
+        $c->flash->{_db_tested} = 1;
+
         # Verify that the database is accessible
         # ======================================
-        try { $c->model('DB::User')->count; }
+        try { 
+            $c->model('DB::User')->count;
+        }
         catch {
             if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
                 $c->log->error( $1 );
@@ -71,21 +82,22 @@ sub auto : Private {
                 $self->include_default_links( $c );
                 $c->detach('View::HTML');
             }
-            if ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
+            elsif ( $c->req->headers->{'accept'} =~ /^([\w]*)\/xml$/i ){
                 $c->res->body( $c->stash->{errors} );
                 $c->detach;
             }
-            if ( $c->req->headers->{'accept'} =~ /json/ ){
+            elsif ( $c->req->headers->{'accept'} =~ /json/ ){
                 delete $c->stash->{assets} if $c->stash->{assets};
                 $c->response->headers->header('Content-Type' => 'text/html');
                 $c->forward('View::JSON');
             }
             $c->detach;
         };
-
-        $c->stash->{db_connected} = 1;
-
     }
+    else {
+        $c->log->debug('Already connected to database.');
+    }
+
 }
 
 =head2 Method modifier
@@ -101,9 +113,9 @@ around [qw(ovpnc_config index)] => sub {
 
     # Set ovpnc conf location
     # =======================
+    #      . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} . '/' : '' )
     if ( $c->config->{ovpnc_conf} !~ /^\// ){
         $c->config->{ovpnc_conf} = getcwd . '/'
-          . ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} . '/' : '' )
           . ( getcwd =~ /Ovpnc$/ ? '' : 'Ovpnc' )
           . '/' . $c->config->{ovpnc_conf};
     }
@@ -162,6 +174,20 @@ sub index : Chained('/base')
 
 }
 
+=head2 default
+
+Standard 404 error page
+
+=cut
+
+sub default : Path {
+    my ( $self, $c ) = @_;
+    $c->response->body('Page not found');
+    $c->response->status(404);
+    $c->forward('View::HTML');
+}
+
+
 =head2 include_default_links
 
 Include static files, dynamically
@@ -204,6 +230,13 @@ sub include_default_links : Private {
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
 
+    if ( $c->user_exists ){
+        $c->stash->{expires} = scalar(localtime($c->session_expires));
+        $c->log->debug( scalar(localtime(time())) );
+        $c->log->debug( 'Session will expire: ' . $c->stash->{expires} );
+    }
+
+
     return 1 if $c->stash->{no_self};
 
     # Include according to pathname
@@ -231,18 +264,6 @@ sub sitemap : Path('/sitemap') {
     $c->response->headers->header( 'Content-Type' => 'application/xml' );
     $c->stash( current_view => 'View::XML::Simple' );
     $c->response->body( $c->sitemap_as_xml );
-}
-
-=head2 default
-
-Standard 404 error page
-
-=cut
-
-sub default : Path {
-    my ( $self, $c ) = @_;
-    $c->response->body('Page not found');
-    $c->response->status(404);
 }
 
 =head2 ovpnc_config

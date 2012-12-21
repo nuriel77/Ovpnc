@@ -139,6 +139,9 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             $('.error_message').remove();
             $('label').each(function(){ $(this).css('color','#000000'); });
         },
+        //
+        // Set event handlers
+        //
         set_form_events: function(){
 
             // Set validation rules
@@ -368,7 +371,7 @@ $(document).ready( function() {
 
     // Handler for exit
     $.addClient().set_click_bind();
-
+    $.addClient().set_form_events();
 });
 
 // Handle returned error

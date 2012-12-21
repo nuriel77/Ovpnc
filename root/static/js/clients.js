@@ -211,6 +211,7 @@ $(function(){
         autoHide: true,
         callback: function(key, options) {
             var elem = options.$trigger;
+            console.log(key);
             var client = elem.context.getAttribute("parent");
             if ( key.match(/block|unblock/i) ){
                 block_unblock_clients(key, $('.flexigrid'));
@@ -261,10 +262,10 @@ function add_client() {
 }
 
 function delete_client(button, grid){
-
     // Get total selected clients
     total_count = $('.trSelected', grid).length;
-    $.Client().loop = 0;
+    console.log('At delete client function, total selected:' + total_count);
+    var _loop = 0;
     var _clients = '';
     $.each($('.trSelected', grid), function() {
         // Get the client's name of this grid
@@ -272,11 +273,11 @@ function delete_client(button, grid){
         // Get rid of any html
         client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
         _clients += client + ',';    
-        $.Client().loop = $.Client().loop + 1;
+        _loop++;
     });
 
     // Return if no selected clients
-    if ( $.Client().loop == 0 ) return;
+    if ( _loop == 0 ) return;
 
     // Confirm
     var cnf = confirm('Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ) );

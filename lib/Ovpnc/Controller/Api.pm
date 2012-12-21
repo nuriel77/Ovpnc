@@ -344,6 +344,8 @@ sub auth_user : Private
                                  password => $password }, 'users' )
         ) {
             delete $c->req->params->{$_} for qw/username password/;
+            $c->stash->{expires} = $c->session_expires;
+            $c->session->{$user} = $c->session_expires;
         }
         else {
             $c->stash->{error} = 'Invalid username / password combination' ;

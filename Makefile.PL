@@ -88,6 +88,8 @@ requires 'Catalyst::Plugin::Session::Store::FastMmap';
 requires 'Catalyst::Authentication::Store::Htpasswd';
 requires 'Catalyst::Authentication::Store::Minimal';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
+requires 'Catalyst::TraitFor::Model::DBIC::Schema::RequestConnectionPool';
+requires 'Catalyst::Model::DBIx::Connector';
 requires 'Catalyst::Plugin::SecureCookies';
 requires 'Catalyst::Controller::HTML::FormFu';
 requires 'Catalyst::Plugin::Compress::Deflate';

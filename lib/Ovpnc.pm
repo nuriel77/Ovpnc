@@ -1,10 +1,6 @@
 package Ovpnc;
 use Moose;
 use Cwd;
-use Config::Any;
-use File::Slurp;
-use File::Basename;
-use vars '$cfg';
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
 use v5.10.1;
@@ -38,6 +34,7 @@ use Catalyst qw/
   Compress::Gzip
   Compress::Deflate
   Cache
+  Cache::Memcached
   SecureCookies
   Session
   Session::Store::File
@@ -49,9 +46,8 @@ use Catalyst qw/
   Sitemap
   +CatalystX::SimpleLogin
   /;
-
+#  Session::Store::Memcached
 extends 'Catalyst';
-
 
 =head2 CONFIGURATION
 
@@ -98,6 +94,18 @@ __PACKAGE__->config(
             store      => "Minimal",
         }
 	}
+);
+
+# Cache::Memcached::libmemcached
+# ==============================
+__PACKAGE__->config(
+    'Plugin::Cache' => {
+        backend => {
+            class   => "Cache::Memcached::libmemcached",
+            servers => ['127.0.0.1:11211'],
+            debug   => 2,
+        }
+    }
 );
 
 # Static::Simple
@@ -227,22 +235,16 @@ __PACKAGE__->config(
     },
 );
 
-{
-    $cfg = {
-        database => Config::Any->load_files({
-              files => [ __PACKAGE__->config->{home}
-                    . '/ovpnc.json'], use_ext => 1 })
-                    ->[0]->{ __PACKAGE__->config->{home}
-                    . '/ovpnc.json' }
-                    ->{'Model::DB'}->{'connect_info'},
-    };
-}
-
 
 # Session config
 # ==============
 __PACKAGE__->config(
     'Plugin::Session' => {
+        # Memcached
+        #memcached_new_args => {
+        #  'data' => [ "127.0.0.1:11211" ],
+        #},
+
         flash_to_stash => 1,
 
         # Session via file
@@ -267,19 +269,17 @@ __PACKAGE__->config(
 # - Currently overridden in ovpnc.json -
 # Database
 # ========
-__PACKAGE__->config(
-    'Model::DB' => {
-        schema_class => 'Ovpnc::Schema',
-        connect_info => {
-            dsn         => $cfg->{database}->{dsn},
-            user        => $cfg->{database}->{user},
-            password    => $cfg->{database}->{password},
-            AutoCommit  => q{1},
-        }
-    }
-);
-
-$cfg = '';
+#use Config::Any;
+#__PACKAGE__->config(
+#    'Model::DB' =>
+#    {
+#        schema_class => 'Ovpnc::Schema',
+#        connect_info => Config::Any->load_files({
+#            files => [ __PACKAGE__->config->{home} . '/ovpnc.json'], use_ext => 1
+#        })->[0]->{ __PACKAGE__->config->{home} . '/ovpnc.json' }
+#          ->{'Model::DB'}->{'connect_info'}
+#    }
+#);
 
 # Start the application
 # =====================
