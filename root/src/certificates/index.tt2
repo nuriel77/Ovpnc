@@ -1,3 +1,8 @@
-<div>
-[% content %]
+<div style="margin:10px 0 0 10px">
+    <a href="[% c.uri_for('/certificates/add') %]">Add a certificate (temporary link)</a>
+</div>
+<div style="margin:10px 0 0 10px">
+    <br />
+    <br />
+    [% content %]
 </div>

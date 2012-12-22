@@ -92,11 +92,11 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             /*
             if(typeof(events) !== "function"){
                 $('#generatePassword').click(function(){
-                    $.addClient().check_changes();
+                    $.addClient().checkChanges();
                 });
             }
             */
-            //$.addClient().check_changes();
+            //$.addClient().checkChanges();
         },
         //
         // Confirm leaving page
@@ -117,6 +117,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 phone: $('#phone').attr('value'),
                 fullname: $('#fullname').attr('value')
             });
+
             //console.log("Cookie data: %o",Settings);
             //$.cookie( p.cookie_name, Settings, {
             //    expires: p.expires ? p.expires : 30,
@@ -131,7 +132,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Set check changes and modified
         // form variable for confirmExit
         //
-        check_changes: function(){
+        checkChanges: function(){
             $('input').bind('keyup',function(){
                 //console.log('input detected');
                 $(this).parent('div').find('span.error_message').remove();
@@ -143,32 +144,12 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
             });
         },
         //
-        // Reset form fields
-        //
-        resetForm: function(form){
-            $('input[type="text"]').each(function(k,v){ $(v).attr('value',''); });
-            $('input[type="password"]').each(function(k,v){ $(v).attr('value',''); });
-            $('.generated_password').remove()
-            $('.error').remove()
-            $('.error_message').remove();
-            $('label').each(function(){ $(this).css('color','#000000'); });
-        },
-        //
         // Set event handlers
         //
         setFormEvents: function(){
 
             // Set validation rules
             $.addClient().setFormValidationRules();
-
-            // Set keyup for all inputs (not #password)
-            $('input:not(#password)').bind('keyup',function(e){
-                // Prevent submit by pressing enter
-                if (e.which == 13) return false;
-                // Remove previous warnings if any
-                $(this).parent('div').find('span').remove();
-                $(this).parent('div').find('label').css('color','#000000');
-            });
 
             /*
              *
@@ -223,37 +204,6 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 return true;
             });
             /* End submit form override */
-
-            $('input#username').bind('keyup',function(){
-                $.Ovpnc().checkUsername();
-            });
-            $('input#email').bind('keyup',function(){
-                $.Ovpnc().checkEmail();
-            });
-            $('input#password').bind('keyup',function(){
-                if ( $('input#password2').attr('value') != '' )
-                    $('#password2').attr('value','');
-                $('#generated_password_text').empty();
-                $.Ovpnc().checkPasswords();
-            });
-            $('input#password2').bind('keyup',function(){
-                $('#generated_password_text').empty();
-                $.Ovpnc().checkPasswords();
-            });
-            $('#generatePassword').bind('mousedown',function(){
-                $('#generatePassword').css('border','1px solid #999999').css('color','#555555');
-                $('#password').parent('div').find('span.error_message').remove();
-                $('#password').parent('div').find('label').css('color','#333333');
-            }).bind('mouseup',function(){
-                    var _wait_keyup =  setInterval(function() {
-                        window.clearInterval(_wait_keyup);
-                        $('#password').keyup();
-                        $('#password2').attr('value', $('#password').attr('value') );
-                        $('#generated_password_text').text($('#password').attr('value'));
-                    },
-                    50 );
-                $('#generatePassword').css('border','').css('color','#000000');
-            });
 
         },
         // Form validation rules
@@ -392,25 +342,3 @@ $(document).ready( function() {
     $.addClient().setClickBind();
     $.addClient().setFormEvents();
 });
-
-// Handle returned error
-function errorAjaxReturn(e){
-    console.log("error: %o",e);
-}
-
-// Handle client returned data
-function returnedClientData(r){
-    // Expect one field
-    if ( r.rest !== undefined ){
-        var keys = [];
-        for (var k in r.rest){
-            keys.push(k);
-        }
-        if ( r.rest[keys[0]] !== null  ){
-            $('input#' + keys[0]).parent('div').prepend('<span class="error_message error_constraint_required">' + keys[0] + ' already exists</span>');
-            $('input#' + keys[0]).parent('div').find('label').css('color','#8B0000');
-        }
-    }
-}
-
-

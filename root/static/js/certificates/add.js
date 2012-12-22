@@ -1,5 +1,3 @@
-
-/* jquery validator settings */
 /* jquery validator settings */
 jQuery.validator.setDefaults({
     debug: true,
@@ -30,11 +28,6 @@ jQuery.validator.setDefaults({
 /* Ovpnc definitions */
 (function($){
 
-	items = new Object({
-		elems : [ 'country', 'state', 'city' ],
-	});
-
-
 	// Append to main namespace
 	var temp_ns = $.Ovpnc();
 	$.addCertificate = function(options){
@@ -48,55 +41,37 @@ jQuery.validator.setDefaults({
     $.addCertificate.pathname = window.location.pathname;
 	$.addCertificate.html_mem = new Array();
 
+	var items = new Object({
+		elems : [ 'country', 'state', 'city' ],
+        cookieData : {
+            cookie_name: "Ovpnc_addCertificate_Form_Settings",
+            path_name: $.addCertificate.pathname,
+            modified: $.addCertificate.form_modified,
+            expires: 14
+        }
+	});
+
     var actions = {
         //
-        // Reset the form
-        // 
-        resetForm: function(form){
-            $('input[type="text"]').each(function(k,v){ $(v).attr('value',''); });
-            $('input[type="password"]').each(function(k,v){ $(v).attr('value',''); });
-            $('.generated_password').remove()
-            $('.error').remove()
-            $('.error_message').remove();
-            $('label').each(function(){ $(this).css('color','#000000'); });
-        },
+        // Sets rules for form validation
         //
-        // Apply the validation rules onto the form
-        //
-        set_form_validation_rules: function(){
-            $("#add_client_form").validate(
-                $.addCertificate().validation_rules()
-            );
-        },
-        //
-        // The rules/constraints
-        //
-        validation_rules: function() {
-            return {
-                rules: {
-                    username: {
-                        required: true,
-                        maxlength: 42
-                    },
-                    password: {
-                        required: true,
-                        maxlength: 72
-                    },
-                    email: {
-                        required: true,
-                        maxlength: 72,
-                        email: true
-                    },
-                    phone: {
-                        required: true,
-                        maxlength: 42
-                    },
-                    address: {
-                        required: true,
-                        maxlength: 128
-                    }
-                }
-            }
+        setFormValidation: function(){
+            $("#add_certificate_form").validate({
+        	 	rules: {
+        		    email: {
+        		    	required: true,
+        				maxlength: 42,
+        	      		email: true
+        			},
+        			name: {
+        				required: true,
+        				maxlength: 42
+        			},
+        			country : { required: true },
+        			state : { required: true },
+        			city : { required: true }
+        	    }
+        	});
         },
         //
         // Sets bindings for click events
@@ -109,52 +84,194 @@ jQuery.validator.setDefaults({
                         $('.r_auto').each(function(f,g){
                             $.addCertificate.html_mem.push(g);
                         });
-                        build_location_inputs();
-                        update_select_rules();
-                        $.addCertificate().check_changes();
+                        $.addCertificate().buildLocationInputs();
+                        $.addCertificate().updateSelectRules();
+                        $.addCertificate().checkChanges();
                         return;
                     }
                     else {
                         $.addCertificate.edit_country = 0;
-                        build_location_selects();
-                        update_select_rules();
-                        $.addCertificate().check_changes();
+                        $.addCertificate().buildLocationSelects();
+                        $.addCertificate().updateSelectRules();
+                        $.addCertificate().checkChanges();
                         return;
                     }
                 });
             }
-            $.addCertificate().check_changes();
+            $.addCertificate().checkChanges();
+        },
+        //
+        // Toggling from edit to select list
+        // requires us to re-apply the rules
+        //
+        updateSelectRules: function(){
+        	// Must run this to be
+        	// able to use 'add'
+        	$('#main_form').validate();
+        	for (var i in $.addCertificate().elems){
+        		//console.log(addCertificate.elems[i]);
+        		$("#"+$.addCertificate().elems[i]).rules("add",{
+        			maxlength: 48
+        		});
+        	}
+        	if ($.addCertificate.edit_country === 0){
+        		for (var i in $.addCertificate().elems){
+        			$("#"+$.addCertificate().elems[i]).rules("remove", "required rangelength");
+        		}
+        	}
+        },
+        //
+        // Set the input fields from the cookie
+        // 
+        setFormFromCookie: function(data){
+            console.log("Going to set form fields with %o", data);
+            if ( data !== undefined ){
+                for ( var d in data ){
+                    if ( jQuery.inArray(d, $.addCertificate().elems ) > -1 ){
+                        console.log( 'Found addCertificate field element to be ignored: ' + d);
+                    }
+                    else {
+                        $('#' + d).attr('value', data[d]);
+                    }
+                }
+            }
+            else {
+                console.log('No data from cookie with which I can set form fields');
+            }
+        },
+        //
+        // Get the country name from a geoname id
+        //
+        getCountryNameFromId: function(geonameId){
+             //console.log( 'get country id: ' + geonameId + ' with username ' + $.Ovpnc().geoUsername() );
+             $.ajaxSetup({ async: true, cache: true });
+             $.getJSON('http://api.geonames.org/childrenJSON', {
+                geonameId: geonameId,
+                maxRows : 1,
+                username : $.Ovpnc().geoUsername()
+             }, function( result ) {
+                if ( result.geonames !== undefined && result.geonames.length > 0 ) {
+                    $.addCertificate().setSelectCountryGeonameId(result.geonames[0].countryName);
+                }
+                else {
+                    console.debug('Error getting country name '  + $.Ovpnc().geoUsername() );
+                }
+             }).error(function(xhr, ajaxOptions, thrownError) {
+                console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+                return false;
+            }).complete(function(){
+                 $.ajaxSetup({ async: true, cache: false });
+            });
+        },
+        //
+        // Main function - init
+        //
+        certExecActions: function (){
+        	$('#name').focus();
+        	var cookie_data = new Object();
+        	// Preload cookie
+            if ( $.cookie( $.addCertificate().cookieData.cookie_name ) !== null ){
+                cookie_data = jQuery.parseJSON( $.cookie( $.addCertificate().cookieData.cookie_name ) );
+                console.log("Found cookie data: %o", cookie_data);
+        		$.addCertificate().setFormFromCookie( cookie_data );
+        	}
+            else {
+                console.log('No cookie data, fields to default state.');
+            }
+        	$.addCertificate().setSelectBind();
+        	$.addCertificate().setClickBind();
+            // First check if a country has already been set
+            // by Catalyst FormFu, where 0 means not.
+            // Also ignore if they have been set by the cookie
+            var _selected = $("#country option:selected").attr('value');
+            if ( _selected !== undefined
+              && _selected != 0
+            ){
+                // We can get the state list,
+                // since the country was already
+                // set by Catalyst FormFu
+                console.log('We got a default: ' + $("#country option:selected").attr('value'));
+                $.addCertificate().getStateList( $("#country option:selected").attr('value') );
+            }    
+            // If no country has been set,
+        	// load from the cookie.
+        	else if ( cookie_data !== undefined && cookie_data.country !== undefined ){
+        		$.Ovpnc.cookie = cookie_data;
+        		//console.log("Found country in saved cookie: ", $.Ovpnc.cookie.country);
+        		// If these are numbers, it is a geonameId
+        		if ( ! isNaN(cookie_data.country) ){
+        			$.addCertificate().getCountryNameFromId( cookie_data.country );
+        		}
+        		else {
+        			// We got letters, this means that user
+        			// inputed manually, therefore set to 
+        			// manual editing and fill in values from cookie
+        			$('#edit_country').click();
+        			$('#country').attr('value', cookie_data.country);
+        			$('#state').attr('value', cookie_data.state);
+        			$('#city').attr('value', cookie_data.city);
+        		}
+        	}				
+        	else {
+        		// Check user's location
+        		// and set it as default
+        		console.log( 'Setting default user location' );
+                if ( $("#country option:selected").attr('value') == 0 ){
+                    $("#country option:selected").remove();
+                }
+        		$.addCertificate().getUserGeolocation();
+        	}
+
+        	// Set form validation rules
+        	$.addCertificate().setFormValidation();
+        
         },
         //
         // Confirm leaving page
         // save state to cookie
         // [data, cookie_name, path_name, modified, expires]
+        //
         confirmExit: function(){
-            console.log("Confirm exit got: %o",p);
+            var p = $.addCertificate().cookieData;
+            console.log("confirmExit got: %o",p);
+            if ( p === undefined ) return true;
             if ( $.cookie( p.cookie_name ) !== null ){
                 $.removeCookie( p.cookie_name );
             }
-            console.log('Cookie saved');
+            if ( $.cookie( p.cookie_name ) !== null ){
+                $.removeCookie( p.cookie_name );
+            }
             // Set the cookie data
-            var Settings = JSON.stringify( p.data );
+            var Settings = JSON.stringify({
+                username: $('#username').attr('value'),
+                certname: $('#certname').attr('value'),
+                email: $('#email').attr('value'),
+                country: $('#country').attr('value'),
+                state: $('#state').attr('value'),
+                city: $('#city').attr('value')
+            });
+
             $.cookie( p.cookie_name, Settings, {
                 expires: p.expires ? p.expires : 30,
                 path: p.path_name ? p.path_name : ''
             });
+
+            console.log('Cookie saved');
+
             // Warn user about changes [for debug only]
-            return "Unsaved modifications";
+            // return "Unsaved modifications";
         },
         //
         // Set check changes on form fields
         // 
-        check_changes: function(){
+        checkChanges: function(){
             // Set keyup for all inputs (not #password)
             $('input:not(#password)').bind('keyup',function(e){
-                console.log('input detected');
+                //console.log('input detected');
                 $.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
             });
             $('select').change(function(){
-                console.log('change detected');
+                //console.log('change detected');
                 $.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
             });
         },
@@ -166,35 +283,21 @@ jQuery.validator.setDefaults({
         		// Ajax loader
         		$('#t_state').html( $.Ovpnc().ajaxLoader );	
         		var geonameId = $("select#country option:selected").attr('value');
-        		getStateList( geonameId );
-        		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified );
+        		$.addCertificate().getStateList(geonameId);
+        		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
         	});
         	$('select#state').change(function(){
         		// Ajax loader
         		$('#t_city').html( $.Ovpnc().ajaxLoader );
         		var geonameId = $("select#state option:selected").attr('value');
-        		getCityList( geonameId );
-        		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified );
+        		$.addCertificate().getCityList( geonameId );
+        		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
         	});
         },
         //
         // Set event handlers for the form 
         //
         setFormEvents: function(){
-
-            // Set validation rules
-            $.addCertificate().set_form_validation_rules();
-
-            // Set keyup for all inputs
-            $('input').bind('keyup',function(e){
-                // Prevent submit by pressing enter
-                if (e.which == 13) return false;
-                // Remove previous warnings if any
-                $(this).parent('div').find('span').remove();
-                $(this).parent('div').find('label').css('color','#000000');
-                //console.log('input detected - keyup');
-                //$.addCertificate.form_modified = 1;
-            });
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
                 e.preventDefault();
@@ -263,384 +366,201 @@ jQuery.validator.setDefaults({
                 });
 
             });
-            $('input#username').bind('keyup',function(){
-                //$.addCertificate.form_modified = 1;
-                $.Ovpnc().checkUsername();
-            });
-            $('input#certname').bind('keyup',function(){
-                //$.addCertificate.form_modified = 1;
-            });
-            $('input#email').bind('keyup',function(){
-                //$.addCertificate.form_modified = 1;
-                $.Ovpnc().checkEmail();
-            });
-            $('input#password2').bind('keyup',function(){
-                //$.addCertificate.form_modified = 1;
-                $('#generated_password_text').empty();
-                $.Ovpnc().checkPasswords();
-            });
-            $('#generatePassword').bind('mousedown',function(){
-                $('#generatePassword').css('border','1px solid #999999').css('color','#555555');
-            }).bind('mouseup',function(){
-                $('#generatePassword').css('border','').css('color','#000000');
-            });
+        },
+        //
+        // Get user's location from browser
+        //
+        getUserGeolocation: function(){
+        	if ( navigator.geolocation ) {
+        	    navigator.geolocation.getCurrentPosition(function(position) {
+        			$('#t_country').html( $.Ovpnc().ajaxLoader );	
+        		 	$.ajaxSetup({ async: true, cache: true });
+        	        $.getJSON('http://ws.geonames.org/countryCode', {
+        	            lat: position.coords.latitude,
+        	            lng: position.coords.longitude,
+        	            type: 'JSON'
+        	        }, function( result ) {
 
+        				$('#t_country').empty();
+        				console.log('CountryName: ' + result.countryName );
+        				$.addCertificate().setSelectCountryGeonameId( result.countryName )		
+
+        	        }).error(function(xhr, ajaxOptions, thrownError) {
+        				console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        				$('#t_country').empty();
+        				return false;
+        		    }).complete(function(){
+        		 		$.ajaxSetup({ async: true, cache: false });
+        			})	
+        		})
+        	}
+        	else {
+        		console.log( "Failed to get the navigator geolocation, cannot set default country" );
+        		return false;
+        	}
+        },
+        //
+        // Build location select input
+        //
+        buildLocationSelects: function(){
+        	var inn = $.addCertificate().elems;
+        	for ( var i in $.addCertificate.html_mem ){
+        		$('#s_' + inn[i]).html( $.addCertificate.html_mem[i] );
+        	}
+        	$.addCertificate().setSelectBind();
+        },
+        //
+        // Build location inputs
+        //
+        buildLocationInputs: function(){
+        	var inn = $.addCertificate().elems;
+        	for (var i in inn){
+                $('#s_' + inn[i]).html('<input name="'+inn[i]+'" id="'+inn[i]+'" placeholder="'+inn[i]+' name" />');
+        	}
+        },
+        //
+        // Populate the state select list
+        //
+        populateStates: function(states){
+            for (var i=0;i<states.length;i++){
+        		$('select#state').append('<option value="' + states[i].geonameId + '">' + states[i].name + '</option>' );		
+        	}
+        },
+        //
+        // Get list of the states
+        //
+        getStateList: function (geonameId){
+        	$.ajaxSetup({ async: true, cache: true  });
+        	$.getJSON('http://api.geonames.org/childrenJSON', {
+        			geonameId : geonameId,
+        			username : $.Ovpnc().geoUsername()
+        		}, function(o){
+        		var states = o.geonames;		
+        		// If list return empty, put a default option and return
+        		if ( states === undefined || states.length === 0 ){
+        			$('select#state').html('<option value="">-</option>');
+        			// Remove ajax-loader
+        			$('#t_state').empty();	
+        			return false;
+        		}
+        		// Empty previous list
+        		$('select#state').empty();
+    	    	// Append the options list
+        		$.addCertificate().populateStates(states);
+        		// Remove ajax-loader
+        		$('#t_state').empty();	
+
+        		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
+        			$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
+        		}
+
+                var geoId = $("select#state option:selected").attr('value');
+        		// Update city list	
+        		$('#t_city').html( $.Ovpnc().ajaxLoader );
+        		$.addCertificate().getCityList( geoId );
+            }).error(function(xhr, ajaxOptions, thrownError) {
+        		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		// Remove ajax loader
+        		$('#t_state').empty();	
+        		return false;
+        	}).complete(function(){
+    	    	// Select state if it is found in cookie
+        		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
+    	    		$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
+        		}
+    	    	$.ajaxSetup({ async: true, cache: false  });
+        	});
+        },
+        //
+        // Get list of cities for this land
+        //
+        getCityList: function (geonameId){
+        	$.getJSON('http://api.geonames.org/childrenJSON', {
+                geonameId : geonameId,
+                username : $.Ovpnc().geoUsername()
+    		}, function(o){
+	        	var cities = o.geonames;
+		
+        		// If list return empty, put a default option and return
+		        if ( cities === undefined || cities.length === 0 ){
+        			$('select#city').html('<option value="">-</option>');
+        			// Remove ajax-loader
+        			$('#t_city').empty();		
+        			return false;
+        		}
+
+        		// Empty previous list
+        		$('select#city').empty();
+
+        		// Append the options list
+        		$.addCertificate().populateCities(cities);
+		        // Remove ajax-loader
+        		$('#t_city').empty();		
+        		// Select city if it is found in cookie
+        		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.city !== undefined && $.Ovpnc.cookie.city !== ''){
+        			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
+        			$("select#city option[value='" + $.Ovpnc.cookie.city + "']").prop('selected',true);
+        			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
+        		}
+        	}).error(function(xhr, ajaxOptions, thrownError) {
+        		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		// Remove ajax loader
+        		$('#t_city').empty();	
+        		return false;
+        	}).complete(function(){
+        		// Select city if it is found in cookie
+        		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.city !== undefined && $.Ovpnc.cookie.city !== ''){
+    	    		$("select#city option[value='" + $.Ovpnc.cookie.city + "']").prop('selected',true);
+        		}
+        	});
+        },
+        //
+        // Populdate city select list
+        //
+        populateCities: function (cities){
+        	for (var i=0;i<cities.length;i++){
+        		$('select#city').append('<option value="' + cities[i].geonameId + '">' + cities[i].name + '</option>');		
+        	}
+        	$.Ovpnc().city_full = 1;
+        },
+        //
+        // Provide a name and get a geonameId
+        // will set the select option automatically
+        //
+        setSelectCountryGeonameId: function(country){
+        	$.ajaxSetup({ async: true, cache: true });
+        	$.getJSON('http://api.geonames.org/searchJSON', {
+        		name: country,
+        		maxRows : 1,
+        		username : $.Ovpnc().geoUsername()
+        	}, function( result ) {		
+
+        		if ( result === undefined || result.geonames === undefined || result.geonames.length === 0){
+        			$('select#country').html('<option value="">Please edit manually</option>');
+        			console.log( "No country? %o" + result );
+        			return false;
+        		}
+        
+        		$('#t_state').html( $.Ovpnc().ajaxLoader );
+        		$('select#country option').sort(NASort).appendTo('select#country');
+        		$("select#country option[value='" + result.geonames[0].geonameId + "']").prop('selected',true);
+        		$.addCertificate().getStateList( result.geonames[0].geonameId );
+        		
+        	}).error(function(xhr, ajaxOptions, thrownError) {
+            	console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+                return false;
+            }).complete(function(){
+        		 $.ajaxSetup({ async: true, cache: false });
+        	});	
         }
     };	
+
 })(jQuery);
 
 
 // Document ready
 $(document).ready(function(){
 	$('#form_container').slideDown(600);
-	cert_exec_actions();
+	$.addCertificate().certExecActions();
 });
 
-// Main function
-function cert_exec_actions(){
-
-	$('#name').focus();
-
-	var cookie_data = new Object();
-
-	// Preload cookie
-	if ( $.cookie("Ovpnc_addCeritifcate_Form_Settings") !== null ){
-		cookie_data = jQuery.parseJSON( $.cookie("Ovpnc_addCeritifcate_Form_Settings") );
-		setFormFromCookie( cookie_data );
-	}
-
-	$.addCertificate().setSelectBind();
-	$.addCertificate().setClickBind();
-
-    // First check if a country has already been set
-    // by Catalyst FormFu, where 0 means not.
-    var _selected = $("#country option:selected").attr('value');
-    if ( _selected !== undefined && _selected != 0 ){
-        // We can get the state list,
-        // since the country was already
-        // set by Catalyst FormFu
-        console.log('We got a default: ' + $("#country option:selected").attr('value'));
-        getStateList( $("#country option:selected").attr('value') );
-    }    
-    // If no country has been set,
-	// load from the cookie.
-	else if ( cookie_data !== undefined && cookie_data.country !== undefined ){
-		$.Ovpnc.cookie = cookie_data;
-		//console.log("Found country in saved cookie: ", $.Ovpnc.cookie.country);
-		// If these are numbers, it is a geonameId
-		if ( ! isNaN(cookie_data.country) ){
-			getCountryNameFromId( cookie_data.country );
-		}
-		else {
-			// We got letters, this means that user
-			// inputed manually, therefore set to 
-			// manual editing and fill in values from cookie
-			$('#edit_country').click();
-			$('#country').attr('value', cookie_data.country);
-			$('#state').attr('value', cookie_data.state);
-			$('#city').attr('value', cookie_data.city);
-		}
-	}				
-	else {
-		// Check user's location
-		// and set it as default
-		console.log( 'Setting default user location' );
-        if ( $("#country option:selected").attr('value') == 0 ){
-            $("#country option:selected").remove();
-        }
-		get_user_geolocation();
-	}
-
-	// Set form validation rules
-	set_form_validation();
-
-}
-
-// Set the input fields
-// from the cookie
-function set_form_from_cookie(data){
-
-    if ( data !== undefined ){
-        if ( data.name !== '' ){
-            $('#name').attr('value', data.name);
-        }
-        if ( data.email !== '' ){
-            $('#data').attr('value', data.email);
-        }
-    }
-
-}
-
-// Sets rules for form validation
-function set_form_validation(){
-
-	// Form validation rules
-	$("#main_form").validate({
-	 	rules: {
-		    email: {
-		    	required: true,
-				maxlength: 42,
-	      		email: true
-			},
-			name: {
-				required: true,
-				maxlength: 42
-			},
-			country : { required: true },
-			state : { required: true },
-			city : { required: true }
-	    }
-	});
-
-}
-
-function update_select_rules(){
-
-	// Must run this to be
-	// able to use 'add'
-	$('#main_form').validate();
-
-	for (var i in $.Ovpnc().elems){
-		//console.log(Ovpnc.elems[i]);
-		$("#"+$.Ovpnc().elems[i]).rules("add",{
-			maxlength: 48
-		});
-	}
-
-	if ($.addCertificate.edit_country === 0){
-		for (var i in $.Ovpnc().elems){
-			$("#"+$.Ovpnc().elems[i]).rules("remove", "required rangelength");
-		}
-	}
-
-}
-
-function NASort(a, b) {    
-    if (a.innerHTML == 'NA') {
-        return 1;   
-    }
-    else if (b.innerHTML == 'NA') {
-        return -1;   
-    }       
-    return (a.innerHTML > b.innerHTML) ? 1 : -1;
-};
-
-function build_location_selects(){
-	var inn = $.Ovpnc().elems;
-	for ( var i in $.addCertificate.html_mem ){
-		$('#s_' + inn[i]).html( $.addCertificate.html_mem[i] );
-	}
-	$.addCertificate().setSelectBind();
-}
-
-function build_location_inputs(){
-	var inn = $.Ovpnc().elems;
-	for (var i in inn){
-		$('#s_' + inn[i]).html(
-			'<input name="'+inn[i]+'" id="'+inn[i]+'" placeholder="'+inn[i]+' name" />'
-		);
-	}
-}
-
-function getStateList( geonameId ){
-	$.ajaxSetup({ async: true, cache: true  });
-	$.getJSON('http://api.geonames.org/childrenJSON', {
-			geonameId : geonameId,
-			username : $.Ovpnc().geoUsername()
-		}, function(o){
-		var states = o.geonames;
-		
-		// If list return empty, put a default option and return
-		if ( states === undefined || states.length === 0 ){
-			$('select#state').html('<option value="">-</option>');
-			// Remove ajax-loader
-			$('#t_state').empty();	
-			return false;
-		}
-
-		// Empty previous list
-		$('select#state').empty();
-
-		// Append the options list
-		populate_states(states);
-
-		// Remove ajax-loader
-		$('#t_state').empty();	
-
-		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
-			$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
-		}
-
-		var geoId = $("select#state option:selected").attr('value');
-		// Update city list	
-		$('#t_city').html( $.Ovpnc().ajaxLoader );
-		getCityList( geoId );
-
-	}).error(function(xhr, ajaxOptions, thrownError) {
-		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
-		// Remove ajax loader
-		$('#t_state').empty();	
-		return false;
-	}).complete(function(){
-		// Select state if it is found in cookie
-		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
-			$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
-		}
-		$.ajaxSetup({ async: true, cache: false  });
-	});
-}
-
-
-function getCityList( geonameId ){
-
-	$.getJSON('http://api.geonames.org/childrenJSON', {
-			geonameId : geonameId,
-			username : $.Ovpnc().geoUsername()
-		}, function(o){
-		var cities = o.geonames;
-		
-		// If list return empty, put a default option and return
-		if ( cities === undefined || cities.length === 0 ){
-			$('select#city').html('<option value="">-</option>');
-			// Remove ajax-loader
-			$('#t_city').empty();		
-			return false;
-		}
-
-		// Empty previous list
-		$('select#city').empty();
-
-		// Append the options list
-		populate_cities(cities);
-
-		// Remove ajax-loader
-		$('#t_city').empty();		
-
-		// Select city if it is found in cookie
-		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.city !== undefined && $.Ovpnc.cookie.city !== ''){
-			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
-			$("select#city option[value='" + $.Ovpnc.cookie.city + "']").prop('selected',true);
-			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
-		}
-
-
-
-	}).error(function(xhr, ajaxOptions, thrownError) {
-		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
-		// Remove ajax loader
-		$('#t_city').empty();	
-		return false;
-	}).complete(function(){
-
-		// Select city if it is found in cookie
-		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.city !== undefined && $.Ovpnc.cookie.city !== ''){
-			$("select#city option[value='" + $.Ovpnc.cookie.city + "']").prop('selected',true);
-		}
-
-	});
-}
-
-function populate_cities(cities){
-	for (var i=0;i<cities.length;i++){
-		$('select#city').append(
-			'<option value="' + cities[i].geonameId + '">'
-		  + cities[i].name
-		  + '</option>'
-		);		
-	}
-	$.Ovpnc().city_full = 1;
-}
-
-function populate_states(states){
-	for (var i=0;i<states.length;i++){
-		$('select#state').append(
-			'<option value="' + states[i].geonameId + '">'
-		  + states[i].name
-		  + '</option>'
-		);		
-	}
-}
-
-function get_user_geolocation(){
-
-	if ( navigator.geolocation ) {
-	    navigator.geolocation.getCurrentPosition(function(position) {
-			$('#t_country').html( $.Ovpnc().ajaxLoader );	
-		 	$.ajaxSetup({ async: true, cache: true });
-	        $.getJSON('http://ws.geonames.org/countryCode', {
-	            lat: position.coords.latitude,
-	            lng: position.coords.longitude,
-	            type: 'JSON'
-	        }, function( result ) {
-
-				$('#t_country').empty();
-				console.log('CountryName: ' + result.countryName );
-				set_select_country_geonameId( result.countryName )		
-
-	        }).error(function(xhr, ajaxOptions, thrownError) {
-				console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
-				$('#t_country').empty();
-				return false;
-		    }).complete(function(){
-		 		$.ajaxSetup({ async: true, cache: false });
-			})	
-		})
-	}
-	else {
-		console.log( "Failed to get the navigator geolocation, cannot set default country" );
-		return false;
-	}
-}
-
-// Provide a name and get a geonameId
-// will set the select option automatically
-function set_select_country_geonameId( country ){
-	$.ajaxSetup({ async: true, cache: true });
-	$.getJSON('http://api.geonames.org/searchJSON', {
-		name: country,
-		maxRows : 1,
-		username : $.Ovpnc().geoUsername()
-	}, function( result ) {		
-
-		if ( result === undefined || result.geonames === undefined || result.geonames.length === 0){
-			$('select#country').html('<option value="">Please edit manually</option>');
-			console.log( "No country? %o" + result );
-			return false;
-		}
-
-		$('#t_state').html( $.Ovpnc().ajaxLoader );
-		$('select#country option').sort(NASort).appendTo('select#country');
-		$("select#country option[value='" + result.geonames[0].geonameId + "']").prop('selected',true);
-		getStateList( result.geonames[0].geonameId );
-		
-	}).error(function(xhr, ajaxOptions, thrownError) {
-    	console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
-        return false;
-    }).complete(function(){
-		 $.ajaxSetup({ async: true, cache: false });
-	});	
-}
-
-function getCountryNameFromId( geonameId ){
-
-	 //console.log( 'get country id: ' + geonameId + ' with username ' + $.Ovpnc().geoUsername() );
-
-	 $.ajaxSetup({ async: true, cache: true });
-	 $.getJSON('http://api.geonames.org/childrenJSON', {
-        geonameId: geonameId,
-        maxRows : 1,
-        username : $.Ovpnc().geoUsername()
-     }, function( result ) {
-		if ( result.geonames !== undefined && result.geonames.length > 0 ) {
-			set_select_country_geonameId(result.geonames[0].countryName);
-		}
-		else {
-			console.debug('Error getting country name '  + $.Ovpnc().geoUsername() );
-		}
-     }).error(function(xhr, ajaxOptions, thrownError) {
-        console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
-        return false;
-    }).complete(function(){
-		 $.ajaxSetup({ async: true, cache: false });
-	});
-}

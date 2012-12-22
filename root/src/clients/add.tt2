@@ -1,5 +1,6 @@
 [% CALL assets.include("js/password_strength_plugin.js") %]
 [% CALL assets.include("js/mersenne-twister.js") %]
+[% CALL assets.include("js/forms.js") %]
 <div id="add_form">
     [% form %]
 </div>
@@ -18,4 +19,8 @@
         userid:         "#username",
         messageloc:     1
     });
+
+    // Binds for inputs
+    $.Forms().setInputBinds();
+    $.Forms().setUserFormInputBinds();
 </script>

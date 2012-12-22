@@ -1,5 +1,6 @@
 [% CALL assets.include("js/password_strength_plugin.js") %]
 [% CALL assets.include("js/mersenne-twister.js") %]
+[% CALL assets.include("js/forms.js") %]
 <!-- form for /certificates/add -->
 <div id="add_form" style="font-size:1em;"> 
     [% form %]
@@ -7,7 +8,22 @@
 <script>
     // Set events for form
     // input fields and submit
-    $.addCertificate().set_form_events();
+    $.addCertificate().setFormEvents();
+
+    // Set password strengh checker
+    $("#password").passStrength({
+        shortPass:      "top_shortPass",
+        badPass:        "top_badPass",
+        goodPass:       "top_goodPass",
+        strongPass:     "top_strongPass",
+        baseStyle:      "top_testresult",
+        userid:         "#username",
+        messageloc:     1
+    });
+
+    // Binds for inputs
+    $.Forms().setInputBinds();
+    $.Forms().setUserFormInputBinds();
 </script>
 
 

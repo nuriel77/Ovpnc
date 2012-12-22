@@ -194,7 +194,7 @@ elements:
                               - type: Reset
                                 name: reset
                                 attributes_xml:
-                                  onclick: "$.addCertificate().resetForm( $('#add_certificate_form') );"
+                                  onclick: "$.Forms().resetForm( $('#add_certificate_form') );"
                                   value: "Reset"
                       - type: Block
                         tag: div

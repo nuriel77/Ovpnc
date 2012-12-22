@@ -175,7 +175,7 @@ elements:
                       - type: Reset
                         name: reset
                         attributes_xml:
-                          onclick: "$.addClient().resetForm( $('#add_client_form') );"
+                          onclick: "$.Forms().resetForm( $('#add_client_form') );"
                         value: "Reset"
               # Submit
               - type: Block

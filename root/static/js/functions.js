@@ -64,3 +64,14 @@ function checkPendingRequest() {
     }
     return false;
 }
+
+function NASort(a, b) {
+    if (a.innerHTML == 'NA') {
+        return 1;
+    }
+    else if (b.innerHTML == 'NA') {
+        return -1;
+    }
+    return (a.innerHTML > b.innerHTML) ? 1 : -1;
+};
+

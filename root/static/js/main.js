@@ -71,18 +71,35 @@
             $.Ovpnc().pollFreq );
         },
         //
+        // Data return from client action
+        //
+        returnedClientData: function(r){
+            // Expect one field
+            if ( r.rest !== undefined ){
+                var keys = [];
+                for (var k in r.rest){ keys.push(k); }
+                if ( r.rest[keys[0]] !== null  ){
+                    $('input#' + keys[0]).parent('div').prepend('<span class="error_message error_constraint_required">' + keys[0] + ' already exists</span>');
+                    $('input#' + keys[0]).parent('div').find('label').css('color','#8B0000');
+                }
+            }
+        },
+        //
         // Confirm leaving page
         //
         setConfirmExit: function(modified, action){
             if ( modified === undefined || modified === 0 ) {
                 // On window unload
-                //console.log('Form modified, setting confirm_on_exit');
+                console.log('Form modified, setting provided action.');
                 window.onbeforeunload = action;
             }
-            else {
-                //console.log('Already modified');
-            }
             return 1;
+        },
+        //
+        // Handle returned error
+        //
+        errorAjaxReturn: function(e){
+            console.log("error: %o",e);
         },
         //
         // Check the username from database
@@ -95,8 +112,8 @@
                 url: '/api/clients',
                 data: { username: _name },
                 method: 'GET',
-                success_func: returnedClientData,
-                error_func: errorAjaxReturn
+                success_func: $.Ovpnc().returnedClientData,
+                error_func: $.Ovpnc().errorAjaxReturn
             });
         },
         //
@@ -117,16 +134,8 @@
                 url: '/api/clients',
                 data: { email: _name },
                 method: 'GET',
-                success_func: returnedClientData,
-                error_func: errorAjaxReturn
-            });
-        },
-        //
-        // Reset form fields
-        //
-        resetForm: function(id){
-            $('#'+id).each(function(){
-                this.reset();
+                success_func: $.Ovpnc().returnedClientData,
+                error_func: $.Ovpnc().errorAjaxReturn
             });
         },
         //

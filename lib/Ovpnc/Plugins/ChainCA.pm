@@ -71,11 +71,11 @@ Create Private Key
 
     sub gen_private_key {
         my ( $self, $params ) = @_;
-
-        $params->{key_size} //= 1024;
+        $ENV{KEY_SIZE} //= 1024;
+        $params->{key_size} ||= $ENV{KEY_SIZE};
         $params->{key_file} //= 'ovpnc.key';
         die "Cannot seed" unless $self->get_random_bits(128);
-        my $rsa = Crypt::OpenSSL::RSA->generate_key( $ENV{KEY_SIZE} || 1024 );
+        my $rsa = Crypt::OpenSSL::RSA->generate_key( $params->{key_size} );
         $self->_set_priv( $rsa->get_private_key_string() );
         return $self->_ca_privkey_as_text;
     }
@@ -542,6 +542,15 @@ collected
             return rand_bits($bits);
         };
     }
+
+
+=head2 _get_sed_cmd
+
+Accessor to return the sed commands
+which modify the temporary openssl.cnf
+being used to process certificates
+
+=cut
 
 
     sub _get_sed_cmd {
