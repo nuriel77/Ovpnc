@@ -806,9 +806,15 @@ chown 1011 root/static/js/Flexigrid/.git/info/exclude
 chgrp 1012 root/static/js/Flexigrid/.git/info/exclude
 touch -c -d "2012-12-15 02:06:37.0000000000" root/static/js/Flexigrid/.git/info/exclude
 chmod 0600 root/static/js/Flexigrid/.git/info/exclude
+<<<<<<< HEAD
 chown 1011 root/static/js/Flexigrid/.git/index
 chgrp 1012 root/static/js/Flexigrid/.git/index
 touch -c -d "2012-12-22 05:31:49.0000000000" root/static/js/Flexigrid/.git/index
+=======
+chown 0 root/static/js/Flexigrid/.git/index
+chgrp 0 root/static/js/Flexigrid/.git/index
+touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/Flexigrid/.git/index
+>>>>>>> 83d77584b58fd2dd2db422b3386557fd06f74bea
 chmod 0644 root/static/js/Flexigrid/.git/index
 chown 1011 root/static/js/Flexigrid/.git/hooks
 chgrp 1012 root/static/js/Flexigrid/.git/hooks
@@ -1262,9 +1268,15 @@ chown 1011 root/static/js/jQuery-contextMenu/.git/info/exclude
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/info/exclude
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/info/exclude
 chmod 0640 root/static/js/jQuery-contextMenu/.git/info/exclude
+<<<<<<< HEAD
 chown 1011 root/static/js/jQuery-contextMenu/.git/index
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/index
 touch -c -d "2012-12-22 05:31:49.0000000000" root/static/js/jQuery-contextMenu/.git/index
+=======
+chown 0 root/static/js/jQuery-contextMenu/.git/index
+chgrp 0 root/static/js/jQuery-contextMenu/.git/index
+touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jQuery-contextMenu/.git/index
+>>>>>>> 83d77584b58fd2dd2db422b3386557fd06f74bea
 chmod 0644 root/static/js/jQuery-contextMenu/.git/index
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks
@@ -1446,9 +1458,15 @@ chown 1011 root/static/js/jquery-cookie/.git/info/exclude
 chgrp 1012 root/static/js/jquery-cookie/.git/info/exclude
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/info/exclude
 chmod 0640 root/static/js/jquery-cookie/.git/info/exclude
+<<<<<<< HEAD
 chown 1011 root/static/js/jquery-cookie/.git/index
 chgrp 1012 root/static/js/jquery-cookie/.git/index
 touch -c -d "2012-12-22 05:31:49.0000000000" root/static/js/jquery-cookie/.git/index
+=======
+chown 0 root/static/js/jquery-cookie/.git/index
+chgrp 0 root/static/js/jquery-cookie/.git/index
+touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jquery-cookie/.git/index
+>>>>>>> 83d77584b58fd2dd2db422b3386557fd06f74bea
 chmod 0644 root/static/js/jquery-cookie/.git/index
 chown 1011 root/static/js/jquery-cookie/.git/hooks
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks
@@ -4878,9 +4896,15 @@ chown 1011 root/static/js/jquery-validation/.git/info/exclude
 chgrp 1012 root/static/js/jquery-validation/.git/info/exclude
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/info/exclude
 chmod 0640 root/static/js/jquery-validation/.git/info/exclude
+<<<<<<< HEAD
 chown 1011 root/static/js/jquery-validation/.git/index
 chgrp 1012 root/static/js/jquery-validation/.git/index
 touch -c -d "2012-12-22 05:31:49.0000000000" root/static/js/jquery-validation/.git/index
+=======
+chown 0 root/static/js/jquery-validation/.git/index
+chgrp 0 root/static/js/jquery-validation/.git/index
+touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jquery-validation/.git/index
+>>>>>>> 83d77584b58fd2dd2db422b3386557fd06f74bea
 chmod 0644 root/static/js/jquery-validation/.git/index
 chown 1011 root/static/js/jquery-validation/.git/hooks
 chgrp 1012 root/static/js/jquery-validation/.git/hooks
