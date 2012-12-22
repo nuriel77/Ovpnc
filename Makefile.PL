@@ -32,7 +32,7 @@ requires 'Crypt::OpenSSL::CA';
 requires 'Crypt::OpenSSL::RSA';
 requires 'Crypt::OpenSSL::Bignum';
 requires 'Crypt::OpenSSL::Random';
-requires 'IO::Select';
+requires 'Socket';
 requires 'IPC::Run';
 requires 'IPC::Cmd';
 requires 'Gepok';
