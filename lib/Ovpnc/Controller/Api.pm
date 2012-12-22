@@ -217,9 +217,8 @@ sub assign_params : Private {
     # Get OpenVPN username
     # ====================
     my ($_openvpn_user, $_openvpn_group ) = @{(
-        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-            $ovpnc_conf, [ 'UserName', 'GroupName' ]
-        )
+        Ovpnc::Controller::Api::Configuration
+            ->get_openvpn_param( [ 'UserName', 'GroupName' ], $ovpnc_conf )
     )};
     $c->config->{openvpn_user} = $_openvpn_user;
 

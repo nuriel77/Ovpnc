@@ -41,16 +41,11 @@ around [qw(index add)] => sub {
         : $c->config->{home} . '/' . $c->config->{openvpn_dir};
 
     # Assign config params
+    # get also ccd dir
     # ====================
-    $c->config->{openvpn_user} =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'UserName' );
-
-    # Openvpn ccd dir
-    # ===============
-    $c->config->{openvpn_ccd} = 
-        Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'ClientDir' );
+    ( $c->config->{openvpn_user}, $c->config->{openvpn_ccd} ) =
+     @{( Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+        [ 'UserName', 'ClientDir' ], $ovpnc_conf ) )};
 
     $c->config->{openvpn_ccd} = $c->config->{openvpn_ccd} =~ /^\//
         ? $c->config->{openvpn_ccd}

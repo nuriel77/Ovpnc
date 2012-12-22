@@ -67,8 +67,9 @@ sub init_ca {
 
     # Get the filename of the CA cert
     # ===============================
-    my $ca_cert_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'Ca' );
+    my $ca_cert_file =
+        Ovpnc::Controller::Api::Configuration
+            ->get_openvpn_param( 'Ca', $ovpnc_conf );
 
     $ca_cert_file = $ca_cert_file =~ /^\//
 	? $ca_cert_file

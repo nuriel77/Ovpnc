@@ -124,7 +124,8 @@ around [qw(ovpnc_config index)] => sub {
     # ====================
     $c->config->{openvpn_user} =
       Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $c->config->{ovpnc_conf}, 'UserName' );
+        'UserName', $c->config->{ovpnc_conf} )
+        unless $c->config->{openvpn_user};
 
     # Sanity check
     # ============

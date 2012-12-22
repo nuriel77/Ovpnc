@@ -1,8 +1,7 @@
 package Ovpnc::TraitFor::Controller::Api::Server::Control;
 use warnings;
 use strict;
-use Try::Tiny;
-use Module::Locate qw(locate);
+use Module::Locate 'locate';
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 use String::MkPasswd 'mkpasswd';
 use Errno  qw( EADDRINUSE );
@@ -25,6 +24,8 @@ Controls start/stop/restart
 
 =cut
 
+# VPN mgmt port Connection handle
+# ===============================
 has vpn => (
     is        => 'ro',
     isa       => 'Object',
@@ -34,22 +35,26 @@ has vpn => (
     writer    => '_set_vpn',
 );
 
-has [
-    qw/
-      app_root
-      app_user
-      openvpn_bin
-      openvpn_config
-      openvpn_tmpdir
-      openvpn_pid
-      openvpn_group
-      mgmt_passwd_file
-      /
-  ] => (
+# Configuration parameters
+# ========================
+has [qw/app_root app_user/] => (
     is       => 'ro',
     isa      => 'Str',
     required => 1
-  );
+);
+
+has cfg => (
+    is => 'ro', 
+    isa => 'HashRef',
+    required => 1
+);
+
+
+=head2 start
+
+L<Start> the OpenVPN server
+
+=cut
 
 sub start {
     my ( $self, $vpn ) = @_;
@@ -64,25 +69,29 @@ sub start {
         return { error => 'Server already started with pid ' . $_pid };
     }
     else {
-        
+
         # First check if the address/port
         # are free to bind to
         # ===============================
+        my $config = Ovpnc::Controller::Api::Configuration
+            ->new( cfg => $self->cfg );
         my ( $openvpn_addr, $openvpn_port, $openvpn_proto ) =
-            @{Ovpnc::Controller::Api::Configuration
-                ->get_openvpn_param( '',
-                    [ 'VPNServer', 'ServerPort', 'Protocol' ] )};
+             @{( $config->get_openvpn_param(
+                [ 'VPNServer', 'ServerPort', 'Protocol' ] ) )};
+
+        undef $config;
 
         unless (
             $self->_check_port_available(
-                $self->openvpn_addr,
-                $self->openvpn_port,
-                $self->openvpn_proto)
+                $openvpn_addr,
+                $openvpn_port,
+                $openvpn_proto
+            )
         ) {
             return { 
                 error => 'Server cannot start. Cannot bind to socket. '
-                    . 'Check that the ' . $self->openvpn_proto . ' address/port '
-                    . $self->openvpn_addr . ':' . $self->openvpn_port
+                    . 'Check that the ' . $openvpn_proto . ' address/port '
+                    . $openvpn_addr . ':' . $openvpn_port
                     . ' are free and try again.'
             };
         }
@@ -90,10 +99,10 @@ sub start {
         $self->_check_management_password;
 
         my @cmd = (
-            '/usr/bin/sudo',        $self->openvpn_bin,
-            '--writepid',           $self->openvpn_pid,
+            '/usr/bin/sudo',        $self->cfg->{openvpn_bin},
+            '--writepid',           $self->cfg->{openvpn_pid},
             '--management',         '127.0.0.1', '7505',
-            $self->mgmt_passwd_file,
+            $self->cfg->{mgmt_passwd_file},
             '--management-log-cache', 2000,
             '--tls-server',
             '--daemon', 'ovpn-server',
@@ -104,10 +113,10 @@ sub start {
             '--client-disconnect', 'bin/client_disconnect',
             '--tmp-dir',           '/tmp',
             '--ccd-exclusive',
-            '--cd',                $self->openvpn_dir . '/',
+            '--cd',                $self->cfg->{openvpn_dir} . '/',
             '--up',                'bin/up.pl',
             '--up-restart',
-            '--config',            $self->app_root . '/' . $self->openvpn_config,
+            '--config',            $self->app_root . '/' . $self->cfg->{openvpn_config},
         );
 
         warn join " ", @cmd;
@@ -133,10 +142,10 @@ sub start {
 
             # Compare active and file pid numbers
             # ===================================
-            if ( -e $self->openvpn_pid and -r $self->openvpn_pid ) {
+            if ( -e $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
                 undef $_pid;
                 $_pid = $self->_check_running;
-                my $_file_pid = read_file( $self->openvpn_pid, chomp => 1 );
+                my $_file_pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
 
                 if ( $_file_pid == $_pid ) {
 
@@ -164,6 +173,13 @@ sub start {
         }
     }
 }
+
+
+=head2 stop
+
+L<Stop> the OpenVPN server
+
+=cut
 
 sub stop {
     my ( $self, $vpn ) = @_;
@@ -197,7 +213,7 @@ sub stop {
 
         # Stopped? End this action
         # ========================
-        unlink $self->openvpn_pid;
+        unlink $self->cfg->{openvpn_pid};
         return $self->_stop_end_action
           unless $_pid;
 
@@ -242,60 +258,81 @@ sub stop {
     }
 }
 
-sub restart {
-    my ( $self, $vpn ) = @_;
 
-    $self->_set_vpn($vpn)
-        if $vpn;
+=head2 restart
 
-    $self->stop if $self->_check_running || $self->vpn->{objects};
-    sleep 1;
-    if ( $self->check_running ) {
-        $self->stop;
+L<Restart> the OpenVPN server
+
+=cut
+
+    sub restart {
+        my ( $self, $vpn ) = @_;
+    
+        $self->_set_vpn($vpn)
+            if $vpn;
+    
+        $self->stop if $self->_check_running || $self->vpn->{objects};
         sleep 1;
-    }
-    my $_ret_val = $self->start;
-    return $_ret_val;
-}
-
-sub _stop_end_action {
-    my $self = shift;
-    unlink glob $self->openvpn_tmpdir . 'openvpn_cc_*.tmp';
-    $self->_disconnect_vpn;
-    return { status => "OpenVPN is stopped" };
-}
-
-sub _check_running {
-    my $self = shift;
-    my $_pid;
-    my $openvpn_bin = $self->openvpn_bin;
-
-    if ( -e $self->openvpn_pid and -r $self->openvpn_pid ) {
-        $_pid = read_file( $self->openvpn_pid, chomp => 1 );
-    }
-    else {
-        my (undef, undef, undef, $gid) = getpwnam(
-            $self->openvpn_group );
-        my (undef, undef, $uid) = getpwuid( $< );
-        my ($_rundir) = $self->openvpn_pid =~ /^(.*)\/.*$/;
-        unless ( -e $_rundir ) {
-            mkdir $_rundir;
-            chmod 0770, $_rundir;
-            chown $uid, $gid, $_rundir;
+        if ( $self->check_running ) {
+            $self->stop;
+            sleep 1;
         }
-        touch $self->openvpn_pid;
-        chmod 0660, $self->openvpn_pid;
-        chown $uid, $gid, $self->openvpn_pid;
+        my $_ret_val = $self->start;
+        return $_ret_val;
     }
 
-    my $t = Proc::ProcessTable->new;
-    foreach my $p ( @{ $t->table } ) {
-        if ( $p->cmndline =~ /$openvpn_bin/g && ( $_pid && $_pid == $p->pid ) ){
-            return $p->pid;
-        }
+    
+=head2 _stop_end_action
+
+Run this final action
+when the server stops
+
+=cut
+
+    sub _stop_end_action {
+        my $self = shift;
+        unlink glob $self->cfg->{openvpn_tmpdir} . 'openvpn_cc_*.tmp';
+        $self->_disconnect_vpn;
+        return { status => "OpenVPN is stopped" };
     }
-    return;
-}
+
+=head2 _check_running
+
+Check if the OpenVPN server is running
+
+=cut
+
+    sub _check_running {
+        my $self = shift;
+        my $_pid;
+        my $openvpn_bin = $self->cfg->{openvpn_bin};
+    
+        if ( -e $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
+            $_pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
+        }
+        else {
+            my (undef, undef, undef, $gid) = getpwnam(
+                $self->cfg->{openvpn_group} );
+            my (undef, undef, $uid) = getpwuid( $< );
+            my ($_rundir) = $self->cfg->{openvpn_pid} =~ /^(.*)\/.*$/;
+            unless ( -e $_rundir ) {
+                mkdir $_rundir;
+                chmod 0770, $_rundir;
+                chown $uid, $gid, $_rundir;
+            }
+            touch $self->cfg->{openvpn_pid};
+            chmod 0660, $self->cfg->{openvpn_pid};
+            chown $uid, $gid, $self->cfg->{openvpn_pid};
+        }
+    
+        my $t = Proc::ProcessTable->new;
+        foreach my $p ( @{ $t->table } ) {
+            if ( $p->cmndline =~ /$openvpn_bin/g && ( $_pid && $_pid == $p->pid ) ){
+                return $p->pid;
+            }
+        }
+        return;
+    }
 
 =head2 _check_port_available
 
@@ -331,38 +368,45 @@ to manually set the password.
 
 =cut
 
-sub _check_management_password {
-    my $self = shift;
+    sub _check_management_password {
+        my $self = shift;
 
-    # If no file or file empty, generate a new password
-    # ==================================================
-    $self->_write_new_passwd
-        if ( ! -e $self->mgmt_passwd_file
-            || (stat( $self->mgmt_passwd_file ))[7] == 0
+        # If no file or file empty, generate a new password
+        # ==================================================
+        $self->_write_new_passwd
+            if ( ! -e $self->cfg->{mgmt_passwd_file}
+                || (stat( $self->cfg->{mgmt_passwd_file} ))[7] == 0
+            );
+        }
+
+    sub _write_new_passwd{
+        my $self = shift;
+        open ( my $FH, '>', $self->cfg->{mgmt_passwd_file} )
+            or die "Cannot update " . $self->cfg->{mgmt_passwd_file}
+                    . ": " . $!;
+        print {$FH} $self->_gen_passwd(32, 3, 3, 3, 0);
+        close $FH;
+        return 1;
+    }
+
+    sub _gen_passwd {
+        my $self = shift;
+        my ($a,$b,$c,$d,$e) = @_;
+        return mkpasswd(
+                -length     => $a,
+                -minnum     => $b,
+                -minlower   => $c,
+                -minupper   => $d,
+                -minspecial => $e,
         );
-}
+    }
 
-sub _write_new_passwd{
-    my $self = shift;
-    open ( my $FH, '>', $self->mgmt_passwd_file )
-        or die "Cannot update " . $self->mgmt_passwd_file
-                . ": " . $!;
-    print {$FH} $self->_gen_passwd(32, 3, 3, 3, 0);
-    close $FH;
-    return 1;
-}
 
-sub _gen_passwd {
-    my $self = shift;
-    my ($a,$b,$c,$d,$e) = @_;
-    return mkpasswd(
-            -length     => $a,
-            -minnum     => $b,
-            -minlower   => $c,
-            -minupper   => $d,
-            -minspecial => $e,
-    );
-}
 
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
 
 1;

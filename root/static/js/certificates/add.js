@@ -1,4 +1,5 @@
-w/* jquery validator settings */
+
+/* jquery validator settings */
 /* jquery validator settings */
 jQuery.validator.setDefaults({
     debug: true,
@@ -75,7 +76,7 @@ jQuery.validator.setDefaults({
                 rules: {
                     username: {
                         required: true,
-                        maxlength: 42,
+                        maxlength: 42
                     },
                     password: {
                         required: true,
@@ -100,30 +101,29 @@ jQuery.validator.setDefaults({
         //
         // Sets bindings for click events
         // 
-        function set_click_bind(){
-        	if(typeof(events) !== "function"){
+        set_click_bind: function(){
+        	if (typeof events !== "function"){
         		$('#edit_country').click(function(){
         			if ( $.addCertificate.edit_country === 0 ){
-        				$.addCertificate.edit_country = 1;
-	
-        				$('.r_auto').each(function(f,g){
-        					$.addCertificate.html_mem.push(g);
-        				});
-        				build_location_inputs();
-        				update_select_rules();
-        				$.addCertificate().check_changes();
-        				return;
-        			}
-        	 		else {
-        				$.addCertificate.edit_country = 0;
-        				build_location_selects();
-        				update_select_rules();
-        				$.addCertificate().check_changes();
-        				return;
-        			}
-        		});
-        	}
-        	$.addCertificate().check_changes();
+                        $.addCertificate.edit_country = 1;
+                        $('.r_auto').each(function(f,g){
+                            $.addCertificate.html_mem.push(g);
+                        });
+                        build_location_inputs();
+                        update_select_rules();
+                        $.addCertificate().check_changes();
+                        return;
+                    }
+                    else {
+                        $.addCertificate.edit_country = 0;
+                        build_location_selects();
+                        update_select_rules();
+                        $.addCertificate().check_changes();
+                        return;
+                    }
+                });
+            }
+            $.addCertificate().check_changes();
         },
         //
         // Confirm leaving page

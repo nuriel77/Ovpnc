@@ -728,6 +728,8 @@ false so it will not be put into hold
         }
         return 1;
     }
+
+
 =head2 get_openvpn_[param]
 
 Get parameter(s) from the
@@ -736,10 +738,15 @@ Ovpnc xml conf file
 =cut
 
     sub get_openvpn_param : Private {
-        my ( $self, $file, $params ) = @_;
+        my ( $self, $params, $file ) = @_;
 
-        my $dom = XML::LibXML->load_xml( location => $file || $self->cfg->{ovpnc_conf} );
-        if ( ref $params && ref $params eq 'ARRAY' ) {
+        die "Called get_openvpn_param without \$params"
+            unless $params;
+
+        $file ||= $self->cfg->{ovpnc_conf};
+
+        my $dom = XML::LibXML->load_xml( location => ( $file ) );
+        if ( ref $params eq 'ARRAY' ) {
             my @arr;
             for ( @{$params} ) {
                 my $value = $dom->findvalue(
@@ -748,10 +755,11 @@ Ovpnc xml conf file
             }
             return \@arr;
         }
-        elsif ( !ref $params ) {
+        else {
             my $_ret_val = $dom->findvalue(
                 '/Nodes/Node/Directives/Group/Directive/Params/' . $params );
-            warn "Param not found: $params" unless $_ret_val;
+            warn "Param not found: $params"
+                unless $_ret_val;
             return $_ret_val;
         }
     }

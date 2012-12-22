@@ -400,8 +400,9 @@ sub _get_ca_key_and_cert {
 
     # Get the filename of the CA cert
     # ===============================
-    my $ca_cert_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $cfg->{ovpnc_conf}, 'Ca' );
+    my $ca_cert_file =
+        Ovpnc::Controller::Api::Configuration
+            ->get_openvpn_param( 'Ca', $cfg->{ovpnc_conf} );
 
     # Auto-append key for the key filename
     # ====================================

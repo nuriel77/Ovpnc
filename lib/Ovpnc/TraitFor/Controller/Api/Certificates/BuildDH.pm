@@ -49,8 +49,9 @@ sub build_dh
 
     # The DH file to process
     # ======================
-    my $_dh_file = Ovpnc::Controller::Api::Configuration->get_openvpn_param(
-        $ovpnc_conf, 'Dh' );
+    my $_dh_file =
+        Ovpnc::Controller::Api::Configuration
+            ->get_openvpn_param( 'Dh', $ovpnc_conf );
 
     $_dh_file = $self->_cfg->{home} . '/' . $_dh_file
         unless $_dh_file =~ /^\//;
