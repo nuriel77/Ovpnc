@@ -242,16 +242,25 @@ validation_rules: function() {
             });
             $('#generate_password').bind('mousedown',function(){
                 $('#generate_password').css('border','1px solid #999999').css('color','#555555');
+                $('#password').parent('div').find('span.error_message').remove();
+                $('#password').parent('div').find('label').css('color','#333333');
             }).bind('mouseup',function(){
+                    var _wait_keyup =  setInterval(function() {
+                        window.clearInterval(_wait_keyup);
+                        $('#password').keyup();
+                        $('#password2').attr('value', $('#password').attr('value') );
+                        $('#generated_password_text').text($('#password').attr('value'));
+                    },
+                    50 );
                 $('#generate_password').css('border','').css('color','#000000');
             });
 
         },
         // Form validation rules
         set_form_validation_rules: function(){
-            //$("#add_client_form").validate(
-            //    $.addClient().validation_rules()
-            //);
+            $("#add_client_form").validate(
+                $.addClient().validation_rules()
+            );
         },
         // Set the input fields
         // from the cookie
