@@ -44,29 +44,40 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
     // addClient actions
     //
     actions = {
-        validation_rules: function() {
+        
+validation_rules: function() {
             return {
                 rules: {
                     username: {
                         required: true,
+                        minlength: 2,
+                        maxlength: 42,
+                    },
+                    fullname: {
+                        required: true,
+                        minlength: 2,
                         maxlength: 42,
                     },
                     password: {
                         required: true,
-                        maxlength: 72
+                        maxlength: 72,
+                        minlength: 8
                     },
                     email: {
                         required: true,
+                        minlength: 3,
                         maxlength: 72,
                         email: true
                     },
                     phone: {
-                        required: true,
-                        maxlength: 42
+                        required: false,
+                        maxlength: 32,
+                        minlength: 3
                     },
                     address: {
-                        required: true,
-                        maxlength: 128
+                        required: false,
+                        maxlength: 128,
+                        minlength: 2
                     }
                 }
             }
@@ -104,12 +115,12 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 phone: $('#phone').attr('value'),
                 fullname: $('#fullname').attr('value')
             });
-            console.log("Cookie data: %o",Settings);
-            $.cookie( p.cookie_name, Settings, {
-                expires: p.expires ? p.expires : 30,
-                path: p.path_name ? p.path_name : ''
-            });
-            console.log('Cookie saved');
+            //console.log("Cookie data: %o",Settings);
+            //$.cookie( p.cookie_name, Settings, {
+            //    expires: p.expires ? p.expires : 30,
+            //    path: p.path_name ? p.path_name : ''
+            //});
+            //console.log('Cookie saved');
 
             // Warn user about changes [for debug only]
             return "Unsaved modifications";
@@ -120,12 +131,12 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         //
         check_changes: function(){
             $('input').bind('keyup',function(){
-                console.log('input detected');
+                //console.log('input detected');
                 $(this).parent('div').find('span.error_message').remove();
                 $.addClient.form_modified = $.Ovpnc().set_confirm_exit( $.addClient.form_modified, $.addClient().confirm_exit );
             });
             $('select').change(function(){
-                console.log('change detected');
+                //console.log('change detected');
                 $.addClient.form_modified = $.Ovpnc().set_confirm_exit( $.addClient.form_modified, $.addClient().confirm_exit );    
             });
         },
@@ -157,10 +168,15 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 $(this).parent('div').find('label').css('color','#000000');
             });
 
-            // On form submission
+            /*
+             *
+             * Begin submit form override
+             *
+             */
             $('#submit_add_client_form').click(function(e){
-                e.preventDefault();
-                $.Ovpnc().set_ajax_loading();
+
+                $.Ovpnc().set_ajax_loading(1);
+
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
@@ -200,30 +216,23 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
 
                 // Save the current values
                 // (data, cookie_name, path_name, modified, expires)
-                $.addClient().confirm_exit();
+                //$.addClient().confirm_exit();
 
-                // Add client - submit to controller
-                $.Ovpnc().ajax_call(
-                    '/clients/add',
-                     $("form#add_client_form").serialize(),
-                    'POST',
-                    $.addClient().return_client_add,
-                    $.addClient().error_client_add,
-                    1,
-                    15000
-                );
-
+                return true;
             });
+            /* End submit form override */
+
             $('input#username').bind('keyup',function(){
-                //$.addClient.form_modified = 1;
                 $.Ovpnc().check_username();
             });
             $('input#email').bind('keyup',function(){
-                //$.addClient.form_modified = 1;
                 $.Ovpnc().check_email();
             });
+            $('input#password').bind('keyup',function(){
+                $('#generated_password_text').empty();
+                $.Ovpnc().check_passwords();
+            });
             $('input#password2').bind('keyup',function(){
-                //$.addClient.form_modified = 1;
                 $('#generated_password_text').empty();
                 $.Ovpnc().check_passwords();
             });
@@ -257,6 +266,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Successful return from adding client
         //
         return_client_add: function(msg){
+            console.log("return_client_add has: %o",msg);
             if ( msg.error ){
                 if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
                     && msg.error.length > 0 
@@ -275,6 +285,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 var cnf = confirm( msg.status + '. Would you like to add one more?' );
                 if ( cnf != true ){
                     alert( $.Ovpnc().alert_ok + ' ' + msg.status + ', redirecting...' + '</div><div class="clear"></div>' );
+                    // Wait a sec before redirecting    
                     var _wait =  setInterval(function() {
                         window.clearInterval(_wait);
                         window.location = '/clients';
@@ -282,11 +293,13 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                     1000 );
                 }
                 else {
+                    // Free window.onbeforeunload
                     window.onbeforeunload = undefined;
-                    console.log('removing Ovpnc_addClient_Form_Settings cookie');
+                    // Clearn up the cookie
                     $.removeCookie('Ovpnc_addClient_Form_Settings');
                     $.cookie('Ovpnc_addClient_Form_Settings', null);
-                    $.addClient().reset_form();
+                    // Clean up old values
+                    //$.addClient().reset_form();
                 }
             }
             $.Ovpnc().remove_ajax_loading();
@@ -302,10 +315,10 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                     && Object.prototype.toString.call( msg.fields_error ) === '[object Array]'
                 ){
                     console.log("%o",msg.fields_error);
-                    $("#add_client_form").valid();
-                    for ( var i in msg.fields_error ){
-                        $('label[for="' + msg.fields_error[i] + '"]').css('color','#8B0000');
-                    }
+                    //$("#add_client_form").valid();
+                    //for ( var i in msg.fields_error ){
+                    //    $('label[for="' + msg.fields_error[i] + '"]').css('color','#8B0000');
+                    //}
                 }
                 if ( msg.error ){
                     if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
@@ -342,7 +355,8 @@ $(document).ready( function() {
     // Preload cookie
     if ( $.cookie( $.addClient().cookie_data.cookie_name ) !== null ){
         cookie_data = jQuery.parseJSON( $.cookie( $.addClient().cookie_data.cookie_name ) );
-        $.addClient().set_form_from_cookie( cookie_data );
+        /// Set the form fields
+        //$.addClient().set_form_from_cookie( cookie_data );
     }
     // If we saved the previous fields in a
     // cookie, load from the cookie.
@@ -360,7 +374,6 @@ $(document).ready( function() {
         $.Ovpnc().check_passwords();
     if ( $('input#email').attr('value') != '' && !$('.error_message').is(':visible') )
         $.Ovpnc().check_email();
-
 
     // Handler for exit
     $.addClient().set_click_bind();

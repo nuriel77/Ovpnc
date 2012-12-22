@@ -284,8 +284,16 @@ function delete_client(button, grid){
     if ( cnf == false ) return false;
 
     // Execute
-    $.Ovpnc().ajax_call("/api/clients/", { client: _clients, _ : '1' },
-    'REMOVE', client_delete_return, client_delete_error, 1, 15000 );
+    //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+    $.Ovpnc().ajax_call({
+        url: "/api/clients/",
+        data: { client: _clients, _ : '1' },
+        method: 'REMOVE',
+        success_func: client_delete_return,
+        error_func: client_delete_error,
+        loader: 1,
+        timeout: 15000
+    });
 }
 
 function client_delete_return(r){
@@ -351,7 +359,13 @@ function format_client_results(obj){
 	var is_felxgrid_ready =
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){
-				$.Ovpnc().ajax_call( "/api/server/status", { }, 'GET', $.Ovpnc().update_server_status );
+                //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+				$.Ovpnc().ajax_call({
+                    url: "/api/server/status",
+                    data: {},
+                    method: 'GET',
+                    success_func: $.Ovpnc().update_server_status
+                });
 				window.clearInterval(is_felxgrid_ready);
 			}
 		}, 100);

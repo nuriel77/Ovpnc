@@ -508,23 +508,6 @@ sub _prepare_conf_file_data : Private {
     return $output;
 }
 
-=head2 _not_exists
-
-Checks if elemnt already exists
-in the array, if yes, it returns
-false so it will not be put into hold
-
-=cut
-
-sub _not_exists : Private {
-    my ( $self, $keys, $real ) = @_;
-    return 1 unless ref $keys eq 'ARRAY';
-    if ( $real ~~ @{$keys} ) {
-        return 0;
-    }
-    return 1;
-}
-
 =head2 _create_xml
 
 This function will create
@@ -663,13 +646,13 @@ returns the errors if any
 
 =cut
 
-sub _validate_xml : Private {
-    my ( $self, $xml, $schema ) = @_;
-    my $validator = XML::Validator::Schema->new( file => $schema );
-    my $parser = XML::SAX::ParserFactory->parser( Handler => $validator );
-    eval { $parser->parse_string($xml) };
-    return "Form validation error: $@" if $@;
-}
+    sub _validate_xml : Private {
+        my ( $self, $xml, $schema ) = @_;
+        my $validator = XML::Validator::Schema->new( file => $schema );
+        my $parser = XML::SAX::ParserFactory->parser( Handler => $validator );
+        eval { $parser->parse_string($xml) };
+        return "Form validation error: $@" if $@;
+    }
 
 =head2 _perl_to_xml
 
@@ -677,14 +660,14 @@ Convert a perl datastructure to xml
 
 =cut
 
-sub _perl_to_xml : Private {
-    return XMLout(
-        $_[1],
-        KeepRoot => 1,
-        NoSort   => 0,
-        XMLDecl  => "<?xml version='1.0' encoding='UTF-8'?>",
-    ) or die "Cannot generate XML data!";
-}
+    sub _perl_to_xml : Private {
+        return XMLout(
+            $_[1],
+            KeepRoot => 1,
+            NoSort   => 0,
+            XMLDecl  => "<?xml version='1.0' encoding='UTF-8'?>",
+        ) or die "Cannot generate XML data!";
+    }
 
 
 =head2 _manage_conf_file
@@ -694,76 +677,97 @@ create backup before save
 
 =cut
 
-sub _manage_conf_backup : Private {
-    my ( $self, $config_files, $keep_conf ) = @_;
+    sub _manage_conf_backup : Private {
+        my ( $self, $config_files, $keep_conf ) = @_;
 
-    return "\$config_files missing data!" unless $config_files;
-    return "\$config_files must be an ArrayRef"
-        if ref $config_files ne 'ARRAY';
+        return "\$config_files missing data!" unless $config_files;
+        return "\$config_files must be an ArrayRef"
+            if ref $config_files ne 'ARRAY';
 
-    for my $config_file ( @{$config_files} ) {
-        # Backup conf file
-        # ================
-        copy( $config_file, $config_file . '_' . time() . '_backup' )
-          or return {
-            error => "Error: Cannot backup existing config file '" . $config_file . "': $!" };
+        for my $config_file ( @{$config_files} ) {
+            # Backup conf file
+            # ================
+            copy( $config_file, $config_file . '_' . time() . '_backup' )
+              or return {
+                error => "Error: Cannot backup existing config file '" . $config_file . "': $!" };
 
-        my ($_dir) = split( /\/[a-z\._\-]*$/i, $config_file );
+            my ($_dir) = split( /\/[a-z\._\-]*$/i, $config_file );
 
-        # leave n copies (remove old)
-        # ===========================
-        opendir( my $DIR, $_dir );
-        my @_files =
-          map { $_ if $_ =~ /^[a-z\.\-_]+_[0-9]+_backup/g } readdir($DIR);
-        close $DIR;
-        my @_to_remove = splice @{ [ reverse sort @_files ] },
-          ( $keep_conf ? $keep_conf : 1 );
-        for (@_to_remove) {
-            next if $_ eq $_dir . '/';
-            unlink $_dir . '/' . $_;
+            # leave n copies (remove old)
+            # ===========================
+            opendir( my $DIR, $_dir );
+            my @_files =
+              map { $_ if $_ =~ /^[a-z\.\-_]+_[0-9]+_backup/g } readdir($DIR);
+            close $DIR;
+            my @_to_remove = splice @{ [ reverse sort @_files ] },
+              ( $keep_conf ? $keep_conf : 1 );
+            for (@_to_remove) {
+                next if $_ eq $_dir . '/';
+                unlink $_dir . '/' . $_;
+            }
         }
+        return;
     }
-    return;
-}
 
 
-# Public Functions
-# ================
+# Functions
+# =========
+=head2 _not_exists
 
+Checks if elemnt already exists
+in the array, if yes, it returns
+false so it will not be put into hold
+
+=cut
+
+    sub _not_exists : Private {
+        my ( $self, $keys, $real ) = @_;
+        return 1 unless ref $keys eq 'ARRAY';
+        if ( $real ~~ @{$keys} ) {
+            return 0;
+        }
+        return 1;
+    }
 =head2 get_openvpn_[param]
 
-Next methods get
-parameters from the
+Get parameter(s) from the
 Ovpnc xml conf file
 
 =cut
 
-sub get_openvpn_config_file : Private {
-    my ( $self, $file ) = @_;
-    my $xml_obj = XMLin($file) or die "Cannot read xml file $file: $!";
-    return $xml_obj->{Node}->{ConfigFile};
-}
+    sub get_openvpn_param : Private {
+        my ( $self, $file, $params ) = @_;
 
-sub get_openvpn_param : Private {
-    my ( $self, $file, $params ) = @_;
-
-    my $dom = XML::LibXML->load_xml( location => $file );
-    if ( ref $params && ref $params eq 'ARRAY' ) {
-        my @arr;
-        for ( @{$params} ) {
-            my $value = $dom->findvalue(
-                '/Nodes/Node/Directives/Group/Directive/Params/' . $_ );
-            push( @arr, $value ) if $value;
+        my $dom = XML::LibXML->load_xml( location => $file || $self->cfg->{ovpnc_conf} );
+        if ( ref $params && ref $params eq 'ARRAY' ) {
+            my @arr;
+            for ( @{$params} ) {
+                my $value = $dom->findvalue(
+                    '/Nodes/Node/Directives/Group/Directive/Params/' . $_ );
+                push( @arr, $value ) if $value;
+            }
+            return \@arr;
         }
-        return \@arr;
+        elsif ( !ref $params ) {
+            my $_ret_val = $dom->findvalue(
+                '/Nodes/Node/Directives/Group/Directive/Params/' . $params );
+            warn "Param not found: $params" unless $_ret_val;
+            return $_ret_val;
+        }
     }
-    elsif ( !ref $params ) {
-        my $_ret_val = $dom->findvalue(
-            '/Nodes/Node/Directives/Group/Directive/Params/' . $params );
-        warn "Param not found: $params" unless $_ret_val;
-        return $_ret_val;
+
+=head2 get_openvpn_config_file
+
+Returns specifically the ConfigFile
+
+=cut
+
+    sub get_openvpn_config_file : Private {
+        my ( $self, $file ) = @_;
+        my $xml_obj = XMLin( $file ) or die "Cannot read xml file $file: $!";
+        return $xml_obj->{Node}->{ConfigFile};
     }
-}
+
 
 
 =head2 end
@@ -772,17 +776,17 @@ Last auto-action
 
 =cut
 
-sub end : Private {
-    my ( $self, $c ) = @_;
+    sub end : Private {
+        my ( $self, $c ) = @_;
+    
+        # Clean up the File::Assets
+        # it is set to null but
+        # is not needed in JSON output
+        delete $c->stash->{assets};
 
-    # Clean up the File::Assets
-    # it is set to null but
-    # is not needed in JSON output
-    delete $c->stash->{assets};
-
-    $c->forward(
-        ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
-}
+        $c->forward(
+            ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
+    }
 
 =head1 AUTHOR
 

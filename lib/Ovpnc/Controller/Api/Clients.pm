@@ -186,7 +186,6 @@ around [
     unless ( $self->vpn->connect ) {
         $c->stash( { status => 'Server offline' } );
         $self->_disconnect_vpn if $self->_has_vpn;
-        #$c->detach;
     }
 
     return $self->$orig( $c, $params );

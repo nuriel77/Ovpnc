@@ -102,12 +102,7 @@ sub add : Path('add')
 {
     my ( $self, $c ) = @_;
 
-    # Force submit param
-    # ==================
-    $c->req->params->{'submit'} ||= 'Submit';
-
     $c->stash->{title}     = 'Clients: Add a new client';
-
     my $form = $c->stash->{form};
 
     # Verify all fields have been submitted
@@ -115,57 +110,30 @@ sub add : Path('add')
     # ->submitted doesn't work (although forced
     # submit param at start of this action)
     # ==========================================
-    my @_keys = sort keys %{$c->req->params} if scalar keys %{$c->req->params} > 1; 
-    my @_columns = qw[address email fullname password password2 phone submit username];
+    #my @_keys = sort keys %{$c->req->params} if scalar keys %{$c->req->params} > 1; 
+    #my @_columns = qw[address email fullname password password2 phone submit username];
 
     # Form submitted okay
     # ===================
-    if ( @_keys && @_columns ~~ @_keys ) {
+#    if ( @_keys && @_columns ~~ @_keys ) {
 
         $form->process;
-
-        # Check if any errors in form
-        # FormFu handles this automatically
-        # but we are using ajax for this
-        # call, so we need to override
-        # FormFu and send the errors back
-        # =================================
-        if ( $form->has_errors ) {
-            for ( @{$form->get_errors} ){
-                try  { 
-                    push @{$c->stash->{fields_error}} , $_->name;
-                    push @{$c->stash->{error}},
-                        "Error in field: '" . $_->name . "': " . $_->message
-                        . " - " . $_->type
-                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
-                    delete $c->stash->{$_} for ( qw/assets form token/ );
-                    delete $c->req->params->{submit};
-                }
-                catch {
-                     push @{$c->stash->{error}}, $_;
-                };
-            }
-            $c->response->status(400);
-            $c->forward('View::JSON');
-            $c->detach;
-        }
 
         if ( $form->submitted_and_valid ) {
 
             # If submitted we go "JSON"
             # =========================
-            delete $c->stash->{$_} for ( qw/assets form token/ );
-            delete $c->req->params->{submit};
+            #delete $c->stash->{$_} for ( qw/assets form token/ );
+            #delete $c->req->params->{submit};
+
             # New resultset
             # =============
-
             my $_client;
             try {
                 $_client = $c->model('DB::User')->new_result({});
             }
             catch {
-                push @{$c->stash->{error}}, $_;
+                #push @{$c->stash->{error}}, $_;
             };
 
             # update dbic row with
@@ -175,9 +143,9 @@ sub add : Path('add')
             catch { 
                 my $error_clean = $_;
                 my $error = $_;
-                $self->_db_error($c, $error_clean, $error, $form);
-                $c->forward('View::JSON');
-                $c->detach;
+                #$self->_db_error($c, $error_clean, $error, $form);
+                #$c->forward('View::JSON');
+                #$c->detach;xxx
             }; 
     
             my $_client_role_id;
@@ -189,7 +157,7 @@ sub add : Path('add')
                 );
             }
             catch {
-                push @{$c->stash->{error}}, $_;
+                #push @{$c->stash->{error}}, $_;
             };
 
             try {
@@ -203,25 +171,25 @@ sub add : Path('add')
             } catch {
                 my $error_clean = $_;
                 my $error = $_;
-                $self->_db_error($c, $error_clean, $error, $form);
-                $c->forward('View::JSON');
-                $c->detach;
+                #$self->_db_error($c, $error_clean, $error, $form);
+                #$c->forward('View::JSON');
+                #$c->detach;
             };
 
             # Create client configuration file
             # ================================
             if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
-                $self->_error($c,
-                    "Cannot create ccd file for " . $_client->username
-                    . ": directory '" . $c->config->{openvpn_ccd}
-                    . "' does not exists or is not writable!" );
+                #$self->_error($c,
+                #    "Cannot create ccd file for " . $_client->username
+                #    . ": directory '" . $c->config->{openvpn_ccd}
+                #    . "' does not exists or is not writable!" );
             }
 
             my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
 
-            open (my $FILE, '>', $_file)
-                or $self->_error($c, "Cannot create ccd file for "
-                    . $_client->username . ': ' . $!);
+            open (my $FILE, '>', $_file);
+                #or $self->_error($c, "Cannot create ccd file for "
+                #    . $_client->username . ': ' . $!);
             print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
 
             ## For Debug: -- remove
@@ -236,23 +204,41 @@ sub add : Path('add')
 
             chmod 0640, $c->config->{openvpn_ccd} . '/' . $_client->username
                 or $self->_error($c, " chown error '" . $_file . "': " . $!);
-    
-            if ( $c->stash->{error} ) {
-                $_client->delete;
-            }
-            else {
-                $c->stash->{status} = "'" . $_client->username . "' created successfully";
-            }
+                
+            # Rollback on errors
+            # ==================
+            $_client->delete  if $c->stash->{error};
 
+            push (@{$c->flash->{success_messages}},
+                "Client \\'" . $_client->username . "\\' added successfully.");
 
-            $c->forward('View::JSON');
+            $c->response->redirect( $c->uri_for('add') );
+            return;
         }
-    }
-    else {
-        $c->response->headers->header('Content-Type' => 'text/html');
-        Ovpnc::Controller::Root->include_default_links( $c );
-    }
 
+        # Check if any errors in form
+        # FormFu handles this automatically
+        # but we are using ajax for this
+        # call, so we need to override
+        # FormFu and send the errors back
+        # ================================
+        if ( $form->has_errors ) {
+            for ( @{$form->get_errors} ){
+                try  { 
+                    push @{$c->stash->{fields_error}} , $_->name;
+                    push @{$c->stash->{error}},
+                        "Error in field: '" . $_->name . "': " . $_->message
+                        . " - " . $_->type
+                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
+                }
+                catch {
+                     push @{$c->stash->{error}}, $_;
+                };
+            }
+        }
+ #   }
+    $c->forward('end');
 }
 
 =head2 _db_error
@@ -264,7 +250,7 @@ Handle Database error
 sub _db_error : Private {
     my ( $self, $c, $error_clean, $error, $form ) = @_;
 
-    $c->response->status(500);    
+    #$c->response->status(500);    
 
     if ( $error_clean =~ /duplicate entry '(.*)' for key '(.*)' /i ){
         push @{$c->stash->{error}}, $2 if $2;
@@ -273,12 +259,11 @@ sub _db_error : Private {
             ->force_errors(1);
         $form->process;
     }
-# TODO: use for return ajax handle error to do something with this error field
-#            elsif ( $_ =~ /(execute failed: Column) '(.*)' (.*) \[/g ) {
-#                push @{$c->stash->{error}}, $2 if $2;
-#                my ($_err) = $error =~ /(execute failed: .*) \[/g;
-#                push @{$c->stash->{error}}, "MySQL error: " . $_err if $_err;
-#            }
+    elsif ( $_ =~ /(execute failed: Column) '(.*)' (.*) \[/g ) {
+        push @{$c->stash->{error}}, $2 if $2;
+        my ($_err) = $error =~ /(execute failed: .*) \[/g;
+        push @{$c->stash->{error}}, "MySQL error: " . $_err if $_err;
+    }
     elsif ( $_ =~ /(execute failed:.*) \[/g ) {
         push @{$c->stash->{error}}, "Error: " . $1;
     }
@@ -295,7 +280,6 @@ Handle General error
 
 sub _error : Private {
     my ( $self, $c, $error ) = @_;
-    $c->response->status(500);
     push @{$c->stash->{error}}, $error;
 }
 
@@ -346,12 +330,27 @@ Attempt to render a view, if needed.
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
 
-    # Add js / css
-    # ============
-    Ovpnc::Controller::Root->include_default_links($c);
-
     $c->stash->{username} = $c->user->get("username")
       if ( $c->user_exists );
+
+    my $accept = $c->req->header('accept');
+    $c->req->headers->header('accept' => 'application/xhtml+xml'); 
+    my $content_type = $c->req->header('content-type');
+    if($accept =~ /html/){ 
+        $c->res->headers->header('Content-Type' => 'text/html');
+        # Add js / css
+        # ============
+        Ovpnc::Controller::Root->include_default_links($c);
+    } 
+    elsif ( $accept =~ /xml/){ 
+        $c->res->headers->header('Accept' => 'text/xml'); 
+        $c->forward('View::XML::Simple');
+    } 
+    elsif ( $accept =~ /json/ ){
+        $c->res->headers->header('Accept' => 'application/json'); 
+        $c->forward('View::JSON');
+    }
+
 }
 
 =head1 AUTHOR

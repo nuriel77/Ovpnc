@@ -36,6 +36,8 @@ elements:
                              regex: '^[\-_a-zA-Z\d]*\z'
                            - type: MaxLength
                              max: 42
+                           - type: MinLength
+                             min: 2
               # Password
               - type: Block
                 tag: div
@@ -50,6 +52,8 @@ elements:
                           - Required
                           - type: MaxLength
                             max: 72
+                          - type: MinLength
+                            min: 8
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "1 lowercase, uppercase, digit and character"
@@ -112,6 +116,8 @@ elements:
                              regex: '^[\-_a-zA-Z\d\s]*\z'
                            - type: MaxLength
                              max: 42
+                           - type: MinLength
+                             min: 2
               # Email
               - type: Block
                 tag: div
@@ -129,7 +135,7 @@ elements:
                           - Required
                           - Email
                           - type: MinLength
-                            min: 6
+                            min: 3
                           - type: MaxLength
                             max: 72
               # Phone

@@ -13,7 +13,7 @@
         <Directive status="1">
           <Name>local</Name>
           <Params>
-            <VPNServer>0.0.0.0</VPNServer>
+            <VPNServer>62.75.156.41</VPNServer>
           </Params>
         </Directive>
         <Directive status="1">

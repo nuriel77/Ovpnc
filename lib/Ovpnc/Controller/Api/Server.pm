@@ -225,7 +225,10 @@ command=[...]
 sub server_POST : Local
                 : Args(0)
                 : Sitemap
-				: Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+				: Does('ACL')
+                  AllowedRole('admin')
+                  AllowedRole('can_edit')
+                  ACLDetachTo('denied')
                 : Does('NeedsLogin')
 {
     my ( $self, $c, $command ) = @_;
@@ -239,19 +242,20 @@ sub server_POST : Local
     # Assign from post parameters
     # will override anything in the path
     # ==================================
-    $command = $c->request->params->{command} if $c->request->params->{command};
+    $command = $c->request->params->{command}
+        if $c->request->params->{command};
 
     my $_role = $self->new_with_traits(
-        traits         => ['Control'],
-        openvpn_dir    => $self->cfg->{openvpn_dir},
-        openvpn_bin    => $self->cfg->{openvpn_bin},
-        openvpn_pid    => $self->cfg->{openvpn_pid},
-        openvpn_config => $self->cfg->{openvpn_config},
-        openvpn_tmpdir => $self->cfg->{tmp_dir},
-        app_root       => $c->config->{home},
-        app_user       => $c->user_exists ? $c->user->get("username") : '',
+        traits          => ['Control'],
+        openvpn_dir     => $self->cfg->{openvpn_dir},
+        openvpn_bin     => $self->cfg->{openvpn_bin},
+        openvpn_pid     => $self->cfg->{openvpn_pid},
+        openvpn_config  => $self->cfg->{openvpn_config},
+        openvpn_tmpdir  => $self->cfg->{tmp_dir},
+        app_root        => $c->config->{home},
+        app_user        => $c->user_exists ? $c->user->get("username") : '',
         mgmt_passwd_file  => $self->cfg->{mgmt_passwd_file},
-        openvpn_group  =>  $self->cfg->{openvpn_group},
+        openvpn_group   =>  $self->cfg->{openvpn_group},
     ) or die "Could not get role 'Control': $!";
 
     # Dict of possible commands

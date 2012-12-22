@@ -64,8 +64,17 @@ local deployment.
 
 __PACKAGE__->config(
 
-    name         => 'Ovpnc',
-    default_view => 'HTML',
+    name            => 'Ovpnc',
+
+    'default_view'  => 'HTML',
+    'default'       => 'application/json',
+    'stash_key'     => 'rest',
+    'map' => { 
+        'text/html' => [ 'View', 'HTML', ], 
+        'text/xml' => [ 'View', 'XML::Simple', ], 
+        'application/x-www-form-urlencoded' => 'JSON',
+        'application/json'                  => 'JSON',
+    },
 
     # Disable deprecated behavior
     # needed by old applications

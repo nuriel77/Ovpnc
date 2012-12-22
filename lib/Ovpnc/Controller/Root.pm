@@ -224,18 +224,15 @@ sub include_default_links : Private {
                 js/jQuery-contextMenu/src/jquery.contextMenu.js
                 js/Flexigrid/css/flexigrid.css
                 js/Flexigrid/js/flexigrid.js
-            ) if $c->req->path eq 'clients';
+            ) if $c->req->path =~ /clients\/*$/i;
+
+        $c->stash->{expires} = scalar(localtime($c->session_expires));
+        $c->log->info( "Current time: " . scalar(localtime(time())) );
+        $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
     }
     # Optional :
     #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
     #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
-
-    if ( $c->user_exists ){
-        $c->stash->{expires} = scalar(localtime($c->session_expires));
-        $c->log->debug( scalar(localtime(time())) );
-        $c->log->debug( 'Session will expire: ' . $c->stash->{expires} );
-    }
-
 
     return 1 if $c->stash->{no_self};
 
@@ -243,7 +240,8 @@ sub include_default_links : Private {
     # not incase of 'main' ( path is undef )
     # ======================================
     my $root_dir = join '/', @{$c->config->{static}->{include_path}->[0]->{dirs}};
-    if ( my $c_name = $c->req->path ) {
+
+    if ( my $c_name = lc($c->req->path) ) {
         $c_name =~ s/\/$//;
         for my $type (qw/ css js /) {
             push(
@@ -256,7 +254,7 @@ sub include_default_links : Private {
     }
 
     $c->assets->include( $_ ) for @_page_assets;
-
+    
 }
 
 sub sitemap : Path('/sitemap') {
@@ -293,7 +291,8 @@ sub end : ActionClass('RenderView') {
 
     # Include JS/CSS
     # ==============
-    $self->include_default_links($c);
+    $self->include_default_links($c)
+        unless $c->req->path or $c->req->path eq '/';
 
     $self->_apply_username_to_stash($c)
         unless $c->stash->{username};

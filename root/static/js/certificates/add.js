@@ -252,15 +252,15 @@ jQuery.validator.setDefaults({
                     expires: 14
                 });
 
-                $.Ovpnc().ajax_call(
-                    '/certificates/add',
-                     $("form#add_client_form").serialize(),
-                    'POST',
-                    $.addCertificate().return_certificate_add,
-                    $.addCertificate().error_certificate_add,
-                    1,
-                    15000
-                );
+                $.Ovpnc().ajax_call({
+                    url: '/certificates/add',
+                    data: $("form#add_client_form").serialize(),
+                    method: 'POST',
+                    success_func: $.addCertificate().return_certificate_add,
+                    error_func: $.addCertificate().error_certificate_add,
+                    loader: 1,
+                    timeout: 15000
+                });
 
             });
             $('input#username').bind('keyup',function(){
@@ -294,7 +294,6 @@ jQuery.validator.setDefaults({
 $(document).ready(function(){
 	$('#form_container').slideDown(600);
 	cert_exec_actions();
-
 });
 
 // Main function

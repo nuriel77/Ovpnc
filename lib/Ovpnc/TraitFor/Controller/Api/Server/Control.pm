@@ -1,13 +1,17 @@
 package Ovpnc::TraitFor::Controller::Api::Server::Control;
 use warnings;
 use strict;
+use Try::Tiny;
 use Module::Locate qw(locate);
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 use String::MkPasswd 'mkpasswd';
+use Errno  qw( EADDRINUSE );
+use Socket qw( PF_INET SOCK_STREAM SOCK_DGRAM INADDR_ANY sockaddr_in pack_sockaddr_in inet_aton );
 use Proc::Simple;
 use Proc::ProcessTable;
 use File::Touch;
 use Moose::Role;
+use MooseX::Types::IPv4 'ip4';
 use namespace::autoclean;
 
 =head1 NAME
@@ -34,7 +38,6 @@ has [
     qw/
       app_root
       app_user
-      openvpn_dir
       openvpn_bin
       openvpn_config
       openvpn_tmpdir
@@ -51,18 +54,38 @@ has [
 sub start {
     my ( $self, $vpn ) = @_;
 
-    $self->_set_vpn( $vpn )
-        if $vpn;
-
-    my $_pid = $self->_check_running;
+    $self->_set_vpn( $vpn ) if $vpn;
 
     # Check connected or not to mgmt port
     # ===================================
+    my $_pid = $self->_check_running;
     if ( $_pid || ( $self->_has_vpn && $self->vpn->{objects} ) ) {
         $self->_disconnect_vpn;
         return { error => 'Server already started with pid ' . $_pid };
     }
     else {
+        
+        # First check if the address/port
+        # are free to bind to
+        # ===============================
+        my ( $openvpn_addr, $openvpn_port, $openvpn_proto ) =
+            @{Ovpnc::Controller::Api::Configuration
+                ->get_openvpn_param( '',
+                    [ 'VPNServer', 'ServerPort', 'Protocol' ] )};
+
+        unless (
+            $self->_check_port_available(
+                $self->openvpn_addr,
+                $self->openvpn_port,
+                $self->openvpn_proto)
+        ) {
+            return { 
+                error => 'Server cannot start. Cannot bind to socket. '
+                    . 'Check that the ' . $self->openvpn_proto . ' address/port '
+                    . $self->openvpn_addr . ':' . $self->openvpn_port
+                    . ' are free and try again.'
+            };
+        }
 
         $self->_check_management_password;
 
@@ -273,6 +296,28 @@ sub _check_running {
     }
     return;
 }
+
+=head2 _check_port_available
+
+Check if OpenVPN port is in user
+
+=cut
+
+    sub _check_port_available {
+        my ( $self, $iaddr, $port, $proto ) = @_;
+
+        $proto  ||= 'udp';
+        $proto    = getprotobyname($proto)  or die "getprotobyname: $!";
+        $port   ||= 1194;
+        $iaddr  ||= INADDR_ANY;
+        my $type  = $proto eq 'tcp' ? SOCK_STREAM : SOCK_DGRAM;
+        my $ipaddr = inet_aton($iaddr);
+        socket(my $sock, PF_INET, $type, $proto) or die "socket: $!";
+        my $name = sockaddr_in($port,$ipaddr)    or die "sockaddr_in: $!";
+        bind($sock, $name)                       and return 1;
+        $! == EADDRINUSE                         and return 0;
+        die "bind: $!";
+    }
 
 =head2 _check_management_password
 

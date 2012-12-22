@@ -89,18 +89,25 @@
         set_confirm_exit: function(modified, action){
             if ( modified === undefined || modified === 0 ) {
                 // On window unload
-                console.log('Form modified, setting confirm_on_exit');
+                //console.log('Form modified, setting confirm_on_exit');
                 window.onbeforeunload = action;
             }
             else {
-                console.log('Already modified');
+                //console.log('Already modified');
             }
             return 1;
         },
         check_username: function(){
             var _name = $('input#username').attr('value');
             if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().ajax_call('/api/clients', { username: _name }, 'GET', return_client_data, error_ajax_return );
+            //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+            $.Ovpnc().ajax_call({
+                url: '/api/clients',
+                data: { username: _name },
+                method: 'GET',
+                success_func: return_client_data,
+                error_func: error_ajax_return
+            });
         },
         check_passwords: function(){
             var current = $('input#password2').attr('value');
@@ -110,7 +117,13 @@
         check_email: function(){
             var _name = $('input#email').attr('value');
             if ( _name === undefined || _name == '' ) return;
-            $.Ovpnc().ajax_call('/api/clients', { email: _name }, 'GET', return_client_data, error_ajax_return );
+            $.Ovpnc().ajax_call({
+                url: '/api/clients',
+                data: { email: _name },
+                method: 'GET',
+                success_func: return_client_data,
+                error_func: error_ajax_return
+            });
         },
         //
         // Reset form fields
@@ -143,32 +156,37 @@
                 } else if ( _msg.rest !== undefined && _msg.rest.error !== undefined ){
                     alert($.Ovpnc().alert_err + ' ' + _msg.rest.error + '.</div><div class="clear"></div>');
                 } else {
-                    alert($.Ovpnc().alert_err + ' Unknown result from server!</div><div class="clear"></div>');
+                    alert($.Ovpnc().alert_err + ' Unknown result from server! Ovpnc server might be down.</div><div class="clear"></div>');
                 }
             }
-            else {
-                alert($.Ovpnc().alert_err + ' Unknown result from backend!</div><div class="clear"></div>');
-            }
+            //else {
+            //    alert($.Ovpnc().alert_err + ' Unknown result from backend! Ovpnc server might be down.</div><div class="clear"></div>');
+            //}
         },
         //
         // Get server status
         //
         get_server_status: function() {
-            $.Ovpnc().ajax_call("/api/server/status", {},
-            'GET', $.Ovpnc().update_server_status, $.Ovpnc().error_server_status);
+            $.Ovpnc().ajax_call({
+                url: "/api/server/status",
+                data: {},
+                method: 'GET',
+                success_func: $.Ovpnc().update_server_status,
+                error_func: $.Ovpnc().error_server_status
+            });
         },
         //
         // Server control call
         //
         server_ajax_control: function(cmd) {
-            $.Ovpnc().ajax_call(
-                "/api/server/",
-                { command: cmd },
-                'POST',
-                function success_ajax_server_control(r,cmd){ return $.Ovpnc().success_ajax_server_control( r, cmd ) },
-                function error_ajax_server_control(r,cmd){ return $.Ovpnc().error_ajax_server_control( r, cmd ) },
-                1
-            );
+            $.Ovpnc().ajax_call({
+                url: "/api/server/",
+                data: { command: cmd },
+                method: 'POST',
+                success_func: function success_ajax_server_control(r,cmd){ return $.Ovpnc().success_ajax_server_control( r, cmd ) },
+                error_func: function error_ajax_server_control(r,cmd){ return $.Ovpnc().error_ajax_server_control( r, cmd ) },
+                loader: 1
+            });
         },
         //
         // Server control success
@@ -231,9 +249,10 @@
         //
         // Set processing overlay div and ajax loader
         //
-        set_ajax_loading: function(){
+        set_ajax_loading: function(no_overlay){
             $('body').prepend( $.Ovpnc().ajax_loader_floating );
-            $.Ovpnc().apply_overlay();
+            if ( no_overlay !== undefined )
+                $.Ovpnc().apply_overlay();
         },
         //
         // Remove overlay div and ajax loader
@@ -312,34 +331,33 @@
         },
         //
         // Get json data generic function
+        //  ( url, data, method, success_func, error_func, loader, timeout, retries, cache, async )
         //
-        ajax_call: function(url, data, method, success_func, error_func, loader, timeout) {
+        ajax_call: function(p){
             return jQuery.ajax({
-                headers: {
-                    'Accept': 'application/json'
-                },
-                async: true,
-                timeout: timeout ? timeout : 5000,
-                data: data,
-                type: method ? method : 'GET',
+                headers: { 'Accept' : 'application/json' },
+                async: p.async ? p.async : true,
+                timeout: p.timeout ? p.timeout : 5000,
+                data: p.data ? p.data : {},
+                type: p.method ? p.method : 'GET',
                 tryCount: 0,
-                retryLimit: 3,
-                cache: false,
-                url: url,
+                retryLimit: p.retries ? p.retries : 3,
+                cache: p.cache ? p.cache : false,
+                url: p.url,
                 beforeSend: function() {
                     $.Ovpnc.ajax_lock = 1;
-                    if ( loader !== undefined )
+                    if ( p.loader !== undefined )
                         $.Ovpnc().set_ajax_loading();
                 },
                 complete: function() {
                     $.Ovpnc.ajax_lock = 0;
-                    if ( loader !== undefined )
+                    if ( p.loader !== undefined )
                         $.Ovpnc().remove_ajax_loading();
                 },
-                success: success_func ? function(rest){ return success_func(rest); } : function(rest) {
+                success: p.success_func ? function(rest){ return p.success_func(rest); } : function(rest) {
                     console.log("Ajax got back: %o", rest);
                 },
-                error: error_func ? function(rest,xhr,throwError){ return error_func(rest,xhr,throwError); } : function(xhr, ajaxOptions, thrownError) {
+                error: p.error_func ? function(rest,xhr,throwError){ return p.error_func(rest,xhr,throwError); } : function(xhr, ajaxOptions, thrownError) {
                     this.tryCount++;
                     if (this.tryCount <= this.retryLimit) {
                         //try again
@@ -350,7 +368,7 @@
                     $('#client_status_container').html("<div id='no_data'>" + "No data recieved, possible error: " + thrownError.toString() + "</div>").show(250);
                     return false;
                 }
-            })
+            });
         },
         //
         // process error message
@@ -388,7 +406,7 @@
         // Update server status data
         //
         update_server_status: function(r) {
-            console.log("%o",r);
+            //console.log("%o",r);
             if (r !== undefined ) {
                 // If we get status back, display
                 if ( r.rest !== undefined && r.rest.status !== undefined) {

@@ -149,23 +149,27 @@ and title (version)
 sub status_GET : Local
                : Args(0)
                : Sitemap
-               : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+               : Does('ACL')
+                 AllowedRole('admin')
+                 AllowedRole('client')
+                 ACLDetachTo('denied')
 {
     my ( $self, $c ) = @_;
 
     # Verify can run
     # ==============
     my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
-    undef $_server if $_server && $_server->sanity($c);
+    undef $_server if $_server && $_server->sanity( $c );
 
     # Trait names should match action name
     # Ovpnc::TraitFor::Controller::Api::Server::Status
     # ================================================
     my ($_fn) = ( caller(0) )[3] =~ /::(\w+)::\w+_.*$/;
     my $_role = $self->new_with_traits(
-        traits => [$_fn],
-        vpn    => $self->vpn,
-        regex  => $REGEX
+        traits      => [$_fn],
+        ovpnc_conf  => $self->cfg->{ovpnc_conf},
+        vpn         => $self->vpn,
+        regex       => $REGEX
     ) or die "Could not get role '" . ucfirst($_fn) . "': $!";
 
     # Check connection to mgmt port
