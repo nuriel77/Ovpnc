@@ -291,7 +291,7 @@
             // red because of previous error..
             $('#password2').parent('div').find('label').css('color','#000000');
             $('#generated_password_text').text(_pass);
-            $('#password').attr('value', _pass ).keyup();
+            $('#password').attr('value', _pass );
             $('#password2').attr('value', _pass );
             return;
         },

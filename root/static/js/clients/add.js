@@ -89,12 +89,14 @@ validation_rules: function() {
             expires: 14
         },
         set_click_bind: function(){
-        //    if(typeof(events) !== "function"){
-        //        $('#generate_password').click(function(){
-        //                $.Ovpnc().check_changes();
-        //        });
-        //    }
-            $.addClient().check_changes();
+            /*
+            if(typeof(events) !== "function"){
+                $('#generate_password').click(function(){
+                    $.addClient().check_changes();
+                });
+            }
+            */
+            //$.addClient().check_changes();
         },
         //
         // Confirm leaving page
@@ -229,6 +231,8 @@ validation_rules: function() {
                 $.Ovpnc().check_email();
             });
             $('input#password').bind('keyup',function(){
+                if ( $('input#password2').attr('value') != '' )
+                    $('#password2').attr('value','');
                 $('#generated_password_text').empty();
                 $.Ovpnc().check_passwords();
             });
@@ -245,9 +249,9 @@ validation_rules: function() {
         },
         // Form validation rules
         set_form_validation_rules: function(){
-            $("#add_client_form").validate(
-                $.addClient().validation_rules()
-            );
+            //$("#add_client_form").validate(
+            //    $.addClient().validation_rules()
+            //);
         },
         // Set the input fields
         // from the cookie

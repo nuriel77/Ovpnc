@@ -113,51 +113,43 @@ sub add : Path('add')
     #my @_keys = sort keys %{$c->req->params} if scalar keys %{$c->req->params} > 1; 
     #my @_columns = qw[address email fullname password password2 phone submit username];
 
-    # Form submitted okay
-    # ===================
-#    if ( @_keys && @_columns ~~ @_keys ) {
+    # Form process 
+    # =============
 
-        $form->process;
+    $form->process;
 
-        if ( $form->submitted_and_valid ) {
+    if ( $form->submitted_and_valid ) {
 
-            # If submitted we go "JSON"
-            # =========================
-            #delete $c->stash->{$_} for ( qw/assets form token/ );
-            #delete $c->req->params->{submit};
+        # New resultset
+        # =============
+        my $_client;
+        try {
+            $_client = $c->model('DB::User')->new_result({});
+        }
+        catch {
+            push @{$c->stash->{error}}, $_;
+        };
 
-            # New resultset
-            # =============
-            my $_client;
-            try {
-                $_client = $c->model('DB::User')->new_result({});
-            }
-            catch {
-                #push @{$c->stash->{error}}, $_;
-            };
-
-            # update dbic row with
-            # submitted values from form
-            # ==========================
-            try   { $form->model->update( $_client ) }
-            catch { 
-                my $error_clean = $_;
-                my $error = $_;
-                #$self->_db_error($c, $error_clean, $error, $form);
-                #$c->forward('View::JSON');
-                #$c->detach;xxx
-            }; 
+        # update dbic row with
+        # submitted values from form
+        # ==========================
+        try   { $form->model->update( $_client ) }
+        catch { 
+            my $error_clean = $_;
+            my $error = $_;
+            $self->_db_error($c, $error_clean, $error, $form);
+        }; 
     
-            my $_client_role_id;
-            try {
-               $_client_role_id = $c->model('DB::Role')
+        my $_client_role_id;
+        try {
+           $_client_role_id = $c->model('DB::Role')
                 ->search(
                     { name => 'client' },
                     { select   => 'id' },   
-                );
+           );
             }
             catch {
-                #push @{$c->stash->{error}}, $_;
+                push @{$c->stash->{error}}, $_;
             };
 
             try {
@@ -171,9 +163,6 @@ sub add : Path('add')
             } catch {
                 my $error_clean = $_;
                 my $error = $_;
-                #$self->_db_error($c, $error_clean, $error, $form);
-                #$c->forward('View::JSON');
-                #$c->detach;
             };
 
             # Create client configuration file
@@ -225,20 +214,25 @@ sub add : Path('add')
         if ( $form->has_errors ) {
             for ( @{$form->get_errors} ){
                 try  { 
-                    push @{$c->stash->{fields_error}} , $_->name;
-                    push @{$c->stash->{error}},
-                        "Error in field: '" . $_->name . "': " . $_->message
-                        . " - " . $_->type
-                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
+                    #push @{$c->stash->{fields_error}} , $_->name;
+                    #push @{$c->stash->{error}},
+                    #    "Error in field: '" . $_->name . "': " . $_->message
+                    #    . " - " . $_->type
+                    #    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                    #    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
                 }
                 catch {
-                     push @{$c->stash->{error}}, $_;
+                     #push @{$c->stash->{error}}, $_;
                 };
             }
+
+            $c->res->headers->header('Content-Type' => 'text/html');
+            # Add js / css
+            # ============
+            Ovpnc::Controller::Root->include_default_links($c);
+            $c->forward('View::HTML');    
+            return;
         }
- #   }
-    $c->forward('end');
 }
 
 =head2 _db_error
