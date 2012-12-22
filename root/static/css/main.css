@@ -178,7 +178,7 @@ img{
 #server_status_content{ margin:8px 0px 4px 10px; float:left; }
 .server_title{ margin:10px 10px 50px 0px; padding:13px 10px 10px 10px;}
 #server_version{ color: #ccc; }
-#server_on_off{ float:right; }
+#serverOnOff{ float:right; }
 #online_clients { margin-top:28px; }
 #off_icon { float:right; }
 span.inner_flexi_text {
@@ -207,7 +207,7 @@ fieldset .constraint_required label:after {
     margin:3px 0 0 192px;
     font-size:0.9em;
 }
-#generate_password{
+#generatePassword{
     font-size:0.85em;
     float:left;
     margin:-47px 0 10px 505px;
@@ -226,12 +226,12 @@ fieldset .constraint_required label:after {
 .label { min-width: 360px; max-width: 360px; margin:0 0 30px 15px; */ } 
 #middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
 .submit_form { float:right;margin:5px 30px 0 0;padding:4px 6px 4px 4px; }
-.reset_form{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
+.resetForm{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
 .reset{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
 .form_row { min-width:275px;float:right; }
 .form_row_select { min-width:283px;float:right; }
 #add_form { font-size: 0.9em; }
-#ajax_loader_floating{
+#ajaxLoaderFloating{
     background-image: url(/static/images/ajax-loader-floating.gif);
     background-repeat: no-repeat;
     background-position: center center; 

@@ -89,7 +89,7 @@ elements:
               # Generate password button
               - type: Block
                 tag: div
-                content_xml: "<div id='generate_password' onclick='$.Ovpnc().generate_password_click();return false;'>Generate Password</div>"
+                content_xml: "<div id='generatePassword' onclick='$.Ovpnc().generatePasswordClick();return false;'>Generate Password</div>"
               # Clear div
               - type: Block
                 tag: div
@@ -175,7 +175,7 @@ elements:
                       - type: Reset
                         name: reset
                         attributes_xml:
-                          onclick: "$.addClient().reset_form( $('#add_client_form') );"
+                          onclick: "$.addClient().resetForm( $('#add_client_form') );"
                         value: "Reset"
               # Submit
               - type: Block

@@ -6,7 +6,7 @@
 <script>
     // Set events for form
     // input fields and submit
-    $.addClient().set_form_events();
+    $.addClient().setFormEvents();
 
     // Set password strengh checker
     $("#password").passStrength({

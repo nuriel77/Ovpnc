@@ -16,7 +16,7 @@ var total_count = 0;
     };
     
     var actions = {
-        set_clients_table: function() {
+        setClientsTable: function() {
             $.ajaxSetup({
                 cache: false,
                 async: true
@@ -25,7 +25,7 @@ var total_count = 0;
                 url: '/api/clients',
                 dataType: 'json',
                 method: "GET",
-                preProcess: format_client_results,
+                preProcess: formatClientResults,
                 colModel: [
                 // TODO: Save table proportions in cookie
                     { display: 'ID', name : 'id', width: 15, sortable : true, align: 'right', hide: true },
@@ -46,10 +46,10 @@ var total_count = 0;
                     { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false }
                 ],
                 buttons : [
-                    { name: 'Add', bclass: 'add', onpress : add_client },
-                    { name: 'Delete', bclass: 'delete', onpress : delete_client },
-                    { name: 'Block', bclass: 'block', onpress : block_clients },
-                    { name: 'Unblock', bclass: 'unblock', onpress : unblock_clients },
+                    { name: 'Add', bclass: 'add', onpress : addClient },
+                    { name: 'Delete', bclass: 'delete', onpress : deleteClient },
+                    { name: 'Block', bclass: 'block', onpress : blockClients },
+                    { name: 'Unblock', bclass: 'unblock', onpress : unblockClients },
                     { name: 'Properties', bclass: 'properties', onpress : test_edit },
                     { separator: true}
                 ],
@@ -81,7 +81,7 @@ var total_count = 0;
         //
         // Update / modify data in the client's table
         //
-        update_flexgrid : function(r){
+        updateFlexgrid : function(r){
             // Set the right color - on/off notice according
             // to client's status
             var _checker = 0;
@@ -123,7 +123,7 @@ var total_count = 0;
                 * any span we might have appended previous loop
                 */
                 var inner_text = v.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                var online_data = $.Client().check_clients_match(r.rest.clients, inner_text);
+                var online_data = $.Client().checkClientsMatch(r.rest.clients, inner_text);
                 if (online_data !== false) {
                     _checker++;
                     // loop each td find the corresponding 'abbr'
@@ -170,7 +170,7 @@ var total_count = 0;
         //
         // Check if client names match
         //
-        check_clients_match: function(clients, current_client) {
+        checkClientsMatch: function(clients, current_client) {
             for (var i in clients) {
                 if (clients[i].name === current_client) return clients[i];
             }
@@ -179,9 +179,9 @@ var total_count = 0;
         //
         // Check if a series of ajax calls completed
         //
-        check_complete_block: function(loop, processed, total_count, action){
+        checkCompleteBlock: function(loop, processed, total_count, action){
             if ( processed === total_count ){
-                alert($.Ovpnc().alert_info
+                alert($.Ovpnc().alertInfo
                         + ' Total ' + processed
                         + ' client' + ( processed === 1 ? ' ' : 's ' )
                         + action + 'd</div><div class="clear"></div>' );
@@ -193,10 +193,10 @@ var total_count = 0;
                 $('.pReload').click();
                 if ( processed === 0 ){
                     if ( total_count > 1 )
-                        alert( $.Ovpnc().alert_icon + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
+                        alert( $.Ovpnc().alertIcon + ' No clients ' + action + 'd!</div><div class="clear"></div>' );
                 }
                 else {
-                    alert( $.Ovpnc().alert_icon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
+                    alert( $.Ovpnc().alertIcon + ' Only ' + processed + ' out of ' + total_count + ' clients ' + action + 'd</div><div class="clear"></div>' );
                 }
             }
         }
@@ -214,10 +214,10 @@ $(function(){
             console.log(key);
             var client = elem.context.getAttribute("parent");
             if ( key.match(/block|unblock/i) ){
-                block_unblock_clients(key, $('.flexigrid'));
+                blockUnblockClients(key, $('.flexigrid'));
             }
             else if ( key.match(/delete/i) ){
-                delete_client(key, $('.flexigrid'));
+                deleteClient(key, $('.flexigrid'));
             }
             else if ( key.match(/edit/i) ){
                 // TODO
@@ -242,7 +242,7 @@ $(document).ready(function(){
 	// Declare flexigrid
 	// Will run a query
 	// to get clients
-    $.Client().set_clients_table();
+    $.Client().setClientsTable();
 
     // TODO: Disable / grayout actions
     // disallowed by this role
@@ -250,20 +250,20 @@ $(document).ready(function(){
 	// Show the clients table
 	$('.flexigrid').slideDown(300);
     
-    function block_clients(button, grid) {}
-    function unblock_clients(button, grid) {}
-    function delete_client(button, grid) {}
+    function blockClients(button, grid) {}
+    function unblockClients(button, grid) {}
+    function deleteClient(button, grid) {}
 
    
 });
 
-function add_client() {
+function addClient() {
     window.location = '/clients/add';
 }
 
-function delete_client(button, grid){
+function deleteClient(button, grid){
     // Get total selected clients
-    total_count = $('.trSelected', grid).length;
+    var total_count = $('.trSelected', grid).length;
     console.log('At delete client function, total selected:' + total_count);
     var _loop = 0;
     var _clients = '';
@@ -275,47 +275,44 @@ function delete_client(button, grid){
         _clients += client + ',';    
         _loop++;
     });
-
     // Return if no selected clients
     if ( _loop == 0 ) return;
-
     // Confirm
     var cnf = confirm('Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ) );
     if ( cnf == false ) return false;
-
     // Execute
     //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-    $.Ovpnc().ajax_call({
+    $.Ovpnc().ajaxCall({
         url: "/api/clients/",
         data: { client: _clients, _ : '1' },
         method: 'REMOVE',
-        success_func: client_delete_return,
-        error_func: client_delete_error,
+        success_func: clientDeleteReturn,
+        error_func: clientDeleteError,
         loader: 1,
         timeout: 15000
     });
 }
 
-function client_delete_return(r){
+function clientDeleteReturn(r){
     if ( r.rest.deleted !== undefined  ){
         if ( r.rest.deleted.length > 0 ){
-            alert($.Ovpnc().alert_ok
+            alert($.Ovpnc().alertOk
                     + ' Total ' + r.rest.deleted.length
                     + ' client' + ( r.rest.deleted.length === 1 ? ' ' : 's ' )
                     + ' deleted</div><div class="clear"></div>' );
         }
         else {
-            alert( $.Ovpnc().alert_err + ' No clients deleted!</div><div class="clear"></div>' );
+            alert( $.Ovpnc().alertErr + ' No clients deleted!</div><div class="clear"></div>' );
             return;
         }
     }
     if ( r.rest.failed !== undefined && r.rest.failed.length > 0 ){
-        alert( $.Ovpnc().alert_icon + r.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
+        alert( $.Ovpnc().alertIcon + r.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
     }
     $('.pReload').click();
 }
 
-function client_delete_error(e){
+function clientDeleteError(e){
     if ( e.responseText !== undefined ){
         var msg = jQuery.parseJSON( e.responseText );
         var _msg;
@@ -334,25 +331,25 @@ function client_delete_error(e){
         else if ( msg.error ){
             _msg = msg.error;
         }
-        alert( $.Ovpnc().alert_err + ' Client'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
+        alert( $.Ovpnc().alertErr + ' Client'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
     }
     else {
-        alert( $.Ovpnc().alert_err + ' Error: No clients deleted!</div><div class="clear"></div>' );
+        alert( $.Ovpnc().alertErr + ' Error: No clients deleted!</div><div class="clear"></div>' );
     }
 }
 
-function block_clients(button, grid){
-    block_unblock_clients(button, grid, 'revoke');
+function blockClients(button, grid){
+    blockUnblockClients(button, grid, 'revoke');
 }
 
-function unblock_clients(button, grid){
-    block_unblock_clients(button, grid, 'unrevoke');
+function unblockClients(button, grid){
+    blockUnblockClients(button, grid, 'unrevoke');
 }
 
 // Format the data from
 // server status, processing
 // only the clients array
-function format_client_results(obj){
+function formatClientResults(obj){
 
 	// This will force to update
 	// online_data and not wait
@@ -360,11 +357,11 @@ function format_client_results(obj){
 		setInterval(function(){
 			if ( $('#flexme').is(':visible') ){
                 //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-				$.Ovpnc().ajax_call({
+				$.Ovpnc().ajaxCall({
                     url: "/api/server/status",
                     data: {},
                     method: 'GET',
-                    success_func: $.Ovpnc().update_server_status
+                    success_func: $.Ovpnc().updateServerStatus
                 });
 				window.clearInterval(is_felxgrid_ready);
 			}
@@ -378,7 +375,7 @@ function format_client_results(obj){
 			__count++;
 			__rows.push({
 				id: $.Ovpnc().count,
-				cell: prepare_client_col_data(obj.rest[index])
+				cell: prepareClientColData(obj.rest[index])
 			});
 		}
 		return {
@@ -389,7 +386,7 @@ function format_client_results(obj){
 	}
 }
 
-function prepare_client_col_data(c){
+function prepareClientColData(c){
 
    /*
     * Some fields need to contain
@@ -419,7 +416,7 @@ function prepare_client_col_data(c){
     ]
 }
 
-function block_unblock_clients(button, grid, action){
+function blockUnblockClients(button, grid, action){
     if ( action === undefined ){
         action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
     }
@@ -443,7 +440,7 @@ function block_unblock_clients(button, grid, action){
     if ( loop == 0 ) return;
 
     // Revoke client/disconnect
-    $.Ovpnc().set_ajax_loading();
+    $.Ovpnc().setAjaxLoading();
 
     $.ajax({
         url: '/api/clients',
@@ -479,11 +476,11 @@ function block_unblock_clients(button, grid, action){
                         for ( var i in _processed_clients ){
                             console.log("n: " + _processed_clients[i]);
                             if ( _processed_clients[i].match(/fail|error/i) ){
-                                alert($.Ovpnc().alert_err + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
+                                alert($.Ovpnc().alertErr + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
                                 _processed_clients.splice(i,1);
                             }
                             else {
-                                alert($.Ovpnc().alert_ok + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
+                                alert($.Ovpnc().alertOk + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
                             }
                         }
                         for (var z = 0; z < _processed_clients.length; z++) {
@@ -493,33 +490,33 @@ function block_unblock_clients(button, grid, action){
                             }
                         }
                         if ( _processed_clients.length > 0 ){
-                            alert($.Ovpnc().alert_info
+                            alert($.Ovpnc().alertInfo
                             + ' Total ' + _processed_clients.length
                             + ' client' + ( _processed_clients.length === 1 ? ' ' : 's ' )
                             + ' ' + action + 'd</div><div class="clear"></div>' );
                         }
                         else {
-                            alert( $.Ovpnc().alert_icon + ' No clients ' + action +  'd!</div><div class="clear"></div>' );
+                            alert( $.Ovpnc().alertIcon + ' No clients ' + action +  'd!</div><div class="clear"></div>' );
                         }
                     }
                     else {
-                        alert( $.Ovpnc().alert_err + ' No clients ' + action +  '!</div><div class="clear"></div>' );
+                        alert( $.Ovpnc().alertErr + ' No clients ' + action +  '!</div><div class="clear"></div>' );
                         return;
                     }
                 }
                 else {
                     // msg.rest.error
                     if ( msg.rest.error !== undefined ){
-                        alert($.Ovpnc().alert_err + ' ' + msg.rest.error + '</div><div class="clear"></div>' );
+                        alert($.Ovpnc().alertErr + ' ' + msg.rest.error + '</div><div class="clear"></div>' );
                     }
                     else if ( msg.rest.length === undefined ){
-                        alert($.Ovpnc().alert_err + ' ' + msg.rest + '</div><div class="clear"></div>' );
+                        alert($.Ovpnc().alertErr + ' ' + msg.rest + '</div><div class="clear"></div>' );
                     }
                     // msg.rest
                     else if ( msg.rest !== undefined ){
                         msg.rest.replace(';','');
                         alert(
-                            ( msg.rest.match(/fail|error/i) ? $.Ovpnc().alert_err : $.Ovpnc().alert_info )
+                            ( msg.rest.match(/fail|error/i) ? $.Ovpnc().alertErr : $.Ovpnc().alertInfo )
                              + ' ' + msg.rest + '</div><div class="clear"></div>' );
                     }
 
@@ -529,24 +526,24 @@ function block_unblock_clients(button, grid, action){
                         if ( Object.prototype.toString.call( msg.error ) === '[object Array]' ){
                             for ( var m in msg.error ){
                                 alert(
-                                    ( msg.error[m].match(/fail|error/i) ? $.Ovpnc().alert_err : $.Ovpnc().alert_info )
+                                    ( msg.error[m].match(/fail|error/i) ? $.Ovpnc().alertErr : $.Ovpnc().alertInfo )
                                     + ' ' + msg.error[m] + '</div><div class="clear"></div>'
                                 );
                             }
                         }
                         else {
-                            alert($.Ovpnc().alert_icon + ' ' +  msg.error + '</div><div class="clear"></div>' );
+                            alert($.Ovpnc().alertIcon + ' ' +  msg.error + '</div><div class="clear"></div>' );
                         }
                     }
             }
 
             if ( msg.rest.failed !== undefined && msg.rest.failed.length > 0 ){
-                alert( $.Ovpnc().alert_icon + msg.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed ' + action + '</div><div class="clear"></div>' );
+                alert( $.Ovpnc().alertIcon + msg.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed ' + action + '</div><div class="clear"></div>' );
             }
             $('.pReload').click();
         },
         complete : function(){
-            $.Ovpnc().remove_ajax_loading();
+            $.Ovpnc().removeAjaxLoading();
         }
     });
 }

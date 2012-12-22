@@ -18,7 +18,7 @@
 			<div id="server_status_content" >
 				<span id="server_status">offline</span>
 			</div>
-			<div id="server_on_off" ref="off">
+			<div id="serverOnOff" ref="off">
 				<img id="off_icon" src="[% c.uri_for('/static/images/off.png') %]"></img>
 				<img id="on_icon" src="[% c.uri_for('/static/images/on.png') %]"></img>
 			</div>
