@@ -33,7 +33,8 @@ elements:
                              message: "Username already exists"
                            - Required
                            - type: Regex
-                             regex: '^[\-_a-zA-Z\d]*\z'
+                             regex: '^[\-_a-zA-Z0-9]*\z'
+                             message: 'Permitted regex: [\-_a-zA-Z0-9]'
                            - type: MaxLength
                              max: 42
                            - type: MinLength
@@ -54,9 +55,9 @@ elements:
                             max: 200
                           - type: MinLength
                             min: 8
-                          #- type: Regex
-                          #  regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
-                          #  message: "1 lowercase, uppercase, digit and character"
+                          - type: Regex
+                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                            message: "1 lowercase, uppercase, digit and character"
                       - type: Block
                         tag: div
                         attributes_xml:
@@ -120,6 +121,7 @@ elements:
                            - Required
                            - type: Regex
                              regex: '^[\-_a-zA-Z\d\s]*\z'
+                             message: 'Invalid input. Permitted regex: [\-_a-zA-Z\d\s]'
                            - type: MaxLength
                              max: 42
                            - type: MinLength
@@ -158,6 +160,7 @@ elements:
                         constraints:
                           - type: Regex
                             regex: '^[ \-\d\(\)\.]*\z'
+                            message: 'Invalid input. Permitted regex: [ \-\d\(\)\.]'
                           - type: MaxLength
                             max: 32
               # Address

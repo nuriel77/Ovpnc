@@ -139,9 +139,6 @@ sub add : Path('add')
     # ========================
     if ( $form->submitted_and_valid ) {
 
-        #die $c->req->params->{password};
-        use Data::Dumper::Concise;
-
         # New resultset
         # =============
         my $_client;

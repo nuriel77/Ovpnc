@@ -24,6 +24,8 @@
         $.Forms().setInputBinds();
         $.Forms().setUserFormInputBinds();
         $.Forms().checkCookie( $.addClient().cookieData.cookie_name );
+        // Set validation rules
+        $.addClient().setFormValidationRules();
     });
 
 </script>

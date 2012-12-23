@@ -3,10 +3,19 @@ use warnings;
 use strict;
 use Ovpnc::Plugins::Connector;
 use Moose;
+use Moose::Exporter;
 use Linux::Distribution;
 use Cwd;
 use vars qw( $ovpnc_conf $mgmt_passwd_file );
 use namespace::autoclean;
+
+#
+# Export method
+#
+Moose::Exporter->setup_import_methods(
+    as_is   => [ 'detach_error', 'auth_user' ]
+);
+
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -151,21 +160,21 @@ sub sanity : Path('api/sanity')
 
 =head2 detach_error
 
-End action chain
-and return error
-message to user
+End action chain and return error
+message to user, is actually
+exported, but private (Catalyst)
 
 =cut
 
-sub detach_error : Private {
-    my ( $self, $c, $err_msg ) = @_;
-    $c->response->status(500);
-    delete $c->stash->{assets};
-    $c->stash->{rest} =
-      { error => $err_msg ? $err_msg : "An unknown error has occurred" };
-    $c->detach;
-}
-
+    sub detach_error : Private {
+        my ( $self, $c, $err_msg ) = @_;
+        $c->response->status(500);
+        delete $c->stash->{assets};
+        $c->stash->{rest} =
+          { error => $err_msg ? $err_msg : "An unknown error has occurred" };
+        $c->detach;
+    }
+    
 =head2 assign_params
 
 Assign config params

@@ -181,6 +181,7 @@ __PACKAGE__->config(
     'View::HTML' => {
         TEMPLATE_EXTENSION => '.tt2',
         INCLUDE_PATH       => [ Ovpnc->path_to( 'root', 'src' ), ],
+        PRE_PROCESS        => [ 'built'],
 
         # Set to 1 for detailed timer
         # stats in your HTML as comments

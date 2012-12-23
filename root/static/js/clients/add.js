@@ -8,6 +8,7 @@ jQuery.validator.setDefaults({
         fullname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
         phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
     },
+    // Added custom check test_regex
     rules: {
         username: { test_regex: "([a-zA-Z0-9_]*)" },
         phone: { test_regex: "([0-9\-\.\(\) ]*)" },
@@ -44,7 +45,6 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
     // addClient actions
     //
     actions = {
-        
         validationRules: function() {
             return {
                 rules: {
@@ -144,8 +144,6 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Set event handlers
         //
         setFormEvents: function(){
-            // Set validation rules
-            $.addClient().setFormValidationRules();
             /*
              *
              * Begin submit form override

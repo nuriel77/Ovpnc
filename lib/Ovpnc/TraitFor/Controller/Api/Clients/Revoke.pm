@@ -28,25 +28,23 @@ has home => (
 sub revoke_certificate {
     my ( $self, $clients ) = @_;
 
-    $openvpn_dir =
-        $self->openvpn_dir =~ /^\//
-      ? $self->openvpn_dir
-      : $self->home . '/' . $self->openvpn_dir;
-
-    $tools =
-        $self->openvpn_utils =~ /^\//
-      ? $self->openvpn_utils
-      : $openvpn_dir . '/' . $self->openvpn_utils;
+    $openvpn_dir = $self->_set_openvpn_dir;
+    $tools = $self->_set_openvpn_utils;
 
     # Vars script location
     # ====================
     $vars = $tools . '/vars';
 
-    my $_out;
+    my $_ret_val;
 
     for my $client ( @{$clients} ){
 
-        my $_ret_val;
+        # Prepare a return object
+        # for client status/errors
+        $_ret_val->{$client} = {
+            errors => [],
+            status => [],
+        };
 
         # Build command
         # =============
@@ -67,19 +65,22 @@ sub revoke_certificate {
                 # Already in revoke list
                 # ======================
                 if ( $_check_ret_val =~ /already revoked/gi ){
-                    $_ret_val .= "Revocation failure for '"
+                    push @{$_ret_val->{$client}->{errors}},
+                            "Revocation failure for '"
                           . $client
                           . "': Already revoked;";
                 }
                 elsif ( $_check_ret_val =~ /No such file or directory/gi ){
-                    $_ret_val.= "Revocation failure for '"
+                    push @{$_ret_val->{$client}->{errors}},
+                            "Revocation failure for '"
                           . $client
                           . "': has no certificates;";
                 }
                 # Explicit ERROR in output
                 # ========================
                 elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
-                    $_ret_val .= "Revocation failure for '"
+                    push @{$_ret_val->{$client}->{errors}},
+                           "Revocation failure for '"
                           . $client
                           . ( $1 ? '\': ' . $1 : '\'' ) .';';
                 }
@@ -87,14 +88,16 @@ sub revoke_certificate {
                 # has been revoked successfully
                 # =============================
                 elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
-                    $_ret_val .=  $client . ' revoked ok;';
+                    push @{$_ret_val->{$client}->{status}},
+                            $client . ' revoked ok;';
                 }
                 # Anything else is unknown
                 # ========================
                 else {
-                    $_ret_val .= 'Unknown status for '
-                    . $client
-                    . ( $_ret_val ? ': ' . $_ret_val : '' ).';';
+                    push @{$_ret_val->{$client}->{errors}},
+                        'Unknown status for '
+                        . $client
+                        . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
                 }
 
             }
@@ -102,7 +105,8 @@ sub revoke_certificate {
             # appear in the error_code)
             # ===================================
             else {
-                $_ret_val .= 'Timeout out error for ' . $_ret_val . ';'
+                push @{$_ret_val->{$client}->{errors}},
+                    'Timeout out error for ' . $_check_ret_val . ';'
                     . ( $error_code ? $error_code : '' ).';';
             }
         }
@@ -110,10 +114,45 @@ sub revoke_certificate {
             die "Error revoking client " . $client
                 . ", cannot run " . $tools . '/revoke-full';
         }
-        $_out .= $_ret_val;
+
     }
 
-    return $_out;
+    return $_ret_val;
 }
+
+
+=head2 _set_openvpn_utils
+
+Set the openvpn_utils path
+
+=cut
+
+    sub _set_openvpn_dir{
+        my $self = shift;
+        return ( $self->openvpn_dir =~ /^\//
+                  ? $self->openvpn_dir
+                  : $self->home . '/' . $self->openvpn_dir );
+    }
+
+
+=head2 _set_openvpn_utils
+
+Set the openvpn_utils path
+
+=cut
+
+    sub _set_openvpn_utils {
+        my $self = shift;
+          return ( $self->openvpn_utils =~ /^\//
+                    ? $self->openvpn_utils
+                    : $openvpn_dir . '/' . $self->openvpn_utils );
+    }
+
+
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
 
 1;

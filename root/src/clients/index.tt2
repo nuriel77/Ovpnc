@@ -7,5 +7,24 @@
 </div><!-- client_wrapper -->
 <div id="traffic">
 </div>
-<script type="text/javascript">$(function(){ $.Client().applyContextMenu(); });</script>
+<script type="text/javascript">
+$(document).ready(function(){
+    // Declare flexigrid. Will run an
+    // ajax call to get clients data
+    $.Client().setClientsTable();
+
+    // Show the client's table
+    $('.flexigrid').slideDown(300);
+
+    // Show or hide actions
+    [% UNLESS c.check_user_roles("can_edit") OR c.check_user_roles("admin") %]
+        // Hide non-accessible action buttons
+        $('.tDiv').empty();
+    [% ELSE %]
+        // Apply the context menu
+        $.Client().applyContextMenu();
+    [% END %]
+
+});
+</script>
 

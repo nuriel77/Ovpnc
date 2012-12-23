@@ -56,11 +56,13 @@
         // Enable handler for inputs
         // 
         setInputBinds: function(){
-            // Set bind for focusout and key up to prevent
+            // Set bind for to prevent
             // submitting the form with 'enter'
+            // and clean up (any) previous errors
             $('input').bind('keyup', function(e){
+                if ( e.which == 13 ) return false;
                 $(this).parent('div').find('label').css('color','#000000');
-                //$(this).parent('div').find('span.error_message').remove();
+                $(this).parent('div').find('span.error_message').remove();
             });
         },
         //
