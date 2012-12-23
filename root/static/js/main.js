@@ -57,9 +57,18 @@
     //
     actions = {
         //
+        // Set debug if requested in URL
+        //
+        setDebug: function () {
+            if ( getURLParameter('debug') !== undefined ){
+                window.DEBUG = 1;
+                console.log('Set debug to on');
+            }
+        },
+        //
         // Get server status loop
         //
-        pollStatus: function() {
+        pollStatus: function () {
             // run first query to status
             // before starting the setInterval
             $.Ovpnc().getServerStatus();
@@ -73,7 +82,7 @@
         //
         // Data return from client action
         //
-        returnedClientData: function(r){
+        returnedClientData: function (r){
             // Expect one field
             if ( r.rest !== undefined ){
                 var keys = [];
@@ -90,7 +99,7 @@
         setConfirmExit: function(modified, action){
             if ( modified === undefined || modified === 0 ) {
                 // On window unload
-                console.log('Form modified, setting provided action.');
+                if ( window.DEBUG ) console.log('Form modified, setting provided action.');
                 window.onbeforeunload = action;
             }
             return 1;
@@ -99,7 +108,7 @@
         // Handle returned error
         //
         errorAjaxReturn: function(e){
-            console.log("error: %o",e);
+            if ( window.DEBUG ) console.log("error: %o",e);
         },
         //
         // Check the username from database
@@ -142,7 +151,7 @@
         // Server status returns error
         //
         errorServerStatus: function(e){
-            console.log("Server status error: %o", e);
+            if ( window.DEBUG ) console.log("Server status error: %o", e);
             if ( e.responseText !== undefined
                 && e.responseText !== null
                 && e.responseText != ''
@@ -233,7 +242,7 @@
         // Server control error
         //
         errorAjaxServerControl : function(r) {
-            console.log( "errorAjaxServerControl: %o", r);
+            if ( window.DEBUG ) console.log( "errorAjaxServerControl: %o", r);
             r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
             r = r.rest.error !== undefined ? r.rest.error : r;
             alert( $.Ovpnc().alertErr + ' Error executing command: ' + r + '</div><div class="clear"></div>' );
@@ -360,7 +369,7 @@
                         $.Ovpnc().removeAjaxLoading();
                 },
                 success: p.success_func ? function(rest){ return p.success_func(rest); } : function(rest) {
-                    console.log("Ajax got back: %o", rest);
+                    if ( window.DEBUG ) console.log("Ajax got back: %o", rest);
                 },
                 error: p.error_func ? function(rest,xhr,throwError){ return p.error_func(rest,xhr,throwError); } : function(xhr, ajaxOptions, thrownError) {
                     this.tryCount++;
@@ -395,7 +404,7 @@
 						return;
                     }
                     else {
-                        console.log( k + " -> " + v );
+                        if ( window.DEBUG ) console.log( k + " -> " + v );
                         alert($.Ovpnc().alertOk + ' Error: ' + k + ' -> ' + v +'</div><div class="clear"></div>');
                     }
                 });
@@ -411,7 +420,7 @@
         // Update server status data
         //
         updateServerStatus: function(r) {
-            //console.log("%o",r);
+            if ( window.DEBUG ) console.log("%o",r);
             if (r !== undefined ) {
                 // If we get status back, display
                 if ( r.rest !== undefined && r.rest.status !== undefined) {
@@ -427,7 +436,7 @@
                     // Show or dont show the green on icon
                     $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
                 } else {
-                    console.log("Server status got %o",r);
+                    if ( window.DEBUG )  console.log("Server status got %o",r);
                 }
     
                 // Show number of connected clients if any
@@ -590,6 +599,9 @@
  * Document Ready
  */
 $(document).ready(function() {
+
+    $.Ovpnc().setDebug();
+
     // Set width of middle frame
     $.Ovpnc().setMiddleFrameWidth();
     $(window).resize(function() {

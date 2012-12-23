@@ -15,6 +15,7 @@ requires 'boolean';
 requires 'fields';
 requires 'Module::Locate';
 requires 'Moose';
+requires 'Moose::Exporter';
 requires 'MooseX::Traits';
 requires 'MooseX::NonMoose';
 requires 'MooseX::MarkAsMethods';

@@ -121,25 +121,6 @@ jQuery.validator.setDefaults({
         	}
         },
         //
-        // Set the input fields from the cookie
-        // 
-        setFormFromCookie: function(data){
-            console.log("Going to set form fields with %o", data);
-            if ( data !== undefined ){
-                for ( var d in data ){
-                    if ( jQuery.inArray(d, $.addCertificate().elems ) > -1 ){
-                        console.log( 'Found addCertificate field element to be ignored: ' + d);
-                    }
-                    else {
-                        $('#' + d).attr('value', data[d]);
-                    }
-                }
-            }
-            else {
-                console.log('No data from cookie with which I can set form fields');
-            }
-        },
-        //
         // Get the country name from a geoname id
         //
         getCountryNameFromId: function(geonameId){
@@ -172,8 +153,8 @@ jQuery.validator.setDefaults({
         	// Preload cookie
             if ( $.cookie( $.addCertificate().cookieData.cookie_name ) !== null ){
                 cookie_data = jQuery.parseJSON( $.cookie( $.addCertificate().cookieData.cookie_name ) );
-                console.log("Found cookie data: %o", cookie_data);
-        		$.addCertificate().setFormFromCookie( cookie_data );
+                if ( DEBUG ) console.log("Found cookie data: %o", cookie_data);
+        		$.Forms().setFormFromCookie( cookie_data );
         	}
             else {
                 console.log('No cookie data, fields to default state.');
@@ -265,13 +246,11 @@ jQuery.validator.setDefaults({
         // Set check changes on form fields
         // 
         checkChanges: function(){
-            // Set keyup for all inputs (not #password)
-            $('input:not(#password)').bind('keyup',function(e){
-                //console.log('input detected');
+            // Set focusout bind for all inputs 
+            $('input').bind('focusout',function(e){
                 $.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
             });
             $('select').change(function(){
-                //console.log('change detected');
                 $.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
             });
         },

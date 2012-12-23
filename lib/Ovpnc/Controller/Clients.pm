@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Clients;
 use Try::Tiny;
 use Digest::MD5 'md5_hex';
+use Ovpnc::Plugins::ChainCA 'read_random_entropy';
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -100,52 +101,64 @@ sub add : Path('add')
     $c->stash->{title}     = 'Clients: Add a new client';
     my $form = $c->stash->{form};
 
-    # Verify all fields have been submitted
-    # FixMe: FormFu doesn't like ajax, check why
-    # ->submitted doesn't work (although forced
-    # submit param at start of this action)
-    # ==========================================
-    #my @_keys = sort keys %{$c->req->params} if scalar keys %{$c->req->params} > 1; 
-    #my @_columns = qw[address email fullname password password2 phone submit username];
+    # Prepand a random salt to the password
+    # =====================================
+    my $form_elem_password = $form->get_field( 'password' );
+    $form_elem_password->filter({
+        type     => 'Callback',
+        callback => sub {
+            # Get a random salt
+            # =================
+            my $random_data = read_random_entropy( 64,
+                $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
+            ); 
+
+            # "Hexify" data
+            # =============
+            my $salt = unpack("H*", $random_data);
+
+            # Set the salt field
+            # ==================
+            $form->add_valid( 'salt', $salt );
+
+            # Return salt+password
+            # ====================
+            return $salt.shift;
+        }
+    });
 
     # Form process 
     # =============
-
     $form->process;
 
+    # Form submitted and valid
+    # ========================
     if ( $form->submitted_and_valid ) {
+
+        #die $c->req->params->{password};
+        use Data::Dumper::Concise;
 
         # New resultset
         # =============
         my $_client;
-        try {
-            $_client = $c->model('DB::User')->new_result({});
-        }
-        catch {
-            push @{$c->stash->{error}}, $_;
-        };
+        try     { $_client = $c->model('DB::User')->new_result({}); }
+        catch   { push @{$c->stash->{error}}, $_; };
 
         # update dbic row with
         # submitted values from form
         # ==========================
         try   { $form->model->update( $_client ) }
-        catch { 
-            my $error_clean = $_;
-            my $error = $_;
-            $self->_db_error($c, $error_clean, $error, $form);
-        }; 
+        catch { $self->_db_error($c, $_, $_, $form) }; 
     
-        my $_client_role_id;
+        my ( $_client_role_id, $error_clean, $error );
         try {
            $_client_role_id = $c->model('DB::Role')
                 ->search(
                     { name => 'client' },
                     { select   => 'id' },   
-           );
+                );
             }
-            catch {
-                push @{$c->stash->{error}}, $_;
-            };
+            catch { push @{$c->stash->{error}}, $_; };
 
             try {
                 $c->model('DB::UserRole')
@@ -156,8 +169,8 @@ sub add : Path('add')
                         }
                     );
             } catch {
-                my $error_clean = $_;
-                my $error = $_;
+                $error_clean = $_;
+                $error = $_;
             };
 
             # Create client configuration file
@@ -310,6 +323,7 @@ sub denied : Private {
     $c->stash->{no_self}       = 1;
 }
 
+
 =head2 end
 
 Attempt to render a view, if needed.
@@ -341,6 +355,7 @@ sub end : ActionClass('RenderView') {
     }
 
 }
+
 
 =head1 AUTHOR
 

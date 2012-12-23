@@ -34,34 +34,32 @@
         // Enable handler for inputs
         // 
         setInputBinds: function(){
-            // Set keyup for all inputs (not #password)
-            $('input:not(#password)').bind('keyup',function(e){
+            // Set bind for focusout and key up to prevent
+            // submitting the form with 'enter'
+            $('input').bind('keyup', function(e){
                 // Prevent submit by pressing enter
                 if (e.which == 13) return false;
-                // Remove previous warnings if any
-                $(this).parent('div').find('span').remove();
                 $(this).parent('div').find('label').css('color','#000000');
-                //console.log('input detected - keyup');
-                //$.addCertificate.form_modified = 1;
+                $(this).parent('div').find('span').remove();
             });
         },
         //
         // Enable form input binds - for user forms
         //
         setUserFormInputBinds: function(){
-            $('input#username').bind('keyup',function(){
+            $('input#username').bind('focusout',function(){
                 $.Ovpnc().checkUsername();
             });
-            $('input#email').bind('keyup',function(){
+            $('input#email').bind('focusout',function(){
                 $.Ovpnc().checkEmail();
             });
             $('input#password').bind('keyup',function(){
-                if ( $('input#password2').attr('value') != '' )
+                if ( $('input#focusout').attr('value') != '' )
                     $('#password2').attr('value','');
                 $('#generated_password_text').empty();
                 $.Ovpnc().checkPasswords();
             });
-            $('input#password2').bind('keyup',function(){
+            $('input#password2').bind('focusout',function(){
                 $('#generated_password_text').empty();
                 $.Ovpnc().checkPasswords();
             });
@@ -79,6 +77,27 @@
                     50 );
                 $('#generatePassword').css('border','').css('color','#000000');
             });
+        },
+        //
+        // Set the input fields from the cookie
+        //
+        setFormFromCookie: function(data, ignore_list){
+            if ( window.DEBUG ) console.log("Going to set form fields with %o", data);
+            if ( data !== undefined ){
+                for ( var d in data ){
+                    if ( ignore_list !== undefined
+                      && jQuery.inArray( d, ignore_list ) > -1
+                    ){
+                        if ( window.DEBUG ) console.log( 'Found field element to be ignored: ' + d);
+                    }
+                    else {
+                        $('#' + d).attr('value', data[d]);
+                    }
+                }
+            }
+            else {
+                if ( window.DEBUG ) console.log('No data from cookie with which I can set form fields');
+            }
         }
     };
 

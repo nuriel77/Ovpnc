@@ -16,9 +16,10 @@ use Data::Entropy::RawSource::Local;
 use Data::Entropy::Source;
 use File::Copy;
 use File::Slurp;
-use Moose;
-use Readonly;
 use Expect;
+use Readonly;
+use Moose;
+use Moose::Exporter;
 use namespace::autoclean;
 
 Readonly::Scalar    my $ONE_YEAR    => 31536000;
@@ -26,6 +27,10 @@ Readonly::Scalar    my $ONE_MONTH   => $ONE_YEAR / 12;
 Readonly::Scalar    my $ONE_DAY     => 86400;
 Readonly::Scalar    my $TIMEOUT     => 60;
 Readonly::Scalar    my $time_format => "%Y%m%d%H%M%SZ";
+
+Moose::Exporter->setup_import_methods(
+    as_is   => [ 'read_random_entropy' ]
+);
 
 has _ca_privkey_as_text => (
     is  => 'ro',
@@ -475,7 +480,7 @@ to read from /dev/urandom (slow)
 =cut
 
     sub read_random_entropy {
-        my ( $self, $size, $really_secure ) = @_;
+        my ( $size, $really_secure ) = @_;
         $size ||= 256;
         $really_secure ||= 0;
         open ( my $rand, '<', $really_secure ? '/dev/random' : '/dev/urandom' )
@@ -500,7 +505,7 @@ to read from /dev/urandom (slow)
         $size ||= 256;
         $really_secure ||= 0;
         Crypt::OpenSSL::Random::random_seed(
-            $self->read_random_entropy($size, $really_secure)
+            read_random_entropy($size, $really_secure)
         ) unless -f '/dev/urandom';
 
         Crypt::OpenSSL::RSA->import_random_seed()
@@ -551,7 +556,6 @@ which modify the temporary openssl.cnf
 being used to process certificates
 
 =cut
-
 
     sub _get_sed_cmd {
         my ( $self, $openssl_conf ) = @_;

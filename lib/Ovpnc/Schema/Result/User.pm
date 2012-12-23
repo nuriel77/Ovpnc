@@ -61,6 +61,12 @@ __PACKAGE__->table("users");
   is_nullable: 0
   size: 60
 
+=head2 salt
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 48
+
 =head2 password_expires
 
   data_type: 'datetime'
@@ -119,6 +125,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 64 },
   "password",
   { data_type => "varbinary", is_nullable => 0, size => 60 },
+  "salt",
+  { data_type => "varchar", is_nullable => 0, size => 48 },
   "password_expires",
   {
     data_type => "datetime",
@@ -231,8 +239,8 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 16:49:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K7BjqjPkD1pfAeIZLanKYw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-23 00:30:16
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HCNqfLNY5mOFSNcXcAcV+Q
  
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

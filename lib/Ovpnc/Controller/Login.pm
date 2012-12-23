@@ -59,7 +59,7 @@ around 'login' => sub {
                                  password => $password }, 'users' )
         ) {
             $c->stash->{logged_in} = 1;
-            #$c->change_session_id;
+            $c->change_session_id;
             $c->change_session_expires( $c->config->{web_session_expires} )
                 if $c->user_exists;
         } else {
