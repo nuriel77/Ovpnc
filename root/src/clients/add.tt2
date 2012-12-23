@@ -5,9 +5,6 @@
     [% form %]
 </div>
 <script>
-    // Set events for form
-    // input fields and submit
-    $.addClient().setFormEvents();
 
     // Set password strengh checker
     $("#password").passStrength({
@@ -20,7 +17,13 @@
         messageloc:     1
     });
 
-    // Binds for inputs
-    $.Forms().setInputBinds();
-    $.Forms().setUserFormInputBinds();
+    // Init the add clients js namespace/init functions
+    $(document).ready( function() {
+        $.addClient().setClickBind();
+        $.addClient().setFormEvents();
+        $.Forms().setInputBinds();
+        $.Forms().setUserFormInputBinds();
+        $.Forms().checkCookie( $.addClient().cookieData.cookie_name );
+    });
+
 </script>

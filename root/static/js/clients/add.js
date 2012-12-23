@@ -289,35 +289,3 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
     };
 })(jQuery);
 
-$(document).ready( function() {
-
-    var cookie_data = new Object();
-
-    // Preload cookie
-    if ( $.cookie( $.addClient().cookieData.cookie_name ) !== null ){
-        cookie_data = jQuery.parseJSON( $.cookie( $.addClient().cookieData.cookie_name ) );
-        // Set the form fields
-        $.Forms().setFormFromCookie( cookie_data );
-    }
-    // If we saved the previous fields in a
-    // cookie, load from the cookie.
-    if ( cookie_data !== undefined && cookie_data.username !== undefined ){
-        $.Ovpnc.cookie = cookie_data;
-        for ( var k in cookie_data ){
-            if (cookie_data[k] !== '' )
-                $('#'+k).attr('value',cookie_data[k]);
-        }
-    }
-
-    /*
-    if ( $('input#username').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.Ovpnc().checkUsername();
-    if ( $('input#password').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.Ovpnc().checkPasswords();
-    if ( $('input#email').attr('value') != '' && !$('.error_message').is(':visible') )
-        $.Ovpnc().checkEmail();
-    */
-    // Handler for exit
-    $.addClient().setClickBind();
-    $.addClient().setFormEvents();
-});

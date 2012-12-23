@@ -153,7 +153,7 @@ jQuery.validator.setDefaults({
         	// Preload cookie
             if ( $.cookie( $.addCertificate().cookieData.cookie_name ) !== null ){
                 cookie_data = jQuery.parseJSON( $.cookie( $.addCertificate().cookieData.cookie_name ) );
-                if ( DEBUG ) console.log("Found cookie data: %o", cookie_data);
+                if ( window.DEBUG ) console.log("Found cookie data: %o", cookie_data);
         		$.Forms().setFormFromCookie( cookie_data );
         	}
             else {
@@ -365,7 +365,7 @@ jQuery.validator.setDefaults({
         				$.addCertificate().setSelectCountryGeonameId( result.countryName )		
 
         	        }).error(function(xhr, ajaxOptions, thrownError) {
-        				console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        				if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         				$('#t_country').empty();
         				return false;
         		    }).complete(function(){
@@ -438,7 +438,7 @@ jQuery.validator.setDefaults({
         		$('#t_city').html( $.Ovpnc().ajaxLoader );
         		$.addCertificate().getCityList( geoId );
             }).error(function(xhr, ajaxOptions, thrownError) {
-        		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
         		$('#t_state').empty();	
         		return false;
@@ -482,7 +482,7 @@ jQuery.validator.setDefaults({
         			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
         		}
         	}).error(function(xhr, ajaxOptions, thrownError) {
-        		console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
         		$('#t_city').empty();	
         		return false;
@@ -526,7 +526,7 @@ jQuery.validator.setDefaults({
         		$.addCertificate().getStateList( result.geonames[0].geonameId );
         		
         	}).error(function(xhr, ajaxOptions, thrownError) {
-            	console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+            	if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
                 return false;
             }).complete(function(){
         		 $.ajaxSetup({ async: true, cache: false });
