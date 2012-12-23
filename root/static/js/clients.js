@@ -130,6 +130,10 @@ var total_count = 0;
                             method: 'GET',
                             success_func: $.Ovpnc().updateServerStatus
                         });
+                        // Force flexigrid's height div to show
+                        // otherwise it remains on height 0 until
+                        // the vertical div is being used
+                        $('.hGrip').css('height',$('.flexigrid').height());
                         window.clearInterval(is_felxgrid_ready);
                     }
                 }, 100);
@@ -505,6 +509,7 @@ var total_count = 0;
 })(jQuery);
 
 $(document).ready(function(){
+
     // Declare flexigrid
     // Will run a query
     // to get clients
