@@ -5,9 +5,17 @@ use Try::Tiny;
 use Cwd;
 use Ovpnc::Plugins::Sanity;
 use Moose;
+use Moose::Exporter;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller' }
+
+#
+# Export method
+#
+Moose::Exporter->setup_import_methods(
+    as_is   => [ 'include_default_links' ]
+);
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -48,13 +56,20 @@ sub auto : Private {
 
     my ( $self, $c ) = @_;
 
-    if ( ! $c->flash->{_db_tested}
+    # Set title
+    # =========
+    $c->stash->{title} = ucfirst($c->req->path)
+        unless $c->stash->{title};
+
+    # Test DB connection
+    # ==================
+    if ( ! $c->session->{_db_tested}
       && ! $c->model('DB')->storage->connected
     ){
  
         $c->log->debug('Database not connected. Testing initial connection.');
 
-        $c->flash->{_db_tested} = 1;
+        $c->session->{_db_tested} = 1;
 
         # Verify that the database is accessible
         # ======================================
@@ -161,6 +176,10 @@ sub index : Chained('/base')
           : Path
           : Args(0)
           : Does('NeedsLogin')
+          : Does('ACL')
+            AllowedRole('admin')
+            AllowedRole('client')
+            ACLDetachTo('denied')
           : Sitemap
 {
     my ( $self, $c ) = @_;
@@ -181,12 +200,12 @@ Standard 404 error page
 
 =cut
 
-sub default : Path {
-    my ( $self, $c ) = @_;
-    $c->response->body('Page not found');
-    $c->response->status(404);
-    $c->forward('View::HTML');
-}
+    sub default : Path {
+        my ( $self, $c ) = @_;
+        $c->response->body('Page not found');
+        $c->response->status(404);
+        $c->forward('View::HTML');
+    }
 
 
 =head2 include_default_links
@@ -195,75 +214,86 @@ Include static files, dynamically
 
 =cut
 
-sub include_default_links : Private {
-    my ( $self, $c ) = @_;
+    sub include_default_links : Private {
+        my ( $self, $c ) = @_;
 
-    # Include defaults
-    # ================
-    my @_page_assets = qw(
-      css/normalize.css
-      css/slider.css
-      css/main.css
-      js/jquery-latest.js
-      js/jquery-cookie/jquery.cookie.js
-      js/jquery-validation/jquery.validate.js
-      js/functions.js
-    );
-
-    # Include the following only if user exists
-    # =========================================
-    if ( $c->user_exists ){
-        # Include main javascript file
-        # ============================
-        push @_page_assets, 'js/main.js';
-
-        # Default links for clients controller
-        # ====================================
-        push @_page_assets, qw(
-                js/jQuery-contextMenu/src/jquery.contextMenu.css
-                js/jQuery-contextMenu/src/jquery.ui.position.js
-                js/jQuery-contextMenu/src/jquery.contextMenu.js
-                js/Flexigrid/css/flexigrid.css
-                js/Flexigrid/js/flexigrid.js
-            ) if $c->req->path =~ /clients\/*$/i;
-
-        $c->stash->{expires} = scalar(localtime($c->session_expires));
-        $c->log->info( "Current time: " . scalar(localtime(time())) );
-        $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
-    }
-    # Optional :
-    #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
-    #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
-
-    return 1 if $c->stash->{no_self};
-
-    # Include according to pathname
-    # not incase of 'main' ( path is undef )
-    # ======================================
-    my $root_dir = join '/', @{$c->config->{static}->{include_path}->[0]->{dirs}};
-
-    if ( my $c_name = lc($c->req->path) ) {
-        $c_name =~ s/\/$//;
-        for my $type (qw/ css js /) {
-            push(
-                @_page_assets,
-                $type . '/' . $c_name . '.' . $type
-            ) if ( -e $root_dir .'/static/'
-                    . $type . '/' . $c_name . '.' . $type
-            );
+        if ( $c->user_exists ){
+            $c->stash->{expires} = scalar(localtime($c->_session_expires));
+            $c->log->info( " -------- Current time : " . scalar(localtime(time())) );
+            $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
         }
-    }
 
-    $c->assets->include( $_ ) for @_page_assets;
+        # Include defaults
+        # ================
+        my @_page_assets = qw(
+          css/normalize.css
+          css/slider.css
+          css/main.css
+          js/jquery-latest.js
+          js/jquery-cookie/jquery.cookie.js
+          js/jquery-validation/jquery.validate.js
+          js/functions.js
+        );
+        
+        # Include the following only if user exists
+        # =========================================
+        if ( $c->user_exists ){
+            # Include main javascript file
+            # ============================
+            push @_page_assets, 'js/main.js';
     
-}
+            # Default links for clients controller
+            # ====================================
+            push @_page_assets, qw(
+                    js/jQuery-contextMenu/src/jquery.contextMenu.css
+                    js/jQuery-contextMenu/src/jquery.ui.position.js
+                    js/jQuery-contextMenu/src/jquery.contextMenu.js
+                    js/Flexigrid/css/flexigrid.css
+                    js/Flexigrid/js/flexigrid.js
+                ) if $c->req->path =~ /clients\/*$/i;
+        }
+        # Optional :
+        #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
+        #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
+    
+        return 1 if $c->stash->{no_self};
+    
+        # Include according to pathname
+            # not incase of 'main' ( path is undef )
+        # ======================================
+        my $root_dir = join '/', @{$c->config->{static}->{include_path}->[0]->{dirs}};
+    
+        if ( my $c_name = lc($c->req->path) ) {
+            $c_name =~ s/\/$//;
+            for my $type (qw/ css js /) {
+                push(
+                    @_page_assets,
+                    $type . '/' . $c_name . '.' . $type
+                ) if (
+                    -e $root_dir .'/static/'
+                    . $type . '/' . $c_name . '.' . $type
+                );
+            }
+        }
 
-sub sitemap : Path('/sitemap') {
-    my ( $self, $c ) = @_;
-    $c->response->headers->header( 'Content-Type' => 'application/xml' );
-    $c->stash( current_view => 'View::XML::Simple' );
-    $c->response->body( $c->sitemap_as_xml );
-}
+        $c->assets->include( $_ ) for @_page_assets;
+        
+    }
+    
+
+=head2 sitemap
+    
+Display XML of all links
+of this web/api application 
+  
+=cut
+    
+    sub sitemap : Path('/sitemap') {
+        my ( $self, $c ) = @_;
+        $c->response->headers->header( 'Content-Type' => 'application/xml' );
+        $c->stash( current_view => 'View::XML::Simple' );
+        $c->response->body( $c->sitemap_as_xml );
+    }
 
 =head2 ovpnc_config
 
@@ -271,15 +301,16 @@ Configuration Page
 
 =cut
 
-sub ovpnc_config : Chained('/base') PathPart("config") Args(0) {
-    my ( $self, $c ) = @_;
+    sub ovpnc_config : Chained('/base') PathPart("config") Args(0) {
+        my ( $self, $c ) = @_;
 
-    my $req = $c->request;
-    $c->stash->{xml} = $c->config->{ovpnc_conf}
-      || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
-    $c->stash->{title} = 'Ovpnc Configuration';
-    $c->forward('Ovpnc::View::XSLT');
-}
+        my $req = $c->request;
+        $c->stash->{xml} = $c->config->{ovpnc_conf}
+          || '/home/ovpnc/Ovpnc/root/xslt/ovpn.xml';
+        $c->stash->{title} = 'Ovpnc Configuration';
+        $c->forward('Ovpnc::View::XSLT');
+    }
+
 
 =head2 end
 
@@ -287,17 +318,17 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {
-    my ( $self, $c ) = @_;
+    sub end : ActionClass('RenderView') {
+        my ( $self, $c ) = @_;
+        
+        # Include JS/CSS
+        # ==============
+        $self->include_default_links($c)
+            unless $c->req->path or $c->req->path eq '/';
 
-    # Include JS/CSS
-    # ==============
-    $self->include_default_links($c)
-        unless $c->req->path or $c->req->path eq '/';
-
-    $self->_apply_username_to_stash($c)
-        unless $c->stash->{username};
-}
+        $self->_apply_username_to_stash($c)
+            unless $c->stash->{username};
+    }
 
 =head2 _apply_username_to_stash
 
@@ -306,19 +337,18 @@ and puts it into the stash
 
 =cut
 
-sub _apply_username_to_stash : Private
-{
-    my ( $self, $c ) = @_;
-    if ( $c->user_exists ){
-        $c->stash->{username} = $c->user->get("name");
-        if ( $c->user->_user->{_column_data}->{username}
-            && !$c->stash->{username}
-        ){
-            $c->stash->{username} =
-                $c->user->_user->{_column_data}->{username};
+    sub _apply_username_to_stash : Private {
+        my ( $self, $c ) = @_;
+        if ( $c->user_exists ){
+            $c->stash->{username} = $c->user->get("name");
+            if ( $c->user->_user->{_column_data}->{username}
+                && !$c->stash->{username}
+            ){
+                $c->stash->{username} =
+                    $c->user->_user->{_column_data}->{username};
+            }
         }
     }
-}
 
 =head1 AUTHOR
 

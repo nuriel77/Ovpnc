@@ -56,7 +56,9 @@ elements:
                                 constraints:
                                   - Required
                                   - type: MaxLength
-                                    max: 72
+                                    max: 200
+                                  - type: MinLength
+                                    min: 8
                                   - type: Regex
                                     regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                                     message: "1 lowercase, uppercase, digit and character"

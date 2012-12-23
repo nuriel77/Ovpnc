@@ -65,7 +65,7 @@ __PACKAGE__->table("users");
 
   data_type: 'varchar'
   is_nullable: 0
-  size: 48
+  size: 128
 
 =head2 password_expires
 
@@ -126,7 +126,7 @@ __PACKAGE__->add_columns(
   "password",
   { data_type => "varbinary", is_nullable => 0, size => 60 },
   "salt",
-  { data_type => "varchar", is_nullable => 0, size => 48 },
+  { data_type => "varchar", is_nullable => 0, size => 128 },
   "password_expires",
   {
     data_type => "datetime",
@@ -198,21 +198,6 @@ __PACKAGE__->add_unique_constraint("username", ["username"]);
 
 =head1 RELATIONS
 
-=head2 logs
-
-Type: has_many
-
-Related object: L<Ovpnc::Schema::Result::Log>
-
-=cut
-
-__PACKAGE__->has_many(
-  "logs",
-  "Ovpnc::Schema::Result::Log",
-  { "foreign.user_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 user_roles
 
 Type: has_many
@@ -239,8 +224,8 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-23 00:30:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HCNqfLNY5mOFSNcXcAcV+Q
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-23 01:34:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9JuuleFn2ihZ7ts6ff4h5A
  
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

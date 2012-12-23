@@ -1,4 +1,5 @@
 package Ovpnc::Controller::Login;
+use Ovpnc::Controller::Root 'include_default_links';
 use Moose;
 use namespace::autoclean;
 
@@ -26,7 +27,7 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
     my ( $orig, $self, $c ) = @_;
-
+    
     # Redirect to https if user specified
     # a port in config under 'redirect_https_port'
     # ============================================
@@ -55,36 +56,92 @@ around 'login' => sub {
         and ! $c->user_exists
         and ! $c->req->params->{_}
     ){
-        if ( $c->authenticate( { username => $user,
-                                 password => $password }, 'users' )
+        # Prepend the user's salt to the password
+        # =======================================
+        my $salt = $self->_get_saved_salt($c, $user) || '';
+
+        # Authenticate the user
+        # =====================
+        if ( 
+             $c->authenticate(
+                    {
+                        username => $user,
+                        password => $salt.$password
+                    },
+                    ( $c->req->params->{realm} || 'users' )
+              )
         ) {
             $c->stash->{logged_in} = 1;
-            $c->change_session_id;
-            $c->change_session_expires( $c->config->{web_session_expires} )
-                if $c->user_exists;
-        } else {
-            $c->stash->{logged_in} = 0;
         }
     }
-    $c->response->headers->header('Content-Type', 'text/html');
-    Ovpnc::Controller::Root->include_default_links($c);
-    $c->forward('View::HTML');
 
     return $self->$orig($c);
 };
 
-sub remove_cookies : Private {
-    my ( $self, $c, $cookies ) = @_;
 
-    for ( @{$cookies} ) {
-        $c->log->debug("Removing cookie $_");
-        $c->response->cookies->{$_} = {
-            value   => '',
-            expires => '-1d',
-          }
-          if $c->request->cookies->{$_};
+=head2 expire_cookies
+
+Expire a list of cookies
+
+=cut
+
+    sub expire_cookies : Private {
+        my ( $self, $c, $cookies ) = @_;
+
+        for ( @{$cookies} ) {
+            $c->log->debug("Removing cookie $_");
+            $c->response->cookies->{$_} = {
+                value   => '',
+                expires => '-1d',
+              }
+              if $c->request->cookies->{$_};
+        }
     }
-}
+
+
+=head2 _get_saved_salt
+
+Get a salt for a user
+to be prepended to password
+
+=cut
+
+    sub _get_saved_salt : Private {
+        my ( $self, $c, $username ) = @_;
+        my $user = $c->model('DB::User')
+            ->search(
+                { username => $username },
+                { select   => 'salt' },
+            );
+        return $user->next->salt;
+    }
+
+
+=head2 end
+
+Last auto action
+
+=cut
+
+    sub end : Private {
+        my ( $self, $c ) = @_;
+
+        if ( $c->user_exists ){
+            # Generate a new session
+            # ======================
+            $c->config->{'Plugin::Session'}->{expires} = $c->config->{web_session_expires};
+            my $new_sid = $c->change_session_id;
+            $c->change_session_expires( $c->config->{web_session_expires} );
+            $c->session->{logged_in} = 1;
+            if ( $c->check_user_roles('client') ){
+                $c->res->redirect('/');
+            }
+        }
+
+        $c->response->headers->header('Content-Type', 'text/html');
+        include_default_links($self, $c);
+        $c->forward('View::HTML');
+    }    
 
 =head1 AUTHOR
 

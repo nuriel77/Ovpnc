@@ -1,7 +1,8 @@
 package Ovpnc::Controller::Clients;
+use Ovpnc::Controller::Root 'include_default_links'; 
+use Ovpnc::Plugins::ChainCA 'read_random_entropy';
 use Try::Tiny;
 use Digest::MD5 'md5_hex';
-use Ovpnc::Plugins::ChainCA 'read_random_entropy';
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }
@@ -74,9 +75,12 @@ Main action
 
 sub index : Path
           : Args(0)
-          : Sitemap
           : Does('NeedsLogin')
-          : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+          : Does('ACL')
+            AllowedRole('admin')
+            AllowedRole('client')
+            ACLDetachTo('denied')
+          : Sitemap
 {
     my ( $self, $c ) = @_;
     $c->stash->{title}     = ucfirst($c->action);
@@ -237,7 +241,7 @@ sub add : Path('add')
             $c->res->headers->header('Content-Type' => 'text/html');
             # Add js / css
             # ============
-            Ovpnc::Controller::Root->include_default_links($c);
+            include_default_links( $self, $c );
             $c->forward('View::HTML');    
             return;
         }
@@ -316,7 +320,7 @@ sub denied : Private {
 
     # Add js / css
     # ============
-    Ovpnc::Controller::Root->include_default_links($c);
+    include_default_links( $self, $c );
     $c->stash->{this_link}     = 'clients';
     $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
     $c->stash->{error_message} = "Access denied";
@@ -343,7 +347,7 @@ sub end : ActionClass('RenderView') {
         $c->res->headers->header('Content-Type' => 'text/html');
         # Add js / css
         # ============
-        Ovpnc::Controller::Root->include_default_links($c);
+        include_default_links( $self, $c );
     } 
     elsif ( $accept =~ /xml/){ 
         $c->res->headers->header('Accept' => 'text/xml'); 

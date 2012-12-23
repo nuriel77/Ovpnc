@@ -61,30 +61,30 @@ action to run
 
 =cut
 
-sub begin : Private {
-    my ( $self, $c ) = @_;
+    sub begin : Private {
+        my ( $self, $c ) = @_;
 
-    # Test database connection
-    # ========================
-    Ovpnc::Controller::Root->auto( $c );
+        # Test database connection
+        # ========================
+        Ovpnc::Controller::Root->auto( $c );
 
-    # Log user in if login params are provided
-    # =======================================
-    Ovpnc::Controller::Api->auth_user( $c )
-        unless $c->user_exists();
+        # Log user in if login params are provided
+        # =======================================
+        Ovpnc::Controller::Api->auth_user( $c )
+            unless $c->user_exists();
 
-    # Set the expiration time
-    # if user is logged in okay
-    # Ignore if ajax call
-    # =========================
-    if ( $c->user_exists() && !$c->req->params->{_} ){
-        $c->log->info('Setting session expire to '
-            . $c->config->{'api_session_expires'});
-        $c->change_session_expires(
-            $c->config->{'api_session_expires'} );
+        # Set the expiration time
+        # if user is logged in okay
+        # Ignore if ajax call
+        # =========================
+        if ( $c->user_exists() && !$c->req->params->{_} ){
+            $c->log->info('Setting session expire to '
+                . $c->config->{'api_session_expires'});
+            $c->change_session_expires(
+                $c->config->{'api_session_expires'} );
+        }
+
     }
-
-}
 
 =head2 around modifier
 

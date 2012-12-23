@@ -49,11 +49,11 @@ __PACKAGE__->table("log");
   data_type: 'text'
   is_nullable: 0
 
-=head2 user_id
+=head2 username
 
-  data_type: 'integer'
-  is_foreign_key: 1
+  data_type: 'varchar'
   is_nullable: 0
+  size: 72
 
 =head2 timestamp
 
@@ -69,8 +69,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
-  "user_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "username",
+  { data_type => "varchar", is_nullable => 0, size => 72 },
   "timestamp",
   {
     data_type => "timestamp",
@@ -92,26 +92,9 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 RELATIONS
 
-=head2 user
-
-Type: belongs_to
-
-Related object: L<Ovpnc::Schema::Result::User>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "user",
-  "Ovpnc::Schema::Result::User",
-  { id => "user_id" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-18 11:37:52
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IhwidMdQtAHwzJeFFa2d8g
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-23 01:34:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3QPA/U3rAVGbBzpR5yvjRw
 
 __PACKAGE__->load_components("InflateColumn::DateTime","TimeStamp");
 
