@@ -286,8 +286,8 @@
             $( oDiv ).css({
                 zIndex:         '9002',
                 display:        'none',
-                position:       'fixed',
-                top:            '120px',
+                position:       'absolute',
+                top:            '0px',
                 opacity:        '0.4',
                 'min-width':    '99%',
                 'height':       '100%',

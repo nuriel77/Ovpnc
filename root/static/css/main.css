@@ -33,6 +33,7 @@ div#outer{
 	min-width:1124px;
 	height:100%;
 	margin-top:70px;
+    position:relative;
 }
 
 div#outer_centered{
@@ -256,15 +257,6 @@ fieldset .constraint_required label:after {
         inset 6px 8px 8px rgba(255,255,255,0.75);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
 
-}
-#overlay_div{
-    position: fixed;
-    top:1px;
-    z-index:9004;
-    min-width:99%;
-    min-height:99%;
-    background-color:#ffffff;
-    opacity:0.4;
 }
 
 #on_icon { position:absolute;margin-right: 5px; opacity: 0; }
