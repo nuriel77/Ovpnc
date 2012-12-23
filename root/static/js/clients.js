@@ -280,12 +280,12 @@ var total_count = 0;
                 success: function( msg ) {
                     if ( msg === undefined ) return;
                     if ( msg.rest !== undefined  ){
-                        console.log("b: %o",msg);
+                        if ( window.DEBUG ) console.log("b: %o",msg);
                         if ( Object.prototype.toString.call( msg.rest ) !== '[object Array]'
                           && Object.prototype.toString.call( msg.rest ) !== '[object Object]'
                         ){
                             var _processed_clients = [];
-                            console.log("MSG: ", msg.rest);
+                            if ( window.DEBUG ) console.log("MSG: ", msg.rest);
                             if ( msg.rest.match(';') ){
                                 _processed_clients = msg.rest.split(';');
                             }
@@ -302,7 +302,7 @@ var total_count = 0;
                             }
                             if ( _processed_clients.length > 0 ){
                                 for ( var i in _processed_clients ){
-                                    console.log("n: " + _processed_clients[i]);
+                                    if ( window.DEBUG ) console.log("n: " + _processed_clients[i]);
                                     if ( _processed_clients[i].match(/fail|error/i) ){
                                         alert($.Ovpnc().alertErr + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
                                         _processed_clients.splice(i,1);
@@ -312,7 +312,7 @@ var total_count = 0;
                                     }
                                 }
                                 for (var z = 0; z < _processed_clients.length; z++) {
-                                     if ( _processed_clients[z].match(/^SUCCESS|fail|error/) ) {
+                                     if ( _processed_clients[z].match(/^SUCCESS|fail|error|Kill connection status/) ) {
                                         _processed_clients.splice(z, 1);
                                         z--;
                                     }
