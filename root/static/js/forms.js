@@ -37,10 +37,8 @@
             // Set bind for focusout and key up to prevent
             // submitting the form with 'enter'
             $('input').bind('keyup', function(e){
-                // Prevent submit by pressing enter
-                if (e.which == 13) return false;
                 $(this).parent('div').find('label').css('color','#000000');
-                $(this).parent('div').find('span').remove();
+                //$(this).parent('div').find('span.error_message').remove();
             });
         },
         //
@@ -54,13 +52,13 @@
                 $.Ovpnc().checkEmail();
             });
             $('input#password').bind('keyup',function(){
-                if ( $('input#focusout').attr('value') != '' )
+                $('#generated_password_text').empty();
+                if ( $('input#password2').attr('value') != '' )
                     $('#password2').attr('value','');
                 $('#generated_password_text').empty();
-                $.Ovpnc().checkPasswords();
+                //$.Ovpnc().checkPasswords();
             });
             $('input#password2').bind('focusout',function(){
-                $('#generated_password_text').empty();
                 $.Ovpnc().checkPasswords();
             });
             $('#generatePassword').bind('mousedown',function(){
@@ -68,13 +66,12 @@
                 $('#password').parent('div').find('span.error_message').remove();
                 $('#password').parent('div').find('label').css('color','#333333');
             }).bind('mouseup',function(){
-                    var _wait_keyup =  setInterval(function() {
-                        window.clearInterval(_wait_keyup);
-                        $('#password').keyup();
-                        $('#password2').attr('value', $('#password').attr('value') );
-                        $('#generated_password_text').text($('#password').attr('value'));
-                    },
-                    50 );
+                var _wait_keyup =  setInterval(function() {
+                    window.clearInterval(_wait_keyup);
+                    $('#password').keyup();
+                    $('#password2').attr('value', $('#password').attr('value') );
+                    $('#generated_password_text').text($('#password').attr('value'));
+                }, 50 );
                 $('#generatePassword').css('border','').css('color','#000000');
             });
         },

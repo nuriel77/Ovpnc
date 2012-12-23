@@ -45,7 +45,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
     //
     actions = {
         
-    validationRules: function() {
+        validationRules: function() {
             return {
                 rules: {
                     username: {
@@ -133,7 +133,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         //
         checkChanges: function(){
             $('input').bind('focusout',function(){
-                $(this).parent('div').find('span.error_message').remove();
+                //$(this).parent('div').find('span:not(.passwd_err)').remove();
                 $.addClient.form_modified = $.Ovpnc().setConfirmExit( $.addClient.form_modified, $.addClient().confirmExit );
             });
             $('select').change(function(){
@@ -144,18 +144,14 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Set event handlers
         //
         setFormEvents: function(){
-
             // Set validation rules
             $.addClient().setFormValidationRules();
-
             /*
              *
              * Begin submit form override
              *
              */
             $('#submit_add_client_form').click(function(e){
-                // Prevent submit by pressing 'enter'
-                if ( e.which == 13 ) return false;
                 // Set the ajax loader
                 $.Ovpnc().setAjaxLoading(1);
                 // Check password length and strength

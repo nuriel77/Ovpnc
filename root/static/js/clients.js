@@ -93,7 +93,7 @@ var total_count = 0;
             * this keeps flexigrid from
             * messing up the order
             */
-                return [
+            return [
                 c.id ? c.id : 'unknown',
                 c.username ? c.username : 'unknown',
                 c.virtual_ip ? c.virtual_ip : '-',

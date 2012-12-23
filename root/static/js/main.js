@@ -252,9 +252,12 @@
         // Verify password inputs match
         //
         verifyPasswordsMatch: function(first, current, f_input){
+            if ( window.DEBUG ) console.log('Got ' + first + ' to match to ' + current );
             if ( current === undefined || current == '' || first == '' ) return true;
             if ( current !== first ){
-                $('#'+f_input).parent('div').prepend('<span class="error_message error_constraint_required">Passwords do not match</span>');
+                if ( window.DEBUG ) console.log( 'No match' );
+                $('#'+f_input).parent('div')
+                    .prepend('<span class="passwd_err error_message error_constraint_required">Passwords do not match</span>');
                 $('#'+f_input).parent('div').find('label').css('color','#8B0000');
                 return false;
             }
