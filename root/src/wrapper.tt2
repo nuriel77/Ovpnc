@@ -57,6 +57,7 @@
 				</div>
 				<div id="message_container">
 					<div id="message" class="message box_shadow"></div>
+                    <div class=".message_drag"></div>
 				</div>
 			</div><!-- top_header_centered -->
 		</div><!-- top header -->

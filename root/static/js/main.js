@@ -635,13 +635,22 @@ $(document).ready(function() {
     // Set last visited page
     // Catalyst root controller
     // will do the redirecting
-    if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname );
-    var _store_location = JSON.stringify({ last_page: window.location.pathname });
-    $.cookie("Ovpnc_User_Settings", _store_location, {
-        expires: 30,
-        path: '/'
-    });
+    var _pathname = '^' + window.location.origin + '(.*)$';
+    var _came_from = '';
+    if ( document.referrer != '' ){
+        var re = new RegExp(_pathname);
+        _came_from = document.referrer.replace( re , "$1" );
+        if ( window.DEBUG ) console.log('Came from page: ' + _came_from);
+        if ( _came_from !== window.location.pathname ){
+            if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname + ' got here from: ' + _came_from);
+            var _store_location = JSON.stringify({ last_page: window.location.pathname });
+            $.cookie("Ovpnc_User_Settings", _store_location, {
+                expires: 30,
+                path: '/'
+            });
+        }
 
+    }
 
     // Set up the navigation
     $.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);

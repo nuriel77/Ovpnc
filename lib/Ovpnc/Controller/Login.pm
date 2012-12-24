@@ -127,15 +127,30 @@ Last auto action
         my ( $self, $c ) = @_;
 
         if ( $c->user_exists ){
+
             # Generate a new session
             # ======================
             $c->config->{'Plugin::Session'}->{expires} = $c->config->{web_session_expires};
             my $new_sid = $c->change_session_id;
             $c->change_session_expires( $c->config->{web_session_expires} );
             $c->session->{logged_in} = 1;
-            if ( $c->check_user_roles('client') ){
-                $c->res->redirect('/');
+
+            # Check if there is a last location/page
+            # stored in a cookie, if yes, redirect.
+            # ======================================
+            if ( my $cookie = $c->request->cookies->{'Ovpnc_User_Settings'} ){
+                my $cookie_data = $c->view('JSON')->from_json($cookie->value);
+                if ( $cookie_data
+                  && $cookie_data->{last_page} ne '/'
+                ){
+                    $c->log->debug("Got cookie last visited page, redirecting to: "
+                        . $cookie_data->{last_page});
+                    $c->redirect( $c->uri_for( $cookie_data->{last_page} ));
+                    return;
+                }
             }
+
+            $c->res->redirect('/') if $c->check_user_roles('client');
         }
 
         $c->response->headers->header('Content-Type', 'text/html');

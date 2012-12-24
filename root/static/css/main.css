@@ -85,8 +85,17 @@ legend {
 	font-size: 1em;
 	font-family: Verdana, helvetica, arial, sans-serif;
 }
-#message_close{ float:right; margin: -2px -22px 0px 0px; z-index:9006;}
+
 .version { font-size:0.3em; float:left; margin: 2.5em 0 0 10px; }
+
+#message_container {
+    max-height:150px;
+    z-index:9005;
+    left:15%;
+    position:fixed;
+    min-width:64%;
+}
+#msg_content{ margin-right:5px; max-height:72px; overflow: auto; z-index:9004;}
 .message {
 	display:none;
 	margin:10px 10px 5px 0;
@@ -96,15 +105,19 @@ legend {
     max-width:90%;
     z-index:9006;
 }
-#message_container {
-    max-height:150px;
-    z-index:9005;
-    left:15%;
-    position:fixed;
-    min-width:64%;
+
+.message_drag{
+    height: 5px;
+    overflow: hidden;
+    position: relative;
+    background: #FAFAFA url(/static/images/wbg.gif) repeat-x 0px -1px;
+    border: 1px solid #cccccc;
+    border-top: 0px;
+    text-align: center;
+    cursor: row-resize;
 }
 
-#msg_content{ margin-right:5px; max-height:72px; overflow: auto; z-index:9004;}
+#message_close{ float:right; margin: -2px -22px 0px 0px; z-index:9006;}
 
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }
