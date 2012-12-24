@@ -282,106 +282,21 @@ var total_count = 0;
                 timeout: 5000,
                 data: { _ : '1', client: _clients },
                 dataType: 'json',
-                success: function( msg ) {
-                    if ( msg === undefined ) return;
-                    if ( msg.rest !== undefined  ){
-                        if ( window.DEBUG ) console.log("b: %o",msg);
-                        if ( Object.prototype.toString.call( msg.rest ) !== '[object Array]'
-                          && Object.prototype.toString.call( msg.rest ) !== '[object Object]'
-                        ){
-                            var _processed_clients = [];
-                            if ( window.DEBUG ) console.log("MSG: ", msg.rest);
-                            if ( msg.rest.match(';') ){
-                                _processed_clients = msg.rest.split(';');
-                            }
-                            else {
-                                _processed_clients.push(msg.rest);
-                            }
-                            for (var z = 0; z < _processed_clients.length; z++) {
-                                 if (! _processed_clients[z].match(/\w+|;/)
-                                   || _processed_clients[z].match(/^SUCCESS/)
-                                ){
-                                    _processed_clients.splice(z, 1);
-                                    z--;
-                                }
-                            }
-                            if ( _processed_clients.length > 0 ){
-                                for ( var i in _processed_clients ){
-                                    if ( window.DEBUG ) console.log("n: " + _processed_clients[i]);
-                                    if ( _processed_clients[i].match(/fail|error/i) ){
-                                        alert($.Ovpnc().alertErr + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
-                                        _processed_clients.splice(i,1);
-                                    }
-                                    else if ( _processed_clients[i].match(/^SUCCESS/) ){
-                                        _processed_clients.splice(i,1);
-                                        i--;
-                                    }
-                                    else if ( _processed_clients[i].match(/^Kill connection status|^.*ok$/) ){
-                                        i--;
-                                    }
-                                    else {
-                                        alert($.Ovpnc().alertOk + ' ' + _processed_clients[i] + '</div><div class="clear"></div>' );
-                                    }
-                                }
-                                /*
-                                for (var z = 0; z < _processed_clients.length; z++) {
-                                    if ( _processed_clients[z].match(/^SUCCESS|fail|error/) ) {
-                                        _processed_clients.splice(z, 1);
-                                        z--;
-                                    }
-                                    else if ( _processed_clients[z].match(/^Kill connection status|^.*ok$/) ){
-                                        z--;
-                                    }
-                                }
-                                */
-                                if ( _processed_clients.length > 0 ){
-                                    alert($.Ovpnc().alertInfo + ' Total ' + _processed_clients.length + ' client' + ( _processed_clients.length === 1 ? ' ' : 's ' ) + ' ' + action + 'd</div><div class="clear"></div>' );
-                                }
-                                else {
-                                    alert( $.Ovpnc().alertIcon + ' No clients ' + action +  'd!</div><div class="clear"></div>' );
-                                }
-                            }
-                            else {
-                                alert( $.Ovpnc().alertErr + ' No clients ' + action +  '!</div><div class="clear"></div>' );
-                                return;
-                            }
-                        }
-                        else {
-                            // msg.rest.error
-                            if ( msg.rest.error !== undefined ){
-                                alert($.Ovpnc().alertErr + ' ' + msg.rest.error + '</div><div class="clear"></div>' );
-                            }
-                            else if ( msg.rest.length === undefined ){
-                                alert($.Ovpnc().alertErr + ' ' + msg.rest + '</div><div class="clear"></div>' );
-                            }
-                            // msg.rest
-                            else if ( msg.rest !== undefined ){
-                                msg.rest.replace(';','');
-                                alert(
-                                    ( msg.rest.match(/fail|error/i) ? $.Ovpnc().alertErr : $.Ovpnc().alertInfo ) + ' ' + msg.rest + '</div><div class="clear"></div>'
-                                );
-                            }
-
-                        }
-                            // msg.error
-                            if ( msg.error !== undefined ){
-                                if ( Object.prototype.toString.call( msg.error ) === '[object Array]' ){
-                                    for ( var m in msg.error ){
-                                        alert(
-                                            ( msg.error[m].match(/fail|error/i) ? $.Ovpnc().alertErr : $.Ovpnc().alertInfo ) + ' ' + msg.error[m] + '</div><div class="clear"></div>'
-                                        );
-                                    }
-                                }
-                                else {
-                                    alert($.Ovpnc().alertIcon + ' ' +  msg.error + '</div><div class="clear"></div>' );
-                                }
-                            }
+                success: function (msg) {
+                    if ( window.DEBUG ) console.log("block/unblock returned: %o",msg);
+                    var _data_types = {
+                        errors:      $.Ovpnc().alertErr,
+                        warnings:    $.Ovpnc().alertIcon,
+                        status:      $.Ovpnc().alertOk
+                    };
+                    if ( msg.rest !== undefined ) {
+                        $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
+                        $('.pReload').click();
+                        return;
                     }
-
-                    if ( msg.rest.failed !== undefined && msg.rest.failed.length > 0 ){
-                        alert( $.Ovpnc().alertIcon + msg.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed ' + action + '</div><div class="clear"></div>' );
-                    }
+                    alert( _data_types[errors] + ' ' + msg + '</div><div class="clear"></div>' );
                     $('.pReload').click();
+
                 },
                 complete : function(){
                     $.Ovpnc().removeAjaxLoading();

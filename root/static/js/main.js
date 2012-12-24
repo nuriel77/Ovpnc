@@ -105,10 +105,26 @@
             return 1;
         },
         //
-        // Handle returned error
+        // Process a resultset returned from the api
         //
-        errorAjaxReturn: function(e){
-            if ( window.DEBUG ) console.log("error: %o",e);
+        processAjaxReturn: function ( msg, data_types ) {
+            if ( msg.resultset !== undefined ) {
+                if ( window.DEBUG ) console.log("msg.resultset: %o", msg.resultset );
+                $.each( msg.resultset, function(item, data) {
+                    $.each( data_types, function(type, icon) {
+                        if ( data[type] !== undefined ){
+                            for ( var i in data[type] ){
+                                alert( icon + ' ' + item + ': ' + data[type][i] + '</div><div class="clear"></div>' );
+                            }
+                        }
+                    });
+                });
+            }
+            else {
+                if ( window.DEBUG ) console.log("No msg.resultset!");
+                alert( data[errors] + ' ' + msg + '</div><div class="clear"></div>' );
+                return false;
+            }
         },
         //
         // Check the username from database

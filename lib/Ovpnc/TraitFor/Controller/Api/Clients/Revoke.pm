@@ -41,9 +41,11 @@ sub revoke_certificate {
 
         # Prepare a return object
         # for client status/errors
+        # ========================
         $_ret_val->{$client} = {
             errors => [],
-            status => [],
+            warnings => [],
+            status => []
         };
 
         # Build command
@@ -65,23 +67,20 @@ sub revoke_certificate {
                 # Already in revoke list
                 # ======================
                 if ( $_check_ret_val =~ /already revoked/gi ){
-                    push @{$_ret_val->{$client}->{errors}},
-                            "Revocation failure for '"
-                          . $client
-                          . "': Already revoked;";
+                    push @{$_ret_val->{$client}->{warnings}},
+                            "Revocation failure"
+                          . ": Already revoked";
                 }
                 elsif ( $_check_ret_val =~ /No such file or directory/gi ){
                     push @{$_ret_val->{$client}->{errors}},
-                            "Revocation failure for '"
-                          . $client
-                          . "': has no certificates;";
+                            "Revocation failure: "
+                          . "has no certificates";
                 }
                 # Explicit ERROR in output
                 # ========================
                 elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
                     push @{$_ret_val->{$client}->{errors}},
-                           "Revocation failure for '"
-                          . $client
+                           "Revocation failure: "
                           . ( $1 ? '\': ' . $1 : '\'' ) .';';
                 }
                 # If we match this, certificate
@@ -89,12 +88,12 @@ sub revoke_certificate {
                 # =============================
                 elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
                     push @{$_ret_val->{$client}->{status}},
-                            $client . ' revoked ok;';
+                        'revoked ok';
                 }
                 # Anything else is unknown
                 # ========================
                 else {
-                    push @{$_ret_val->{$client}->{errors}},
+                    push @{$_ret_val->{$client}->{warnings}},
                         'Unknown status for '
                         . $client
                         . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
@@ -106,7 +105,7 @@ sub revoke_certificate {
             # ===================================
             else {
                 push @{$_ret_val->{$client}->{errors}},
-                    'Timeout out error for ' . $_check_ret_val . ';'
+                    'Timeout out error(?): ' . $_check_ret_val . ';'
                     . ( $error_code ? $error_code : '' ).';';
             }
         }

@@ -56,7 +56,7 @@ sub unrevoke_certificate {
         # Check exit status
         # =================
         if ( $? >> 8 != 0 ) {
-            return 'Un-revocation failure for ' . $client . ': ' . $_ret_val;
+            return { errors => ['Un-revocation failure for ' . $client . ': ' . $_ret_val ]};
         }
 
         # Regenerate the crl.pem
@@ -72,7 +72,7 @@ sub unrevoke_certificate {
         );
 
         unless ( can_run($ssl_bin) ){
-            return 'Error! Cannot run ' . $ssl_bin;
+            return { errors => [ 'Cannot run ' . $ssl_bin ] };
         }
 
         # Run command
@@ -84,22 +84,26 @@ sub unrevoke_certificate {
         $_ret_val =~ s/\n/;/g;
 
         if ( $success ){
-            return 'Un-revocation success for '
-                . $client . ';';
+            return { status => [ 'Unrevoked ok' ] }
         }
         else {
-            return 'Un-revocation failure for '
-                . $client
-                . ( $error_code ? ': ' . $error_code : '' )
-                . ( $_ret_val ? ', ' . $_ret_val : '' ).';';
+            return {
+                errors => [
+                    'Un-revocation failure: '
+                    . ( $error_code ? ': ' . $error_code : '' )
+                    . ( $_ret_val ? ', ' . $_ret_val : '' )
+                ]
+            };
         }
     }
     else {
-        return
-            'Un-revocation failure for '
-          . $client
-          . ' as index file does not exists or is not accessible: '
-          . $index_file;
+        return {
+            errors => [
+                'Un-revocation failure: '
+                . ' OpenVPN index file does not exists or is not accessible: '
+                . $index_file
+            ]
+        };
     }
 }
 

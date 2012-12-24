@@ -748,6 +748,9 @@ using crl.pem
         # =====================
         $self->_roles->set_environment_vars;
     
+        # HashRef Will contain after return:
+        # {warnings}, {errors}, {status}
+        # ==================================
         my $_ret_val;
     
         # Revoke client's certificate
@@ -758,39 +761,45 @@ using crl.pem
     
         unless ( $_ret_val ){
             $self->_disconnect_vpn if $self->_has_vpn;
-            detach_error( $self, $c );
+            detach_error( $self, $c, { errors => [ 'No reply from backend!' ] } );
             return;
         }
        
-        # Kill the connection (just incase
-        # client is currently connected).
-        # ================================
-        if ( $self->_has_vpn ) {
-            for my $client ( @clients ){
+        # Proceed with disconnecting
+        # the client if online and
+        # update the status in DB
+        # ==========================
+        my $_disconnect_client_ok;
+        $_disconnect_client_ok = 1 if $self->_has_vpn;
+        for my $client ( @clients ){
+            # See if vpn is currently on,
+            # if yes, try to diconnect the
+            # client (might not be online)
+            # ============================
+            if ( $_disconnect_client_ok ){
                 if ( my $str = $self->kill_connection( $client ) ) {
-                    push @{$_ret_val->{$client}->{status}}, $str;
+                    push @{$_ret_val->{$client}->{status}},
+                        'Disconnect from VPN status: ' . $str;
                 }
                 else {
-                    push @{$_ret_val->{$client}->{status}},
-                        'Kill connection status: Client '
-                        . $client . ' not found online';
+                    push @{$_ret_val->{$client}->{warnings}},
+                        'Disconnect from VPN status: not found online';
                 }
             }
-        }
-        
-        # Update database
-        # ===============
-        for my $client (@clients){
+            # Update database
+            # ===============
             try {
                 $c->model('DB::User')->find({ username => $client })
                     ->update({ revoked => 1 });
             }
             catch {
-                push @{$c->stash->{$client}->{error}},
+                push @{$c->stash->{$client}->{errors}},
                     "Failed to update database for '$client': " . $_;
             };
         }
-    
+            
+        # Done processing client(s)
+        # =========================
         $self->status_ok( $c, entity => { resultset => $_ret_val } );
         $self->_disconnect_vpn if $self->_has_vpn;
     }
@@ -846,13 +855,23 @@ in ccd
         my $revoked = $c->forward('list_revoked');
     
         my $_ret_val;
-        my $_err = [];
     
-        CLIENT: for my $client ( @clients ){
-    
+      CLIENT:
+        for my $client ( @clients ){
+            # Prepare a return object
+            # for client status/errors
+            # ========================
+            $_ret_val->{$client} = {
+                errors => [],
+                warnings => [],
+                status => []
+            };
+
+            # Check if in CRL
+            # ===============
             unless ( $self->_match_revoked( $revoked, $client ) ) {
-                push @{$_err}, "Unrevoke failed: client '"
-                            . $client . "' is not in the Revoked list";
+                push @{$_ret_val->{$client}->{errors}},
+                    "Unrevoke failed: not in the Revoked list";
                 next CLIENT;
             }
     
@@ -863,22 +882,29 @@ in ccd
                     ->update({ revoked => 0 });
             }
             catch {
-                push @{$c->stash->{error}}, "Failed to update database for '$client': " . $_;
+                push @{$_ret_val->{$client}->{errors}},
+                    "DB query failed: " . $_;
             };
     
             # Unrevoke a revoked client's certificate
             # =======================================
-            $_ret_val .= ';' . $self->_roles->unrevoke_certificate(
-                $client,
-                $self->cfg->{ssl_config},
-                $c->config->{openssl_bin}
-            );
+            my $_revoke_status = 
+                $self->_roles->unrevoke_certificate(
+                    $client,
+                    $self->cfg->{ssl_config},
+                    $c->config->{openssl_bin}
+                );
+            for ( keys %{$_revoke_status} ){
+                push @{ $_ret_val->{$client}->{$_} },
+                    $_revoke_status->{$_};                
+            }
         }
-        $c->stash->{error} = $_err if @{$_err} > 0;
     
-        $self->status_ok( $c, entity => $_ret_val );
+        # Done processing client(s)
+        # =========================
+        $self->status_ok( $c, entity => { resultset => $_ret_val } );
         $self->_disconnect_vpn if $self->_has_vpn;
-        delete $c->stash->{status};
+        delete $c->stash->{status} if $c->stash->{status};
     }
 
 
