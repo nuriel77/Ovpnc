@@ -236,6 +236,7 @@ Include static files, dynamically
           js/jquery-cookie/jquery.cookie.js
           js/jquery-validation/jquery.validate.js
           js/functions.js
+          js/alert-override.js
         );
 
         # Include the following only if user exists
