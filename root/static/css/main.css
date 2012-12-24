@@ -101,7 +101,7 @@ legend {
     z-index:9005;
     left:15%;
     position:fixed;
-    min-width:62%;
+    min-width:64%;
 }
 
 #msg_content{ margin-right:5px; max-height:72px; overflow: auto; z-index:9004;}

@@ -619,6 +619,7 @@
  */
 $(document).ready(function() {
 
+    // Set debug if provided in url (debug=1)
     $.Ovpnc().setDebug();
 
     // Set width of middle frame
@@ -626,20 +627,22 @@ $(document).ready(function() {
     $(window).resize(function() {
         $.Ovpnc().setMiddleFrameWidth();
     });
+
     // Exit on login page
-    if ($.Ovpnc().pathname === '/login')
+    if ( window.location.pathname === '/login' )
         return false;
 
-    /*
-    if ( $.cookie('Ovpnc_User_Settings') !== null ) {
-        var _cookie_data = jQuery.parseJSON( $.cookie('Ovpnc_User_Settings') );
-        if ( _cookie_data.last_page !== undefined ){
-            var _last_location = _cookie_data.last_page;
-            if ( pathname !== _last_location )
-                window.location = _last_location;
-        }
+    // Set last visited page
+    // Catalyst root controller
+    // will do the redirecting
+    if ( window.location.pathname !== '/' ){
+        if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname );
+        var _store_location = JSON.stringify({ last_page: window.location.pathname });
+        $.cookie("Ovpnc_User_Settings", _store_location, {
+            expires: 30,
+            path: '/'
+        });
     }
-    */
 
     // Set up the navigation
     $.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);

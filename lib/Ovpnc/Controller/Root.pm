@@ -184,6 +184,20 @@ sub index : Chained('/base')
 {
     my ( $self, $c ) = @_;
 
+    # Check if there is a last location/page
+    # stored in a cookie, if yes, redirect.
+    # ======================================
+    if ( $c->user_exists ){
+        if ( my $cookie = $c->request->cookies->{'Ovpnc_User_Settings'} ){
+            my $cookie_data = $c->view('JSON')->from_json($cookie->value);
+            if ( $cookie_data ){
+                $c->redirect( $c->uri_for( $cookie_data->{last_page} ))
+                    if $cookie_data->{last_page}
+                    && $cookie_data->{last_page} ne $c->req->path;
+            }
+        }
+    }
+
     # Get username for geoname api service
     # ====================================
     $c->stash->{geo_username} = $c->config->{geo_username};
@@ -193,6 +207,7 @@ sub index : Chained('/base')
     $c->stash->{this_link} = 'root';
 
 }
+
 
 =head2 default
 

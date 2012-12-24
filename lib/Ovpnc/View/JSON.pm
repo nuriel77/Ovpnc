@@ -46,7 +46,7 @@ sub to_json
 
 sub from_json
 {
-    my( $self, $c, $data ) = @_;
+    my( $self, $data ) = @_;
     $self->encoder->decode( $data );
 }
 

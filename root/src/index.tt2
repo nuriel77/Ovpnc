@@ -1,8 +1,5 @@
 <!-- status div -->
 <div class="status_div" id="status_container">
-    [% IF expires %]
-        <div id="session_expires" style="margin:0 0 10px 30px">[% expires %]</div>
-    [% END %]
 	<!-- server info -->
 	<fieldset id="title" class="box_shadow">
         <legend>Server Status</legend>
@@ -33,6 +30,12 @@
 			<span style="margin-left:15px;"><a href="#">List</a></span>
 		</div>
 	</fieldset><!-- online clients -->
-
 </div><!-- status div -->
+[% IF expires %]
+    <div id="session_expires" style="font-size:0.75em;margin:30px 0 10px 30px;color:#999999">
+      <ul>
+        <li>Session expires:<br />[% expires %]</li>
+      </ul>
+    </div>
+[% END %]
 
