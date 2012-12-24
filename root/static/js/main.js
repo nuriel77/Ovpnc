@@ -635,14 +635,13 @@ $(document).ready(function() {
     // Set last visited page
     // Catalyst root controller
     // will do the redirecting
-    if ( window.location.pathname !== '/' ){
-        if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname );
-        var _store_location = JSON.stringify({ last_page: window.location.pathname });
-        $.cookie("Ovpnc_User_Settings", _store_location, {
-            expires: 30,
-            path: '/'
-        });
-    }
+    if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname );
+    var _store_location = JSON.stringify({ last_page: window.location.pathname });
+    $.cookie("Ovpnc_User_Settings", _store_location, {
+        expires: 30,
+        path: '/'
+    });
+
 
     // Set up the navigation
     $.Ovpnc().slide("#sliding-navigation", 25, 15, 150, .8);

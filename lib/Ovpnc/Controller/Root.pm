@@ -191,9 +191,10 @@ sub index : Chained('/base')
         if ( my $cookie = $c->request->cookies->{'Ovpnc_User_Settings'} ){
             my $cookie_data = $c->view('JSON')->from_json($cookie->value);
             if ( $cookie_data ){
+                my $current_page = $c->req->path || '/';
                 $c->redirect( $c->uri_for( $cookie_data->{last_page} ))
                     if $cookie_data->{last_page}
-                    && $cookie_data->{last_page} ne $c->req->path;
+                    && $cookie_data->{last_page} ne $current_page;
             }
         }
     }

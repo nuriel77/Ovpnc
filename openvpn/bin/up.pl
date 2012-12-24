@@ -34,15 +34,7 @@ my $schema = Ovpnc::Schema->connect(
     $cfg->{dsn} . ';user=' . $cfg->{user} . ';password=' . $cfg->{password}
 );
 
-my $user_id = $schema->resultset('User')->find(
-    { username => $ENV{OVPNC_USER} },
-    { search => 'id' }
-);
-
-die "Unknown user: " . $ENV{OVPNC_USER} . "\n"
-    unless $user_id;
-
 my $admin = $schema->resultset('Log')->create({
-    message => "Server started" . ( $ENV{daemon_pid} ? " with pid " . $ENV{daemon_pid} : '' ),
-    user_id => $user_id->id,
+    message     => "Server started" . ( $ENV{daemon_pid} ? " with pid " . $ENV{daemon_pid} : '' ),
+    username    => $ENV{OVPNC_USER},
 });
