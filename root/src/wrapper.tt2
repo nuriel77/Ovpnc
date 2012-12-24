@@ -8,7 +8,7 @@
 	<head>
     	<title>Ovpnc[% IF title %] - [% title %][% END %]</title>
 
-		[% IF force_no_cache %]
+		[% IF c.request.force_no_cache %]
 			<meta http-equiv="pragma" content="no-cache">
 			<meta http-equiv="expires" content="Tue, 31 Dec 2003 23:00:00 GMT">
 			<meta http-equiv="cache-control" content="no-cache" />
@@ -21,28 +21,70 @@
         
         <!-- Default Alert -->
         <script type="text/javascript">
+
             window.alert = function(message) {
+
+                var msgContent         = document.createElement('div'),
+                    msgContentTime     = document.createElement('div'),
+                    msgImage           = document.createElement('img'),
+                    iDiv               = document.createElement('div');
+
+                // Create time div element
+                $( msgContentTime ).css('float','left')
+                                   .text('[' + get_time() + ']');
+                // Prepend time and message to message content div
+                $( msgContent ).attr('class', 'message_content')
+                               .prepend( msgContentTime )
+                               .append( message );
+
                 // Check if message is already visible,
                 // If yes, save current content and append
-                if ($('#message').is(':visible')) {
+                if ($('.message_content').is(':visible')) {
                     // Remove first welcome message.
-                    var old_content = $('#msg_content').html();
+                    var old_content = $('.message_content').text();
                     if (old_content.match(/Hello/g) || old_content === message) {
-                        $('#msg_content').empty();
+                        $('.message_content').empty();
                     } else {
-                        message += '' + $('#msg_content').html();
+                        message += '' + $('#message_content').html();
                     }
                 }
-                // Write
-                $('#message').html('<div id="msg_content"><div style="float:left">['
-                    + get_time() + ']</div>'
-                    + message + '</div></div><div>'
-                    + '<img id="message_close"'
-                    + ' src="/static/images/close-gray.png"'
-                    + ' class="hand_pointer"></img></div>').slideDown(300);
+
+                // Populate the message div
+                $('#message').prepend( msgContent );
+
+                if ( ! $('#message_close').is(':visible') ){
+                    // Create img element
+                    $( msgImage ).addClass('hand_pointer')
+                                 .attr('id','message_close')
+                                 .attr('src','/static/images/close-gray.png');
+                    // Contain image in div
+                    $( iDiv ).html( msgImage );
+                    $('#message_container').append( iDiv );  
+                }
+
+                var outerCenteredOffset = $('#outer_centered').offset();
+                var messageContainerOffset = $('#message_container').offset();
+                var limitOffset = ( outerCenteredOffset.top - 10 ) - messageContainerOffset.top;
+
+                if ( $('#message').height() >= limitOffset
+                  && window.resized === undefined
+                ){
+                    console.log('height');
+                    $('#message').css('max-height', limitOffset + 'px');
+                }
+
                 $('#message_close').click(function() {
-                    $('#message').hide(300).empty();
+                    $('#message_container').hide(300);
+                    $('#message_content').remove();
                 });
+                $('#message').dblclick(function(){
+                    $('#message_container').hide(300);
+                    $('#message_content').remove();
+                });
+                if ( $('#message_container').is(':hidden') ) {
+                    $('#message_container').slideDown(300);
+                }
+
                 return false;
             };
         </script>
@@ -57,7 +99,6 @@
 				</div>
 				<div id="message_container">
 					<div id="message" class="message box_shadow"></div>
-                    <div class=".message_drag"></div>
 				</div>
 			</div><!-- top_header_centered -->
 		</div><!-- top header -->
@@ -134,6 +175,12 @@
     	</div><!-- outer -->
 		<input id="username" type="hidden" name="[% username %]" />
 		<input id="geoUsername" type="hidden" name="[% geo_username %]" />
+        <script type="text/javascript">
+            $('#message').resizable({
+                start : function () { $('#message').css('max-height', '') },
+                stop : function () {  window.resized = 1 }   
+            });
+        </script>
 	</body>
 </html>
 [% END %]

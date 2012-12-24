@@ -346,9 +346,6 @@
         // Init click events
         //
         clickBinds: function() {
-            $('#message').dblclick(function(){
-                $(this).hide(300);
-            });
             /*
              * Only if hand_pointer was assigned
              * via template, this user has

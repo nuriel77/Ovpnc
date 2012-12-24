@@ -230,12 +230,14 @@ Include static files, dynamically
           css/normalize.css
           css/slider.css
           css/main.css
+          js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
           js/jquery-latest.js
+          js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
           js/jquery-cookie/jquery.cookie.js
           js/jquery-validation/jquery.validate.js
           js/functions.js
         );
-        
+
         # Include the following only if user exists
         # =========================================
         if ( $c->user_exists ){
@@ -253,9 +255,6 @@ Include static files, dynamically
                     js/Flexigrid/js/flexigrid.js
                 ) if $c->req->path =~ /clients\/*$/i;
         }
-        # Optional :
-        #js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
-        #js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
     
         return 1 if $c->stash->{no_self};
     
