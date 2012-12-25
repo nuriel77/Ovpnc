@@ -1,8 +1,8 @@
 package Ovpnc::Controller::Api::Server::Status;
 use strict;
 use warnings;
-use Ovpnc::Plugins::Connector;
 use Moose;
+use Ovpnc::Plugin::Connector;
 use namespace::autoclean;
 use vars qw/ $REGEX /;
 
@@ -66,11 +66,11 @@ action to run
 
         # Test database connection
         # ========================
-        Ovpnc::Controller::Root->auto( $c );
+        $c->controller('Root')->auto( $c );
 
         # Log user in if login params are provided
         # =======================================
-        Ovpnc::Controller::Api->auth_user( $c )
+        $c->controller('Api')->auth_user( $c )
             unless $c->user_exists();
 
         # Set the expiration time
@@ -103,7 +103,7 @@ around [
 
     # Assign config params
     # ====================
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( $c->controller('Api')->assign_params( $c ) )
       unless $self->_has_cfg;
 
     # Don't connect if exists
@@ -113,7 +113,7 @@ around [
 
     # Establish connection to management port
     # =======================================
-    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
+    $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
 };
@@ -158,7 +158,7 @@ sub status_GET : Local
 
     # Verify can run
     # ==============
-    my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
+    my $_server = $c->controller('Api::Server')->new( vpn => $self->vpn );
     undef $_server if $_server && $_server->sanity( $c );
 
     # Trait names should match action name

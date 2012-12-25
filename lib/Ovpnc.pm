@@ -47,7 +47,7 @@ use Catalyst qw/
   +CatalystX::SimpleLogin
   /;
 #  Session::Store::Memcached
-extends 'Catalyst';
+
 
 =head2 CONFIGURATION
 

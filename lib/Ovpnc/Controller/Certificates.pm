@@ -1,5 +1,4 @@
 package Ovpnc::Controller::Certificates;
-use Ovpnc::Controller::Root 'include_default_links';
 use Module::Locate qw(locate);
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 scalar locate('JSON::XS')    ? 0 : do { use JSON::XS; };
@@ -44,12 +43,12 @@ around [qw(index add)] => sub {
         : $c->config->{home} . '/' . $c->config->{ovpnc_conf};
 
     $c->config->{openvpn_user} =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+      $c->controller('Api::Configuration')->get_openvpn_param(
         'UserName', $c->config->{ovpnc_conf} );
 
     # Sanity check
     # ============
-    my $err = Ovpnc::Plugins::Sanity->action( $c->config );
+    my $err = Ovpnc::Plugin::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->response->body( join "<br>", @{$err} );
@@ -195,7 +194,7 @@ sub add : Path('add')
         # HTML view
         # =========
         $c->response->headers->header('Content-Type' => 'text/html');
-        include_default_links( $self, $c );
+        $c->controller('Root')->include_default_links($c);
 
         # Get the country list (for certificates signing)
         # ===============================================
@@ -312,7 +311,7 @@ sub denied : Private {
 
     # Add js / css
     # ============
-    include_default_links( $self, $c);
+    $c->controller('Root')->include_default_links($c);
     $c->stash->{this_link}     = $c->req->path;
     $c->stash->{title}         = ucfirst( $c->req->path );
     $c->stash->{error_message} = "Access denied";
@@ -330,7 +329,7 @@ sub end : ActionClass('RenderView') {
 
     # Add js / css
     # ============
-    include_default_links( $self, $c );
+    $c->controller('Root')->include_default_links($c);
 
     $c->stash->{username} = $c->user->get("username")
       if ( $c->user_exists );

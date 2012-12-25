@@ -62,7 +62,7 @@ sub begin : Private {
 
     # Log user in if login params are provided
     # =======================================
-    Ovpnc::Controller::Api->auth_user( $c )
+    $c->controller->('Api')->auth_user( $c )
         unless $c->user_exists();
 
     # Set the expiration time
@@ -96,7 +96,7 @@ before [qw(
 
     # Assign config params
     # ====================
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( $c->('Api')->assign_params( $c ) )
         unless $self->_has_conf;
 };
 

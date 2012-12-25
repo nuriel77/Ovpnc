@@ -1,12 +1,14 @@
-package Ovpnc::Plugins::Connector;
+package Ovpnc::Plugin::Connector;
 use warnings;
 use strict;
 use File::Slurp;
 use Net::OpenVPN::Manage;
+use namespace::autoclean;
+
 
 =head1 NAME
 
-Ovpnc::Plugins::Connector - Ovpnc VPN Management Connector
+Ovpnc::Plugin::Connector - Ovpnc VPN Management Connector
 
 =head1 DESCRIPTION
 

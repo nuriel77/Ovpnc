@@ -1,5 +1,4 @@
 package Ovpnc::Controller::Login;
-use Ovpnc::Controller::Root 'include_default_links';
 use Moose;
 use namespace::autoclean;
 
@@ -27,7 +26,7 @@ from CatalystX::SimpleLogin
 
 around 'login' => sub {
     my ( $orig, $self, $c ) = @_;
-    
+
     # Redirect to https if user specified
     # a port in config under 'redirect_https_port'
     # ============================================
@@ -154,7 +153,7 @@ Last auto action
         }
 
         $c->response->headers->header('Content-Type', 'text/html');
-        include_default_links($self, $c);
+        $c->controller('Root')->include_default_links($c);
         $c->forward('View::HTML');
     }    
 

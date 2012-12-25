@@ -1,8 +1,6 @@
 package Ovpnc::Controller::Api::Clients;
 use warnings;
 use strict;
-use Ovpnc::Plugins::Connector;
-use Ovpnc::Controller::Api qw( detach_error auth_user );
 use Try::Tiny;
 use Scalar::Util 'looks_like_number';
 use Moose;
@@ -105,7 +103,7 @@ or after, or around...
     
         # Assign global config params
         # ===========================
-        $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+        $self->cfg( $c->controller('Api')->assign_params( $c ) )
           unless $self->_has_conf;
 
         # File::Assets might leave an empty hash
@@ -134,13 +132,13 @@ or after, or around...
         # Do not process twice
         # ====================
         if ( ref $c && !$self->_has_vpn_dir ) {
-            $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) );
+            $self->cfg( $c->controller('Api')->assign_params( $c ) );
         }
     
         # Get global configurations
         # if not assigned yet
         # =========================
-        $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+        $self->cfg( $c->controller('Api')->assign_params( $c ) )
           unless $self->_has_conf;
     
         # Also here, don't process twice
@@ -150,7 +148,7 @@ or after, or around...
     
         # Instantiate connector
         # =====================
-        $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
+        $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
     
         # Check connection to mgmt port
         # =============================
@@ -194,11 +192,11 @@ action to run
 
         # Test database connection
         # ========================
-        Ovpnc::Controller::Root->auto( $c );
+        $c->controller('Root')->auto( $c );
 
         # Log user in if login params are provided
         # =======================================
-        auth_user( $self, $c )
+        $c->controller('Api')->auth_user( $self, $c )
             unless $c->user_exists();
 
         # Set the expiration time
@@ -761,7 +759,8 @@ using crl.pem
     
         unless ( $_ret_val ){
             $self->_disconnect_vpn if $self->_has_vpn;
-            detach_error( $self, $c, { errors => [ 'No reply from backend!' ] } );
+            $c->controller('Api')->detach_error( $c,
+                { errors => [ 'No reply from backend!' ] } );
             return;
         }
        

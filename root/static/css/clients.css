@@ -68,3 +68,10 @@
 .flexigrid div.fbutton .properties {
     background: url(/static/images/properties.png) no-repeat center left;
 }
+
+
+/*
+    Add icons to jQuery.context menu
+*/
+.context-menu-item.icon-block { background-image: url(/static/images/kill_client.png); }
+.context-menu-item.icon-unblock { background-image: url(/static/images/unblock.png); }

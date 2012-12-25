@@ -3,19 +3,11 @@ use warnings;
 use strict;
 use Try::Tiny;
 use Cwd;
-use Ovpnc::Plugins::Sanity;
+use Ovpnc::Plugin::Sanity;
 use Moose;
-use Moose::Exporter;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller' }
-
-#
-# Export method
-#
-Moose::Exporter->setup_import_methods(
-    as_is   => [ 'include_default_links' ]
-);
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -138,13 +130,14 @@ around [qw(ovpnc_config index)] => sub {
     # Get the openvpn user
     # ====================
     $c->config->{openvpn_user} =
-      Ovpnc::Controller::Api::Configuration->get_openvpn_param(
+      $c->controller('Api::Configuration')->get_openvpn_param(
         'UserName', $c->config->{ovpnc_conf} )
-        unless $c->config->{openvpn_user};
+        unless $c->config->{openvpn_user} ;
 
     # Sanity check
     # ============
-    my $_err = Ovpnc::Plugins::Sanity->action( $c->config );
+
+    my $_err = Ovpnc::Plugin::Sanity->action( $c->config );
     if ( $_err and ref $_err eq 'ARRAY' ) {
         if ( $c->namespace eq 'api' ){
             push @{$c->stash->{error}}, $_err;

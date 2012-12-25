@@ -1,4 +1,4 @@
-package Ovpnc::Plugins::ChainCA;
+package Ovpnc::Plugin::ChainCA;
 use strict;
 use warnings;
 use utf8;
@@ -55,13 +55,14 @@ has serial => (
 
 =head1 NAME
 
-Ovpnc::Plugins::ChainCA - Chain CA Creator
+Ovpnc::Plugin::ChainCA - Chain CA Creator
 
 =head1 DESCRIPTION
 
 Generates RSA X509 certificates chain
 This plugin will provide Ovpnc
 the ability to manage certificates
+Also uses OpenVPN easy-rsa scripts
 
 head1 METHODS
 

@@ -1,23 +1,14 @@
 package Ovpnc::Controller::Api;
 use warnings;
 use strict;
-use Ovpnc::Plugins::Connector;
-use Moose;
-use Moose::Exporter;
-use Linux::Distribution;
 use Cwd;
+use String::MkPasswd 'mkpasswd';
+use Linux::Distribution;
+use Moose;
 use vars qw( $ovpnc_conf $mgmt_passwd_file );
 use namespace::autoclean;
 
-#
-# Export method
-#
-Moose::Exporter->setup_import_methods(
-    as_is   => [ 'detach_error', 'auth_user' ]
-);
-
-
-BEGIN { extends 'Catalyst::Controller::REST'; }
+BEGIN { extends 'Catalyst::Controller::REST' }
 
 __PACKAGE__->config( namespace => '' );
 
@@ -91,9 +82,12 @@ General api commands
 
 sub api_POST : Local
              : Args(0)
-             : Sitemap
-             : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
+             : Does('ACL')
+                AllowedRole('admin')
+                AllowedRole('client')
+                ACLDetachTo('denied')
              : Does('NeedsLogin')
+             : Sitemap
 {
     my ( $self, $c, $cmd ) = @_;
     my $_check = 0;
@@ -111,58 +105,90 @@ sub api_POST : Local
 }
 
 
+=head2 get_random_password
+
+
+=cut
+    
+    sub get_password : Path('api/getpasswd')
+                     : Args(0)
+                     : Sitemap
+    {
+        my ( $self, $c ) = @_;
+
+        unless ( $c->req->params->{length} ){
+            $self->status_no_content($c, message => 'No password length specified!' );
+            $c->forward('end');
+        }
+
+        my $passwd = $self->_gen_passwd({
+            length     => $c->req->params->{length}    || 3,
+            minnum     => $c->req->params->{minnum}    || 3,
+            minlower   => $c->req->params->{minlower}  || 3,
+            minupper   => $c->req->params->{minupper}  || 3,
+            minspecial => $c->req->params->{special}   || 0,
+        });
+        $c->stash->{result} = $passwd;
+        $self->status_ok($c,
+            entity => {
+                resultset => $passwd
+            }
+        );
+        $c->forward('View::JSON');
+    }
+
+
 =head2 sanity
 
 A sanity check
 
 =cut
 
-sub sanity : Path('api/sanity')
-           : Args(0)
-           : Sitemap
-           : Does('NeedsLogin')
-{
+    sub sanity : Path('api/sanity')
+               : Args(0)
+               : Does('NeedsLogin')
+               : Sitemap
+    {
 
-    my ( $self, $c ) = @_;
+        my ( $self, $c ) = @_;
 
-    $c->response->headers->header(
-        'Content-Type' => 'application/json' );
+        $c->response->headers->header(
+            'Content-Type' => 'application/json' );
 
-    if ( !$self->_has_cfg ){
-        $self->assign_params( $c );
+        if ( !$self->_has_cfg ){
+            $self->assign_params( $c );
+        }
+
+        # Sanity plugin action
+        # ====================
+        my $_ret_val = Ovpnc::Plugin::Sanity->action( $c->config );
+
+        # Not ok?
+        # =======
+        if ( $_ret_val && ref $_ret_val eq 'ARRAY' ) {
+            $c->response->status(500);
+            delete $c->stash->{assets} if $c->stash->{assets};
+            $c->response->body( $_ret_val );
+            $c->detach;
+            return $_ret_val;
+        }
+    
+        # Ok
+        # ==
+        if ( $c->request->path =~ /sanity/ ){
+            delete $c->stash->{assets} if $c->stash->{assets};
+            $c->response->status(200);
+            $c->stash->{status} = 'Sanity check successful';
+        }
+    
+        $c->forward('View::JSON');
+    
     }
 
-    # Sanity plugin action
-    # ====================
-    my $_ret_val = Ovpnc::Plugins::Sanity->action( $c->config );
-
-    # Not ok?
-    # =======
-    if ( $_ret_val && ref $_ret_val eq 'ARRAY' ) {
-        $c->response->status(500);
-        delete $c->stash->{assets} if $c->stash->{assets};
-        $c->response->body( $_ret_val );
-        $c->detach;
-        return $_ret_val;
-    }
-
-    # Ok
-    # ==
-    if ( $c->request->path =~ /sanity/ ){
-        delete $c->stash->{assets} if $c->stash->{assets};
-        $c->response->status(200);
-        $c->stash->{status} = 'Sanity check successful';
-    }
-
-    $c->forward('View::JSON');
-
-}
 
 =head2 detach_error
 
 End action chain and return error
-message to user, is actually
-exported, but private (Catalyst)
 
 =cut
 
@@ -175,6 +201,7 @@ exported, but private (Catalyst)
         $c->detach;
     }
     
+
 =head2 assign_params
 
 Assign config params
@@ -340,27 +367,47 @@ API Authentication
 
 =cut
 
-sub auth_user : Private
-{
-    my ( $self, $c ) = @_;
+    sub auth_user : Private {
+        my ( $self, $c ) = @_;
 
-    if ( my $user        = $c->req->params->{username}
-        and my $password = $c->req->params->{password}
-        and ! $c->user_exists
-    ){
-        if ( $c->authenticate( { username => $user,
-                                 password => $password }, 'users' )
-        ) {
-            delete $c->req->params->{$_} for qw/username password/;
-            $c->stash->{expires} = $c->session_expires;
-            $c->session->{$user} = $c->session_expires;
+        if ( my $user        = $c->req->params->{username}
+            and my $password = $c->req->params->{password}
+            and ! $c->user_exists
+        ){
+            if ( $c->authenticate( { username => $user,
+                                     password => $password }, 'users' )
+            ) {
+                delete $c->req->params->{$_} for qw/username password/;
+                $c->stash->{expires} = $c->session_expires;
+                $c->session->{$user} = $c->session_expires;
+            }
+            else {
+                $c->stash->{error} = 'Invalid username / password combination' ;
+            }
         }
-        else {
-            $c->stash->{error} = 'Invalid username / password combination' ;
-        }
+        $c->stash->{error} = 'Session expired'
+            if $c->request->params->{_} && !$c->user_exists;
     }
-    $c->stash->{error} = 'Session expired' if $c->request->params->{_} && !$c->user_exists;
-}
+
+
+=head2 gen_passwd
+
+Create a random password
+
+=cut
+
+    sub _gen_passwd : Private {
+        my ($self, $params) = @_;
+    
+        return mkpasswd(
+                -length     => $params->{length}        || 12,
+                -minnum     => $params->{minnum}        || 3,
+                -minlower   => $params->{minlower}      || 3,
+                -minupper   => $params->{minupper}      || 3,
+                -minspecial => $params->{minspecial}    || 0,
+        );
+    }
+
 
 =head2 end
 
@@ -368,22 +415,22 @@ Auto end action
 
 =cut 
 
-sub end : Private {
-    my ( $self, $c ) = @_;
+    sub end : Private {
+        my ( $self, $c ) = @_;
 
-    # Clean up the File::Assets
-    # it is set to null but
-    # is not needed in JSON output
-    # ============================
-    delete $c->stash->{assets};
+        # Clean up the File::Assets
+        # it is set to null but
+        # is not needed in JSON output
+        # ============================
+        delete $c->stash->{assets};
 
-    # Forward to JSON view or XML
-    # ===========================
-    $c->forward(
-        ( $c->request->params->{xml} ?
-        'View::XML::Simple' : 'View::JSON' )
-    );
-}
+        # Forward to JSON view or XML
+        # ===========================
+        $c->forward(
+            ( $c->request->params->{xml} ?
+            'View::XML::Simple' : 'View::JSON' )
+        );
+    }
 
 
 =head1 AUTHOR

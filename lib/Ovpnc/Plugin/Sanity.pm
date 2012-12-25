@@ -1,14 +1,17 @@
-package Ovpnc::Plugins::Sanity;
+package Ovpnc::Plugin::Sanity;
 use warnings;
 use strict;
 use Fcntl ':mode';
 use File::Slurp;
 use Linux::Distribution qw(distribution_name distribution_version);
 use vars qw/$errors $openvpn_user $os $distro/;
+use Moose;
+use namespace::autoclean;
+
 
 =head1 NAME
 
-Ovpnc::Plugins::Sanity - Sanity check plugin
+Ovpnc::Plugin::Sanity - Sanity check plugin
 
 =head1 DESCRIPTION
 
@@ -24,12 +27,13 @@ error message to user.
 cfg - accessor
 
 =cut
-sub cfg
-{
-    my $self = shift;
-    $self->{_cfg} = shift if @_;
-    return $self->{_cfg};
-}
+
+
+    sub cfg {
+        my $self = shift;
+        $self->{_cfg} = shift if @_;
+        return $self->{_cfg};
+    }
 
 
 =head2 action
@@ -40,6 +44,9 @@ Main action for this plugin
 
 sub action {
     my ( $inv, $config ) = @_;
+
+    return unless defined ( $inv && $config );
+
     my $class = ref($inv) || $inv;
     my $self = {};
     bless $self, $class;

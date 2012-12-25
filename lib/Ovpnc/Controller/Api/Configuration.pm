@@ -76,7 +76,7 @@ sub begin : Private {
 
     # Log user in if login params are provided
     # =======================================
-    Ovpnc::Controller::Api->auth_user( $c )
+    $c->controller('Api')->auth_user( $c )
         unless $c->user_exists();
 
     # Set the expiration time
@@ -110,7 +110,7 @@ before [qw(
 
     # Assign config params
     # ====================
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( $c->controller->('Api')->assign_params( $c ) )
         if ( ref $c && ! $self->_has_conf );
 };
 
@@ -127,9 +127,12 @@ in the conf file manually
 
 sub configuration_GET : Local
                       : Args(0)
-                      : Sitemap
-                      : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                      : Does('ACL')
+                            AllowedRole('admin')
+                            AllowedRole('can_edit')
+                            ACLDetachTo('denied')
                       : Does('NeedsLogin')
+                      : Sitemap
 {
     my ( $self, $c ) = @_;
     $self->status_ok( $c, entity => { status => 'ok' } );
@@ -146,9 +149,12 @@ and run validataions via the xsd schema
 
 sub configuration_POST : Local
                        : Args(0)
-                       : Sitemap
-                       : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                       : Does('ACL')
+                            AllowedRole('admin')
+                            AllowedRole('can_edit')
+                            ACLDetachTo('denied')
                        : Does('NeedsLogin')
+                       : Sitemap
 {
     my ( $self, $c ) = @_;
 
@@ -161,9 +167,8 @@ sub configuration_POST : Local
     # be converted to XML
     # ========================
     my $xml = $self->_create_xml( \%data );
-
     if ( not defined $xml ) {
-        Ovpnc::Controller::Api->detach_error( $c,
+        $c->controller('Api')->detach_error($c,
             'Could not generate XML format from posted parameters' );
         delete $c->stash->{assets} if $c->stash->{assets};
         $c->detach;
@@ -325,9 +330,9 @@ sub configuration_UPDATE : Local
     # in the xsd schema file
     # ======================
     my $_ret_val = $self->_role->update_cipher_list;
-    Ovpnc::Controller::Api->detach_error($c)
+    $c->controller('Api')->detach_error($c)
       unless ($_ret_val);
-    Ovpnc::Controller::Api->detach_error( $c, $_ret_val->{error} )
+    $c->controller('Api')->detach_error($c, $_ret_val->{error})
       if ( ref $_ret_val && $_ret_val->{error} );
     $self->status_ok( $c, entity => $_ret_val )
       if ( ref $_ret_val && !$_ret_val->{error} );

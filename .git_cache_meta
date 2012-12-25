@@ -1,6 +1,6 @@
-chown 1011 .git_cache_meta
-chgrp 1012 .git_cache_meta
-touch -c -d "2012-12-22 05:59:02.0000000000" .git_cache_meta
+chown 0 .git_cache_meta
+chgrp 0 .git_cache_meta
+touch -c -d "2012-12-22 15:01:39.0000000000" .git_cache_meta
 chmod 0644 .git_cache_meta
 chown 0 .gitignore
 chgrp 0 .gitignore
@@ -8,12 +8,12 @@ touch -c -d "2012-12-22 05:07:24.0000000000" .gitignore
 chmod 0600 .gitignore
 chown 0 .gitmodules
 chgrp 0 .gitmodules
-touch -c -d "2012-12-20 21:25:41.0000000000" .gitmodules
+touch -c -d "2012-12-22 18:05:06.0000000000" .gitmodules
 chmod 0644 .gitmodules
-chown 1011 Makefile.PL
-chgrp 1012 Makefile.PL
-touch -c -d "2012-12-22 05:33:16.0000000000" Makefile.PL
-chmod 0600 Makefile.PL
+chown 0 Makefile.PL
+chgrp 0 Makefile.PL
+touch -c -d "2012-12-23 15:36:45.0000000000" Makefile.PL
+chmod 0644 Makefile.PL
 chown 1011 README.md
 chgrp 1012 README.md
 touch -c -d "2012-12-15 01:14:59.0000000000" README.md
@@ -38,70 +38,58 @@ chown 1011 directory_permissions.txt.gz
 chgrp 1012 directory_permissions.txt.gz
 touch -c -d "2012-12-19 20:54:23.0000000000" directory_permissions.txt.gz
 chmod 0640 directory_permissions.txt.gz
-chown 1011 lib/Ovpnc.pm
-chgrp 1012 lib/Ovpnc.pm
-touch -c -d "2012-12-22 05:07:24.0000000000" lib/Ovpnc.pm
-chmod 0640 lib/Ovpnc.pm
-chown 1011 lib/Ovpnc/Controller/Api.pm
-chgrp 1012 lib/Ovpnc/Controller/Api.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api.pm
-chmod 0640 lib/Ovpnc/Controller/Api.pm
+chown 0 lib/Ovpnc.pm
+chgrp 0 lib/Ovpnc.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc.pm
+chmod 0644 lib/Ovpnc.pm
+chown 0 lib/Ovpnc/Controller/Api.pm
+chgrp 0 lib/Ovpnc/Controller/Api.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc/Controller/Api.pm
+chmod 0644 lib/Ovpnc/Controller/Api.pm
 chown 1011 lib/Ovpnc/Controller/Api/Certificates.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Certificates.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api/Certificates.pm
 chmod 0640 lib/Ovpnc/Controller/Api/Certificates.pm
-chown 1011 lib/Ovpnc/Controller/Api/Clients.pm
-chgrp 1012 lib/Ovpnc/Controller/Api/Clients.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api/Clients.pm
-chmod 0640 lib/Ovpnc/Controller/Api/Clients.pm
-chown 1011 lib/Ovpnc/Controller/Api/Configuration.pm
-chgrp 1012 lib/Ovpnc/Controller/Api/Configuration.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api/Configuration.pm
-chmod 0640 lib/Ovpnc/Controller/Api/Configuration.pm
-chown 1011 lib/Ovpnc/Controller/Api/Server.pm
-chgrp 1012 lib/Ovpnc/Controller/Api/Server.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api/Server.pm
-chmod 0640 lib/Ovpnc/Controller/Api/Server.pm
-chown 1011 lib/Ovpnc/Controller/Api/Server/Status.pm
-chgrp 1012 lib/Ovpnc/Controller/Api/Server/Status.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Api/Server/Status.pm
-chmod 0640 lib/Ovpnc/Controller/Api/Server/Status.pm
-chown 1011 lib/Ovpnc/Controller/Api/Server/Verb.pm
-chgrp 1012 lib/Ovpnc/Controller/Api/Server/Verb.pm
-touch -c -d "2012-12-19 20:54:23.0000000000" lib/Ovpnc/Controller/Api/Server/Verb.pm
-chmod 0640 lib/Ovpnc/Controller/Api/Server/Verb.pm
-chown 1011 lib/Ovpnc/Controller/Certificates.pm
-chgrp 1012 lib/Ovpnc/Controller/Certificates.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Certificates.pm
-chmod 0640 lib/Ovpnc/Controller/Certificates.pm
-chown 1011 lib/Ovpnc/Controller/Clients.pm
-chgrp 1012 lib/Ovpnc/Controller/Clients.pm
-touch -c -d "2012-12-22 05:08:20.0000000000" lib/Ovpnc/Controller/Clients.pm
-chmod 0640 lib/Ovpnc/Controller/Clients.pm
-chown 1011 lib/Ovpnc/Controller/Login.pm
-chgrp 1012 lib/Ovpnc/Controller/Login.pm
-touch -c -d "2012-12-19 20:54:23.0000000000" lib/Ovpnc/Controller/Login.pm
-chmod 0640 lib/Ovpnc/Controller/Login.pm
-chown 1011 lib/Ovpnc/Controller/Root.pm
-chgrp 1012 lib/Ovpnc/Controller/Root.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Controller/Root.pm
-chmod 0640 lib/Ovpnc/Controller/Root.pm
+chown 0 lib/Ovpnc/Controller/Api/Clients.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Clients.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc/Controller/Api/Clients.pm
+chmod 0644 lib/Ovpnc/Controller/Api/Clients.pm
+chown 0 lib/Ovpnc/Controller/Api/Configuration.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Configuration.pm
+touch -c -d "2012-12-22 15:01:39.0000000000" lib/Ovpnc/Controller/Api/Configuration.pm
+chmod 0644 lib/Ovpnc/Controller/Api/Configuration.pm
+chown 0 lib/Ovpnc/Controller/Api/Server.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Server.pm
+touch -c -d "2012-12-22 15:01:39.0000000000" lib/Ovpnc/Controller/Api/Server.pm
+chmod 0644 lib/Ovpnc/Controller/Api/Server.pm
+chown 0 lib/Ovpnc/Controller/Api/Server/Status.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Server/Status.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Controller/Api/Server/Status.pm
+chmod 0644 lib/Ovpnc/Controller/Api/Server/Status.pm
+chown 0 lib/Ovpnc/Controller/Api/Server/Verb.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Server/Verb.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Controller/Api/Server/Verb.pm
+chmod 0644 lib/Ovpnc/Controller/Api/Server/Verb.pm
+chown 0 lib/Ovpnc/Controller/Certificates.pm
+chgrp 0 lib/Ovpnc/Controller/Certificates.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Controller/Certificates.pm
+chmod 0644 lib/Ovpnc/Controller/Certificates.pm
+chown 0 lib/Ovpnc/Controller/Clients.pm
+chgrp 0 lib/Ovpnc/Controller/Clients.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc/Controller/Clients.pm
+chmod 0644 lib/Ovpnc/Controller/Clients.pm
+chown 0 lib/Ovpnc/Controller/Login.pm
+chgrp 0 lib/Ovpnc/Controller/Login.pm
+touch -c -d "2012-12-24 18:58:21.0000000000" lib/Ovpnc/Controller/Login.pm
+chmod 0644 lib/Ovpnc/Controller/Login.pm
+chown 0 lib/Ovpnc/Controller/Root.pm
+chgrp 0 lib/Ovpnc/Controller/Root.pm
+touch -c -d "2012-12-24 19:18:01.0000000000" lib/Ovpnc/Controller/Root.pm
+chmod 0644 lib/Ovpnc/Controller/Root.pm
 chown 1011 lib/Ovpnc/Model/DB.pm
 chgrp 1012 lib/Ovpnc/Model/DB.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Model/DB.pm
 chmod 0640 lib/Ovpnc/Model/DB.pm
-chown 1011 lib/Ovpnc/Plugins/ChainCA.pm
-chgrp 1012 lib/Ovpnc/Plugins/ChainCA.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Plugins/ChainCA.pm
-chmod 0640 lib/Ovpnc/Plugins/ChainCA.pm
-chown 1011 lib/Ovpnc/Plugins/Connector.pm
-chgrp 1012 lib/Ovpnc/Plugins/Connector.pm
-touch -c -d "2012-12-18 11:58:02.0000000000" lib/Ovpnc/Plugins/Connector.pm
-chmod 0600 lib/Ovpnc/Plugins/Connector.pm
-chown 1011 lib/Ovpnc/Plugins/Sanity.pm
-chgrp 1012 lib/Ovpnc/Plugins/Sanity.pm
-touch -c -d "2012-12-20 21:25:41.0000000000" lib/Ovpnc/Plugins/Sanity.pm
-chmod 0640 lib/Ovpnc/Plugins/Sanity.pm
 chown 1011 lib/Ovpnc/Schema.pm
 chgrp 1012 lib/Ovpnc/Schema.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema.pm
@@ -110,10 +98,10 @@ chown 1011 lib/Ovpnc/Schema/Result/Certificate.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/Certificate.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Schema/Result/Certificate.pm
 chmod 0640 lib/Ovpnc/Schema/Result/Certificate.pm
-chown 1011 lib/Ovpnc/Schema/Result/Log.pm
-chgrp 1012 lib/Ovpnc/Schema/Result/Log.pm
-touch -c -d "2012-12-18 18:36:55.0000000000" lib/Ovpnc/Schema/Result/Log.pm
-chmod 0640 lib/Ovpnc/Schema/Result/Log.pm
+chown 0 lib/Ovpnc/Schema/Result/Log.pm
+chgrp 0 lib/Ovpnc/Schema/Result/Log.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Schema/Result/Log.pm
+chmod 0644 lib/Ovpnc/Schema/Result/Log.pm
 chown 1011 lib/Ovpnc/Schema/Result/Role.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/Role.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema/Result/Role.pm
@@ -122,10 +110,10 @@ chown 1011 lib/Ovpnc/Schema/Result/Session.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/Session.pm
 touch -c -d "2012-12-19 20:54:23.0000000000" lib/Ovpnc/Schema/Result/Session.pm
 chmod 0640 lib/Ovpnc/Schema/Result/Session.pm
-chown 1011 lib/Ovpnc/Schema/Result/User.pm
-chgrp 1012 lib/Ovpnc/Schema/Result/User.pm
-touch -c -d "2012-12-17 12:32:10.0000000000" lib/Ovpnc/Schema/Result/User.pm
-chmod 0600 lib/Ovpnc/Schema/Result/User.pm
+chown 0 lib/Ovpnc/Schema/Result/User.pm
+chgrp 0 lib/Ovpnc/Schema/Result/User.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Schema/Result/User.pm
+chmod 0644 lib/Ovpnc/Schema/Result/User.pm
 chown 1011 lib/Ovpnc/Schema/Result/UserRole.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/UserRole.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema/Result/UserRole.pm
@@ -134,38 +122,38 @@ chown 1011 lib/Ovpnc/Schema/ResultSet/User.pm
 chgrp 1012 lib/Ovpnc/Schema/ResultSet/User.pm
 touch -c -d "2012-12-17 12:32:10.0000000000" lib/Ovpnc/Schema/ResultSet/User.pm
 chmod 0600 lib/Ovpnc/Schema/ResultSet/User.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
-touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
-touch -c -d "2012-12-15 15:44:32.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
-touch -c -d "2012-12-15 15:44:32.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
+touch -c -d "2012-12-22 15:01:39.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
+touch -c -d "2012-12-22 15:01:39.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+touch -c -d "2012-12-22 15:01:39.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-touch -c -d "2012-12-18 18:36:55.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
+touch -c -d "2012-12-24 01:03:58.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
-chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
+touch -c -d "2012-12-23 00:35:59.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
+chmod 0644 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Server/Status.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Server/Status.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Server/Status.pm
@@ -174,10 +162,10 @@ chown 1011 lib/Ovpnc/View/HTML.pm
 chgrp 1012 lib/Ovpnc/View/HTML.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/View/HTML.pm
 chmod 0600 lib/Ovpnc/View/HTML.pm
-chown 1011 lib/Ovpnc/View/JSON.pm
-chgrp 1012 lib/Ovpnc/View/JSON.pm
-touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/View/JSON.pm
-chmod 0640 lib/Ovpnc/View/JSON.pm
+chown 0 lib/Ovpnc/View/JSON.pm
+chgrp 0 lib/Ovpnc/View/JSON.pm
+touch -c -d "2012-12-24 03:20:06.0000000000" lib/Ovpnc/View/JSON.pm
+chmod 0644 lib/Ovpnc/View/JSON.pm
 chown 1011 lib/Ovpnc/View/XML/Simple.pm
 chgrp 1012 lib/Ovpnc/View/XML/Simple.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/View/XML/Simple.pm
@@ -210,10 +198,10 @@ chown 1008 openvpn/bin/client_disconnect
 chgrp 1012 openvpn/bin/client_disconnect
 touch -c -d "2012-12-15 16:56:17.0000000000" openvpn/bin/client_disconnect
 chmod 0550 openvpn/bin/client_disconnect
-chown 1008 openvpn/bin/up.pl
-chgrp 1012 openvpn/bin/up.pl
-touch -c -d "2012-12-18 18:36:55.0000000000" openvpn/bin/up.pl
-chmod 0550 openvpn/bin/up.pl
+chown 0 openvpn/bin/up.pl
+chgrp 0 openvpn/bin/up.pl
+touch -c -d "2012-12-24 18:58:21.0000000000" openvpn/bin/up.pl
+chmod 0755 openvpn/bin/up.pl
 chown 1008 openvpn/conf/.INF
 chgrp 1012 openvpn/conf/.INF
 touch -c -d "2012-12-15 01:14:59.0000000000" openvpn/conf/.INF
@@ -242,10 +230,10 @@ chown 1008 openvpn/var/log/.INF
 chgrp 1012 openvpn/var/log/.INF
 touch -c -d "2012-12-15 01:14:59.0000000000" openvpn/var/log/.INF
 chmod 0660 openvpn/var/log/.INF
-chown 1011 ovpnc.conf
-chgrp 1012 ovpnc.conf
-touch -c -d "2012-12-22 05:07:25.0000000000" ovpnc.conf
-chmod 0600 ovpnc.conf
+chown 0 ovpnc.conf
+chgrp 0 ovpnc.conf
+touch -c -d "2012-12-24 03:20:06.0000000000" ovpnc.conf
+chmod 0644 ovpnc.conf
 chown 1011 ovpnc.json
 chgrp 1012 ovpnc.json
 touch -c -d "2012-12-22 05:07:25.0000000000" ovpnc.json
@@ -258,122 +246,46 @@ chown 1011 root/favicon.ico
 chgrp 1012 root/favicon.ico
 touch -c -d "2012-12-14 23:32:21.0000000000" root/favicon.ico
 chmod 0600 root/favicon.ico
-chown 1011 root/formfu/block
-chgrp 1012 root/formfu/block
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/block
-chmod 0640 root/formfu/block
-chown 1011 root/formfu/checkboxgroup
-chgrp 1012 root/formfu/checkboxgroup
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/checkboxgroup
-chmod 0640 root/formfu/checkboxgroup
-chown 1011 root/formfu/checkboxgroup_tag
-chgrp 1012 root/formfu/checkboxgroup_tag
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/checkboxgroup_tag
-chmod 0640 root/formfu/checkboxgroup_tag
-chown 1011 root/formfu/content_button
-chgrp 1012 root/formfu/content_button
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/content_button
-chmod 0640 root/formfu/content_button
-chown 1011 root/formfu/end_block
-chgrp 1012 root/formfu/end_block
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/end_block
-chmod 0640 root/formfu/end_block
-chown 1011 root/formfu/end_form
-chgrp 1012 root/formfu/end_form
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/end_form
-chmod 0640 root/formfu/end_form
-chown 1011 root/formfu/field
-chgrp 1012 root/formfu/field
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/field
-chmod 0640 root/formfu/field
-chown 1011 root/formfu/form
-chgrp 1012 root/formfu/form
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/form
-chmod 0640 root/formfu/form
-chown 1011 root/formfu/input
-chgrp 1012 root/formfu/input
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/input
-chmod 0640 root/formfu/input
-chown 1011 root/formfu/input_tag
-chgrp 1012 root/formfu/input_tag
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/input_tag
-chmod 0640 root/formfu/input_tag
-chown 1011 root/formfu/label
-chgrp 1012 root/formfu/label
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/label
-chmod 0640 root/formfu/label
-chown 1011 root/formfu/label_tag
-chgrp 1012 root/formfu/label_tag
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/label_tag
-chmod 0640 root/formfu/label_tag
-chown 1011 root/formfu/multi
-chgrp 1012 root/formfu/multi
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/multi
-chmod 0640 root/formfu/multi
-chown 1011 root/formfu/non_block
-chgrp 1012 root/formfu/non_block
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/non_block
-chmod 0640 root/formfu/non_block
-chown 1011 root/formfu/recaptcha
-chgrp 1012 root/formfu/recaptcha
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/recaptcha
-chmod 0640 root/formfu/recaptcha
-chown 1011 root/formfu/repeatable
-chgrp 1012 root/formfu/repeatable
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/repeatable
-chmod 0640 root/formfu/repeatable
-chown 1011 root/formfu/select_tag
-chgrp 1012 root/formfu/select_tag
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/select_tag
-chmod 0640 root/formfu/select_tag
-chown 1011 root/formfu/start_block
-chgrp 1012 root/formfu/start_block
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/start_block
-chmod 0640 root/formfu/start_block
-chown 1011 root/formfu/start_form
-chgrp 1012 root/formfu/start_form
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/start_form
-chmod 0640 root/formfu/start_form
-chown 1011 root/formfu/textarea_tag
-chgrp 1012 root/formfu/textarea_tag
-touch -c -d "2012-12-22 05:07:25.0000000000" root/formfu/textarea_tag
-chmod 0640 root/formfu/textarea_tag
 chown 1011 root/forms/certificates/add.yml
 chgrp 1012 root/forms/certificates/add.yml
-touch -c -d "2012-12-22 05:07:25.0000000000" root/forms/certificates/add.yml
-chmod 0640 root/forms/certificates/add.yml
+touch -c -d "2012-12-23 15:36:45.0000000000" root/forms/certificates/add.yml
+chmod 0600 root/forms/certificates/add.yml
 chown 1011 root/forms/clients/add.yml
 chgrp 1012 root/forms/clients/add.yml
-touch -c -d "2012-12-22 05:07:25.0000000000" root/forms/clients/add.yml
-chmod 0640 root/forms/clients/add.yml
+touch -c -d "2012-12-24 01:03:58.0000000000" root/forms/clients/add.yml
+chmod 0600 root/forms/clients/add.yml
 chown 1011 root/src/certificates/add.tt2
 chgrp 1012 root/src/certificates/add.tt2
-touch -c -d "2012-12-22 05:07:25.0000000000" root/src/certificates/add.tt2
-chmod 0640 root/src/certificates/add.tt2
+touch -c -d "2012-12-23 15:36:45.0000000000" root/src/certificates/add.tt2
+chmod 0600 root/src/certificates/add.tt2
 chown 1011 root/src/certificates/index.tt2
 chgrp 1012 root/src/certificates/index.tt2
-touch -c -d "2012-12-22 05:07:25.0000000000" root/src/certificates/index.tt2
-chmod 0640 root/src/certificates/index.tt2
+touch -c -d "2012-12-23 15:36:45.0000000000" root/src/certificates/index.tt2
+chmod 0600 root/src/certificates/index.tt2
 chown 1011 root/src/clients/add.tt2
 chgrp 1012 root/src/clients/add.tt2
-touch -c -d "2012-12-22 05:07:25.0000000000" root/src/clients/add.tt2
-chmod 0640 root/src/clients/add.tt2
+touch -c -d "2012-12-24 01:03:58.0000000000" root/src/clients/add.tt2
+chmod 0600 root/src/clients/add.tt2
 chown 1011 root/src/clients/index.tt2
 chgrp 1012 root/src/clients/index.tt2
-touch -c -d "2012-12-15 01:14:59.0000000000" root/src/clients/index.tt2
+touch -c -d "2012-12-24 01:03:58.0000000000" root/src/clients/index.tt2
 chmod 0600 root/src/clients/index.tt2
 chown 1011 root/src/default.tt2
 chgrp 1012 root/src/default.tt2
 touch -c -d "2012-12-22 05:07:25.0000000000" root/src/default.tt2
-chmod 0640 root/src/default.tt2
+chmod 0600 root/src/default.tt2
 chown 1011 root/src/index.tt2
 chgrp 1012 root/src/index.tt2
-touch -c -d "2012-12-22 05:07:25.0000000000" root/src/index.tt2
-chmod 0640 root/src/index.tt2
+touch -c -d "2012-12-24 03:20:06.0000000000" root/src/index.tt2
+chmod 0600 root/src/index.tt2
 chown 1011 root/src/login/login.tt2
 chgrp 1012 root/src/login/login.tt2
 touch -c -d "2012-12-20 13:37:31.0000000000" root/src/login/login.tt2
-chmod 0640 root/src/login/login.tt2
+chmod 0600 root/src/login/login.tt2
+chown 1011 root/src/login/logout.tt2
+chgrp 1012 root/src/login/logout.tt2
+touch -c -d "2012-12-23 15:36:45.0000000000" root/src/login/logout.tt2
+chmod 0600 root/src/login/logout.tt2
 chown 1011 root/src/menu.tt2
 chgrp 1012 root/src/menu.tt2
 touch -c -d "2012-12-15 01:14:59.0000000000" root/src/menu.tt2
@@ -382,45 +294,45 @@ chown 1011 root/src/ovpnc_config.tt2
 chgrp 1012 root/src/ovpnc_config.tt2
 touch -c -d "2012-12-14 23:32:21.0000000000" root/src/ovpnc_config.tt2
 chmod 0600 root/src/ovpnc_config.tt2
-chown 1011 root/src/wrapper.tt2
-chgrp 1012 root/src/wrapper.tt2
-touch -c -d "2012-12-22 05:07:25.0000000000" root/src/wrapper.tt2
-chmod 0640 root/src/wrapper.tt2
+chown 0 root/src/wrapper.tt2
+chgrp 0 root/src/wrapper.tt2
+touch -c -d "2012-12-24 19:18:01.0000000000" root/src/wrapper.tt2
+chmod 0644 root/src/wrapper.tt2
 chown 1011 root/static/css/certificates.css
 chgrp 1012 root/static/css/certificates.css
-touch -c -d "2012-12-17 00:12:30.0000000000" root/static/css/certificates.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/certificates.css
 chmod 0600 root/static/css/certificates.css
 chown 1011 root/static/css/certificates/add.css
 chgrp 1012 root/static/css/certificates/add.css
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/css/certificates/add.css
-chmod 0640 root/static/css/certificates/add.css
+touch -c -d "2012-12-22 15:26:41.0000000000" root/static/css/certificates/add.css
+chmod 0600 root/static/css/certificates/add.css
 chown 1011 root/static/css/clients.css
 chgrp 1012 root/static/css/clients.css
-touch -c -d "2012-12-20 13:37:31.0000000000" root/static/css/clients.css
-chmod 0640 root/static/css/clients.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/clients.css
+chmod 0600 root/static/css/clients.css
 chown 1011 root/static/css/clients/add.css
 chgrp 1012 root/static/css/clients/add.css
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/css/clients/add.css
-chmod 0640 root/static/css/clients/add.css
+touch -c -d "2012-12-22 15:26:37.0000000000" root/static/css/clients/add.css
+chmod 0600 root/static/css/clients/add.css
 chown 1011 root/static/css/config.css
 chgrp 1012 root/static/css/config.css
-touch -c -d "2012-12-15 01:14:59.0000000000" root/static/css/config.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/config.css
 chmod 0600 root/static/css/config.css
 chown 1011 root/static/css/login.css
 chgrp 1012 root/static/css/login.css
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/css/login.css
-chmod 0640 root/static/css/login.css
-chown 1011 root/static/css/main.css
-chgrp 1012 root/static/css/main.css
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/css/main.css
-chmod 0640 root/static/css/main.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/login.css
+chmod 0600 root/static/css/login.css
+chown 0 root/static/css/main.css
+chgrp 0 root/static/css/main.css
+touch -c -d "2012-12-24 18:58:21.0000000000" root/static/css/main.css
+chmod 0644 root/static/css/main.css
 chown 1011 root/static/css/normalize.css
 chgrp 1012 root/static/css/normalize.css
-touch -c -d "2012-12-15 01:14:59.0000000000" root/static/css/normalize.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/normalize.css
 chmod 0600 root/static/css/normalize.css
 chown 1011 root/static/css/slider.css
 chgrp 1012 root/static/css/slider.css
-touch -c -d "2012-12-15 01:14:59.0000000000" root/static/css/slider.css
+touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/slider.css
 chmod 0600 root/static/css/slider.css
 chown 1011 root/static/data/countries.json
 chgrp 1012 root/static/data/countries.json
@@ -521,7 +433,7 @@ chmod 0600 root/static/images/green_up.png
 chown 1011 root/static/images/info_icon.png
 chgrp 1012 root/static/images/info_icon.png
 touch -c -d "2012-12-20 21:25:41.0000000000" root/static/images/info_icon.png
-chmod 0640 root/static/images/info_icon.png
+chmod 0600 root/static/images/info_icon.png
 chown 1011 root/static/images/kill_client.gif
 chgrp 1012 root/static/images/kill_client.gif
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/kill_client.gif
@@ -545,7 +457,7 @@ chmod 0600 root/static/images/on.png
 chown 1011 root/static/images/properties.png
 chgrp 1012 root/static/images/properties.png
 touch -c -d "2012-12-20 13:37:31.0000000000" root/static/images/properties.png
-chmod 0640 root/static/images/properties.png
+chmod 0600 root/static/images/properties.png
 chown 1011 root/static/images/red.png
 chgrp 1012 root/static/images/red.png
 touch -c -d "2012-12-16 13:07:38.0000000000" root/static/images/red.png
@@ -573,7 +485,7 @@ chmod 0700 root/static/js/Flexigrid/js
 chown 1011 root/static/js/Flexigrid/js/flexigrid.js
 chgrp 1012 root/static/js/Flexigrid/js/flexigrid.js
 touch -c -d "2012-12-20 11:34:18.0000000000" root/static/js/Flexigrid/js/flexigrid.js
-chmod 0640 root/static/js/Flexigrid/js/flexigrid.js
+chmod 0600 root/static/js/Flexigrid/js/flexigrid.js
 chown 1011 root/static/js/Flexigrid/js/flexigrid.pack.js
 chgrp 1012 root/static/js/Flexigrid/js/flexigrid.pack.js
 touch -c -d "2012-12-15 02:06:39.0000000000" root/static/js/Flexigrid/js/flexigrid.pack.js
@@ -812,7 +724,7 @@ touch -c -d "2012-12-15 02:06:37.0000000000" root/static/js/Flexigrid/.git/info/
 chmod 0600 root/static/js/Flexigrid/.git/info/exclude
 chown 0 root/static/js/Flexigrid/.git/index
 chgrp 0 root/static/js/Flexigrid/.git/index
-touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/Flexigrid/.git/index
+touch -c -d "2012-12-24 04:13:13.0000000000" root/static/js/Flexigrid/.git/index
 chmod 0644 root/static/js/Flexigrid/.git/index
 chown 1011 root/static/js/Flexigrid/.git/hooks
 chgrp 1012 root/static/js/Flexigrid/.git/hooks
@@ -880,643 +792,647 @@ touch -c -d "2012-12-15 02:06:39.0000000000" root/static/js/Flexigrid/.git/HEAD
 chmod 0600 root/static/js/Flexigrid/.git/HEAD
 chown 1011 root/static/js/certificates.js
 chgrp 1012 root/static/js/certificates.js
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/js/certificates.js
-chmod 0640 root/static/js/certificates.js
+touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/certificates.js
+chmod 0600 root/static/js/certificates.js
 chown 1011 root/static/js/certificates/add.js
 chgrp 1012 root/static/js/certificates/add.js
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/js/certificates/add.js
-chmod 0640 root/static/js/certificates/add.js
-chown 1011 root/static/js/clients.js
-chgrp 1012 root/static/js/clients.js
-touch -c -d "2012-12-22 05:07:25.0000000000" root/static/js/clients.js
-chmod 0640 root/static/js/clients.js
+touch -c -d "2012-12-23 18:22:43.0000000000" root/static/js/certificates/add.js
+chmod 0600 root/static/js/certificates/add.js
+chown 0 root/static/js/clients.js
+chgrp 0 root/static/js/clients.js
+touch -c -d "2012-12-24 19:18:01.0000000000" root/static/js/clients.js
+chmod 0644 root/static/js/clients.js
 chown 1011 root/static/js/clients/add.js
 chgrp 1012 root/static/js/clients/add.js
-touch -c -d "2012-12-22 05:08:20.0000000000" root/static/js/clients/add.js
-chmod 0640 root/static/js/clients/add.js
+touch -c -d "2012-12-24 01:03:58.0000000000" root/static/js/clients/add.js
+chmod 0600 root/static/js/clients/add.js
 chown 1011 root/static/js/config.js
 chgrp 1012 root/static/js/config.js
-touch -c -d "2012-12-17 23:26:11.0000000000" root/static/js/config.js
+touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/config.js
 chmod 0600 root/static/js/config.js
+chown 1011 root/static/js/forms.js
+chgrp 1012 root/static/js/forms.js
+touch -c -d "2012-12-24 01:03:58.0000000000" root/static/js/forms.js
+chmod 0600 root/static/js/forms.js
 chown 1011 root/static/js/functions.js
 chgrp 1012 root/static/js/functions.js
-touch -c -d "2012-12-20 21:25:41.0000000000" root/static/js/functions.js
-chmod 0640 root/static/js/functions.js
+touch -c -d "2012-12-23 15:36:45.0000000000" root/static/js/functions.js
+chmod 0600 root/static/js/functions.js
 chown 1011 root/static/js/jQuery-contextMenu
 chgrp 1012 root/static/js/jQuery-contextMenu
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu
-chmod 0750 root/static/js/jQuery-contextMenu
+chmod 0700 root/static/js/jQuery-contextMenu
 chown 1011 root/static/js/jQuery-contextMenu/prettify
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify
-chmod 0750 root/static/js/jQuery-contextMenu/prettify
+chmod 0700 root/static/js/jQuery-contextMenu/prettify
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-proto.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-proto.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-proto.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-proto.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-proto.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-tex.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-tex.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-tex.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-tex.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-tex.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-vhdl.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-vhdl.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-vhdl.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-vhdl.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-vhdl.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-wiki.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-wiki.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-wiki.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-wiki.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-wiki.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-sql.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-sql.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-sql.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-sql.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-sql.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-ml.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-ml.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-ml.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-ml.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-ml.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-n.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-n.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-n.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-n.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-n.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-go.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-go.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-go.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-go.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-go.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-apollo.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-apollo.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-apollo.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-apollo.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-apollo.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-xq.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-xq.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-xq.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-xq.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-xq.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-vb.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-vb.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-vb.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-vb.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-vb.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/prettify.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/prettify.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/prettify.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/prettify.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/prettify.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-css.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-css.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-css.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-css.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-css.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-lisp.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-lisp.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-lisp.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-lisp.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-lisp.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-hs.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-hs.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-hs.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-hs.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-hs.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-clj.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-clj.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-clj.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-clj.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-clj.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-scala.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-scala.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-scala.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-scala.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-scala.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/prettify.sunburst.css
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/prettify.sunburst.css
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/prettify.sunburst.css
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/prettify.sunburst.css
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/prettify.sunburst.css
 chown 1011 root/static/js/jQuery-contextMenu/prettify/prettify.css
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/prettify.css
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/prettify.css
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/prettify.css
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/prettify.css
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-lua.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-lua.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-lua.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-lua.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-lua.js
 chown 1011 root/static/js/jQuery-contextMenu/prettify/lang-yaml.js
 chgrp 1012 root/static/js/jQuery-contextMenu/prettify/lang-yaml.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/prettify/lang-yaml.js
-chmod 0640 root/static/js/jQuery-contextMenu/prettify/lang-yaml.js
+chmod 0600 root/static/js/jQuery-contextMenu/prettify/lang-yaml.js
 chown 1011 root/static/js/jQuery-contextMenu/package.json
 chgrp 1012 root/static/js/jQuery-contextMenu/package.json
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/package.json
-chmod 0640 root/static/js/jQuery-contextMenu/package.json
+chmod 0600 root/static/js/jQuery-contextMenu/package.json
 chown 1011 root/static/js/jQuery-contextMenu/jquery-1.8.2.min.js
 chgrp 1012 root/static/js/jQuery-contextMenu/jquery-1.8.2.min.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/jquery-1.8.2.min.js
-chmod 0640 root/static/js/jQuery-contextMenu/jquery-1.8.2.min.js
+chmod 0600 root/static/js/jQuery-contextMenu/jquery-1.8.2.min.js
 chown 1011 root/static/js/jQuery-contextMenu/index.html
 chgrp 1012 root/static/js/jQuery-contextMenu/index.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/index.html
-chmod 0750 root/static/js/jQuery-contextMenu/index.html
+chmod 0700 root/static/js/jQuery-contextMenu/index.html
 chown 1011 root/static/js/jQuery-contextMenu/docs.html
 chgrp 1012 root/static/js/jQuery-contextMenu/docs.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/docs.html
-chmod 0750 root/static/js/jQuery-contextMenu/docs.html
+chmod 0700 root/static/js/jQuery-contextMenu/docs.html
 chown 1011 root/static/js/jQuery-contextMenu/screen.css
 chgrp 1012 root/static/js/jQuery-contextMenu/screen.css
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screen.css
-chmod 0640 root/static/js/jQuery-contextMenu/screen.css
+chmod 0600 root/static/js/jQuery-contextMenu/screen.css
 chown 1011 root/static/js/jQuery-contextMenu/screenshots
 chgrp 1012 root/static/js/jQuery-contextMenu/screenshots
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screenshots
-chmod 0750 root/static/js/jQuery-contextMenu/screenshots
+chmod 0700 root/static/js/jQuery-contextMenu/screenshots
 chown 1011 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.subs.png
 chgrp 1012 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.subs.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.subs.png
-chmod 0640 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.subs.png
+chmod 0600 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.subs.png
 chown 1011 root/static/js/jQuery-contextMenu/screenshots/native.firefox-9.0a1.png
 chgrp 1012 root/static/js/jQuery-contextMenu/screenshots/native.firefox-9.0a1.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screenshots/native.firefox-9.0a1.png
-chmod 0640 root/static/js/jQuery-contextMenu/screenshots/native.firefox-9.0a1.png
+chmod 0600 root/static/js/jQuery-contextMenu/screenshots/native.firefox-9.0a1.png
 chown 1011 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.png
 chgrp 1012 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.png
-chmod 0640 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.png
+chmod 0600 root/static/js/jQuery-contextMenu/screenshots/jquery-contextMenu.png
 chown 1011 root/static/js/jQuery-contextMenu/src
 chgrp 1012 root/static/js/jQuery-contextMenu/src
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src
-chmod 0750 root/static/js/jQuery-contextMenu/src
+chmod 0700 root/static/js/jQuery-contextMenu/src
 chown 1011 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.css
 chgrp 1012 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.css
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/jquery.contextMenu.css
-chmod 0750 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.css
+chmod 0700 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.css
 chown 1011 root/static/js/jQuery-contextMenu/src/images
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images
-chmod 0750 root/static/js/jQuery-contextMenu/src/images
+chmod 0700 root/static/js/jQuery-contextMenu/src/images
 chown 1011 root/static/js/jQuery-contextMenu/src/images/page_white_paste.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/page_white_paste.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/page_white_paste.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/page_white_paste.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/page_white_paste.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/page_white_copy.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/page_white_copy.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/page_white_copy.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/page_white_copy.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/page_white_copy.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/page_white_add.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/page_white_add.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/page_white_add.png
-chmod 0640 root/static/js/jQuery-contextMenu/src/images/page_white_add.png
+chmod 0600 root/static/js/jQuery-contextMenu/src/images/page_white_add.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/page_white_edit.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/page_white_edit.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/page_white_edit.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/page_white_edit.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/page_white_edit.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/door.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/door.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/door.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/door.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/door.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/page_white_delete.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/page_white_delete.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/page_white_delete.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/page_white_delete.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/page_white_delete.png
 chown 1011 root/static/js/jQuery-contextMenu/src/images/cut.png
 chgrp 1012 root/static/js/jQuery-contextMenu/src/images/cut.png
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/images/cut.png
-chmod 0750 root/static/js/jQuery-contextMenu/src/images/cut.png
+chmod 0700 root/static/js/jQuery-contextMenu/src/images/cut.png
 chown 1011 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.js
 chgrp 1012 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/jquery.contextMenu.js
-chmod 0750 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.js
+chmod 0700 root/static/js/jQuery-contextMenu/src/jquery.contextMenu.js
 chown 1011 root/static/js/jQuery-contextMenu/src/jquery.ui.position.js
 chgrp 1012 root/static/js/jQuery-contextMenu/src/jquery.ui.position.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/src/jquery.ui.position.js
-chmod 0750 root/static/js/jQuery-contextMenu/src/jquery.ui.position.js
+chmod 0700 root/static/js/jQuery-contextMenu/src/jquery.ui.position.js
 chown 1011 root/static/js/jQuery-contextMenu/screen.js
 chgrp 1012 root/static/js/jQuery-contextMenu/screen.js
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/screen.js
-chmod 0640 root/static/js/jQuery-contextMenu/screen.js
+chmod 0600 root/static/js/jQuery-contextMenu/screen.js
 chown 1011 root/static/js/jQuery-contextMenu/demo.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo.html
 chown 1011 root/static/js/jQuery-contextMenu/.gitignore
 chgrp 1012 root/static/js/jQuery-contextMenu/.gitignore
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.gitignore
-chmod 0640 root/static/js/jQuery-contextMenu/.gitignore
+chmod 0600 root/static/js/jQuery-contextMenu/.gitignore
 chown 1011 root/static/js/jQuery-contextMenu/demo
 chgrp 1012 root/static/js/jQuery-contextMenu/demo
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo
-chmod 0750 root/static/js/jQuery-contextMenu/demo
+chmod 0700 root/static/js/jQuery-contextMenu/demo
 chown 1011 root/static/js/jQuery-contextMenu/demo/disabled-menu.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/disabled-menu.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/disabled-menu.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/disabled-menu.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/disabled-menu.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/async-create.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/async-create.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/async-create.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/async-create.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/async-create.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/trigger-hover.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/trigger-hover.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/trigger-hover.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/trigger-hover.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/trigger-hover.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/disabled.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/disabled.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/disabled.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/disabled.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/disabled.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/disabled-changing.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/disabled-changing.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/disabled-changing.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/disabled-changing.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/disabled-changing.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/html5-import.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/html5-import.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/html5-import.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/html5-import.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/html5-import.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/trigger-custom.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/trigger-custom.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/trigger-custom.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/trigger-custom.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/trigger-custom.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/trigger-left-click.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/trigger-left-click.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/trigger-left-click.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/trigger-left-click.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/trigger-left-click.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/keeping-contextmenu-open.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/keeping-contextmenu-open.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/keeping-contextmenu-open.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/keeping-contextmenu-open.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/keeping-contextmenu-open.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/dynamic.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/dynamic.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/dynamic.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/dynamic.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/dynamic.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/html5-polyfill.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/html5-polyfill.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/html5-polyfill.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/html5-polyfill.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/html5-polyfill.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/sub-menus.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/sub-menus.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/sub-menus.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/sub-menus.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/sub-menus.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/accesskeys.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/accesskeys.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/accesskeys.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/accesskeys.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/accesskeys.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/disabled-callback.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/disabled-callback.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/disabled-callback.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/disabled-callback.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/disabled-callback.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/menu-title.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/menu-title.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/menu-title.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/menu-title.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/menu-title.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/input.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/input.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/input.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/input.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/input.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/dynamic-create.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/dynamic-create.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/dynamic-create.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/dynamic-create.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/dynamic-create.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/html5-polyfill-firefox8.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/html5-polyfill-firefox8.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/html5-polyfill-firefox8.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/html5-polyfill-firefox8.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/html5-polyfill-firefox8.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/custom-command.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/custom-command.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/custom-command.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/custom-command.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/custom-command.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/trigger-hover-autohide.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/trigger-hover-autohide.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/trigger-hover-autohide.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/trigger-hover-autohide.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/trigger-hover-autohide.html
 chown 1011 root/static/js/jQuery-contextMenu/demo/callback.html
 chgrp 1012 root/static/js/jQuery-contextMenu/demo/callback.html
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/demo/callback.html
-chmod 0750 root/static/js/jQuery-contextMenu/demo/callback.html
+chmod 0700 root/static/js/jQuery-contextMenu/demo/callback.html
 chown 1011 root/static/js/jQuery-contextMenu/README.md
 chgrp 1012 root/static/js/jQuery-contextMenu/README.md
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/README.md
-chmod 0640 root/static/js/jQuery-contextMenu/README.md
+chmod 0600 root/static/js/jQuery-contextMenu/README.md
 chown 1011 root/static/js/jQuery-contextMenu/.git
 chgrp 1012 root/static/js/jQuery-contextMenu/.git
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git
-chmod 0750 root/static/js/jQuery-contextMenu/.git
+chmod 0700 root/static/js/jQuery-contextMenu/.git
 chown 1011 root/static/js/jQuery-contextMenu/.git/objects
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/objects
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/objects
-chmod 0750 root/static/js/jQuery-contextMenu/.git/objects
+chmod 0700 root/static/js/jQuery-contextMenu/.git/objects
 chown 1011 root/static/js/jQuery-contextMenu/.git/objects/pack
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/objects/pack
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/objects/pack
-chmod 0750 root/static/js/jQuery-contextMenu/.git/objects/pack
+chmod 0700 root/static/js/jQuery-contextMenu/.git/objects/pack
 chown 1011 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.pack
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.pack
 touch -c -d "2012-12-20 13:42:38.0000000000" root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.pack
-chmod 0440 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.pack
+chmod 0400 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.pack
 chown 1011 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.idx
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.idx
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.idx
-chmod 0440 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.idx
+chmod 0400 root/static/js/jQuery-contextMenu/.git/objects/pack/pack-ddf1fcc7c7ebc987545010d673a073acae09314e.idx
 chown 1011 root/static/js/jQuery-contextMenu/.git/objects/info
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/objects/info
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/objects/info
-chmod 0750 root/static/js/jQuery-contextMenu/.git/objects/info
+chmod 0700 root/static/js/jQuery-contextMenu/.git/objects/info
 chown 1011 root/static/js/jQuery-contextMenu/.git/logs
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/logs
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/logs
-chmod 0750 root/static/js/jQuery-contextMenu/.git/logs
+chmod 0700 root/static/js/jQuery-contextMenu/.git/logs
 chown 1011 root/static/js/jQuery-contextMenu/.git/logs/refs
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/logs/refs
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/logs/refs
-chmod 0750 root/static/js/jQuery-contextMenu/.git/logs/refs
+chmod 0700 root/static/js/jQuery-contextMenu/.git/logs/refs
 chown 1011 root/static/js/jQuery-contextMenu/.git/logs/refs/heads
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/logs/refs/heads
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/logs/refs/heads
-chmod 0750 root/static/js/jQuery-contextMenu/.git/logs/refs/heads
+chmod 0700 root/static/js/jQuery-contextMenu/.git/logs/refs/heads
 chown 1011 root/static/js/jQuery-contextMenu/.git/logs/refs/heads/gh-pages
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/logs/refs/heads/gh-pages
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/logs/refs/heads/gh-pages
-chmod 0640 root/static/js/jQuery-contextMenu/.git/logs/refs/heads/gh-pages
+chmod 0600 root/static/js/jQuery-contextMenu/.git/logs/refs/heads/gh-pages
 chown 1011 root/static/js/jQuery-contextMenu/.git/logs/HEAD
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/logs/HEAD
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/logs/HEAD
-chmod 0640 root/static/js/jQuery-contextMenu/.git/logs/HEAD
+chmod 0600 root/static/js/jQuery-contextMenu/.git/logs/HEAD
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/refs
-chmod 0750 root/static/js/jQuery-contextMenu/.git/refs
+chmod 0700 root/static/js/jQuery-contextMenu/.git/refs
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/tags
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/tags
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/refs/tags
-chmod 0750 root/static/js/jQuery-contextMenu/.git/refs/tags
+chmod 0700 root/static/js/jQuery-contextMenu/.git/refs/tags
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/remotes
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/remotes
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/refs/remotes
-chmod 0750 root/static/js/jQuery-contextMenu/.git/refs/remotes
+chmod 0700 root/static/js/jQuery-contextMenu/.git/refs/remotes
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/refs/remotes/origin
-chmod 0750 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin
+chmod 0700 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin/HEAD
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin/HEAD
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/refs/remotes/origin/HEAD
-chmod 0640 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin/HEAD
+chmod 0600 root/static/js/jQuery-contextMenu/.git/refs/remotes/origin/HEAD
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/heads
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/heads
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/refs/heads
-chmod 0750 root/static/js/jQuery-contextMenu/.git/refs/heads
+chmod 0700 root/static/js/jQuery-contextMenu/.git/refs/heads
 chown 1011 root/static/js/jQuery-contextMenu/.git/refs/heads/gh-pages
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/refs/heads/gh-pages
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/refs/heads/gh-pages
-chmod 0640 root/static/js/jQuery-contextMenu/.git/refs/heads/gh-pages
+chmod 0600 root/static/js/jQuery-contextMenu/.git/refs/heads/gh-pages
 chown 1011 root/static/js/jQuery-contextMenu/.git/packed-refs
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/packed-refs
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/packed-refs
-chmod 0640 root/static/js/jQuery-contextMenu/.git/packed-refs
+chmod 0600 root/static/js/jQuery-contextMenu/.git/packed-refs
 chown 1011 root/static/js/jQuery-contextMenu/.git/info
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/info
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/info
-chmod 0750 root/static/js/jQuery-contextMenu/.git/info
+chmod 0700 root/static/js/jQuery-contextMenu/.git/info
 chown 1011 root/static/js/jQuery-contextMenu/.git/info/exclude
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/info/exclude
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/info/exclude
-chmod 0640 root/static/js/jQuery-contextMenu/.git/info/exclude
+chmod 0600 root/static/js/jQuery-contextMenu/.git/info/exclude
 chown 0 root/static/js/jQuery-contextMenu/.git/index
 chgrp 0 root/static/js/jQuery-contextMenu/.git/index
-touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jQuery-contextMenu/.git/index
+touch -c -d "2012-12-24 04:13:13.0000000000" root/static/js/jQuery-contextMenu/.git/index
 chmod 0644 root/static/js/jQuery-contextMenu/.git/index
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/post-commit.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/post-commit.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/post-commit.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/post-commit.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/post-commit.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/post-receive.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/post-receive.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/post-receive.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/post-receive.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/post-receive.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/pre-commit.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/pre-commit.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/pre-commit.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/pre-commit.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/pre-commit.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/update.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/update.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/update.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/update.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/update.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/pre-rebase.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/pre-rebase.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/pre-rebase.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/pre-rebase.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/pre-rebase.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/post-update.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/post-update.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/post-update.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/post-update.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/post-update.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/pre-applypatch.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/pre-applypatch.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/pre-applypatch.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/pre-applypatch.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/pre-applypatch.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/commit-msg.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/commit-msg.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/commit-msg.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/commit-msg.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/commit-msg.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/applypatch-msg.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/applypatch-msg.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/applypatch-msg.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/applypatch-msg.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/applypatch-msg.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks/prepare-commit-msg.sample
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks/prepare-commit-msg.sample
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/hooks/prepare-commit-msg.sample
-chmod 0750 root/static/js/jQuery-contextMenu/.git/hooks/prepare-commit-msg.sample
+chmod 0700 root/static/js/jQuery-contextMenu/.git/hooks/prepare-commit-msg.sample
 chown 1011 root/static/js/jQuery-contextMenu/.git/config
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/config
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/config
-chmod 0640 root/static/js/jQuery-contextMenu/.git/config
+chmod 0600 root/static/js/jQuery-contextMenu/.git/config
 chown 1011 root/static/js/jQuery-contextMenu/.git/description
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/description
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/description
-chmod 0640 root/static/js/jQuery-contextMenu/.git/description
+chmod 0600 root/static/js/jQuery-contextMenu/.git/description
 chown 1011 root/static/js/jQuery-contextMenu/.git/branches
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/branches
 touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.git/branches
-chmod 0750 root/static/js/jQuery-contextMenu/.git/branches
+chmod 0700 root/static/js/jQuery-contextMenu/.git/branches
 chown 1011 root/static/js/jQuery-contextMenu/.git/HEAD
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/HEAD
 touch -c -d "2012-12-20 13:42:39.0000000000" root/static/js/jQuery-contextMenu/.git/HEAD
-chmod 0640 root/static/js/jQuery-contextMenu/.git/HEAD
+chmod 0600 root/static/js/jQuery-contextMenu/.git/HEAD
 chown 1011 root/static/js/jquery-cookie
 chgrp 1012 root/static/js/jquery-cookie
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie
-chmod 0750 root/static/js/jquery-cookie
+chmod 0700 root/static/js/jquery-cookie
 chown 1011 root/static/js/jquery-cookie/sandbox.html
 chgrp 1012 root/static/js/jquery-cookie/sandbox.html
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/sandbox.html
-chmod 0640 root/static/js/jquery-cookie/sandbox.html
+chmod 0600 root/static/js/jquery-cookie/sandbox.html
 chown 1011 root/static/js/jquery-cookie/CHANGELOG.md
 chgrp 1012 root/static/js/jquery-cookie/CHANGELOG.md
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/CHANGELOG.md
-chmod 0640 root/static/js/jquery-cookie/CHANGELOG.md
+chmod 0600 root/static/js/jquery-cookie/CHANGELOG.md
 chown 1011 root/static/js/jquery-cookie/server.js
 chgrp 1012 root/static/js/jquery-cookie/server.js
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/server.js
-chmod 0640 root/static/js/jquery-cookie/server.js
+chmod 0600 root/static/js/jquery-cookie/server.js
 chown 1011 root/static/js/jquery-cookie/test.html
 chgrp 1012 root/static/js/jquery-cookie/test.html
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/test.html
-chmod 0640 root/static/js/jquery-cookie/test.html
+chmod 0600 root/static/js/jquery-cookie/test.html
 chown 1011 root/static/js/jquery-cookie/test.js
 chgrp 1012 root/static/js/jquery-cookie/test.js
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/test.js
-chmod 0640 root/static/js/jquery-cookie/test.js
+chmod 0600 root/static/js/jquery-cookie/test.js
 chown 1011 root/static/js/jquery-cookie/jquery.cookie.js
 chgrp 1012 root/static/js/jquery-cookie/jquery.cookie.js
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/jquery.cookie.js
-chmod 0640 root/static/js/jquery-cookie/jquery.cookie.js
+chmod 0600 root/static/js/jquery-cookie/jquery.cookie.js
 chown 1011 root/static/js/jquery-cookie/.tm_properties
 chgrp 1012 root/static/js/jquery-cookie/.tm_properties
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.tm_properties
-chmod 0640 root/static/js/jquery-cookie/.tm_properties
+chmod 0600 root/static/js/jquery-cookie/.tm_properties
 chown 1011 root/static/js/jquery-cookie/README.md
 chgrp 1012 root/static/js/jquery-cookie/README.md
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/README.md
-chmod 0640 root/static/js/jquery-cookie/README.md
+chmod 0600 root/static/js/jquery-cookie/README.md
 chown 1011 root/static/js/jquery-cookie/.git
 chgrp 1012 root/static/js/jquery-cookie/.git
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git
-chmod 0750 root/static/js/jquery-cookie/.git
+chmod 0700 root/static/js/jquery-cookie/.git
 chown 1011 root/static/js/jquery-cookie/.git/objects
 chgrp 1012 root/static/js/jquery-cookie/.git/objects
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/objects
-chmod 0750 root/static/js/jquery-cookie/.git/objects
+chmod 0700 root/static/js/jquery-cookie/.git/objects
 chown 1011 root/static/js/jquery-cookie/.git/objects/pack
 chgrp 1012 root/static/js/jquery-cookie/.git/objects/pack
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/objects/pack
-chmod 0750 root/static/js/jquery-cookie/.git/objects/pack
+chmod 0700 root/static/js/jquery-cookie/.git/objects/pack
 chown 1011 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.pack
 chgrp 1012 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.pack
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.pack
-chmod 0440 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.pack
+chmod 0400 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.pack
 chown 1011 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.idx
 chgrp 1012 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.idx
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.idx
-chmod 0440 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.idx
+chmod 0400 root/static/js/jquery-cookie/.git/objects/pack/pack-18a820b3df9efac679c963d867f9aaf7f75b2629.idx
 chown 1011 root/static/js/jquery-cookie/.git/objects/info
 chgrp 1012 root/static/js/jquery-cookie/.git/objects/info
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/objects/info
-chmod 0750 root/static/js/jquery-cookie/.git/objects/info
+chmod 0700 root/static/js/jquery-cookie/.git/objects/info
 chown 1011 root/static/js/jquery-cookie/.git/logs
 chgrp 1012 root/static/js/jquery-cookie/.git/logs
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/logs
-chmod 0750 root/static/js/jquery-cookie/.git/logs
+chmod 0700 root/static/js/jquery-cookie/.git/logs
 chown 1011 root/static/js/jquery-cookie/.git/logs/refs
 chgrp 1012 root/static/js/jquery-cookie/.git/logs/refs
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/logs/refs
-chmod 0750 root/static/js/jquery-cookie/.git/logs/refs
+chmod 0700 root/static/js/jquery-cookie/.git/logs/refs
 chown 1011 root/static/js/jquery-cookie/.git/logs/refs/heads
 chgrp 1012 root/static/js/jquery-cookie/.git/logs/refs/heads
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/logs/refs/heads
-chmod 0750 root/static/js/jquery-cookie/.git/logs/refs/heads
+chmod 0700 root/static/js/jquery-cookie/.git/logs/refs/heads
 chown 1011 root/static/js/jquery-cookie/.git/logs/refs/heads/master
 chgrp 1012 root/static/js/jquery-cookie/.git/logs/refs/heads/master
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/logs/refs/heads/master
-chmod 0640 root/static/js/jquery-cookie/.git/logs/refs/heads/master
+chmod 0600 root/static/js/jquery-cookie/.git/logs/refs/heads/master
 chown 1011 root/static/js/jquery-cookie/.git/logs/HEAD
 chgrp 1012 root/static/js/jquery-cookie/.git/logs/HEAD
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/logs/HEAD
-chmod 0640 root/static/js/jquery-cookie/.git/logs/HEAD
+chmod 0600 root/static/js/jquery-cookie/.git/logs/HEAD
 chown 1011 root/static/js/jquery-cookie/.git/refs
 chgrp 1012 root/static/js/jquery-cookie/.git/refs
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/refs
-chmod 0750 root/static/js/jquery-cookie/.git/refs
+chmod 0700 root/static/js/jquery-cookie/.git/refs
 chown 1011 root/static/js/jquery-cookie/.git/refs/tags
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/tags
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/refs/tags
-chmod 0750 root/static/js/jquery-cookie/.git/refs/tags
+chmod 0700 root/static/js/jquery-cookie/.git/refs/tags
 chown 1011 root/static/js/jquery-cookie/.git/refs/remotes
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/remotes
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/refs/remotes
-chmod 0750 root/static/js/jquery-cookie/.git/refs/remotes
+chmod 0700 root/static/js/jquery-cookie/.git/refs/remotes
 chown 1011 root/static/js/jquery-cookie/.git/refs/remotes/origin
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/remotes/origin
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/refs/remotes/origin
-chmod 0750 root/static/js/jquery-cookie/.git/refs/remotes/origin
+chmod 0700 root/static/js/jquery-cookie/.git/refs/remotes/origin
 chown 1011 root/static/js/jquery-cookie/.git/refs/remotes/origin/HEAD
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/remotes/origin/HEAD
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/refs/remotes/origin/HEAD
-chmod 0640 root/static/js/jquery-cookie/.git/refs/remotes/origin/HEAD
+chmod 0600 root/static/js/jquery-cookie/.git/refs/remotes/origin/HEAD
 chown 1011 root/static/js/jquery-cookie/.git/refs/heads
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/heads
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/refs/heads
-chmod 0750 root/static/js/jquery-cookie/.git/refs/heads
+chmod 0700 root/static/js/jquery-cookie/.git/refs/heads
 chown 1011 root/static/js/jquery-cookie/.git/refs/heads/master
 chgrp 1012 root/static/js/jquery-cookie/.git/refs/heads/master
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/refs/heads/master
-chmod 0640 root/static/js/jquery-cookie/.git/refs/heads/master
+chmod 0600 root/static/js/jquery-cookie/.git/refs/heads/master
 chown 1011 root/static/js/jquery-cookie/.git/packed-refs
 chgrp 1012 root/static/js/jquery-cookie/.git/packed-refs
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/packed-refs
-chmod 0640 root/static/js/jquery-cookie/.git/packed-refs
+chmod 0600 root/static/js/jquery-cookie/.git/packed-refs
 chown 1011 root/static/js/jquery-cookie/.git/info
 chgrp 1012 root/static/js/jquery-cookie/.git/info
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/info
-chmod 0750 root/static/js/jquery-cookie/.git/info
+chmod 0700 root/static/js/jquery-cookie/.git/info
 chown 1011 root/static/js/jquery-cookie/.git/info/exclude
 chgrp 1012 root/static/js/jquery-cookie/.git/info/exclude
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/info/exclude
-chmod 0640 root/static/js/jquery-cookie/.git/info/exclude
+chmod 0600 root/static/js/jquery-cookie/.git/info/exclude
 chown 0 root/static/js/jquery-cookie/.git/index
 chgrp 0 root/static/js/jquery-cookie/.git/index
-touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jquery-cookie/.git/index
+touch -c -d "2012-12-24 04:13:14.0000000000" root/static/js/jquery-cookie/.git/index
 chmod 0644 root/static/js/jquery-cookie/.git/index
 chown 1011 root/static/js/jquery-cookie/.git/hooks
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks
-chmod 0750 root/static/js/jquery-cookie/.git/hooks
+chmod 0700 root/static/js/jquery-cookie/.git/hooks
 chown 1011 root/static/js/jquery-cookie/.git/hooks/post-commit.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/post-commit.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/post-commit.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/post-commit.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/post-commit.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/post-receive.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/post-receive.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/post-receive.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/post-receive.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/post-receive.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/pre-commit.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/pre-commit.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/pre-commit.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/pre-commit.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/pre-commit.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/update.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/update.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/update.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/update.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/update.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/pre-rebase.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/pre-rebase.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/pre-rebase.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/pre-rebase.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/pre-rebase.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/post-update.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/post-update.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/post-update.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/post-update.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/post-update.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/pre-applypatch.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/pre-applypatch.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/pre-applypatch.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/pre-applypatch.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/pre-applypatch.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/commit-msg.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/commit-msg.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/commit-msg.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/commit-msg.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/commit-msg.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/applypatch-msg.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/applypatch-msg.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/applypatch-msg.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/applypatch-msg.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/applypatch-msg.sample
 chown 1011 root/static/js/jquery-cookie/.git/hooks/prepare-commit-msg.sample
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks/prepare-commit-msg.sample
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/hooks/prepare-commit-msg.sample
-chmod 0750 root/static/js/jquery-cookie/.git/hooks/prepare-commit-msg.sample
+chmod 0700 root/static/js/jquery-cookie/.git/hooks/prepare-commit-msg.sample
 chown 1011 root/static/js/jquery-cookie/.git/config
 chgrp 1012 root/static/js/jquery-cookie/.git/config
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/config
-chmod 0640 root/static/js/jquery-cookie/.git/config
+chmod 0600 root/static/js/jquery-cookie/.git/config
 chown 1011 root/static/js/jquery-cookie/.git/description
 chgrp 1012 root/static/js/jquery-cookie/.git/description
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/description
-chmod 0640 root/static/js/jquery-cookie/.git/description
+chmod 0600 root/static/js/jquery-cookie/.git/description
 chown 1011 root/static/js/jquery-cookie/.git/branches
 chgrp 1012 root/static/js/jquery-cookie/.git/branches
 touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/branches
-chmod 0750 root/static/js/jquery-cookie/.git/branches
+chmod 0700 root/static/js/jquery-cookie/.git/branches
 chown 1011 root/static/js/jquery-cookie/.git/HEAD
 chgrp 1012 root/static/js/jquery-cookie/.git/HEAD
 touch -c -d "2012-12-20 14:03:24.0000000000" root/static/js/jquery-cookie/.git/HEAD
-chmod 0640 root/static/js/jquery-cookie/.git/HEAD
+chmod 0600 root/static/js/jquery-cookie/.git/HEAD
 chown 1011 root/static/js/jquery-latest.js
 chgrp 1012 root/static/js/jquery-latest.js
-touch -c -d "2012-12-17 23:26:11.0000000000" root/static/js/jquery-latest.js
+touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/jquery-latest.js
 chmod 0600 root/static/js/jquery-latest.js
 chown 1011 root/static/js/jquery-ui/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png
 chgrp 1012 root/static/js/jquery-ui/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png
@@ -3981,986 +3897,986 @@ chmod 0600 root/static/js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
 chown 1011 root/static/js/jquery-validation
 chgrp 1012 root/static/js/jquery-validation
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation
-chmod 0750 root/static/js/jquery-validation
+chmod 0700 root/static/js/jquery-validation
 chown 1011 root/static/js/jquery-validation/lib
 chgrp 1012 root/static/js/jquery-validation/lib
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib
-chmod 0750 root/static/js/jquery-validation/lib
+chmod 0700 root/static/js/jquery-validation/lib
 chown 1011 root/static/js/jquery-validation/lib/jquery-1.4.4.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery-1.4.4.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery-1.4.4.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery-1.4.4.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery-1.4.4.js
 chown 1011 root/static/js/jquery-validation/lib/jquery-1.7.2.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery-1.7.2.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery-1.7.2.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery-1.7.2.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery-1.7.2.js
 chown 1011 root/static/js/jquery-validation/lib/jquery-1.6.4.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery-1.6.4.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery-1.6.4.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery-1.6.4.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery-1.6.4.js
 chown 1011 root/static/js/jquery-validation/lib/jquery-1.8.3.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery-1.8.3.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery-1.8.3.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery-1.8.3.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery-1.8.3.js
 chown 1011 root/static/js/jquery-validation/lib/jquery-1.5.2.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery-1.5.2.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery-1.5.2.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery-1.5.2.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery-1.5.2.js
 chown 1011 root/static/js/jquery-validation/lib/jquery.form.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery.form.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery.form.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery.form.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery.form.js
 chown 1011 root/static/js/jquery-validation/lib/jquery.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery.js
 chown 1011 root/static/js/jquery-validation/lib/jquery.mockjax.js
 chgrp 1012 root/static/js/jquery-validation/lib/jquery.mockjax.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/lib/jquery.mockjax.js
-chmod 0640 root/static/js/jquery-validation/lib/jquery.mockjax.js
+chmod 0600 root/static/js/jquery-validation/lib/jquery.mockjax.js
 chown 1011 root/static/js/jquery-validation/package.json
 chgrp 1012 root/static/js/jquery-validation/package.json
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/package.json
-chmod 0640 root/static/js/jquery-validation/package.json
+chmod 0600 root/static/js/jquery-validation/package.json
 chown 1011 root/static/js/jquery-validation/localization
 chgrp 1012 root/static/js/jquery-validation/localization
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization
-chmod 0750 root/static/js/jquery-validation/localization
+chmod 0700 root/static/js/jquery-validation/localization
 chown 1011 root/static/js/jquery-validation/localization/messages_hu.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_hu.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_hu.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_hu.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_hu.js
 chown 1011 root/static/js/jquery-validation/localization/messages_it.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_it.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_it.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_it.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_it.js
 chown 1011 root/static/js/jquery-validation/localization/messages_pt_BR.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_pt_BR.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_pt_BR.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_pt_BR.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_pt_BR.js
 chown 1011 root/static/js/jquery-validation/localization/messages_cs.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_cs.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_cs.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_cs.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_cs.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ja.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ja.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ja.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ja.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ja.js
 chown 1011 root/static/js/jquery-validation/localization/messages_si.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_si.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_si.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_si.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_si.js
 chown 1011 root/static/js/jquery-validation/localization/messages_sk.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_sk.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_sk.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_sk.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_sk.js
 chown 1011 root/static/js/jquery-validation/localization/messages_pt_PT.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_pt_PT.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_pt_PT.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_pt_PT.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_pt_PT.js
 chown 1011 root/static/js/jquery-validation/localization/messages_de.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_de.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_de.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_de.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_de.js
 chown 1011 root/static/js/jquery-validation/localization/messages_bg.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_bg.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_bg.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_bg.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_bg.js
 chown 1011 root/static/js/jquery-validation/localization/messages_vi.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_vi.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_vi.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_vi.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_vi.js
 chown 1011 root/static/js/jquery-validation/localization/messages_eu.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_eu.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_eu.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_eu.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_eu.js
 chown 1011 root/static/js/jquery-validation/localization/messages_tr.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_tr.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_tr.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_tr.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_tr.js
 chown 1011 root/static/js/jquery-validation/localization/messages_sl.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_sl.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_sl.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_sl.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_sl.js
 chown 1011 root/static/js/jquery-validation/localization/messages_my.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_my.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_my.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_my.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_my.js
 chown 1011 root/static/js/jquery-validation/localization/messages_uk.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_uk.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_uk.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_uk.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_uk.js
 chown 1011 root/static/js/jquery-validation/localization/messages_sv.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_sv.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_sv.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_sv.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_sv.js
 chown 1011 root/static/js/jquery-validation/localization/methods_de.js
 chgrp 1012 root/static/js/jquery-validation/localization/methods_de.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/methods_de.js
-chmod 0640 root/static/js/jquery-validation/localization/methods_de.js
+chmod 0600 root/static/js/jquery-validation/localization/methods_de.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ru.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ru.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ru.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ru.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ru.js
 chown 1011 root/static/js/jquery-validation/localization/messages_pl.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_pl.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_pl.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_pl.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_pl.js
 chown 1011 root/static/js/jquery-validation/localization/messages_fa.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_fa.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_fa.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_fa.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_fa.js
 chown 1011 root/static/js/jquery-validation/localization/messages_es.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_es.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_es.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_es.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_es.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ca.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ca.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ca.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ca.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ca.js
 chown 1011 root/static/js/jquery-validation/localization/messages_he.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_he.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_he.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_he.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_he.js
 chown 1011 root/static/js/jquery-validation/localization/messages_zh.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_zh.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_zh.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_zh.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_zh.js
 chown 1011 root/static/js/jquery-validation/localization/messages_lv.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_lv.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_lv.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_lv.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_lv.js
 chown 1011 root/static/js/jquery-validation/localization/messages_th.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_th.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_th.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_th.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_th.js
 chown 1011 root/static/js/jquery-validation/localization/messages_hr.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_hr.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_hr.js
-chmod 0750 root/static/js/jquery-validation/localization/messages_hr.js
+chmod 0700 root/static/js/jquery-validation/localization/messages_hr.js
 chown 1011 root/static/js/jquery-validation/localization/messages_zh_TW.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_zh_TW.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_zh_TW.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_zh_TW.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_zh_TW.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ka.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ka.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ka.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ka.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ka.js
 chown 1011 root/static/js/jquery-validation/localization/messages_lt.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_lt.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_lt.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_lt.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_lt.js
 chown 1011 root/static/js/jquery-validation/localization/methods_pt.js
 chgrp 1012 root/static/js/jquery-validation/localization/methods_pt.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/methods_pt.js
-chmod 0640 root/static/js/jquery-validation/localization/methods_pt.js
+chmod 0600 root/static/js/jquery-validation/localization/methods_pt.js
 chown 1011 root/static/js/jquery-validation/localization/messages_nl.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_nl.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_nl.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_nl.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_nl.js
 chown 1011 root/static/js/jquery-validation/localization/messages_sr.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_sr.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_sr.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_sr.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_sr.js
 chown 1011 root/static/js/jquery-validation/localization/messages_fr.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_fr.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_fr.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_fr.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_fr.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ar.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ar.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ar.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ar.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ar.js
 chown 1011 root/static/js/jquery-validation/localization/messages_no.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_no.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_no.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_no.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_no.js
 chown 1011 root/static/js/jquery-validation/localization/messages_da.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_da.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_da.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_da.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_da.js
 chown 1011 root/static/js/jquery-validation/localization/messages_et.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_et.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_et.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_et.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_et.js
 chown 1011 root/static/js/jquery-validation/localization/messages_fi.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_fi.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_fi.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_fi.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_fi.js
 chown 1011 root/static/js/jquery-validation/localization/messages_el.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_el.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_el.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_el.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_el.js
 chown 1011 root/static/js/jquery-validation/localization/messages_ro.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_ro.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_ro.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_ro.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_ro.js
 chown 1011 root/static/js/jquery-validation/localization/messages_kk.js
 chgrp 1012 root/static/js/jquery-validation/localization/messages_kk.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/messages_kk.js
-chmod 0640 root/static/js/jquery-validation/localization/messages_kk.js
+chmod 0600 root/static/js/jquery-validation/localization/messages_kk.js
 chown 1011 root/static/js/jquery-validation/localization/methods_nl.js
 chgrp 1012 root/static/js/jquery-validation/localization/methods_nl.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/localization/methods_nl.js
-chmod 0640 root/static/js/jquery-validation/localization/methods_nl.js
+chmod 0600 root/static/js/jquery-validation/localization/methods_nl.js
 chown 1011 root/static/js/jquery-validation/todo
 chgrp 1012 root/static/js/jquery-validation/todo
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/todo
-chmod 0640 root/static/js/jquery-validation/todo
+chmod 0600 root/static/js/jquery-validation/todo
 chown 1011 root/static/js/jquery-validation/additional-methods.js
 chgrp 1012 root/static/js/jquery-validation/additional-methods.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/additional-methods.js
-chmod 0640 root/static/js/jquery-validation/additional-methods.js
+chmod 0600 root/static/js/jquery-validation/additional-methods.js
 chown 1011 root/static/js/jquery-validation/test
 chgrp 1012 root/static/js/jquery-validation/test
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test
-chmod 0750 root/static/js/jquery-validation/test
+chmod 0700 root/static/js/jquery-validation/test
 chown 1011 root/static/js/jquery-validation/test/methods.js
 chgrp 1012 root/static/js/jquery-validation/test/methods.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/methods.js
-chmod 0640 root/static/js/jquery-validation/test/methods.js
+chmod 0600 root/static/js/jquery-validation/test/methods.js
 chown 1011 root/static/js/jquery-validation/test/events.html
 chgrp 1012 root/static/js/jquery-validation/test/events.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/events.html
-chmod 0640 root/static/js/jquery-validation/test/events.html
+chmod 0600 root/static/js/jquery-validation/test/events.html
 chown 1011 root/static/js/jquery-validation/test/selects
 chgrp 1012 root/static/js/jquery-validation/test/selects
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/selects
-chmod 0750 root/static/js/jquery-validation/test/selects
+chmod 0700 root/static/js/jquery-validation/test/selects
 chown 1011 root/static/js/jquery-validation/test/selects/index.html
 chgrp 1012 root/static/js/jquery-validation/test/selects/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/selects/index.html
-chmod 0640 root/static/js/jquery-validation/test/selects/index.html
+chmod 0600 root/static/js/jquery-validation/test/selects/index.html
 chown 1011 root/static/js/jquery-validation/test/qunit
 chgrp 1012 root/static/js/jquery-validation/test/qunit
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/qunit
-chmod 0750 root/static/js/jquery-validation/test/qunit
+chmod 0700 root/static/js/jquery-validation/test/qunit
 chown 1011 root/static/js/jquery-validation/test/qunit/qunit.js
 chgrp 1012 root/static/js/jquery-validation/test/qunit/qunit.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/qunit/qunit.js
-chmod 0640 root/static/js/jquery-validation/test/qunit/qunit.js
+chmod 0600 root/static/js/jquery-validation/test/qunit/qunit.js
 chown 1011 root/static/js/jquery-validation/test/qunit/qunit.css
 chgrp 1012 root/static/js/jquery-validation/test/qunit/qunit.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/qunit/qunit.css
-chmod 0640 root/static/js/jquery-validation/test/qunit/qunit.css
+chmod 0600 root/static/js/jquery-validation/test/qunit/qunit.css
 chown 1011 root/static/js/jquery-validation/test/messages.js
 chgrp 1012 root/static/js/jquery-validation/test/messages.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/messages.js
-chmod 0640 root/static/js/jquery-validation/test/messages.js
+chmod 0600 root/static/js/jquery-validation/test/messages.js
 chown 1011 root/static/js/jquery-validation/test/index.html
 chgrp 1012 root/static/js/jquery-validation/test/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/index.html
-chmod 0640 root/static/js/jquery-validation/test/index.html
+chmod 0600 root/static/js/jquery-validation/test/index.html
 chown 1011 root/static/js/jquery-validation/test/large.html
 chgrp 1012 root/static/js/jquery-validation/test/large.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/large.html
-chmod 0640 root/static/js/jquery-validation/test/large.html
+chmod 0600 root/static/js/jquery-validation/test/large.html
 chown 1011 root/static/js/jquery-validation/test/rules.js
 chgrp 1012 root/static/js/jquery-validation/test/rules.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/rules.js
-chmod 0640 root/static/js/jquery-validation/test/rules.js
+chmod 0600 root/static/js/jquery-validation/test/rules.js
 chown 1011 root/static/js/jquery-validation/test/jquery.js
 chgrp 1012 root/static/js/jquery-validation/test/jquery.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/jquery.js
-chmod 0640 root/static/js/jquery-validation/test/jquery.js
+chmod 0600 root/static/js/jquery-validation/test/jquery.js
 chown 1011 root/static/js/jquery-validation/test/firebug
 chgrp 1012 root/static/js/jquery-validation/test/firebug
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug
-chmod 0750 root/static/js/jquery-validation/test/firebug
+chmod 0700 root/static/js/jquery-validation/test/firebug
 chown 1011 root/static/js/jquery-validation/test/firebug/firebug.css
 chgrp 1012 root/static/js/jquery-validation/test/firebug/firebug.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/firebug.css
-chmod 0640 root/static/js/jquery-validation/test/firebug/firebug.css
+chmod 0600 root/static/js/jquery-validation/test/firebug/firebug.css
 chown 1011 root/static/js/jquery-validation/test/firebug/warningIcon.png
 chgrp 1012 root/static/js/jquery-validation/test/firebug/warningIcon.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/warningIcon.png
-chmod 0640 root/static/js/jquery-validation/test/firebug/warningIcon.png
+chmod 0600 root/static/js/jquery-validation/test/firebug/warningIcon.png
 chown 1011 root/static/js/jquery-validation/test/firebug/firebug.js
 chgrp 1012 root/static/js/jquery-validation/test/firebug/firebug.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/firebug.js
-chmod 0640 root/static/js/jquery-validation/test/firebug/firebug.js
+chmod 0600 root/static/js/jquery-validation/test/firebug/firebug.js
 chown 1011 root/static/js/jquery-validation/test/firebug/firebugx.js
 chgrp 1012 root/static/js/jquery-validation/test/firebug/firebugx.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/firebugx.js
-chmod 0640 root/static/js/jquery-validation/test/firebug/firebugx.js
+chmod 0600 root/static/js/jquery-validation/test/firebug/firebugx.js
 chown 1011 root/static/js/jquery-validation/test/firebug/infoIcon.png
 chgrp 1012 root/static/js/jquery-validation/test/firebug/infoIcon.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/infoIcon.png
-chmod 0640 root/static/js/jquery-validation/test/firebug/infoIcon.png
+chmod 0600 root/static/js/jquery-validation/test/firebug/infoIcon.png
 chown 1011 root/static/js/jquery-validation/test/firebug/firebug.html
 chgrp 1012 root/static/js/jquery-validation/test/firebug/firebug.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/firebug.html
-chmod 0640 root/static/js/jquery-validation/test/firebug/firebug.html
+chmod 0600 root/static/js/jquery-validation/test/firebug/firebug.html
 chown 1011 root/static/js/jquery-validation/test/firebug/errorIcon.png
 chgrp 1012 root/static/js/jquery-validation/test/firebug/errorIcon.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/firebug/errorIcon.png
-chmod 0640 root/static/js/jquery-validation/test/firebug/errorIcon.png
+chmod 0600 root/static/js/jquery-validation/test/firebug/errorIcon.png
 chown 1011 root/static/js/jquery-validation/test/test.js
 chgrp 1012 root/static/js/jquery-validation/test/test.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/test.js
-chmod 0640 root/static/js/jquery-validation/test/test.js
+chmod 0600 root/static/js/jquery-validation/test/test.js
 chown 1011 root/static/js/jquery-validation/test/tabs.html
 chgrp 1012 root/static/js/jquery-validation/test/tabs.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/test/tabs.html
-chmod 0640 root/static/js/jquery-validation/test/tabs.html
+chmod 0600 root/static/js/jquery-validation/test/tabs.html
 chown 1011 root/static/js/jquery-validation/changelog.txt
 chgrp 1012 root/static/js/jquery-validation/changelog.txt
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/changelog.txt
-chmod 0640 root/static/js/jquery-validation/changelog.txt
+chmod 0600 root/static/js/jquery-validation/changelog.txt
 chown 1011 root/static/js/jquery-validation/.travis.yml
 chgrp 1012 root/static/js/jquery-validation/.travis.yml
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.travis.yml
-chmod 0640 root/static/js/jquery-validation/.travis.yml
+chmod 0600 root/static/js/jquery-validation/.travis.yml
 chown 1011 root/static/js/jquery-validation/CONTRIBUTING.md
 chgrp 1012 root/static/js/jquery-validation/CONTRIBUTING.md
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/CONTRIBUTING.md
-chmod 0640 root/static/js/jquery-validation/CONTRIBUTING.md
+chmod 0600 root/static/js/jquery-validation/CONTRIBUTING.md
 chown 1011 root/static/js/jquery-validation/build
 chgrp 1012 root/static/js/jquery-validation/build
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/build
-chmod 0750 root/static/js/jquery-validation/build
+chmod 0700 root/static/js/jquery-validation/build
 chown 1011 root/static/js/jquery-validation/build/ant-contrib-0.6.jar
 chgrp 1012 root/static/js/jquery-validation/build/ant-contrib-0.6.jar
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/build/ant-contrib-0.6.jar
-chmod 0750 root/static/js/jquery-validation/build/ant-contrib-0.6.jar
+chmod 0700 root/static/js/jquery-validation/build/ant-contrib-0.6.jar
 chown 1011 root/static/js/jquery-validation/build/google-compiler-20110320.jar
 chgrp 1012 root/static/js/jquery-validation/build/google-compiler-20110320.jar
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/build/google-compiler-20110320.jar
-chmod 0640 root/static/js/jquery-validation/build/google-compiler-20110320.jar
+chmod 0600 root/static/js/jquery-validation/build/google-compiler-20110320.jar
 chown 1011 root/static/js/jquery-validation/build/release.sh
 chgrp 1012 root/static/js/jquery-validation/build/release.sh
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/build/release.sh
-chmod 0750 root/static/js/jquery-validation/build/release.sh
+chmod 0700 root/static/js/jquery-validation/build/release.sh
 chown 1011 root/static/js/jquery-validation/.gitignore
 chgrp 1012 root/static/js/jquery-validation/.gitignore
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.gitignore
-chmod 0640 root/static/js/jquery-validation/.gitignore
+chmod 0600 root/static/js/jquery-validation/.gitignore
 chown 1011 root/static/js/jquery-validation/demo
 chgrp 1012 root/static/js/jquery-validation/demo
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo
-chmod 0750 root/static/js/jquery-validation/demo
+chmod 0700 root/static/js/jquery-validation/demo
 chown 1011 root/static/js/jquery-validation/demo/radio-checkbox-select-demo.html
 chgrp 1012 root/static/js/jquery-validation/demo/radio-checkbox-select-demo.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/radio-checkbox-select-demo.html
-chmod 0640 root/static/js/jquery-validation/demo/radio-checkbox-select-demo.html
+chmod 0600 root/static/js/jquery-validation/demo/radio-checkbox-select-demo.html
 chown 1011 root/static/js/jquery-validation/demo/multipart
 chgrp 1012 root/static/js/jquery-validation/demo/multipart
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart
-chmod 0750 root/static/js/jquery-validation/demo/multipart
+chmod 0700 root/static/js/jquery-validation/demo/multipart
 chown 1011 root/static/js/jquery-validation/demo/multipart/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/index.html
-chmod 0640 root/static/js/jquery-validation/demo/multipart/index.html
+chmod 0600 root/static/js/jquery-validation/demo/multipart/index.html
 chown 1011 root/static/js/jquery-validation/demo/multipart/js
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/js
-chmod 0750 root/static/js/jquery-validation/demo/multipart/js
+chmod 0700 root/static/js/jquery-validation/demo/multipart/js
 chown 1011 root/static/js/jquery-validation/demo/multipart/js/ui.accordion.js
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/js/ui.accordion.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/js/ui.accordion.js
-chmod 0640 root/static/js/jquery-validation/demo/multipart/js/ui.accordion.js
+chmod 0600 root/static/js/jquery-validation/demo/multipart/js/ui.accordion.js
 chown 1011 root/static/js/jquery-validation/demo/multipart/js/jquery.maskedinput-1.0.js
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/js/jquery.maskedinput-1.0.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/js/jquery.maskedinput-1.0.js
-chmod 0640 root/static/js/jquery-validation/demo/multipart/js/jquery.maskedinput-1.0.js
+chmod 0600 root/static/js/jquery-validation/demo/multipart/js/jquery.maskedinput-1.0.js
 chown 1011 root/static/js/jquery-validation/demo/multipart/js/ui.core.js
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/js/ui.core.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/js/ui.core.js
-chmod 0640 root/static/js/jquery-validation/demo/multipart/js/ui.core.js
+chmod 0600 root/static/js/jquery-validation/demo/multipart/js/ui.core.js
 chown 1011 root/static/js/jquery-validation/demo/multipart/style.css
 chgrp 1012 root/static/js/jquery-validation/demo/multipart/style.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/multipart/style.css
-chmod 0640 root/static/js/jquery-validation/demo/multipart/style.css
+chmod 0600 root/static/js/jquery-validation/demo/multipart/style.css
 chown 1011 root/static/js/jquery-validation/demo/tabs
 chgrp 1012 root/static/js/jquery-validation/demo/tabs
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tabs
-chmod 0750 root/static/js/jquery-validation/demo/tabs
+chmod 0700 root/static/js/jquery-validation/demo/tabs
 chown 1011 root/static/js/jquery-validation/demo/tabs/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/tabs/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tabs/index.html
-chmod 0640 root/static/js/jquery-validation/demo/tabs/index.html
+chmod 0600 root/static/js/jquery-validation/demo/tabs/index.html
 chown 1011 root/static/js/jquery-validation/demo/milk
 chgrp 1012 root/static/js/jquery-validation/demo/milk
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk
-chmod 0750 root/static/js/jquery-validation/demo/milk
+chmod 0700 root/static/js/jquery-validation/demo/milk
 chown 1011 root/static/js/jquery-validation/demo/milk/milk.png
 chgrp 1012 root/static/js/jquery-validation/demo/milk/milk.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/milk.png
-chmod 0640 root/static/js/jquery-validation/demo/milk/milk.png
+chmod 0600 root/static/js/jquery-validation/demo/milk/milk.png
 chown 1011 root/static/js/jquery-validation/demo/milk/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/milk/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/index.html
-chmod 0640 root/static/js/jquery-validation/demo/milk/index.html
+chmod 0600 root/static/js/jquery-validation/demo/milk/index.html
 chown 1011 root/static/js/jquery-validation/demo/milk/emails.phps
 chgrp 1012 root/static/js/jquery-validation/demo/milk/emails.phps
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/emails.phps
-chmod 0640 root/static/js/jquery-validation/demo/milk/emails.phps
+chmod 0600 root/static/js/jquery-validation/demo/milk/emails.phps
 chown 1011 root/static/js/jquery-validation/demo/milk/emails.php
 chgrp 1012 root/static/js/jquery-validation/demo/milk/emails.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/emails.php
-chmod 0640 root/static/js/jquery-validation/demo/milk/emails.php
+chmod 0600 root/static/js/jquery-validation/demo/milk/emails.php
 chown 1011 root/static/js/jquery-validation/demo/milk/bg.gif
 chgrp 1012 root/static/js/jquery-validation/demo/milk/bg.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/bg.gif
-chmod 0640 root/static/js/jquery-validation/demo/milk/bg.gif
+chmod 0600 root/static/js/jquery-validation/demo/milk/bg.gif
 chown 1011 root/static/js/jquery-validation/demo/milk/milk.css
 chgrp 1012 root/static/js/jquery-validation/demo/milk/milk.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/milk.css
-chmod 0640 root/static/js/jquery-validation/demo/milk/milk.css
+chmod 0600 root/static/js/jquery-validation/demo/milk/milk.css
 chown 1011 root/static/js/jquery-validation/demo/milk/right_white.png
 chgrp 1012 root/static/js/jquery-validation/demo/milk/right_white.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/right_white.png
-chmod 0640 root/static/js/jquery-validation/demo/milk/right_white.png
+chmod 0600 root/static/js/jquery-validation/demo/milk/right_white.png
 chown 1011 root/static/js/jquery-validation/demo/milk/users.phps
 chgrp 1012 root/static/js/jquery-validation/demo/milk/users.phps
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/users.phps
-chmod 0640 root/static/js/jquery-validation/demo/milk/users.phps
+chmod 0600 root/static/js/jquery-validation/demo/milk/users.phps
 chown 1011 root/static/js/jquery-validation/demo/milk/users.php
 chgrp 1012 root/static/js/jquery-validation/demo/milk/users.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/users.php
-chmod 0640 root/static/js/jquery-validation/demo/milk/users.php
+chmod 0600 root/static/js/jquery-validation/demo/milk/users.php
 chown 1011 root/static/js/jquery-validation/demo/milk/left_white.png
 chgrp 1012 root/static/js/jquery-validation/demo/milk/left_white.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/milk/left_white.png
-chmod 0640 root/static/js/jquery-validation/demo/milk/left_white.png
+chmod 0600 root/static/js/jquery-validation/demo/milk/left_white.png
 chown 1011 root/static/js/jquery-validation/demo/ajaxSubmit-intergration-demo.html
 chgrp 1012 root/static/js/jquery-validation/demo/ajaxSubmit-intergration-demo.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/ajaxSubmit-intergration-demo.html
-chmod 0640 root/static/js/jquery-validation/demo/ajaxSubmit-intergration-demo.html
+chmod 0600 root/static/js/jquery-validation/demo/ajaxSubmit-intergration-demo.html
 chown 1011 root/static/js/jquery-validation/demo/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/index.html
-chmod 0640 root/static/js/jquery-validation/demo/index.html
+chmod 0600 root/static/js/jquery-validation/demo/index.html
 chown 1011 root/static/js/jquery-validation/demo/themerollered.html
 chgrp 1012 root/static/js/jquery-validation/demo/themerollered.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/themerollered.html
-chmod 0640 root/static/js/jquery-validation/demo/themerollered.html
+chmod 0600 root/static/js/jquery-validation/demo/themerollered.html
 chown 1011 root/static/js/jquery-validation/demo/form.php
 chgrp 1012 root/static/js/jquery-validation/demo/form.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/form.php
-chmod 0640 root/static/js/jquery-validation/demo/form.php
+chmod 0600 root/static/js/jquery-validation/demo/form.php
 chown 1011 root/static/js/jquery-validation/demo/marketo
 chgrp 1012 root/static/js/jquery-validation/demo/marketo
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo
-chmod 0750 root/static/js/jquery-validation/demo/marketo
+chmod 0700 root/static/js/jquery-validation/demo/marketo
 chown 1011 root/static/js/jquery-validation/demo/marketo/step2.htm
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/step2.htm
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/step2.htm
-chmod 0640 root/static/js/jquery-validation/demo/marketo/step2.htm
+chmod 0600 root/static/js/jquery-validation/demo/marketo/step2.htm
 chown 1011 root/static/js/jquery-validation/demo/marketo/mktSignup.js
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/mktSignup.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/mktSignup.js
-chmod 0640 root/static/js/jquery-validation/demo/marketo/mktSignup.js
+chmod 0600 root/static/js/jquery-validation/demo/marketo/mktSignup.js
 chown 1011 root/static/js/jquery-validation/demo/marketo/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/index.html
-chmod 0640 root/static/js/jquery-validation/demo/marketo/index.html
+chmod 0600 root/static/js/jquery-validation/demo/marketo/index.html
 chown 1011 root/static/js/jquery-validation/demo/marketo/stylesheet.css
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/stylesheet.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/stylesheet.css
-chmod 0640 root/static/js/jquery-validation/demo/marketo/stylesheet.css
+chmod 0600 root/static/js/jquery-validation/demo/marketo/stylesheet.css
 chown 1011 root/static/js/jquery-validation/demo/marketo/emails.phps
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/emails.phps
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/emails.phps
-chmod 0640 root/static/js/jquery-validation/demo/marketo/emails.phps
+chmod 0600 root/static/js/jquery-validation/demo/marketo/emails.phps
 chown 1011 root/static/js/jquery-validation/demo/marketo/images
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images
-chmod 0750 root/static/js/jquery-validation/demo/marketo/images
+chmod 0700 root/static/js/jquery-validation/demo/marketo/images
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/warning.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/warning.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/warning.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/warning.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/warning.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/step2-24.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/step2-24.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/step2-24.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/step2-24.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/step2-24.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/tab_green.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/tab_green.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/tab_green.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/tab_green.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/tab_green.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/favicon.ico
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/favicon.ico
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/favicon.ico
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/favicon.ico
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/favicon.ico
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/back_green-fade.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/back_green-fade.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/back_green-fade.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/back_green-fade.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/back_green-fade.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/step1-24.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/step1-24.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/step1-24.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/step1-24.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/step1-24.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/step3-24.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/step3-24.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/step3-24.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/step3-24.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/step3-24.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/left-nav-callout-long.png
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/left-nav-callout-long.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/left-nav-callout-long.png
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/left-nav-callout-long.png
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/left-nav-callout-long.png
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/logo_marketo.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/logo_marketo.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/logo_marketo.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/logo_marketo.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/logo_marketo.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/time.png
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/time.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/time.png
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/time.png
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/time.png
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/backRequiredGray.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/backRequiredGray.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/backRequiredGray.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/backRequiredGray.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/backRequiredGray.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/toggle.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/toggle.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/toggle.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/toggle.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/toggle.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/tab-sprite.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/tab-sprite.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/tab-sprite.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/tab-sprite.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/tab-sprite.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/button-submit.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/button-submit.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/button-submit.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/button-submit.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/button-submit.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/back_nav_blue.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/back_nav_blue.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/back_nav_blue.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/back_nav_blue.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/back_nav_blue.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/blank.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/blank.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/blank.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/blank.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/blank.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/login-sprite.gif
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/login-sprite.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/login-sprite.gif
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/login-sprite.gif
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/login-sprite.gif
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/sf.png
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/sf.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/sf.png
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/sf.png
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/sf.png
 chown 1011 root/static/js/jquery-validation/demo/marketo/images/help.png
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/images/help.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/images/help.png
-chmod 0640 root/static/js/jquery-validation/demo/marketo/images/help.png
+chmod 0600 root/static/js/jquery-validation/demo/marketo/images/help.png
 chown 1011 root/static/js/jquery-validation/demo/marketo/emails.php
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/emails.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/emails.php
-chmod 0640 root/static/js/jquery-validation/demo/marketo/emails.php
+chmod 0600 root/static/js/jquery-validation/demo/marketo/emails.php
 chown 1011 root/static/js/jquery-validation/demo/marketo/jquery.maskedinput.js
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/jquery.maskedinput.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/jquery.maskedinput.js
-chmod 0640 root/static/js/jquery-validation/demo/marketo/jquery.maskedinput.js
+chmod 0600 root/static/js/jquery-validation/demo/marketo/jquery.maskedinput.js
 chown 1011 root/static/js/jquery-validation/demo/marketo/ie6.css
 chgrp 1012 root/static/js/jquery-validation/demo/marketo/ie6.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/marketo/ie6.css
-chmod 0640 root/static/js/jquery-validation/demo/marketo/ie6.css
+chmod 0600 root/static/js/jquery-validation/demo/marketo/ie6.css
 chown 1011 root/static/js/jquery-validation/demo/custom-messages-data-demo.html
 chgrp 1012 root/static/js/jquery-validation/demo/custom-messages-data-demo.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/custom-messages-data-demo.html
-chmod 0640 root/static/js/jquery-validation/demo/custom-messages-data-demo.html
+chmod 0600 root/static/js/jquery-validation/demo/custom-messages-data-demo.html
 chown 1011 root/static/js/jquery-validation/demo/jquerymobile.html
 chgrp 1012 root/static/js/jquery-validation/demo/jquerymobile.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/jquerymobile.html
-chmod 0640 root/static/js/jquery-validation/demo/jquerymobile.html
+chmod 0600 root/static/js/jquery-validation/demo/jquerymobile.html
 chown 1011 root/static/js/jquery-validation/demo/js
 chgrp 1012 root/static/js/jquery-validation/demo/js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/js
-chmod 0750 root/static/js/jquery-validation/demo/js
+chmod 0700 root/static/js/jquery-validation/demo/js
 chown 1011 root/static/js/jquery-validation/demo/js/chili-1.7.pack.js
 chgrp 1012 root/static/js/jquery-validation/demo/js/chili-1.7.pack.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/js/chili-1.7.pack.js
-chmod 0640 root/static/js/jquery-validation/demo/js/chili-1.7.pack.js
+chmod 0600 root/static/js/jquery-validation/demo/js/chili-1.7.pack.js
 chown 1011 root/static/js/jquery-validation/demo/tinymce
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce
-chmod 0750 root/static/js/jquery-validation/demo/tinymce
+chmod 0700 root/static/js/jquery-validation/demo/tinymce
 chown 1011 root/static/js/jquery-validation/demo/tinymce/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/index.html
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/index.html
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/index.html
 chown 1011 root/static/js/jquery-validation/demo/tinymce/tiny_mce.js
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/tiny_mce.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/tiny_mce.js
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/tiny_mce.js
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/tiny_mce.js
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes/simple
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes/simple
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/langs
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs/en.js
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs/en.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/langs/en.js
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs/en.js
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/themes/simple/langs/en.js
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/editor_template.js
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/editor_template.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/editor_template.js
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/themes/simple/editor_template.js
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/themes/simple/editor_template.js
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/skins
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default/ui.css
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default/ui.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default/ui.css
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default/ui.css
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/themes/simple/skins/default/ui.css
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/img
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/img
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/img
-chmod 0750 root/static/js/jquery-validation/demo/tinymce/themes/simple/img
+chmod 0700 root/static/js/jquery-validation/demo/tinymce/themes/simple/img
 chown 1011 root/static/js/jquery-validation/demo/tinymce/themes/simple/img/icons.gif
 chgrp 1012 root/static/js/jquery-validation/demo/tinymce/themes/simple/img/icons.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/tinymce/themes/simple/img/icons.gif
-chmod 0640 root/static/js/jquery-validation/demo/tinymce/themes/simple/img/icons.gif
+chmod 0600 root/static/js/jquery-validation/demo/tinymce/themes/simple/img/icons.gif
 chown 1011 root/static/js/jquery-validation/demo/images
 chgrp 1012 root/static/js/jquery-validation/demo/images
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images
-chmod 0750 root/static/js/jquery-validation/demo/images
+chmod 0700 root/static/js/jquery-validation/demo/images
 chown 1011 root/static/js/jquery-validation/demo/images/checked.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/checked.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/checked.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/checked.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/checked.gif
 chown 1011 root/static/js/jquery-validation/demo/images/cmxform-fieldset.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/cmxform-fieldset.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/cmxform-fieldset.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/cmxform-fieldset.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/cmxform-fieldset.gif
 chown 1011 root/static/js/jquery-validation/demo/images/cmxform-divider.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/cmxform-divider.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/cmxform-divider.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/cmxform-divider.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/cmxform-divider.gif
 chown 1011 root/static/js/jquery-validation/demo/images/loading.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/loading.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/loading.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/loading.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/loading.gif
 chown 1011 root/static/js/jquery-validation/demo/images/unchecked.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/unchecked.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/unchecked.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/unchecked.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/unchecked.gif
 chown 1011 root/static/js/jquery-validation/demo/images/bg.gif
 chgrp 1012 root/static/js/jquery-validation/demo/images/bg.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/images/bg.gif
-chmod 0640 root/static/js/jquery-validation/demo/images/bg.gif
+chmod 0600 root/static/js/jquery-validation/demo/images/bg.gif
 chown 1011 root/static/js/jquery-validation/demo/form.phps
 chgrp 1012 root/static/js/jquery-validation/demo/form.phps
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/form.phps
-chmod 0640 root/static/js/jquery-validation/demo/form.phps
+chmod 0600 root/static/js/jquery-validation/demo/form.phps
 chown 1011 root/static/js/jquery-validation/demo/css
 chgrp 1012 root/static/js/jquery-validation/demo/css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css
-chmod 0750 root/static/js/jquery-validation/demo/css
+chmod 0700 root/static/js/jquery-validation/demo/css
 chown 1011 root/static/js/jquery-validation/demo/css/chili.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/chili.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/chili.css
-chmod 0640 root/static/js/jquery-validation/demo/css/chili.css
+chmod 0600 root/static/js/jquery-validation/demo/css/chili.css
 chown 1011 root/static/js/jquery-validation/demo/css/cmxformTemplate.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/cmxformTemplate.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/cmxformTemplate.css
-chmod 0640 root/static/js/jquery-validation/demo/css/cmxformTemplate.css
+chmod 0600 root/static/js/jquery-validation/demo/css/cmxformTemplate.css
 chown 1011 root/static/js/jquery-validation/demo/css/screen.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/screen.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/screen.css
-chmod 0640 root/static/js/jquery-validation/demo/css/screen.css
+chmod 0600 root/static/js/jquery-validation/demo/css/screen.css
 chown 1011 root/static/js/jquery-validation/demo/css/reset.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/reset.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/reset.css
-chmod 0640 root/static/js/jquery-validation/demo/css/reset.css
+chmod 0600 root/static/js/jquery-validation/demo/css/reset.css
 chown 1011 root/static/js/jquery-validation/demo/css/core.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/core.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/core.css
-chmod 0640 root/static/js/jquery-validation/demo/css/core.css
+chmod 0600 root/static/js/jquery-validation/demo/css/core.css
 chown 1011 root/static/js/jquery-validation/demo/css/cmxform.css
 chgrp 1012 root/static/js/jquery-validation/demo/css/cmxform.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/css/cmxform.css
-chmod 0640 root/static/js/jquery-validation/demo/css/cmxform.css
+chmod 0600 root/static/js/jquery-validation/demo/css/cmxform.css
 chown 1011 root/static/js/jquery-validation/demo/custom-methods-demo.html
 chgrp 1012 root/static/js/jquery-validation/demo/custom-methods-demo.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/custom-methods-demo.html
-chmod 0640 root/static/js/jquery-validation/demo/custom-methods-demo.html
+chmod 0600 root/static/js/jquery-validation/demo/custom-methods-demo.html
 chown 1011 root/static/js/jquery-validation/demo/dynamic-totals.html
 chgrp 1012 root/static/js/jquery-validation/demo/dynamic-totals.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/dynamic-totals.html
-chmod 0640 root/static/js/jquery-validation/demo/dynamic-totals.html
+chmod 0600 root/static/js/jquery-validation/demo/dynamic-totals.html
 chown 1011 root/static/js/jquery-validation/demo/errorcontainer-demo.html
 chgrp 1012 root/static/js/jquery-validation/demo/errorcontainer-demo.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/errorcontainer-demo.html
-chmod 0640 root/static/js/jquery-validation/demo/errorcontainer-demo.html
+chmod 0600 root/static/js/jquery-validation/demo/errorcontainer-demo.html
 chown 1011 root/static/js/jquery-validation/demo/file_input.html
 chgrp 1012 root/static/js/jquery-validation/demo/file_input.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/file_input.html
-chmod 0640 root/static/js/jquery-validation/demo/file_input.html
+chmod 0600 root/static/js/jquery-validation/demo/file_input.html
 chown 1011 root/static/js/jquery-validation/demo/captcha
 chgrp 1012 root/static/js/jquery-validation/demo/captcha
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha
-chmod 0750 root/static/js/jquery-validation/demo/captcha
+chmod 0700 root/static/js/jquery-validation/demo/captcha
 chown 1011 root/static/js/jquery-validation/demo/captcha/rand.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/rand.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/rand.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/rand.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/rand.php
 chown 1011 root/static/js/jquery-validation/demo/captcha/process.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/process.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/process.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/process.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/process.php
 chown 1011 root/static/js/jquery-validation/demo/captcha/index.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/index.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/index.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/index.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/index.php
 chown 1011 root/static/js/jquery-validation/demo/captcha/fonts
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/fonts
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/fonts
-chmod 0750 root/static/js/jquery-validation/demo/captcha/fonts
+chmod 0700 root/static/js/jquery-validation/demo/captcha/fonts
 chown 1011 root/static/js/jquery-validation/demo/captcha/fonts/Anorexia.ttf
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/fonts/Anorexia.ttf
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/fonts/Anorexia.ttf
-chmod 0640 root/static/js/jquery-validation/demo/captcha/fonts/Anorexia.ttf
+chmod 0600 root/static/js/jquery-validation/demo/captcha/fonts/Anorexia.ttf
 chown 1011 root/static/js/jquery-validation/demo/captcha/images
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/images
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/images
-chmod 0750 root/static/js/jquery-validation/demo/captcha/images
+chmod 0700 root/static/js/jquery-validation/demo/captcha/images
 chown 1011 root/static/js/jquery-validation/demo/captcha/images/button.png
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/images/button.png
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/images/button.png
-chmod 0640 root/static/js/jquery-validation/demo/captcha/images/button.png
+chmod 0600 root/static/js/jquery-validation/demo/captcha/images/button.png
 chown 1011 root/static/js/jquery-validation/demo/captcha/images/image.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/images/image.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/images/image.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/images/image.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/images/image.php
 chown 1011 root/static/js/jquery-validation/demo/captcha/images/.htaccess
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/images/.htaccess
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/images/.htaccess
-chmod 0640 root/static/js/jquery-validation/demo/captcha/images/.htaccess
+chmod 0600 root/static/js/jquery-validation/demo/captcha/images/.htaccess
 chown 1011 root/static/js/jquery-validation/demo/captcha/image_req.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/image_req.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/image_req.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/image_req.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/image_req.php
 chown 1011 root/static/js/jquery-validation/demo/captcha/captcha.js
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/captcha.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/captcha.js
-chmod 0640 root/static/js/jquery-validation/demo/captcha/captcha.js
+chmod 0600 root/static/js/jquery-validation/demo/captcha/captcha.js
 chown 1011 root/static/js/jquery-validation/demo/captcha/style.css
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/style.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/style.css
-chmod 0640 root/static/js/jquery-validation/demo/captcha/style.css
+chmod 0600 root/static/js/jquery-validation/demo/captcha/style.css
 chown 1011 root/static/js/jquery-validation/demo/captcha/newsession.php
 chgrp 1012 root/static/js/jquery-validation/demo/captcha/newsession.php
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/captcha/newsession.php
-chmod 0640 root/static/js/jquery-validation/demo/captcha/newsession.php
+chmod 0600 root/static/js/jquery-validation/demo/captcha/newsession.php
 chown 1011 root/static/js/jquery-validation/demo/login
 chgrp 1012 root/static/js/jquery-validation/demo/login
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login
-chmod 0750 root/static/js/jquery-validation/demo/login
+chmod 0700 root/static/js/jquery-validation/demo/login
 chown 1011 root/static/js/jquery-validation/demo/login/index.html
 chgrp 1012 root/static/js/jquery-validation/demo/login/index.html
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/index.html
-chmod 0640 root/static/js/jquery-validation/demo/login/index.html
+chmod 0600 root/static/js/jquery-validation/demo/login/index.html
 chown 1011 root/static/js/jquery-validation/demo/login/screen.css
 chgrp 1012 root/static/js/jquery-validation/demo/login/screen.css
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/screen.css
-chmod 0640 root/static/js/jquery-validation/demo/login/screen.css
+chmod 0600 root/static/js/jquery-validation/demo/login/screen.css
 chown 1011 root/static/js/jquery-validation/demo/login/images
 chgrp 1012 root/static/js/jquery-validation/demo/login/images
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/images
-chmod 0750 root/static/js/jquery-validation/demo/login/images
+chmod 0700 root/static/js/jquery-validation/demo/login/images
 chown 1011 root/static/js/jquery-validation/demo/login/images/page.gif
 chgrp 1012 root/static/js/jquery-validation/demo/login/images/page.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/images/page.gif
-chmod 0640 root/static/js/jquery-validation/demo/login/images/page.gif
+chmod 0600 root/static/js/jquery-validation/demo/login/images/page.gif
 chown 1011 root/static/js/jquery-validation/demo/login/images/required_star.gif
 chgrp 1012 root/static/js/jquery-validation/demo/login/images/required_star.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/images/required_star.gif
-chmod 0640 root/static/js/jquery-validation/demo/login/images/required_star.gif
+chmod 0600 root/static/js/jquery-validation/demo/login/images/required_star.gif
 chown 1011 root/static/js/jquery-validation/demo/login/images/header1.jpg
 chgrp 1012 root/static/js/jquery-validation/demo/login/images/header1.jpg
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/images/header1.jpg
-chmod 0640 root/static/js/jquery-validation/demo/login/images/header1.jpg
+chmod 0600 root/static/js/jquery-validation/demo/login/images/header1.jpg
 chown 1011 root/static/js/jquery-validation/demo/login/images/bg.gif
 chgrp 1012 root/static/js/jquery-validation/demo/login/images/bg.gif
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/demo/login/images/bg.gif
-chmod 0640 root/static/js/jquery-validation/demo/login/images/bg.gif
+chmod 0600 root/static/js/jquery-validation/demo/login/images/bg.gif
 chown 1011 root/static/js/jquery-validation/README.md
 chgrp 1012 root/static/js/jquery-validation/README.md
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/README.md
-chmod 0640 root/static/js/jquery-validation/README.md
+chmod 0600 root/static/js/jquery-validation/README.md
 chown 1011 root/static/js/jquery-validation/grunt.js
 chgrp 1012 root/static/js/jquery-validation/grunt.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/grunt.js
-chmod 0640 root/static/js/jquery-validation/grunt.js
+chmod 0600 root/static/js/jquery-validation/grunt.js
 chown 1011 root/static/js/jquery-validation/jquery.validate.js
 chgrp 1012 root/static/js/jquery-validation/jquery.validate.js
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/jquery.validate.js
-chmod 0640 root/static/js/jquery-validation/jquery.validate.js
+chmod 0600 root/static/js/jquery-validation/jquery.validate.js
 chown 1011 root/static/js/jquery-validation/.git
 chgrp 1012 root/static/js/jquery-validation/.git
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git
-chmod 0750 root/static/js/jquery-validation/.git
+chmod 0700 root/static/js/jquery-validation/.git
 chown 1011 root/static/js/jquery-validation/.git/objects
 chgrp 1012 root/static/js/jquery-validation/.git/objects
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/objects
-chmod 0750 root/static/js/jquery-validation/.git/objects
+chmod 0700 root/static/js/jquery-validation/.git/objects
 chown 1011 root/static/js/jquery-validation/.git/objects/pack
 chgrp 1012 root/static/js/jquery-validation/.git/objects/pack
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/objects/pack
-chmod 0750 root/static/js/jquery-validation/.git/objects/pack
+chmod 0700 root/static/js/jquery-validation/.git/objects/pack
 chown 1011 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.pack
 chgrp 1012 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.pack
 touch -c -d "2012-12-20 14:03:58.0000000000" root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.pack
-chmod 0440 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.pack
+chmod 0400 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.pack
 chown 1011 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.idx
 chgrp 1012 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.idx
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.idx
-chmod 0440 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.idx
+chmod 0400 root/static/js/jquery-validation/.git/objects/pack/pack-e4c7b838f6361232ecc0a54f622e0329186b1248.idx
 chown 1011 root/static/js/jquery-validation/.git/objects/info
 chgrp 1012 root/static/js/jquery-validation/.git/objects/info
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/objects/info
-chmod 0750 root/static/js/jquery-validation/.git/objects/info
+chmod 0700 root/static/js/jquery-validation/.git/objects/info
 chown 1011 root/static/js/jquery-validation/.git/logs
 chgrp 1012 root/static/js/jquery-validation/.git/logs
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/logs
-chmod 0750 root/static/js/jquery-validation/.git/logs
+chmod 0700 root/static/js/jquery-validation/.git/logs
 chown 1011 root/static/js/jquery-validation/.git/logs/refs
 chgrp 1012 root/static/js/jquery-validation/.git/logs/refs
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/logs/refs
-chmod 0750 root/static/js/jquery-validation/.git/logs/refs
+chmod 0700 root/static/js/jquery-validation/.git/logs/refs
 chown 1011 root/static/js/jquery-validation/.git/logs/refs/heads
 chgrp 1012 root/static/js/jquery-validation/.git/logs/refs/heads
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/logs/refs/heads
-chmod 0750 root/static/js/jquery-validation/.git/logs/refs/heads
+chmod 0700 root/static/js/jquery-validation/.git/logs/refs/heads
 chown 1011 root/static/js/jquery-validation/.git/logs/refs/heads/master
 chgrp 1012 root/static/js/jquery-validation/.git/logs/refs/heads/master
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/logs/refs/heads/master
-chmod 0640 root/static/js/jquery-validation/.git/logs/refs/heads/master
+chmod 0600 root/static/js/jquery-validation/.git/logs/refs/heads/master
 chown 1011 root/static/js/jquery-validation/.git/logs/HEAD
 chgrp 1012 root/static/js/jquery-validation/.git/logs/HEAD
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/logs/HEAD
-chmod 0640 root/static/js/jquery-validation/.git/logs/HEAD
+chmod 0600 root/static/js/jquery-validation/.git/logs/HEAD
 chown 1011 root/static/js/jquery-validation/.git/refs
 chgrp 1012 root/static/js/jquery-validation/.git/refs
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/refs
-chmod 0750 root/static/js/jquery-validation/.git/refs
+chmod 0700 root/static/js/jquery-validation/.git/refs
 chown 1011 root/static/js/jquery-validation/.git/refs/tags
 chgrp 1012 root/static/js/jquery-validation/.git/refs/tags
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/refs/tags
-chmod 0750 root/static/js/jquery-validation/.git/refs/tags
+chmod 0700 root/static/js/jquery-validation/.git/refs/tags
 chown 1011 root/static/js/jquery-validation/.git/refs/remotes
 chgrp 1012 root/static/js/jquery-validation/.git/refs/remotes
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/refs/remotes
-chmod 0750 root/static/js/jquery-validation/.git/refs/remotes
+chmod 0700 root/static/js/jquery-validation/.git/refs/remotes
 chown 1011 root/static/js/jquery-validation/.git/refs/remotes/origin
 chgrp 1012 root/static/js/jquery-validation/.git/refs/remotes/origin
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/refs/remotes/origin
-chmod 0750 root/static/js/jquery-validation/.git/refs/remotes/origin
+chmod 0700 root/static/js/jquery-validation/.git/refs/remotes/origin
 chown 1011 root/static/js/jquery-validation/.git/refs/remotes/origin/HEAD
 chgrp 1012 root/static/js/jquery-validation/.git/refs/remotes/origin/HEAD
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/refs/remotes/origin/HEAD
-chmod 0640 root/static/js/jquery-validation/.git/refs/remotes/origin/HEAD
+chmod 0600 root/static/js/jquery-validation/.git/refs/remotes/origin/HEAD
 chown 1011 root/static/js/jquery-validation/.git/refs/heads
 chgrp 1012 root/static/js/jquery-validation/.git/refs/heads
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/refs/heads
-chmod 0750 root/static/js/jquery-validation/.git/refs/heads
+chmod 0700 root/static/js/jquery-validation/.git/refs/heads
 chown 1011 root/static/js/jquery-validation/.git/refs/heads/master
 chgrp 1012 root/static/js/jquery-validation/.git/refs/heads/master
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/refs/heads/master
-chmod 0640 root/static/js/jquery-validation/.git/refs/heads/master
+chmod 0600 root/static/js/jquery-validation/.git/refs/heads/master
 chown 1011 root/static/js/jquery-validation/.git/packed-refs
 chgrp 1012 root/static/js/jquery-validation/.git/packed-refs
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/packed-refs
-chmod 0640 root/static/js/jquery-validation/.git/packed-refs
+chmod 0600 root/static/js/jquery-validation/.git/packed-refs
 chown 1011 root/static/js/jquery-validation/.git/info
 chgrp 1012 root/static/js/jquery-validation/.git/info
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/info
-chmod 0750 root/static/js/jquery-validation/.git/info
+chmod 0700 root/static/js/jquery-validation/.git/info
 chown 1011 root/static/js/jquery-validation/.git/info/exclude
 chgrp 1012 root/static/js/jquery-validation/.git/info/exclude
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/info/exclude
-chmod 0640 root/static/js/jquery-validation/.git/info/exclude
+chmod 0600 root/static/js/jquery-validation/.git/info/exclude
 chown 0 root/static/js/jquery-validation/.git/index
 chgrp 0 root/static/js/jquery-validation/.git/index
-touch -c -d "2012-12-22 05:52:12.0000000000" root/static/js/jquery-validation/.git/index
+touch -c -d "2012-12-24 04:13:14.0000000000" root/static/js/jquery-validation/.git/index
 chmod 0644 root/static/js/jquery-validation/.git/index
 chown 1011 root/static/js/jquery-validation/.git/hooks
 chgrp 1012 root/static/js/jquery-validation/.git/hooks
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks
-chmod 0750 root/static/js/jquery-validation/.git/hooks
+chmod 0700 root/static/js/jquery-validation/.git/hooks
 chown 1011 root/static/js/jquery-validation/.git/hooks/post-commit.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/post-commit.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/post-commit.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/post-commit.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/post-commit.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/post-receive.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/post-receive.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/post-receive.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/post-receive.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/post-receive.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/pre-commit.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/pre-commit.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/pre-commit.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/pre-commit.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/pre-commit.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/update.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/update.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/update.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/update.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/update.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/pre-rebase.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/pre-rebase.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/pre-rebase.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/pre-rebase.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/pre-rebase.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/post-update.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/post-update.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/post-update.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/post-update.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/post-update.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/pre-applypatch.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/pre-applypatch.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/pre-applypatch.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/pre-applypatch.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/pre-applypatch.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/commit-msg.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/commit-msg.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/commit-msg.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/commit-msg.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/commit-msg.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/applypatch-msg.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/applypatch-msg.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/applypatch-msg.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/applypatch-msg.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/applypatch-msg.sample
 chown 1011 root/static/js/jquery-validation/.git/hooks/prepare-commit-msg.sample
 chgrp 1012 root/static/js/jquery-validation/.git/hooks/prepare-commit-msg.sample
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/hooks/prepare-commit-msg.sample
-chmod 0750 root/static/js/jquery-validation/.git/hooks/prepare-commit-msg.sample
+chmod 0700 root/static/js/jquery-validation/.git/hooks/prepare-commit-msg.sample
 chown 1011 root/static/js/jquery-validation/.git/config
 chgrp 1012 root/static/js/jquery-validation/.git/config
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/config
-chmod 0640 root/static/js/jquery-validation/.git/config
+chmod 0600 root/static/js/jquery-validation/.git/config
 chown 1011 root/static/js/jquery-validation/.git/description
 chgrp 1012 root/static/js/jquery-validation/.git/description
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/description
-chmod 0640 root/static/js/jquery-validation/.git/description
+chmod 0600 root/static/js/jquery-validation/.git/description
 chown 1011 root/static/js/jquery-validation/.git/branches
 chgrp 1012 root/static/js/jquery-validation/.git/branches
 touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.git/branches
-chmod 0750 root/static/js/jquery-validation/.git/branches
+chmod 0700 root/static/js/jquery-validation/.git/branches
 chown 1011 root/static/js/jquery-validation/.git/HEAD
 chgrp 1012 root/static/js/jquery-validation/.git/HEAD
 touch -c -d "2012-12-20 14:04:00.0000000000" root/static/js/jquery-validation/.git/HEAD
-chmod 0640 root/static/js/jquery-validation/.git/HEAD
+chmod 0600 root/static/js/jquery-validation/.git/HEAD
 chown 1011 root/static/js/login.js
 chgrp 1012 root/static/js/login.js
-touch -c -d "2012-12-20 13:37:31.0000000000" root/static/js/login.js
-chmod 0640 root/static/js/login.js
-chown 1011 root/static/js/main.js
-chgrp 1012 root/static/js/main.js
-touch -c -d "2012-12-22 05:08:20.0000000000" root/static/js/main.js
-chmod 0640 root/static/js/main.js
+touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/login.js
+chmod 0600 root/static/js/login.js
+chown 0 root/static/js/main.js
+chgrp 0 root/static/js/main.js
+touch -c -d "2012-12-24 18:58:21.0000000000" root/static/js/main.js
+chmod 0644 root/static/js/main.js
 chown 1011 root/static/js/mersenne-twister.js
 chgrp 1012 root/static/js/mersenne-twister.js
-touch -c -d "2012-12-17 23:26:11.0000000000" root/static/js/mersenne-twister.js
+touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/mersenne-twister.js
 chmod 0600 root/static/js/mersenne-twister.js
 chown 1011 root/static/js/password_strength_plugin.js
 chgrp 1012 root/static/js/password_strength_plugin.js
-touch -c -d "2012-12-17 23:26:11.0000000000" root/static/js/password_strength_plugin.js
+touch -c -d "2012-12-23 16:26:50.0000000000" root/static/js/password_strength_plugin.js
 chmod 0600 root/static/js/password_strength_plugin.js
 chown 1011 root/xslt/ovpnc_config.xsd
 chgrp 1012 root/xslt/ovpnc_config.xsd

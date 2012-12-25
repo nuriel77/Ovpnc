@@ -1,7 +1,6 @@
 package Ovpnc::Controller::Api::Server;
 use warnings;
 use strict;
-use Ovpnc::Plugins::Connector;
 use File::Slurp;
 use Moose;
 use namespace::autoclean;
@@ -71,7 +70,7 @@ sub begin : Private {
 
     # Log user in if login params are provided
     # =======================================
-    Ovpnc::Controller::Api->auth_user( $c )
+    $c->controller('Api')->auth_user( $c )
         unless $c->user_exists();
 
     # Set the expiration time
@@ -100,7 +99,7 @@ around 'server_GET' => sub {
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( $c->controller('Api')->assign_params( $c ) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
@@ -116,7 +115,7 @@ around [
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params( $c ) )
+    $self->cfg( $c->controller->('Api')->assign_params( $c ) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )

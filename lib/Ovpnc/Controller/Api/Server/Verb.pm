@@ -1,6 +1,5 @@
 package Ovpnc::Controller::Api::Server::Verb;
 use warnings;
-use Ovpnc::Plugins::Connector;
 use Scalar::Util qw( looks_like_number );
 use strict;
 use Moose;

@@ -171,8 +171,9 @@ jQuery.validator.setDefaults({
                 // We can get the state list,
                 // since the country was already
                 // set by Catalyst FormFu
-                console.log('We got a default: ' + $("#country option:selected").attr('value'));
-                $.addCertificate().getStateList( $("#country option:selected").attr('value') );
+                var _default_country = $("#country option:selected").attr('value');
+                console.log('We got a default: ' + _default_country);
+                $.addCertificate().getStateList( _default_country );
             }    
             // If no country has been set,
         	// load from the cookie.
@@ -240,7 +241,7 @@ jQuery.validator.setDefaults({
             console.log('Cookie saved');
 
             // Warn user about changes [for debug only]
-            // return "Unsaved modifications";
+            return "Unsaved modifications";
         },
         //
         // Set check changes on form fields
@@ -409,6 +410,7 @@ jQuery.validator.setDefaults({
         // Get list of the states
         //
         getStateList: function (geonameId){
+            if ( window.DEBUG ) console.log( 'getStateList: ' + geonameId);
         	$.ajaxSetup({ async: true, cache: true  });
         	$.getJSON('http://api.geonames.org/childrenJSON', {
         			geonameId : geonameId,

@@ -101,18 +101,12 @@
 					</div>
 					<div class="clear"></div>
 				[% END %]
+
 			</div><!-- outer_centered -->
             <div id="pop-up" class="box_shadow"></div>
     	</div><!-- outer -->
 		<input id="username" type="hidden" name="[% username %]" />
 		<input id="geoUsername" type="hidden" name="[% geo_username %]" />
-        <script type="text/javascript">
-            $('#message').resizable({
-                grid: [ 20, 10 ],
-                start : function () { $('#message').css('max-height', '') },
-                stop : function () {  window.resized = 1 }   
-            });
-        </script>
 	</body>
 </html>
 [% END %]

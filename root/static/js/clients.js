@@ -404,8 +404,8 @@ var total_count = 0;
                     "properties": {name: "Edit", icon: "edit"},
                     "delete": {name: "Delete", icon: "delete"},
                     "sep1": "---------",
-                    "block": {name: "Block", icon: "copy"},
-                    "unblock": {name: "Unblock", icon: "paste"}
+                    "block": {name: "Block", icon: "block"},
+                    "unblock": {name: "Unblock", icon: "unblock"}
                 }
             });
             $('.context-menu-one').on('click', function(e){
