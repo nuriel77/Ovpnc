@@ -125,6 +125,7 @@ select:focus {
     height:16px;
     cursor:pointer;
     float:left;
-    margin:-39px 0 0 383px;
+    margin:-39px 0 0 508px;
     background: url(/static/images/edit-icon.png) no-repeat center left;
 }
+

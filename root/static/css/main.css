@@ -249,6 +249,13 @@ fieldset .constraint_required label:after {
 .form_row { min-width:275px;float:right; }
 .form_row_select { min-width:283px;float:right; }
 #add_form { font-size: 0.9em; }
+.ajaxLoader{
+    width:16px;
+    height:16px;
+    background-image: url(/static/images/ajax-loader.gif);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
 #ajaxLoaderFloating{
     background-image: url(/static/images/ajax-loader-floating.gif);
     background-repeat: no-repeat;

@@ -234,16 +234,16 @@ jQuery.validator.setDefaults({
                 state: $('#state').attr('value'),
                 city: $('#city').attr('value')
             });
-
+/*
             $.cookie( p.cookie_name, Settings, {
                 expires: p.expires ? p.expires : 30,
                 path: p.path_name ? p.path_name : ''
             });
-
+*/
             console.log('Cookie saved');
 
             // Warn user about changes [for debug only]
-            return "Unsaved modifications";
+            //return "Unsaved modifications";
         },
         //
         // Set check changes on form fields
@@ -263,14 +263,14 @@ jQuery.validator.setDefaults({
         setSelectBind: function(){
         	$('select#country').change(function(){	
         		// Ajax loader
-        		$('#t_state').html( $.Ovpnc().ajaxLoader );	
+                $.addCertificate().stateAjaxLoader();
         		var geonameId = $("select#country option:selected").attr('value');
         		$.addCertificate().getStateList(geonameId);
         		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
         	});
         	$('select#state').change(function(){
         		// Ajax loader
-        		$('#t_city').html( $.Ovpnc().ajaxLoader );
+                $.addCertificate().cityAjaxLoader();
         		var geonameId = $("select#state option:selected").attr('value');
         		$.addCertificate().getCityList( geonameId );
         		$.addCertificate.form_modified = $.Ovpnc().setConfirmExit( $.addCertificate.form_modified, $.addCertificate().confirmExit );
@@ -357,21 +357,21 @@ jQuery.validator.setDefaults({
         getUserGeolocation: function(){
         	if ( navigator.geolocation ) {
         	    navigator.geolocation.getCurrentPosition(function(position) {
-        			$('#t_country').html( $.Ovpnc().ajaxLoader );	
+                    // Apply ajax loader
+                    $.addCertificate().countryAjaxLoader();
+                    // Exec ajax call
         		 	$.ajaxSetup({ async: true, cache: true });
         	        $.getJSON('http://ws.geonames.org/countryCode', {
         	            lat: position.coords.latitude,
         	            lng: position.coords.longitude,
         	            type: 'JSON'
         	        }, function( result ) {
-
-        				$('#t_country').empty();
+        				$('#s_country').find('.ajaxLoader').remove();
         				console.log('CountryName: ' + result.countryName );
         				$.addCertificate().setSelectCountryGeonameId( result.countryName )		
-
         	        }).error(function(xhr, ajaxOptions, thrownError) {
         				if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
-        				$('#t_country').empty();
+        				$('#s_country').find('.ajaxLoader').remove();
         				return false;
         		    }).complete(function(){
         		 		$.ajaxSetup({ async: true, cache: false });
@@ -455,28 +455,28 @@ jQuery.validator.setDefaults({
         		if ( states === undefined || states.length === 0 ){
         			$('select#state').html('<option value="">-</option>');
         			// Remove ajax-loader
-        			$('#t_state').empty();	
+        			$('#s_state').find('.ajaxLoader').remove();	
         			return false;
         		}
         		// Empty previous list
         		$('select#state').empty();
     	    	// Append the options list
         		$.addCertificate().populateStates(states);
-        		// Remove ajax-loader
-        		$('#t_state').empty();	
-
+        		// Remove previous (state) ajax-loader
+        		$('#s_state').find('.ajaxLoader').remove();	
         		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.state !== undefined && $.Ovpnc.cookie.state !== ''){
         			$("select#state option[value='" + $.Ovpnc.cookie.state + "']").prop('selected',true);
         		}
-
                 var geoId = $("select#state option:selected").attr('value');
+                // Add client ajax loader
+                $.addCertificate().cityAjaxLoader();
         		// Update city list	
-        		$('#t_city').html( $.Ovpnc().ajaxLoader );
         		$.addCertificate().getCityList( geoId );
             }).error(function(xhr, ajaxOptions, thrownError) {
         		if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
-        		$('#t_state').empty();	
+        		$('#s_state').find('.ajaxLoader').remove();	
+        		$('#s_city').find('.ajaxLoader').remove();	
         		return false;
         	}).complete(function(){
     	    	// Select state if it is found in cookie
@@ -485,6 +485,39 @@ jQuery.validator.setDefaults({
         		}
     	    	$.ajaxSetup({ async: true, cache: false  });
         	});
+        },
+        //
+        // Add ajax loader near country select
+        //
+        countryAjaxLoader: function (){
+            var tCountry = document.createElement('div');
+            $(tCountry).css({
+                float: 'right',
+                margin: '-9px 3px 0 0'
+            }).addClass('ajaxLoader');
+            $('#s_country').find('.select.label').append( tCountry );
+        },
+        //
+        // Add ajax loader near state select
+        //
+        stateAjaxLoader: function (){
+            var tState = document.createElement('div');
+            $(tState).css({
+                float: 'right',
+                margin: '3px 3px 0 0'
+            }).addClass('ajaxLoader');
+            $('#s_state').find('.select.label').append( tState );
+        },
+        //
+        // Add ajax loader near city select
+        //
+        cityAjaxLoader: function (){
+            var tCity = document.createElement('div');
+            $(tCity).css({
+                float: 'right',
+                margin: '-9px 3px 0 0'
+            }).addClass('ajaxLoader');
+            $('#s_city').find('.select.label').append( tCity );
         },
         //
         // Get list of cities for this land
@@ -500,7 +533,7 @@ jQuery.validator.setDefaults({
 		        if ( cities === undefined || cities.length === 0 ){
         			$('select#city').html('<option value="">-</option>');
         			// Remove ajax-loader
-        			$('#t_city').empty();		
+        			$('#s_city').find('.ajaxLoder').remove();		
         			return false;
         		}
 
@@ -510,7 +543,7 @@ jQuery.validator.setDefaults({
         		// Append the options list
         		$.addCertificate().populateCities(cities);
 		        // Remove ajax-loader
-        		$('#t_city').empty();		
+        		$('#s_city').find('.ajaxLoader').remove();		
         		// Select city if it is found in cookie
         		if ( $.Ovpnc.cookie !== undefined && $.Ovpnc.cookie.city !== undefined && $.Ovpnc.cookie.city !== ''){
         			//console.log( 'City is now '+$("select#city option:selected").attr('value') );
@@ -520,7 +553,7 @@ jQuery.validator.setDefaults({
         	}).error(function(xhr, ajaxOptions, thrownError) {
         		if ( window.DEBUG ) console.debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
-        		$('#t_city').empty();	
+        		$('#s_city').find('.ajaxLoader').remove();
         		return false;
         	}).complete(function(){
         		// Select city if it is found in cookie
@@ -549,14 +582,13 @@ jQuery.validator.setDefaults({
         		maxRows : 1,
         		username : $.Ovpnc().geoUsername()
         	}, function( result ) {		
-
         		if ( result === undefined || result.geonames === undefined || result.geonames.length === 0){
         			$('select#country').html('<option value="">Please edit manually</option>');
         			console.log( "No country? %o" + result );
         			return false;
         		}
-        
-        		$('#t_state').html( $.Ovpnc().ajaxLoader );
+                // Append ajax loader for next select field (country)
+                $.addCertificate().stateAjaxLoader();
         		$('select#country option').sort(NASort).appendTo('select#country');
         		$("select#country option[value='" + result.geonames[0].geonameId + "']").prop('selected',true);
         		$.addCertificate().getStateList( result.geonames[0].geonameId );
