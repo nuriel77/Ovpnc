@@ -129,3 +129,21 @@ select:focus {
     background: url(/static/images/edit-icon.png) no-repeat center left;
 }
 
+.radioGroup{
+    padding-top: 10px;
+    margin-bottom:10px;
+ /*   min-width: 602px;
+    width: 40%; */
+    float: left;
+}
+.fieldSetForm{ margin:-10px -8px 45px 0; }
+.radiogroup { margin-top:-5px; } 
+.radiogroup input { margin: 0 3px 0 80px ; }
+.simpletable{
+    border: 1px solid silver;
+    margin: 0 0 0 10px ;
+    padding: 10px;
+}
+.simpletable tr{ 
+    margin-top: 10px;
+}

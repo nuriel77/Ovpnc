@@ -234,12 +234,12 @@ jQuery.validator.setDefaults({
                 state: $('#state').attr('value'),
                 city: $('#city').attr('value')
             });
-/*
+
             $.cookie( p.cookie_name, Settings, {
                 expires: p.expires ? p.expires : 30,
                 path: p.path_name ? p.path_name : ''
             });
-*/
+
             console.log('Cookie saved');
 
             // Warn user about changes [for debug only]

@@ -3,235 +3,265 @@ attributes_xml:
   id: "add_certificate_form"
 indicator: submit
 elements:
-      # Fieldset
+      # Certificate type
       - type: Block
-        tag: fieldset
+        tag: div
         attributes_xml:
-          class: "box_shadow"
           id: "middle_div"
         elements:
-              # Legend
+              # Fieldset top
               - type: Block
-                tag: legend
-                content_xml: "Generate a new Certificate"
-              - type: Block
-                tag: div
+                tag: fieldset
                 attributes_xml:
-                  style: "padding:5px;"
-              # Table
-              - type: SimpleTable
-                rows: 
-                  -
-                      # Username
+                  class: "box_shadow fieldSetForm"
+                  style: "max-height:40px;padding:20px"
+                elements:
+                      # Legend
                       - type: Block
-                        tag: div
-                        elements:
-                              - type: Text
-                                name: username
-                                label: "Username:"
-                                attributes_xml:
-                                  class: "form_row"
-                                  id: "username"
-                                  placeholder: "someuser"
-                                  autofocus: "autofocus"
-                                constraints:
-                                   - type: Callback
-                                     message: "Username already exists"
-                                   - Required
-                                   - type: Regex
-                                     regex: '^[\-_a-zA-Z\d]*\z'
-                                   - type: MaxLength
-                                     max: 42
-                  -
-                      # Password
-                      - type: Block
-                        tag: div
-                        elements:
-                              - type: Password
-                                name: password
-                                label: "Password:"
-                                attributes_xml:
-                                  id: "password"
-                                  class: "form_row"
-                                constraints:
-                                  - Required
-                                  - type: MaxLength
-                                    max: 200
-                                  - type: MinLength
-                                    min: 8
-                                  - type: Regex
-                                    regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
-                                    message: "1 lowercase, uppercase, digit and character"
-                              - type: Block
-                                tag: div
-                                attributes_xml:
-                                  class: "generated_password"
-                                  style: "color:#000000"
-                                elements:
-                                      - type: Block
-                                        tag: span
-                                        attributes_xml:
-                                          id: "generated_password_text"
-                                          class: "generated_password"
-                                          onclick: "fnSelect(this.id);"
-                  -
-                      # Password repeated
-                      - type: Block
-                        tag: div
-                        elements:
-                              - type: Password
-                                name: password2
-                                label: "Repeat:"
-                                attributes_xml:
-                                  id: "password2"
-                                  class: "form_row"
-                                constraints:
-                                  - Required
-                                  - type: MaxLength
-                                    max: 72
-                                  - type: Regex
-                                    regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
-                                    message: "" 
-                  -
-                      # Placehoder for salt callback
-                      - type: Hidden
-                        name: salt
-                        label: "salt"
+                        tag: legend
+                        content_xml: "Add Certificate - Type"
                         attributes_xml:
-                          style: "display:none"
-                  -
-                      # Generate password button
+                          style: "margin-left:5px;"
+                      - type: Radiogroup
+                        name: certtype
+                        options:
+                          - [ 'c', 'Client' ]
+                          - [ 's', 'Server' ]
+                          - [ 'r', 'Root' ] 
+              # Fieldset main
+              - type: Block
+                tag: fieldset
+                attributes_xml:
+                  class: "box_shadow fieldSetForm"
+                elements:
+                      # Legend
+                      - type: Block
+                        tag: legend
+                        content_xml: "Certificate Details"
                       - type: Block
                         tag: div
-                        content_xml: "<div id='generatePassword' onclick='$.Ovpnc().generatePasswordClick();return false;'>Generate Password</div>"
-                  -
-                      # Certificate name
-                      - type: Block
-                        tag: div
-                        elements:
-                              - type: Text
-                                name: certname
-                                label: "Cert Name:"
-                                attributes_xml:
-                                  title: "Certificate's name"
-                                  placeholder: "my_certificate_1"
-                                  class: "form_row"
-                                  id: "certname"
-                                constraints:
-                                   - Required
-                                   - type: Regex
-                                     regex: '^[\-_a-zA-Z\d\s]*\z'
-                                   - type: MaxLength
-                                     max: 42
-                  -   
-                      # Country
-                      - type: Block
-                        tag: div
-                        elements:
+                        attributes_xml:
+                          style: "padding:5px;"
+                      # Table
+                      - type: SimpleTable
+                        rows:
+                          -
                               - type: Block
                                 tag: div
                                 attributes_xml:
-                                  id: "s_country"
-                                  style: "margin-left:1px;"
+                                  style: "padding:5px;width:575px;"
+                                  id: "formTableBorder"
+                          -
+                              # Username
+                              - type: Block
+                                tag: div
                                 elements:
-                                      - type: Select
-                                        name: C
-                                        label: "Country:"
+                                      - type: Text
+                                        name: username
+                                        label: "Username:"
                                         attributes_xml:
-                                          id: "country"
-                                          class: "form_row_select r_auto styled"
-                                        options:
-                                          - [ 'placeholder', 'Loading country list...' ]
+                                          class: "form_row"
+                                          id: "username"
+                                          placeholder: "someuser"
+                                          autofocus: "autofocus"
                                         constraints:
-                                          - Required
+                                           - type: Callback
+                                             message: "Username already exists"
+                                           - Required
+                                           - type: Regex
+                                             regex: '^[\-_a-zA-Z\d]*\z'
+                                           - type: MaxLength
+                                             max: 42
+                          -
+                              # Certificate name
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Text
+                                        name: certname
+                                        label: "Cert Name:"
+                                        attributes_xml:
+                                          title: "Certificate's name"
+                                          placeholder: "my_certificate_1"
+                                          class: "form_row"
+                                          id: "certname"
+                                        constraints:
+                                           - Required
+                                           - type: Regex
+                                             regex: '^[\-_a-zA-Z\d\s]*\z'
+                                           - type: MaxLength
+                                             max: 42
+                          -
+                              # Country
                               - type: Block
                                 tag: div
                                 elements:
                                       - type: Block
                                         tag: div
                                         attributes_xml:
-                                          id: "edit_manually"
-                                          title: "Edit manually"
-                                          onclick: "$.addCertificate().editManually();"
-                  -   
-                      # State
+                                          id: "s_country"
+                                          style: "margin-left:1px;"
+                                        elements:
+                                              - type: Select
+                                                name: C
+                                                label: "Country:"
+                                                attributes_xml:
+                                                  id: "country"
+                                                  class: "form_row_select r_auto styled"
+                                                options:
+                                                  - [ 'placeholder', 'Loading country list...' ]
+                                                constraints:
+                                                  - Required
+                                      - type: Block
+                                        tag: div
+                                        elements:
+                                              - type: Block
+                                                tag: div
+                                                attributes_xml:
+                                                  id: "edit_manually"
+                                                  title: "Edit manually"
+                                                  onclick: "$.addCertificate().editManually();"
+                          -
+                              # State
+                              - type: Block
+                                tag: div
+                                attributes_xml:
+                                  id: "s_state"
+                                elements:
+                                      - type: Select
+                                        name: ST
+                                        label: "State:"
+                                        attributes_xml:
+                                          id: "state"
+                                          class: "form_row_select r_auto styled"
+                                        options:
+                                          - [ 'placeholder', '-' ]
+                                        constraints:
+                                          - Required
+                          -
+                              # City / Location
+                              - type: Block
+                                tag: div
+                                attributes_xml:
+                                  id: "s_city"
+                                elements:
+                                      - type: Select
+                                        name: L
+                                        label: "Location:"
+                                        attributes_xml:
+                                          id: "city"
+                                          class: "form_row_select r_auto styled"
+                                        options:
+                                          - [ 'placeholder', '-' ]
+                                        constraints:
+                                          - Required
+                          -
+                              # Password
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Password
+                                        name: password
+                                        label: "Password:"
+                                        attributes_xml:
+                                          id: "password"
+                                          class: "form_row"
+                                        constraints:
+                                          - Required
+                                          - type: MaxLength
+                                            max: 200
+                                          - type: MinLength
+                                            min: 8
+                                          - type: Regex
+                                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                                            message: "1 lowercase, uppercase, digit and character"
+                                      - type: Block
+                                        tag: div
+                                        attributes_xml:
+                                          class: "generated_password"
+                                          style: "color:#000000"
+                                        elements:
+                                              - type: Block
+                                                tag: span
+                                                attributes_xml:
+                                                  id: "generated_password_text"
+                                                  class: "generated_password"
+                                                  onclick: "fnSelect(this.id);"
+                          -
+                              # Password repeated
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Password
+                                        name: password2
+                                        label: "Repeat:"
+                                        attributes_xml:
+                                          id: "password2"
+                                          class: "form_row"
+                                        constraints:
+                                          - Required
+                                          - type: MaxLength
+                                            max: 72
+                                          - type: Regex
+                                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                                            message: ""
+                          -
+                              # Placehoder for salt callback
+                              - type: Hidden
+                                name: salt
+                                label: "salt"
+                                attributes_xml:
+                                  style: "display:none"
+                          -
+                              # Generate password button
+                              - type: Block
+                                tag: div
+                                content_xml: "<div id='generatePassword' onclick='$.Ovpnc().generatePasswordClick();return false;'>Generate Password</div>"
+                          -
+                              # Email
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Text
+                                        name: email
+                                        label: "Email:"
+                                        attributes_xml:
+                                          id: "email"
+                                          class: "form_row"
+                                          placeholder: "user@email.com"
+                                        constraints:
+                                          - type: Callback
+                                            message: "Email already exists"
+                                          - Required
+                                          - Email
+                                          - type: MinLength
+                                            min: 6
+                                          - type: MaxLength
+                                            max: 72
+                      # Reset / submit
                       - type: Block
                         tag: div
                         attributes_xml:
-                          id: "s_state"
+                          style: "float:left;margin-left:180px"
                         elements:
-                              - type: Select
-                                name: ST
-                                label: "State:"
+                              - type: Block
+                                tag: div
                                 attributes_xml:
-                                  id: "state"
-                                  class: "form_row_select r_auto styled"
-                                options:
-                                  - [ 'placeholder', '-' ]
-                                constraints:
-                                  - Required
-                  -
-                      # City / Location
-                      - type: Block
-                        tag: div
-                        attributes_xml:
-                          id: "s_city"
-                        elements:
-                              - type: Select
-                                name: L
-                                label: "Location:"
+                                  class: "resetForm"
+                                elements:
+                                      - type: Reset
+                                        name: reset
+                                        attributes_xml:
+                                          onclick: "$.Forms().resetForm( $('#add_certificate_form') );"
+                                          value: "Reset"
+                              - type: Block
+                                tag: div
                                 attributes_xml:
-                                  id: "city"
-                                  class: "form_row_select r_auto styled"
-                                options:
-                                  - [ 'placeholder', '-' ]
-                                constraints:
-                                  - Required
-                  -
-                      # Email
-                      - type: Block
-                        tag: div
-                        elements:
-                              - type: Text
-                                name: email
-                                label: "Email:"
-                                attributes_xml:
-                                  id: "email"
-                                  class: "form_row"
-                                  placeholder: "user@email.com"
-                                constraints:
-                                  - type: Callback
-                                    message: "Email already exists"
-                                  - Required
-                                  - Email
-                                  - type: MinLength
-                                    min: 6
-                                  - type: MaxLength
-                                    max: 72
-              # Reset / submit
-              - type: Block
-                tag: div
-                attributes_xml:
-                  style: "float:left;margin-left:180px"                  
-                elements:
-                      - type: Block
-                        tag: div
-                        attributes_xml:
-                          class: "resetForm"
-                        elements:
-                              - type: Reset
-                                name: reset
-                                attributes_xml:
-                                  onclick: "$.Forms().resetForm( $('#add_certificate_form') );"
-                                  value: "Reset"
-                      - type: Block
-                        tag: div
-                        attributes_xml:
-                          class: "submit_form"
-                        elements:
-                              - type: Submit
-                                name: submit
-                                attributes_xml:
-                                  id: "submit_add_certificate_form"
                                   class: "submit_form"
-                                  value: Submit
+                                elements:
+                                      - type: Submit
+                                        name: submit
+                                        attributes_xml:
+                                          id: "submit_add_certificate_form"
+                                          class: "submit_form"
+                                          value: Submit

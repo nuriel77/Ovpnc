@@ -53,7 +53,7 @@ window.alert = function(message) {
         $('#message').resizable({
             //animate: true,
             //animateEasing: "easeOutBounce",
-            grid: [ 20, 10 ],
+            grid: [ 10, 10 ],
             //helper : "resizable-helper",
             start : function () { $('#message').css('max-height', '') },
             stop : function () {  window.resized = 1 }
