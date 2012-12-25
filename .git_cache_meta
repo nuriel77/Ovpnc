@@ -1,5 +1,5 @@
-chown 0 .git_cache_meta
-chgrp 0 .git_cache_meta
+chown 1011 .git_cache_meta
+chgrp 1012 .git_cache_meta
 touch -c -d "2012-12-22 15:01:39.0000000000" .git_cache_meta
 chmod 0644 .git_cache_meta
 chown 0 .gitignore
@@ -90,6 +90,18 @@ chown 1011 lib/Ovpnc/Model/DB.pm
 chgrp 1012 lib/Ovpnc/Model/DB.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Model/DB.pm
 chmod 0640 lib/Ovpnc/Model/DB.pm
+chown 0 lib/Ovpnc/Plugin/ChainCA.pm
+chgrp 0 lib/Ovpnc/Plugin/ChainCA.pm
+touch -c -d "2012-12-23 15:36:45.0000000000" lib/Ovpnc/Plugin/ChainCA.pm
+chmod 0644 lib/Ovpnc/Plugin/ChainCA.pm
+chown 1011 lib/Ovpnc/Plugin/Connector.pm
+chgrp 1012 lib/Ovpnc/Plugin/Connector.pm
+touch -c -d "2012-12-18 11:58:02.0000000000" lib/Ovpnc/Plugin/Connector.pm
+chmod 0600 lib/Ovpnc/Plugin/Connector.pm
+chown 1011 lib/Ovpnc/Plugin/Sanity.pm
+chgrp 1012 lib/Ovpnc/Plugin/Sanity.pm
+touch -c -d "2012-12-20 21:25:41.0000000000" lib/Ovpnc/Plugin/Sanity.pm
+chmod 0640 lib/Ovpnc/Plugin/Sanity.pm
 chown 1011 lib/Ovpnc/Schema.pm
 chgrp 1012 lib/Ovpnc/Schema.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema.pm
@@ -230,10 +242,10 @@ chown 1008 openvpn/var/log/.INF
 chgrp 1012 openvpn/var/log/.INF
 touch -c -d "2012-12-15 01:14:59.0000000000" openvpn/var/log/.INF
 chmod 0660 openvpn/var/log/.INF
-chown 0 ovpnc.conf
-chgrp 0 ovpnc.conf
+chown 1011 ovpnc.conf
+chgrp 1012 ovpnc.conf
 touch -c -d "2012-12-24 03:20:06.0000000000" ovpnc.conf
-chmod 0644 ovpnc.conf
+chmod 0600 ovpnc.conf
 chown 1011 ovpnc.json
 chgrp 1012 ovpnc.json
 touch -c -d "2012-12-22 05:07:25.0000000000" ovpnc.json
@@ -790,6 +802,10 @@ chown 1011 root/static/js/Flexigrid/.git/HEAD
 chgrp 1012 root/static/js/Flexigrid/.git/HEAD
 touch -c -d "2012-12-15 02:06:39.0000000000" root/static/js/Flexigrid/.git/HEAD
 chmod 0600 root/static/js/Flexigrid/.git/HEAD
+chown 0 root/static/js/alert-override.js
+chgrp 0 root/static/js/alert-override.js
+touch -c -d "2012-12-24 19:03:41.0000000000" root/static/js/alert-override.js
+chmod 0644 root/static/js/alert-override.js
 chown 1011 root/static/js/certificates.js
 chgrp 1012 root/static/js/certificates.js
 touch -c -d "2012-12-22 15:33:31.0000000000" root/static/js/certificates.js

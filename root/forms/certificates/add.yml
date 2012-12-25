@@ -128,20 +128,37 @@ elements:
                       - type: Block
                         tag: div
                         elements:
-                              - type: Select
-                                name: C
-                                label: "Country:"
+                              - type: Block
+                                tag: div
                                 attributes_xml:
-                                  id: "country"
-                                  class: "form_row_select r_auto styled"
-                                options:
-                                  - [ 'placeholder', 'Loading country list...' ]
-                                constraints:
-                                  - Required
+                                  id: "s_country"
+                                  style: "margin-left:1px;"
+                                elements:
+                                      - type: Select
+                                        name: C
+                                        label: "Country:"
+                                        attributes_xml:
+                                          id: "country"
+                                          class: "form_row_select r_auto styled"
+                                        options:
+                                          - [ 'placeholder', 'Loading country list...' ]
+                                        constraints:
+                                          - Required
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Block
+                                        tag: div
+                                        attributes_xml:
+                                          id: "edit_manually"
+                                          title: "Edit manually"
+                                          onclick: "$.addCertificate().editManually();"
                   -   
                       # State
                       - type: Block
                         tag: div
+                        attributes_xml:
+                          id: "s_state"
                         elements:
                               - type: Select
                                 name: ST
@@ -157,6 +174,8 @@ elements:
                       # City / Location
                       - type: Block
                         tag: div
+                        attributes_xml:
+                          id: "s_city"
                         elements:
                               - type: Select
                                 name: L

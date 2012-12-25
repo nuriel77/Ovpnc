@@ -6,11 +6,9 @@ jQuery.validator.setDefaults({
         username: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9_]</div>",
         address: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9\\-\\.\\(\\) ]</div>",
         certname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
-        phone: "<div style='margin-left:40px;'>Invalid input, allowed regex: [0-9\\-\\.\\(\\) ]</div>"
     },
     rules: {
         username: { test_regex: "([a-zA-Z0-9_]*)" },
-        phone: { test_regex: "([0-9\-\.\(\) ]*)" },
         certname: { test_regex: "[a-zA-Z\-\'\. ]*" },
         address: { test_regex: "([a-zA-Z0-9\-\.\'\(\) ]*)" }
     },
@@ -36,7 +34,7 @@ jQuery.validator.setDefaults({
     };
 
 	// New global vars:
-	$.addCertificate.edit_country = 0;
+	$.addCertificate.edit_manually = 0;
 	$.addCertificate.form_modified = 0;
     $.addCertificate.pathname = window.location.pathname;
 	$.addCertificate.html_mem = new Array();
@@ -74,30 +72,33 @@ jQuery.validator.setDefaults({
         	});
         },
         //
+        // Edit manually (not via select land/state/city)
+        //
+        editManually: function (){
+            if ( window.DEBUG ) console.log('Edit manually clicked');
+            if ( $.addCertificate.edit_manually === 0 ){
+                $.addCertificate.edit_manually = 1;
+                // Save current select elements
+                $('.r_auto').each(function(f,g){
+                    $.addCertificate.html_mem.push(g);
+                });
+                $.addCertificate().buildLocationInputs();
+                $.addCertificate().updateSelectRules();
+                $.addCertificate().checkChanges();
+                return;
+            }
+            else {
+                $.addCertificate.edit_manually = 0;
+                $.addCertificate().buildLocationSelects();
+                $.addCertificate().updateSelectRules();
+                $.addCertificate().checkChanges();
+                return;
+            }
+        },        
+        //
         // Sets bindings for click events
         // 
-        setClickBind: function(){
-        	if (typeof events !== "function"){
-        		$('#edit_country').click(function(){
-        			if ( $.addCertificate.edit_country === 0 ){
-                        $.addCertificate.edit_country = 1;
-                        $('.r_auto').each(function(f,g){
-                            $.addCertificate.html_mem.push(g);
-                        });
-                        $.addCertificate().buildLocationInputs();
-                        $.addCertificate().updateSelectRules();
-                        $.addCertificate().checkChanges();
-                        return;
-                    }
-                    else {
-                        $.addCertificate.edit_country = 0;
-                        $.addCertificate().buildLocationSelects();
-                        $.addCertificate().updateSelectRules();
-                        $.addCertificate().checkChanges();
-                        return;
-                    }
-                });
-            }
+        setClickBind: function (){
             $.addCertificate().checkChanges();
         },
         //
@@ -107,14 +108,15 @@ jQuery.validator.setDefaults({
         updateSelectRules: function(){
         	// Must run this to be
         	// able to use 'add'
-        	$('#main_form').validate();
+            if ( window.DEBUG ) console.log( 'at updateSelectRules' );
+        	$('#add_certificate_form').validate();
         	for (var i in $.addCertificate().elems){
         		//console.log(addCertificate.elems[i]);
         		$("#"+$.addCertificate().elems[i]).rules("add",{
         			maxlength: 48
         		});
         	}
-        	if ($.addCertificate.edit_country === 0){
+        	if ($.addCertificate.edit_manually === 0){
         		for (var i in $.addCertificate().elems){
         			$("#"+$.addCertificate().elems[i]).rules("remove", "required rangelength");
         		}
@@ -188,7 +190,7 @@ jQuery.validator.setDefaults({
         			// We got letters, this means that user
         			// inputed manually, therefore set to 
         			// manual editing and fill in values from cookie
-        			$('#edit_country').click();
+        			$('#edit_manually').click();
         			$('#country').attr('value', cookie_data.country);
         			$('#state').attr('value', cookie_data.state);
         			$('#city').attr('value', cookie_data.city);
@@ -280,8 +282,7 @@ jQuery.validator.setDefaults({
         setFormEvents: function(){
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
-                e.preventDefault();
-                $.Ovpnc().setAjaxLoading();
+                $.Ovpnc().setAjaxLoading(1);
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
                 if ( _pw_length.length < 8 ) {
@@ -325,16 +326,17 @@ jQuery.validator.setDefaults({
                     data: {
                         name : $('#name').attr('value'),
                         email : $('#email').attr('value'),
-                        country : ( $.addCertificate.edit_country ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
-                        state :  ( $.addCertificate.edit_country ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
-                        city :   ( $.addCertificate.edit_country ? $('#city').attr('value') : $("select#city option:selected").attr('value') ) 
+                        country : ( $.addCertificate.edit_manually ? $('#country').attr('value') : $("select#country option:selected").attr('value') ),
+                        state :  ( $.addCertificate.edit_manually ? $('#state').attr('value') : $("select#state option:selected").attr('value') ),
+                        city :   ( $.addCertificate.edit_manually ? $('#city').attr('value') : $("select#city option:selected").attr('value') ) 
                     },
                     cookie_name: "Ovpnc_addCertificate_Form_Settings",
                     path_name: $.addCertificate.pathname,
                     modified: $.addCertificate.form_modified,
                     expires: 14
                 });
-
+    
+                /*
                 $.Ovpnc().ajaxCall({
                     url: '/certificates/add',
                     data: $("form#add_client_form").serialize(),
@@ -344,7 +346,9 @@ jQuery.validator.setDefaults({
                     loader: 1,
                     timeout: 15000
                 });
-
+                */
+                //xxx
+                return true;
             });
         },
         //
@@ -384,8 +388,18 @@ jQuery.validator.setDefaults({
         //
         buildLocationSelects: function(){
         	var inn = $.addCertificate().elems;
+            if ( window.DEBUG ) console.log("at buildLocationSelects: %o", $.addCertificate.html_mem );
+            // Remove text inputs
+            $.each( $('.oldSelect'), function(){
+                $(this).removeClass('oldSelect')
+                       .removeClass('text label')
+                       .addClass('select label');
+                $(this).children('input')
+                       .remove();
+            });
+            // Replace with cached select lists
         	for ( var i in $.addCertificate.html_mem ){
-        		$('#s_' + inn[i]).html( $.addCertificate.html_mem[i] );
+        		$('#s_'+inn[i]).children('div').append( $.addCertificate.html_mem[i] );
         	}
         	$.addCertificate().setSelectBind();
         },
@@ -393,10 +407,30 @@ jQuery.validator.setDefaults({
         // Build location inputs
         //
         buildLocationInputs: function(){
+            if ( window.DEBUG ) console.log( 'at buildLocationInputs' );
+            // Get field names(country/state/city)
         	var inn = $.addCertificate().elems;
+            // Remove the select fields
+            $.each( $('.select'), function(){
+                $(this).first('div')
+                       .removeClass('select label')
+                       .addClass('text label')
+                       .addClass('oldSelect');
+                $(this).children('select')
+                       .remove();
+            });
+            // Replace with text inputs
         	for (var i in inn){
-                $('#s_' + inn[i]).html('<input name="'+inn[i]+'" id="'+inn[i]+'" placeholder="'+inn[i]+' name" />');
-        	}
+                var iDiv    = document.createElement('div'),
+                    iElem   = document.createElement('input');
+                $( iElem ).attr({
+                    name: inn[i],
+                    id: inn[i],
+                    class: 'form_row',
+                    placeholder: inn[i] + ' name'
+                });
+                $('#s_'+inn[i]).children('div').append( iElem );
+            }
         },
         //
         // Populate the state select list

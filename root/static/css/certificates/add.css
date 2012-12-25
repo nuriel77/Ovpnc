@@ -120,3 +120,11 @@ select:focus {
     opacity:0.9;
 }
 
+#edit_manually{
+    width:16px;
+    height:16px;
+    cursor:pointer;
+    float:left;
+    margin:-39px 0 0 383px;
+    background: url(/static/images/edit-icon.png) no-repeat center left;
+}

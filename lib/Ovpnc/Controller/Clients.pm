@@ -105,8 +105,7 @@ Add a client
             : Sitemap
     {
         my ( $self, $c ) = @_;
-    #use Data::Dumper;
-    #die Dumper $c->plugins;
+
         $c->stash->{title}     = 'Clients: Add a new client';
         my $form = $c->stash->{form};
 
@@ -121,15 +120,12 @@ Add a client
                 my $random_data = read_random_entropy( 64,
                     $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
                 ); 
-        
                 # "Hexify" data
                 # =============
                 my $salt = unpack("H*", $random_data);
-    
                 # Set the salt field
                 # ==================
-                $form->add_valid( 'salt', $salt );
-    
+                $form->add_valid( 'salt', $salt );    
                 # Return salt+password
                 # ====================
                 return $salt.shift;
@@ -163,93 +159,90 @@ Add a client
                         { name => 'client' },
                         { select   => 'id' },   
                     );
-                }
-                catch { push @{$c->stash->{error}}, $_; };
-    
-                try {
-                    $c->model('DB::UserRole')
-                        ->create(
-                            {
-                                user_id => $_client->id,
-                                role_id => $_client_role_id->next->id,
-                            }
-                        );
-                } catch {
-                    $error_clean = $_;
-                    $error = $_;
-                };
-    
-                # Create client configuration file
-                # ================================
-                if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
-                    #$self->_error($c,
-                    #    "Cannot create ccd file for " . $_client->username
-                    #    . ": directory '" . $c->config->{openvpn_ccd}
-                    #    . "' does not exists or is not writable!" );
-                }
-    
-                my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
-    
-                open (my $FILE, '>', $_file);
-                    #or $self->_error($c, "Cannot create ccd file for "
-                    #    . $_client->username . ': ' . $!);
-                print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
-    
-                ## For Debug: -- remove
-                print $FILE "\n#Generated from:\n" . $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n";
-    
-                close $FILE;
-                # Set permissions and ownership
-                # =============================
-                my ( $uid, $gid ) = $self->_get_user_group_id( $c );
-                chown $uid, $gid, $_file
-                    or $self->_error($c, " chmod error '" . $_file . "': " . $!);
-    
-                chmod 0640, $c->config->{openvpn_ccd} . '/' . $_client->username
-                    or $self->_error($c, " chown error '" . $_file . "': " . $!);
-                    
-                # Rollback on errors
-                # ==================
-                $_client->delete  if $c->stash->{error};
-    
-                push (@{$c->flash->{success_messages}},
-                    "Client \\'" . $_client->username . "\\' added successfully.");
-    
-                $c->response->redirect( $c->uri_for('add') );
-                return;
             }
-
-            # Check if any errors in form
-            # FormFu handles this automatically
-            # but we are using ajax for this
-            # call, so we need to override
-            # FormFu and send the errors back
+            catch { push @{$c->stash->{error}}, $_; };
+    
+            try {
+                $c->model('DB::UserRole')
+                    ->create(
+                        {
+                            user_id => $_client->id,
+                            role_id => $_client_role_id->next->id,
+                        }
+                    );
+            } catch {
+                $error_clean = $_;
+                $error = $_;
+            };
+    
+            # Create client configuration file
             # ================================
-            if ( $form->has_errors ) {
-                for ( @{$form->get_errors} ){
-                    try  { 
-                        #push @{$c->stash->{fields_error}} , $_->name;
-                        #push @{$c->stash->{error}},
-                        #    "Error in field: '" . $_->name . "': " . $_->message
-                        #    . " - " . $_->type
-                        #    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                        #    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
-                    }
-                    catch {
-                         #push @{$c->stash->{error}}, $_;
-                    };
-                }
-    
-                $c->res->headers->header('Content-Type' => 'text/html');
-                # Add js / css
-                # ============
-                $c->controller('Root')->include_default_links;
-                $c->forward('View::HTML');    
-                return;
+            if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
+                #$self->_error($c,
+                #    "Cannot create ccd file for " . $_client->username
+                #    . ": directory '" . $c->config->{openvpn_ccd}
+                #    . "' does not exists or is not writable!" );
             }
+    
+            my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
+            open (my $FILE, '>', $_file);
+                #or $self->_error($c, "Cannot create ccd file for "
+                #    . $_client->username . ': ' . $!);
+            print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
+    
+            ## For Debug: -- remove
+            print $FILE "\n#Generated from:\n" . $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n";
+    
+            close $FILE;
+            # Set permissions and ownership
+            # =============================
+            my ( $uid, $gid ) = $self->_get_user_group_id( $c );
+            chown $uid, $gid, $_file
+                or $self->_error($c, " chmod error '" . $_file . "': " . $!);
+    
+            chmod 0640, $c->config->{openvpn_ccd} . '/' . $_client->username
+                or $self->_error($c, " chown error '" . $_file . "': " . $!);
+                    
+            # Rollback on errors
+            # ==================
+            $_client->delete  if $c->stash->{error};
+    
+            push (@{$c->flash->{success_messages}},
+                "Client \\'" . $_client->username . "\\' added successfully.");
+            $c->response->redirect( $c->uri_for('add') );
+            return;
+        }
+
+        # Check if any errors in form
+        # FormFu handles this automatically
+        # but we are using ajax for this
+        # call, so we need to override
+        # FormFu and send the errors back
+        # ================================
+        if ( $form->has_errors ) {
+            for ( @{$form->get_errors} ){
+                try  { 
+                    #push @{$c->stash->{fields_error}} , $_->name;
+                    #push @{$c->stash->{error}},
+                    #    "Error in field: '" . $_->name . "': " . $_->message
+                    #    . " - " . $_->type
+                    #    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                    #    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
+                }
+                catch {
+                     #push @{$c->stash->{error}}, $_;
+                };
+            }
+                 $c->res->headers->header('Content-Type' => 'text/html');
+            # Add js / css
+            # ============
+            $c->controller('Root')->include_default_links;
+            $c->forward('View::HTML');    
+            return;
+        }
     }
 
-
+    
 =head2 _db_error
 
 Handle Database error

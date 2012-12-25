@@ -1,5 +1,6 @@
 package Ovpnc::Controller::Certificates;
 use Module::Locate qw(locate);
+use Ovpnc::Plugin::ChainCA 'read_random_entropy';
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 scalar locate('JSON::XS')    ? 0 : do { use JSON::XS; };
 use Moose;
@@ -60,17 +61,19 @@ around [qw(index add)] => sub {
     }
 };
 
+
 =head2 begin
 
 Before any action
 
 =cut
 
-sub begin : Private {
-    my ( $self, $c ) = @_;
-    $c->stash->{title}     = ucfirst($c->action);
-    $c->stash->{this_link} = $c->action;
-}
+    sub begin : Private {
+        my ( $self, $c ) = @_;
+        $c->stash->{title}     = ucfirst($c->action);
+        $c->stash->{this_link} = $c->action;
+    }
+
 
 
 =head2 index
@@ -79,18 +82,18 @@ Main certificates page
 
 =cut
 
-sub index : Path
-          : Args(0)
-          : Does('ACL')
-            AllowedRole('admin')
-            AllowedRole('can_edit')
-            ACLDetachTo('denied')
-          : Does('NeedsLogin')
-          : Sitemap
-{
-    my ( $self, $c ) = @_;
-    $c->stash->{content} = 'This will be certificates management main index page';
-}
+    sub index : Path
+              : Args(0)
+              : Does('ACL')
+                AllowedRole('admin')
+                AllowedRole('can_edit')
+                ACLDetachTo('denied')
+              : Does('NeedsLogin')
+              : Sitemap
+    {
+        my ( $self, $c ) = @_;
+        $c->stash->{content} = 'This will be certificates management main index page';
+    }
 
 
 =head2 add
@@ -99,101 +102,25 @@ Add a new certificate
 
 =cut
 
-sub add : Path('add')
-        : Args(0)
-        : FormConfig
-        : Does('ACL')
-          AllowedRole('admin')
-          AllowedRole('can_edit')
-          ACLDetachTo('denied')
-        : Does('NeedsLogin')
-        : Sitemap
-{
-    my ( $self, $c ) = @_;
-
-    # Force submit param
-    # ==================
-    $c->req->params->{'submit'} ||= 'Submit';
-
-    $c->stash->{title}     = 'Clients: Add a new client';
-
-    my $form = $c->stash->{form};
+    sub add : Path('add')
+            : Args(0)
+            : FormConfig
+            : Does('ACL')
+              AllowedRole('admin')
+              AllowedRole('can_edit')
+              ACLDetachTo('denied')
+            : Does('NeedsLogin')
+            : Sitemap
+    {
+        my ( $self, $c ) = @_;
     
-    # Verify all fields have been submitted
-    # FixMe: FormFu doesn't like ajax, check why
-    # ->submitted doesn't work (although forced
-    # submit param at start of this action)
-    # ==========================================
-    my @_keys = sort keys %{$c->req->params} if scalar keys %{$c->req->params} > 1;
-    my @_columns = qw[C ST L O OU CN key_size password password2 submit name emailAdress expires type user_id ];
+        $c->stash->{title}     = 'Certificates: Add a new certificate';
+    
+        my $form = $c->stash->{form};
 
-    # Form submitted okay
-    # ===================
-    if ( @_keys && @_columns ~~ @_keys ) {
 
-        $form->process;
-
-        # Check if any errors in form
-        # FormFu handles this automatically
-        # but we are using ajax for this
-        # call, so we need to override
-        # FormFu and send the errors back
-        # =================================
-        if ( $form->has_errors ) {
-            for ( @{$form->get_errors} ){
-                try  {
-                    push @{$c->stash->{fields_error}} , $_->name;
-                    push @{$c->stash->{error}},
-                        "Error in field: '" . $_->name . "': " . $_->message
-                        . " - " . $_->type
-                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
-                    delete $c->stash->{$_} for ( qw/assets form token/ );
-                    delete $c->req->params->{submit};
-                }
-                catch {
-                     push @{$c->stash->{error}}, $_;
-                };
-            }
-            $c->response->status(400);
-            $c->forward('View::JSON');
-            $c->detach;
-        }
-
-        if ( $form->submitted_and_valid ) {
-
-            # If submitted we go "JSON"
-            # =========================
-            delete $c->stash->{$_} for ( qw/assets form token/ );
-            delete $c->req->params->{submit};
-            # New resultset
-            # =============
-
-            my $_client;
-            try {
-                $_client = $c->model('DB::User')->new_result({});
-            }
-            catch {
-                push @{$c->stash->{error}}, $_;
-            };
-
-            # update dbic row with
-            # submitted values from form
-            # ==========================
-            try   { $form->model->update( $_client ) }
-            catch {
-                my $error_clean = $_;
-                my $error = $_;
-                $self->_db_error($c, $error_clean, $error, $form);
-                $c->forward('View::JSON');
-                $c->detach;
-            };
-        }
-    }
-    else {
         # HTML view
         # =========
-        $c->response->headers->header('Content-Type' => 'text/html');
         $c->controller('Root')->include_default_links($c);
 
         # Get the country list (for certificates signing)
@@ -213,7 +140,7 @@ sub add : Path('add')
         $c->stash->{countries} = [ sort { $a cmp $b } @clist ];
 
 =comment Countries datastructure
-
+    
 [
   {
     Andorra => {
@@ -259,7 +186,7 @@ sub add : Path('add')
 
             push @_formatted_countries, $data;
         }
-
+    
         unshift (@_formatted_countries, {
             value => '0',
             label => '-',
@@ -271,8 +198,55 @@ sub add : Path('add')
 
         $form_elem_country->options( \@_formatted_countries )
             if @_formatted_countries;
+
+    
+        # Prepand a random salt to the password
+        # =====================================
+        my $form_elem_password = $form->get_field( 'password' );
+        $form_elem_password->filter({
+            type     => 'Callback',
+            callback => sub {
+                # Get a random salt
+                # =================
+                my $random_data = read_random_entropy( 64,
+                    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
+                );
+                # "Hexify" data
+                # =============
+                my $salt = unpack("H*", $random_data);
+                # Set the salt field
+                # ==================
+                $form->add_valid( 'salt', $salt );
+                # Return salt+password
+                # ====================
+                return $salt.shift;
+            }
+         });
+    
+        $form->process;
+
+        # Form submitted okay
+        # ===================
+        if ( $form->submitted_and_valid ) {    
+
+            $c->response->redirect( $c->uri_for('add') );
+            return;
+       
+        }
+   
+        # Check if any errors in form
+        # FormFu handles this automatically
+        # =================================
+        if ( $form->has_errors ) {
+             # Add js / css
+            # ============
+            $c->controller('Root')->include_default_links( $self, $c );
+            $c->forward('View::HTML');    
+            return;
+        }
+
     }
-}
+ 
     
 
 =head2 get_country_list
@@ -349,3 +323,4 @@ it under the same terms as Perl itself.
 __PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 1;
+

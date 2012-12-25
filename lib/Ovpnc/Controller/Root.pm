@@ -179,7 +179,7 @@ sub index : Chained('/base')
 
     # Get username for geoname api service
     # ====================================
-    $c->stash->{geo_username} = $c->config->{geo_username};
+    #$c->stash->{geo_username} = $c->config->{geo_username};
 
     # This page will be referred to as 'root'
     # =======================================
