@@ -88,6 +88,8 @@ requires 'Catalyst::Plugin::Session::Store::File';
 requires 'Catalyst::Plugin::Session::Store::DBIC';
 requires 'Catalyst::Plugin::Session::Store::Delegate';
 requires 'Catalyst::Plugin::Session::Store::FastMmap';
+requires 'Catalyst::Plugin::Unicode::Encoding';
+requires 'Catalyst::Plugin::Params::Nested';
 requires 'Catalyst::Authentication::Store::Htpasswd';
 requires 'Catalyst::Authentication::Store::Minimal';
 requires 'Catalyst::Authentication::Store::DBIx::Class';

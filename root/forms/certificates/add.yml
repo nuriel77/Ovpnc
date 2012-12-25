@@ -92,6 +92,54 @@ elements:
                                            - type: MaxLength
                                              max: 42
                           -
+                              # Key Length
+                              - type: Block
+                                tag: div
+                                attributes_xml:
+                                  id: "key_length"
+                                elements:
+                                      - type: Select
+                                        name: Keysize
+                                        label: "Key size:"
+                                        attributes_xml:
+                                          id: "key_size"
+                                          class: "form_row_select r_auto styled"
+                                        options:
+                                          - [ '1024', '1024' ]
+                                          - [ '1280', '1280' ]
+                                          - [ '1536', '1536' ]
+                                          - [ '2048', '2048' ]
+                                          - [ '4096', '4096' ]
+                                          - [ '8192', '8192' ]
+                                        constraints:
+                                          - Required
+                          -
+                              # Cert start date
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Text
+                                        name: start_date
+                                        label: 'Start date:'
+                                        attributes_xml:
+                                          id: "cert_start"
+                                          class: "form_row"
+                                        constraints:
+                                          - Required
+                          -
+                              # Cert expire date
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Text
+                                        name: expire_date
+                                        label: 'Expires:'
+                                        attributes_xml:
+                                          class: "form_row"
+                                          id: "cert_expires"
+                                        constraints:
+                                          - Required
+                          -
                               # Country
                               - type: Block
                                 tag: div

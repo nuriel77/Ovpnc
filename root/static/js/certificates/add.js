@@ -414,12 +414,15 @@ jQuery.validator.setDefaults({
         	var inn = $.addCertificate().elems;
             // Remove the select fields
             $.each( $('.select'), function(){
-                $(this).first('div')
-                       .removeClass('select label')
-                       .addClass('text label')
-                       .addClass('oldSelect');
-                $(this).children('select')
-                       .remove();
+    // Fixme: don't let key_size select to get processed here!
+//                if ( $(this).children('select').attr('id') !== 'key_size' ){
+                    $(this).first('div')
+                           .removeClass('select label')
+                           .addClass('text label')
+                           .addClass('oldSelect');
+                    $(this).children('select')
+                           .remove();
+//                }
             });
             // Replace with text inputs
         	for (var i in inn){

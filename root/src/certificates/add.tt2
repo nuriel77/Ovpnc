@@ -24,6 +24,35 @@
     // Binds for inputs
     $.Forms().setInputBinds();
     $.Forms().setUserFormInputBinds();
+
+    // jQuery UI Datepicker
+    $(function() {
+        $('#cert_start').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: "dd-mm-yy",
+            showAnim: "clip",
+            minDate: "+0d",
+            setDate: "+0d",
+            defaultDate: "+0",
+            constrainInput: true
+        });
+        $('#cert_expires').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: "dd-mm-yy",
+            showAnim: "clip",
+            minDate: "+1d",
+            defaultDate: "+1y",
+            constrainInput: true
+        });
+        var dt = new Date();
+        var day     = dt.getDate(),
+            month   = dt.getMonth() + 1,
+            year    = dt.getFullYear();
+        $('#cert_start').attr('value', $.datepicker.formatDate('dd-mm-yy', dt ) );
+        $('#cert_expires').attr('value', day + '-' + month + '-' + ( year + 1 ) );
+    });
 </script>
 
 

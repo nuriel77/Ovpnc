@@ -123,12 +123,13 @@ __PACKAGE__->config(
     'Static::Simple' => {
 		static => {
 			expires => 86400, # Default expire value (24hrs)
-			ignore_extensions => [ qw/xhtml shtml phtml tmpl tt2 tt asp php/ ],
+			ignore_extensions => [ qw/html xhtml shtml phtml tmpl tt2 tt asp php/ ],
 	        dirs => [
 	            'static',
 	            qr/^(images|css|js)/,
 	        ],
 			mime_types => {
+                html => 'text/html',
 				js  => 'application/javascript',
 				json => 'application/json',
 				css => 'text/css',
