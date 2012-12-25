@@ -115,7 +115,7 @@ around [
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( $c->controller->('Api')->assign_params( $c ) )
+    $self->cfg( $c->controller('Api')->assign_params( $c ) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
@@ -126,7 +126,7 @@ around [
 
     # Establish connection to management port
     # ========================================
-    $self->vpn( Ovpnc::Plugins::Connector->new( $self->cfg->{mgmt_params} ) );
+    $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
   };

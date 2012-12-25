@@ -5,7 +5,7 @@ use File::Copy;
 use File::Touch;
 use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
-use Ovpnc::Plugins::ChainCA;
+use Ovpnc::Plugin::ChainCA;
 use Moose::Role;
 use vars qw/$ca/;
 
@@ -36,7 +36,7 @@ has serial => (
 has _ca => (
     is => 'rw',
     isa => 'Object',
-    default => sub { return Ovpnc::Plugins::ChainCA->new; }
+    default => sub { return Ovpnc::Plugin::ChainCA->new; }
 );
 
 has _keys_dir => (
