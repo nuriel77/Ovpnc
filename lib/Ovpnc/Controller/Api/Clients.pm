@@ -66,7 +66,7 @@ $REGEX = {
     client => {
         list =>
           'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
-        crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*',
+        crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=(.*)\/.*',
     }
 };
 
@@ -1083,9 +1083,9 @@ who is revoked
           or die "Cannot read $crl_index: $!";
 
         while ( my $line = <FH> ) {
-            # 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=.*'
-            my ( $revoke_time, $name ) = $line =~ /$REGEX->{client}->{crl}/g;
-            if ( $revoke_time and $name ) {
+            # 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=(.*)\/.*'
+            my ( $revoke_time, $CN, $name ) = $line =~ /$REGEX->{client}->{crl}/g;
+            if ( $revoke_time and $CN and $name ) {
                 ( $Y, $M, $D, $h, $m, $s ) = $revoke_time =~ /(..)/g;
                 my $kill_time =
                     $D . '-'
@@ -1094,7 +1094,7 @@ who is revoked
                   . $h . ':'
                   . $m . ':'
                   . $s;
-                push( @{$obj}, { name => $name, kill_time => $kill_time } );
+                push( @{$obj}, { CN => $CN, cert_name => $name, kill_time => $kill_time } );
             }
         }
     
@@ -1116,7 +1116,7 @@ to see if he is there
     
         if ( $revoked and ref $revoked eq 'ARRAY' ) {
             for ( @{$revoked} ) {
-                return 1 if ( $_->{name} eq $client );
+                return 1 if ( $_->{CN} eq $client );
             }
         }
         return 0;

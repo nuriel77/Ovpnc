@@ -1,10 +1,11 @@
 package Ovpnc::TraitFor::Controller::Api::Clients::Revoke;
 use warnings;
 use strict;
+use File::Basename;
 use IPC::Cmd qw( can_run run );
 use Moose::Role;
 use namespace::autoclean;
-use vars qw( $openvpn_dir $tools $vars );
+use vars qw( $openvpn_dir $tools $vars $_ret_val );
 use constant TIMEOUT    => 5;
 
 has openvpn_dir => (
@@ -26,7 +27,7 @@ has home => (
 );
 
 sub revoke_certificate {
-    my ( $self, $clients ) = @_;
+    my ( $self, $clients, $cert_name ) = @_;
 
     $openvpn_dir = $self->_set_openvpn_dir;
     $tools = $self->_set_openvpn_utils;
@@ -34,8 +35,6 @@ sub revoke_certificate {
     # Vars script location
     # ====================
     $vars = $tools . '/vars';
-
-    my $_ret_val;
 
     for my $client ( @{$clients} ){
 
@@ -48,9 +47,38 @@ sub revoke_certificate {
             status => []
         };
 
+        # Revoke certificates - when $cert_name
+        # has been provided revoke only that
+        # certificate, otherwise all certificates
+        # belonging to the client (found in his dir)
+        # ==========================================
+        unless ( $cert_name ){ 
+            for my $cert ( glob $tools . '/keys/' . $client . '/*.crt' ){
+                $cert =~ s{\.[^.]+$}{};
+                $self->_revoke_certificate( $tools, $cert, $client );
+            }
+        }
+        else {
+            $self->_revoke_certificate( $tools, $cert_name, $client );
+        }
+
+    }
+    return $_ret_val;
+}
+
+
+=head2 _revoke_certificate
+
+Revoke a certificate
+
+=cut
+
+    sub _revoke_certificate {
+        my ($self, $tools, $cert, $client) = @_;
+
         # Build command
         # =============
-        my @_cmd = ( $tools . '/revoke-full', $client );
+        my @_cmd = ( $tools . '/revoke-full', $cert );
 
         # Check if can run
         # ===============
@@ -68,19 +96,20 @@ sub revoke_certificate {
                 # ======================
                 if ( $_check_ret_val =~ /already revoked/gi ){
                     push @{$_ret_val->{$client}->{warnings}},
-                            "Revocation failure"
-                          . ": Already revoked";
+                            "Revocation failure, certificate "
+                          . basename($cert) . ": Already revoked";
                 }
                 elsif ( $_check_ret_val =~ /No such file or directory/gi ){
+                    die "No certs: " . $_check_ret_val;
                     push @{$_ret_val->{$client}->{errors}},
-                            "Revocation failure: "
-                          . "has no certificates";
+                            "Revocation failure, certificate ". basename($cert) . ": "
+                          . "No such certificates";
                 }
                 # Explicit ERROR in output
                 # ========================
                 elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
                     push @{$_ret_val->{$client}->{errors}},
-                           "Revocation failure: "
+                           "Revocation failure, certificate " . basename($cert) . ": "
                           . ( $1 ? '\': ' . $1 : '\'' ) .';';
                 }
                 # If we match this, certificate
@@ -88,14 +117,13 @@ sub revoke_certificate {
                 # =============================
                 elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
                     push @{$_ret_val->{$client}->{status}},
-                        'revoked ok';
+                        basename($cert) . ' revoked ok';
                 }
                 # Anything else is unknown
                 # ========================
                 else {
                     push @{$_ret_val->{$client}->{warnings}},
-                        'Unknown status for '
-                        . $client
+                        basename($cert) . ' unknown status: '
                         . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
                 }
 
@@ -105,19 +133,16 @@ sub revoke_certificate {
             # ===================================
             else {
                 push @{$_ret_val->{$client}->{errors}},
-                    'Timeout out error(?): ' . $_check_ret_val . ';'
+                    basename($cert) . ' got timeout out error(?): ' . $_check_ret_val . ';'
                     . ( $error_code ? $error_code : '' ).';';
             }
         }
         else {
-            die "Error revoking client " . $client
+            die "Error revoking certificate " . basename($cert)
                 . ", cannot run " . $tools . '/revoke-full';
         }
 
     }
-
-    return $_ret_val;
-}
 
 
 =head2 _set_openvpn_utils
