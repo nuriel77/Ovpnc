@@ -249,6 +249,13 @@ elements:
                                                   - [ 'placeholder', 'Loading country list...' ]
                                                 constraints:
                                                   - Required
+                                              - type: Hidden
+                                                name: KEY_COUNTRY_TEXT
+                                                attributes_xml:
+                                                  id: "KEY_COUNTRY_TEXT"
+                                                  style: "display:none;"
+                                                  constraints:
+                                                    - Required
                                       - type: Block
                                         tag: div
                                         elements:
@@ -275,6 +282,13 @@ elements:
                                           - [ 'placeholder', '-' ]
                                         constraints:
                                           - Required
+                                      - type: Hidden
+                                        name: KEY_STATE_TEXT
+                                        attributes_xml:
+                                          id: "KEY_STATE_TEXT"
+                                          style: "display:none;"
+                                        constraints:
+                                          - Required
                           -
                               # City / Location
                               - type: Block
@@ -292,6 +306,13 @@ elements:
                                           - [ 'placeholder', '-' ]
                                         constraints:
                                           - Required
+                                      - type: Hidden
+                                        name: KEY_CITY_TEXT
+                                        attributes_xml:
+                                          id: "KEY_CITY_TEXT"
+                                          style: "display:none;"
+                                        constraints:
+                                          - Required
                           -
                               # Organization(O)
                               - type: Block
@@ -307,7 +328,7 @@ elements:
                                         constraints:
                                           - Required
                                           - type: MinLength
-                                            min: 6
+                                            min: 2
                                           - type: MaxLength
                                             max: 72
                           -
@@ -325,7 +346,7 @@ elements:
                                         constraints:
                                           - Required
                                           - type: MinLength
-                                            min: 6
+                                            min: 2
                                           - type: MaxLength
                                             max: 72
                           -

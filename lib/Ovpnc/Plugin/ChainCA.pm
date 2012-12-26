@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use POSIX;
+use File::Basename;
 use IPC::Cmd qw( can_run run );
 use Crypt::OpenSSL::CA;
 use Crypt::OpenSSL::Bignum;
@@ -143,6 +144,7 @@ using the openvpn pkitool
     
     }
     
+
 =head2 gen_ca_certificate
 
 The CA certificate is filled out field after field,
@@ -204,14 +206,14 @@ From OpenVPN Documentation:
         $ca_cert->set_notAfter( $_time_yr );
     
         my $ca_dn = Crypt::OpenSSL::CA::X509_NAME->new(
-            C               => $params->{C}             || 'NL',
-            ST              => $params->{ST}            || 'NH',
-            L               => $params->{L}             || 'Amsterdam',
-            O               => $params->{O}             || 'Ovpnc',
-            OU              => $params->{OU}            || 'Development',
-            CN              => $params->{CN}            || 'Ovpnc CA',
-            name            => $params->{name}          || 'SSL Server CA',
-            emailAddress    => $params->{emailAddress}  || 'nuri@de-bar.com'
+            C               => $params->{KEY_COUNTRY}             || 'NL',
+            ST              => $params->{KEY_PROVINCE}            || 'NH',
+            L               => $params->{KEY_CITY}                || 'Amsterdam',
+            O               => $params->{KEY_ORG}                 || 'Ovpnc',
+            OU              => $params->{KEY_OU}                  || 'Development',
+            CN              => $params->{KEY_CN}                  || 'Ovpnc CA',
+            name            => $params->{name}                    || 'SSL Server CA',
+            emailAddress    => $params->{KEY_EMAIL}               || 'nuri@de-bar.com'
         );
     
         $ca_cert->set_issuer_DN($ca_dn);
@@ -252,21 +254,15 @@ Example:
         # have some client with this name
         # ================================
         if ( -e $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.csr'
-            || -e $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.key'
+                . $params->{name} . '/' . $params->{name} . '.crt.' . $params->{KEY_CN}
         ) {
             if ( ! $params->{overwrite} ){
-                return { error => 'Client certificate for '
+                return { error => 'Certificate name \\\'' . $params->{KEY_CN} . '\\\' for '
                             . $params->{name} . ' already exists' }
             }
             else {
-                rename $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.csr', $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.csr.old';
-                rename $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.key', $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '.key.old';
+                unlink $params->{name} . '/' . $params->{name} . '.' . $_ . '.' . $params->{KEY_CN}
+                    for qw/crt key csr/;
             }
         }
 
@@ -322,6 +318,8 @@ Example:
     	        return { status => $_buf };
         	}
         }
+        # Certificate type client
+        # =======================
         else {
             my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
             my $_args = [
@@ -366,7 +364,39 @@ Example:
                 }
             }
         }
-        return { status => 'Ok' };
+
+        # Check that all files
+        # have been created
+        # =====================
+        my $client_cert_dir = $cfg->{openvpn_utils}
+                            . '/keys/' . $params->{name};
+        my @_cert_files = glob $cfg->{openvpn_utils}
+                            . '/keys/' . $params->{name} . '.*';
+        if ( @_cert_files ){
+            unless ( -d $client_cert_dir ){
+                # Create client cert die
+                # ======================
+                mkdir $client_cert_dir, 0700
+                    or return { error => 'Cannot create certificate directory: ' . $! };
+            }
+            # Move cert files to
+            # client's cert dir.
+            # Then check their file
+            # size indicates not empty
+            # ========================
+            for ( @_cert_files ){
+                if ( -s $_ == 0 ){
+                    unlink (@_cert_files);
+                    return { error => 'Certificate creation failed for ' . $_ };
+                }
+                move $_,
+                     $client_cert_dir . '/' . basename($_) . '.' . $params->{KEY_CN}
+                    or return { error => "Cannot move file '" . $_ . "'"
+                               . ' to ' . $client_cert_dir . '/' . basename($_)
+                               . '.' . $params->{KEY_CN} . ': ' . $! }; 
+            }
+            return { status => 'Ok' };
+        }
     }
 
 

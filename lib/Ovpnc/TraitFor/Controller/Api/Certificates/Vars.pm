@@ -32,8 +32,7 @@ sub set_environment_vars
         $self->_cfg->{ssl_config} =~ /^\//
             ? $self->_cfg->{ssl_config}
             : $_tools_dir . '/' . $self->_cfg->{ssl_config};
-use Data::Dumper::Concise;
-die Dumper $self->_req;
+
     # Set openssl environment
     # variables (eq to source ./vars)
     # At the moment we don't do duplicate

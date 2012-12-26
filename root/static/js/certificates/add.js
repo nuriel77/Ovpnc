@@ -62,7 +62,11 @@ jQuery.validator.setDefaults({
         				maxlength: 42,
         	      		email: true
         			},
-        			name: {
+        			username: {
+        				required: true,
+        				maxlength: 42
+        			},
+        			certname: {
         				required: true,
         				maxlength: 42
         			},
@@ -110,8 +114,46 @@ jQuery.validator.setDefaults({
                            .find('input')
                            .attr('checked','checked');
                 });
-            });            
+            });
+            // Run a check on certificate name
+            //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+            $('#certname').bind('focusout',function(){
+                if ( $('#username').attr('value').match(/\w+/) ){
+                    $.Ovpnc().ajaxCall({
+                        url: "/api/certificates",
+                        data: { certname: $(this).attr('value'), name: $('#username').attr('value') },
+                        method: 'GET',
+                        success_func: $.addCertificate().ajaxCheckCertSuccess,
+                        error_func: $.addCertificate().ajaxCheckCertError
+                    });
+                }
+            });
+
         },
+        //
+        // Success - no such cert name
+        // returned from ajaxcall
+        // 
+        ajaxCheckCertSuccess: function (d){
+            if ( window.DEBUG ) log("Success: %o",d);
+        },
+        //
+        // Success - no such cert name
+        // returned from ajaxcall
+        // 
+        ajaxCheckCertError: function (e){
+            if ( e.responseText ){
+                var _msg = jQuery.parseJSON(e.responseText);
+                if ( window.DEBUG ) log ('Certificate name exists');
+                $('#certname').parent('div').find('label')
+                              .css('color','#8B0000');
+                var elem   = document.createElement('span');
+                $( elem ).addClass('passwd_err error_message error_constraint_required')
+                         .css('margin','4px 0 0 305px')
+                         .text('Certificate name exists!');
+                $('#certname').parent('div').append( elem );
+            }
+        },        
         //
         // Toggling from edit to select list
         // requires us to re-apply the rules
@@ -353,8 +395,26 @@ jQuery.validator.setDefaults({
                     expires: 14
                 });
 
+                $.addCertificate().convertLocationIDs();
+
                 return true;
+
             });
+        },
+        //
+        // Convert id's to names for submission
+        //
+        convertLocationIDs: function () {
+            // Get field names(country/state/city)
+            var inn = $.addCertificate().elems;
+            // For each field name
+            for (var i in inn){
+                var cVal = $('#' + inn[i] + ' option[value="' + $('#'+inn[i]).attr('value') + '"]').text();
+                if ( inn[i] === 'country' ){
+                    cVal = cVal.replace( /^([A-Z]{2}) \-.*$/ ,"$1" );
+                }
+                $('#KEY_'+ inn[i].toUpperCase() + '_TEXT').attr('value', cVal);
+            }
         },
         //
         // Get Username from API

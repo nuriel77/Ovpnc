@@ -11,8 +11,15 @@ scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 scalar locate('File::Copy')  ? 0 : do { use File::Copy; };
 use Readonly;
 use Moose;
-Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
+use Moose::Exporter;
 use namespace::autoclean;
+
+Readonly::Scalar my $SKIP_LINE => '^[;|#].*|^$';
+
+Moose::Exporter->setup_import_methods(
+      as_is     => [ 'get_openvpn_param', 'get_openvpn_config_file' ],
+);
+
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 

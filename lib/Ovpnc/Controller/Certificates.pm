@@ -121,10 +121,95 @@ Add a new certificate
     
         my $form = $c->stash->{form};
 
+        # Prepand a random salt to the password
+        # =====================================
+        my $form_elem_password = $form->get_field( 'password' );
+        $form_elem_password->filter({
+            type     => 'Callback',
+            callback => sub {
+                # Get a random salt
+                # =================
+                my $random_data = read_random_entropy( 64,
+                    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
+                );
+                # "Hexify" data
+                # =============
+                my $salt = unpack("H*", $random_data);
+                # Set the salt field
+                # ==================
+                $form->add_valid( 'salt', $salt );
+                # Return salt+password
+                # ====================
+                return $salt.shift;
+            }
+         });
 
-        # HTML view
-        # =========
-        $c->controller('Root')->include_default_links($c);
+        # Process FormFu
+        # ==============    
+        $form->process;
+
+        # Form submitted okay
+        # ===================
+        if ( $form->submitted_and_valid ) {    
+
+            # Calculate the days between
+            # the two given dates for expiration
+            # ==================================
+            $c->req->params->{KEY_EXPIRE} =
+                $self->_calculate_delta_days(
+                    $c->req->params->{start_date},
+                    $c->req->params->{KEY_EXPIRE},
+                );
+
+            # Organize other fields
+            # =====================
+            delete $c->req->params->{$_} for qw/submit start_date/;
+            $c->req->params->{KEY_COUNTRY} = $c->req->params->{KEY_COUNTRY_TEXT}
+                && delete $c->req->params->{KEY_COUNTRY_TEXT};
+            $c->req->params->{KEY_PROVINCE} = $c->req->params->{KEY_STATE_TEXT}
+                && delete $c->req->params->{KEY_STATE_TEXT};
+            $c->req->params->{KEY_CITY} = $c->req->params->{KEY_CITY_TEXT}
+                && delete $c->req->params->{KEY_CITY_TEXT};
+
+            # For server and client certificates
+            # ==================================
+            if ( $c->req->params->{cert_type} =~ /client|server/ ){
+                $c->req->params->{cmd} = 'gen_cert';
+            }
+            # For generating Root CA certificate 
+            # ==================================
+            elsif ( $c->req->params->{cert_type} eq 'init_ca' ){
+                $c->req->params->{cmd} = 'init_ca';                
+            }
+
+            # Run action on api controller
+            # ============================
+            $c->req->params->{from_form} = 1;
+            my $result = $c->controller('Api::Certificates')
+                ->certificates_POST( $c );
+
+            # Handle results
+            # ==============
+            if ( $result and $result->{status} ){
+                $c->flash->{resultset} =
+                    "Certificate add process returned: " . $result->{status};
+            }
+            elsif ( $result and $result->{error} ){
+                $c->flash->{error} = "Error: " . $result->{error};
+            }
+            else {
+                $c->flash->{error} = "Error: Status unknown";
+            }
+
+            $c->response->redirect( $c->uri_for('add') );
+            return;       
+        }
+   
+        # Check if any errors in form
+        # FormFu handles this automatically
+        # =================================
+        if ( $form->has_errors ) {
+        }
 
         # Get the country list (for certificates signing)
         # ===============================================
@@ -201,73 +286,6 @@ Add a new certificate
 
         $form_elem_country->options( \@_formatted_countries )
             if @_formatted_countries;
-
-    
-        # Prepand a random salt to the password
-        # =====================================
-        my $form_elem_password = $form->get_field( 'password' );
-        $form_elem_password->filter({
-            type     => 'Callback',
-            callback => sub {
-                # Get a random salt
-                # =================
-                my $random_data = read_random_entropy( 64,
-                    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
-                );
-                # "Hexify" data
-                # =============
-                my $salt = unpack("H*", $random_data);
-                # Set the salt field
-                # ==================
-                $form->add_valid( 'salt', $salt );
-                # Return salt+password
-                # ====================
-                return $salt.shift;
-            }
-         });
-    
-        $form->process;
-
-        # Form submitted okay
-        # ===================
-        if ( $form->submitted_and_valid ) {    
-
-            # Calculate the days between
-            # the two given dates for expiration
-            # ==================================
-            my $days = $self->_calculate_delta_days(
-                $c->req->params->{start_date},
-                $c->req->params->{KEY_EXPIRE},
-            );
-            $c->req->params->{KEY_EXPIRE} = $days;
-        
-            # For server and client certificates
-            # ==================================
-            if ( $c->req->params->{cert_type} =~ /client|server/ ){
-                $c->req->params->{cmd} = 'gen_cert';
-            }
-            # For generating Root CA certificate 
-            # ==================================
-            elsif ( $c->req->params->{cert_type} eq 'init_ca' ){
-                $c->req->params->{cmd} = 'init_ca';                
-            }
-
-            my $result = $c->controller('Api::Certificates')->certificates_POST( $c );
-            $c->flash->{rest}->{resultset} = $result;
-            $c->response->redirect( $c->uri_for('add') );
-            return;       
-        }
-   
-        # Check if any errors in form
-        # FormFu handles this automatically
-        # =================================
-        if ( $form->has_errors ) {
-             # Add js / css
-            # ============
-            $c->controller('Root')->include_default_links( $c );
-            $c->forward('View::HTML');    
-            return;
-        }
 
     }
 
