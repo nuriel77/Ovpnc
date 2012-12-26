@@ -117,13 +117,13 @@ Revoke a certificate
                 # =============================
                 elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
                     push @{$_ret_val->{$client}->{status}},
-                        basename($cert) . ' revoked ok';
+                        'Certificate ' . basename($cert) . ' revoked ok';
                 }
                 # Anything else is unknown
                 # ========================
                 else {
                     push @{$_ret_val->{$client}->{warnings}},
-                        basename($cert) . ' unknown status: '
+                        'Certificate ' . basename($cert) . ' unknown status: '
                         . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
                 }
 

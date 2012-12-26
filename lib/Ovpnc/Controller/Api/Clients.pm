@@ -902,9 +902,12 @@ in ccd
 
             # Check if in CRL
             # ===============
-            unless ( $self->_match_revoked( $revoked, $client ) ) {
-                push @{$_ret_val->{$client}->{errors}},
-                    "Unrevoke failed: not in the Revoked list";
+            unless ( $self->_match_revoked( $revoked, $client, $c->req->params->{cert_name} ) ) {
+                push ( @{$_ret_val->{$client}->{errors}},
+                        ( $c->req->params->{cert_name}
+                            ? "Unrevoke failed: certificate is not revoked"
+                            : "Unrevoke failed: not in the Revoked list" ));
+                        
                 next CLIENT;
             }
     
@@ -925,7 +928,8 @@ in ccd
                 $self->_roles->unrevoke_certificate(
                     $client,
                     $self->cfg->{ssl_config},
-                    $c->config->{openssl_bin}
+                    $c->config->{openssl_bin},
+                    $c->req->params->{cert_name}
                 );
             for ( keys %{$_revoke_status} ){
                 push @{ $_ret_val->{$client}->{$_} },
@@ -1112,11 +1116,18 @@ to see if he is there
 =cut
 
     sub _match_revoked : Private {
-        my ( $self, $revoked, $client ) = @_;
+        my ( $self, $revoked, $client, $cert_name ) = @_;
     
         if ( $revoked and ref $revoked eq 'ARRAY' ) {
             for ( @{$revoked} ) {
-                return 1 if ( $_->{CN} eq $client );
+                if ( $cert_name ){
+                    return 1
+                        if $_->{CN} eq $client and $_->{cert_name} eq $cert_name;
+                }
+                else {
+                    return 1
+                        if $_->{CN} eq $client;
+                }
             }
         }
         return 0;

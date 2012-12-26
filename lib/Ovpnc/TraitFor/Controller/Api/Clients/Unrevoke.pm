@@ -26,7 +26,7 @@ has home => (
 );
 
 sub unrevoke_certificate {
-    my ( $self, $client, $ssl_config, $ssl_bin ) = @_;
+    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name ) = @_;
 
     my $_ret_val;
 
@@ -41,12 +41,16 @@ sub unrevoke_certificate {
     # ==========================
     my $index_file = $tools . '/keys/index.txt';
 
-    if ( -e $index_file and -w $index_file ) {
-
-        # Change the revocation in the index.txt
-        # ======================================
-        my $command =
+    # If single certificate is provided
+    # only unrevoke this certificate
+    # =================================
+    my $command = $cert_name
+        ?
+"/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/name=$cert_name\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file"
+        : 
 "/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file";
+
+    if ( -e $index_file and -w $index_file ) {
 
         # Run command
         # ===========
