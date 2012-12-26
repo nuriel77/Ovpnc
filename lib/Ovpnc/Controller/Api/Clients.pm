@@ -752,6 +752,7 @@ using crl.pem
                        : Does('NeedsLogin')
                        : Sitemap
     {
+
         my ( $self, $c, $client_list ) = @_;
     
         # Verify that a client name was provided
@@ -815,7 +816,7 @@ using crl.pem
                         'Disconnect from VPN status: ' . $str;
                 }
                 else {
-                    push @{$_ret_val->{$client}->{warnings}},
+                    push @{$_ret_val->{$client}->{info}},
                         'Disconnect from VPN status: not found online';
                 }
             }

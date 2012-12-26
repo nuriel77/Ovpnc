@@ -211,8 +211,8 @@ necessary for functionality.
             # Sign the new CSR
             # ================
             if ( my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg ) ) { 
-                unless ( -e $self->_cfg->{openvpn_ccd} . '/' . $params->{name} ){
-                    touch $self->_cfg->{openvpn_ccd} . '/' . $params->{name}
+                unless ( -e $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN} ){
+                    touch $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN}
                         or warn "Did not create client ccd file: " . $!;
                 }
                 return { status => 'ok' };

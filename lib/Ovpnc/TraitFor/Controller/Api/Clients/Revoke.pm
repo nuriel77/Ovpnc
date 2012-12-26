@@ -53,10 +53,14 @@ sub revoke_certificate {
         # belonging to the client (found in his dir)
         # ==========================================
         unless ( $cert_name ){ 
+            my $_chk = 0;
             for my $cert ( glob $tools . '/keys/' . $client . '/*.crt' ){
+                $_chk++;
                 $cert =~ s{\.[^.]+$}{};
                 $self->_revoke_certificate( $tools, $cert, $client );
             }
+            push (@{$_ret_val->{$client}->{warnings}}, 'Has no certificates')
+                unless ($_chk);
         }
         else {
             $self->_revoke_certificate( $tools, $cert_name, $client );

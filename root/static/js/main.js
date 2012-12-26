@@ -43,10 +43,10 @@ var dump = function (obj){
         ajaxLoader: '<img class="ajaxLoader" src="/static/images/ajax-loader.gif" />',
         okayIcon:   '<img class="ok_icon" width=16 height=16 src="/static/images/okay_icon.png" />',
         errorIcon:  '<img class="err_icon" width=16 height=16 src="/static/images/error_icon.png" />',
-        alertIcon:  '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 src="/static/images/alert_icon.png" /></div><div class="err_text">',
-        alertOk:    '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div><div class="err_text">',
-        alertErr:   '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/error_icon.png" /></div><div class="err_text">',
-        alertInfo:  '<div class="err_text" style="margin:0 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/info_icon.png" /></div><div class="err_text">'
+        alertIcon:  '<div class="err_text" style="margin:-1px 1.5px 0 1.5px"><img width=16 height=16 src="/static/images/alert_icon.png" /></div><div class="err_text">',
+        alertOk:    '<div class="err_text" style="margin:-1px 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/okay_icon.png" /></div><div class="err_text">',
+        alertErr:   '<div class="err_text" style="margin:-1px 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/error_icon.png" /></div><div class="err_text">',
+        alertInfo:  '<div class="err_text" style="margin:-1px 1.5px 0 1.5px"><img width=16 height=16 style="margin-top:-2px" src="/static/images/info_icon.png" /></div><div class="err_text">'
     };
     //
     // Ovnpc config items
