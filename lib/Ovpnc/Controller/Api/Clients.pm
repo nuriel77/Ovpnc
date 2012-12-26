@@ -196,7 +196,7 @@ action to run
 
         # Log user in if login params are provided
         # =======================================
-        $c->controller('Api')->auth_user( $self, $c )
+        $c->controller('Api')->auth_user( $c )
             unless $c->user_exists();
 
         # Set the expiration time
@@ -250,6 +250,8 @@ of Ovpnc/OpenVPN
         my ( $param, $keyname );
         if ( ref $c->req->params && !$c->req->params->{page} ) {
             delete $c->req->params->{_} if $c->req->params->{_};
+            delete $c->req->params->{callback} if $c->req->params->{callback};
+
             # We expect only one
             # parameter to be sent
             # ====================
@@ -282,6 +284,39 @@ of Ovpnc/OpenVPN
               created
               modified/
         ];
+
+    
+        if (
+              my $search         = $c->req->params->{search}
+          and my $field          = $c->req->params->{field}
+        ){
+            if ( $field ~~ @{$_columns} ){
+                my $_result = $c->model('DB::User')->search(
+                    { $field => { -like => $search . "%" } },
+                    { select => $field }
+                )->single;
+                if ( defined $_result ){
+                    $self->status_ok($c,
+                        entity => { resultset => $_result->$field }
+                    );
+                    $c->detach;
+                    return;
+                }
+                else {
+                    my $_complete_result = [$c->model('DB::User')->search({},{select=>$field})->all ];
+                    $self->status_ok($c,
+                        entity => { resultset => [ map { $_->$field } @{$_complete_result} ] }
+                    );
+                    $c->detach;
+                }
+            }
+            else {
+                $self->status_not_found($c,
+                    message => "Unknown field name: '" . $field . "'",
+                );
+                $c->detach;
+            }
+        }
     
         # If req param 'page' we don't
         # run this check, this means
@@ -291,13 +326,12 @@ of Ovpnc/OpenVPN
         if ( $keyname && !$c->req->params->{page}
             && ! ( $keyname ~~ @{$_columns} )
         ){
-            $self->status_not_found(
-                $c,
+            $self->status_not_found($c,
                 message => "Unknown field name: '" . $keyname . "'",
             );
             $c->detach;
         }
-    
+
         # Check if these are columns which exists
         # in the resultset, otherwise they are
         # from openvpn mgmt port status.

@@ -32,7 +32,8 @@ sub set_environment_vars
         $self->_cfg->{ssl_config} =~ /^\//
             ? $self->_cfg->{ssl_config}
             : $_tools_dir . '/' . $self->_cfg->{ssl_config};
-
+use Data::Dumper::Concise;
+die Dumper $self->_req;
     # Set openssl environment
     # variables (eq to source ./vars)
     # At the moment we don't do duplicate
@@ -40,8 +41,8 @@ sub set_environment_vars
     # gets same CN as the client's name
     # ===================================
     my %_oe = (
-        KEY_CN             => $self->_req->{CN}             || 'server',
-        KEY_NAME           => $self->_req->{name}           || 'Ovpnc',
+        KEY_CN             => $self->_req->{KEY_CN}         || 'server',
+        KEY_NAME           => $self->_req->{KEY_NAME}       || 'Ovpnc',
         EASY_RSA           => $_tools_dir,
         OPENSSL            => $self->_cfg->{ssl_bin},
         PKCS11TOOL         => $_tools_dir . '/pkcs11-tool',
@@ -50,15 +51,15 @@ sub set_environment_vars
         KEY_DIR            => $_tools_dir . '/keys',
         PKCS11_MODULE_PATH => 'dummy',
         PKCS11_PIN         => 'dummy',
-        KEY_SIZE           => $self->_req->{key_size}       // 2048,
-        CA_EXPIRE          => $self->_req->{ca_expire}      // 3650,
-        KEY_EXPIRE         => $self->_req->{key_expire}     // 3650,
-        KEY_COUNTRY        => $self->_req->{key_country}    || 'NL',
-        KEY_PROVINCE       => $self->_req->{key_state}      || 'NH',
-        KEY_CITY           => $self->_req->{key_location}   || 'Amsterdam',
-        KEY_ORG            => $self->_req->{key_org}        || 'DeBar',
-        KEY_OU             => $self->_req->{key_org}        || 'DeBar',
-        KEY_EMAIL          => $self->_req->{key_email}      || 'nuri@de-bar.com',
+        KEY_SIZE           => $self->_req->{KEY_SIZE}       // 2048,
+        CA_EXPIRE          => $self->_req->{CA_EXPIRE}      // 3650,
+        KEY_EXPIRE         => $self->_req->{KEY_EXPIRE}     // 3650,
+        KEY_COUNTRY        => $self->_req->{KEY_COUNTRY}    || 'NL',
+        KEY_PROVINCE       => $self->_req->{KEY_PROVINCE}   || 'NH',
+        KEY_CITY           => $self->_req->{KEY_CITY}       || 'Amsterdam',
+        KEY_ORG            => $self->_req->{KEY_ORG}        || 'DeBar',
+        KEY_OU             => $self->_req->{KEY_OU}         || 'DeBar',
+        KEY_EMAIL          => $self->_req->{KEY_EMAIL}      || 'nuri@de-bar.com',
     );
 
     $ENV{$_} = $_oe{$_} for ( keys %_oe );

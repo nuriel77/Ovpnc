@@ -278,7 +278,7 @@ var total_count = 0;
                 data: { _ : '1', client: _clients },
                 dataType: 'json',
                 success: function (msg) {
-                    if ( window.DEBUG ) console.log("block/unblock returned: %o",msg);
+                    if ( window.DEBUG ) log("block/unblock returned: %o",msg);
                     var _data_types = {
                         errors:      $.Ovpnc().alertErr,
                         warnings:    $.Ovpnc().alertIcon,
@@ -388,7 +388,7 @@ var total_count = 0;
                 autoHide: true,
                 callback: function(key, options) {
                     var elem = options.$trigger;
-                    if ( window.DEBUG ) console.log(key);
+                    if ( window.DEBUG ) log(key);
                     var client = elem.context.getAttribute("parent");
                     if ( key.match(/block|unblock/i) ){
                         $.Client().blockUnblockClients(key, $('.flexigrid'));
@@ -409,7 +409,7 @@ var total_count = 0;
                 }
             });
             $('.context-menu-one').on('click', function(e){
-                if ( window.DEBUG ) console.log('clicked', this);
+                if ( window.DEBUG ) log('clicked', this);
             });
         },
         //

@@ -66,7 +66,7 @@ $(document).ready(function() {
 				appender[ group_id + '_' + parent + '_' + n.name + d_flag  ] = n.value;
 			} 
 			else {
-				//console.log( n.name + " is disabled");
+				//log( n.name + " is disabled");
 			}
 
         });
@@ -86,7 +86,7 @@ $(document).ready(function() {
 				cache: false,
 			    dataType: 'json',
 				//beforeSend: function(){
-				//	console.log( "At retry loop " + this.tryCount );
+				//	log( "At retry loop " + this.tryCount );
 				//},
 		        success: function(response){
 					if ( response.rest !== undefined
@@ -98,7 +98,7 @@ $(document).ready(function() {
 					if ( response.error !== undefined ){
 						var element = response.error.replace(/.*<(.*)>.*/gi, "$1");
 						element = element.replace(/(\r\n|\n|\r)/gm,"");
-						//console.log("Element: " + element);
+						//log("Element: " + element);
 						mark_span_text(element);
 						alert(response.error);
 						return false;
@@ -121,7 +121,7 @@ $(document).ready(function() {
 					if ( temp.match(/NETWORK_ERR/) || ajaxOptions == 'timeout' ){
 						this.tryCount++;
 						if (this.tryCount <= this.retryLimit) {
-							console.log( "Going to retry connection to host loop: " + this.tryCount);
+							log( "Going to retry connection to host loop: " + this.tryCount);
 		    	            //try again
 		        	        $.ajax(this);
 		            	    return;
@@ -177,7 +177,7 @@ $(document).ready(function() {
 
 		$(document).find('*[required]').each(function(index){
 			var op = this.id;
-			//console.log("Ob: %o",op);
+			//log("Ob: %o",op);
 			//return;
 			if (op == 'server' || op == 'management port') return;
 			for (var i = 0;i<doneR.length;i++){
@@ -256,7 +256,7 @@ function check_dup(arr,item){
 	$.each(arr, function(key){
 		var real = key.replace(/^.*?_(.*?)$/g, "$1");
 		if (real.match(/push_[0-9]/)) return false;
-		//console.log("REal: " + real);
+		//log("REal: " + real);
 		if (real === item) dup++;
 	});
 	if (dup == 0){
@@ -277,9 +277,9 @@ function check_disabled(arr, item){
 
 function mark_span_text(e){
 	$("span").each(function(index, elem){
-		console.log("compare " + e + " with " + $(this).text());
+		log("compare " + e + " with " + $(this).text());
 		if ( $(this).text() === e ){
-			console.log("Found Match: " + e);
+			log("Found Match: " + e);
 			$('input[parent="' + e + '"]').css('color', 'red')
 										  .css('border','2px dotted red')
 										  .bind("keyup",(function() {

@@ -68,13 +68,17 @@
         //
         // Enable form input binds - for user forms
         //
-        setUserFormInputBinds: function(){
-            $('input#username').bind('focusout',function(){
-                $.Ovpnc().checkUsername();
-            });
-            $('input#email').bind('focusout',function(){
-                $.Ovpnc().checkEmail();
-            });
+        setUserFormInputBinds: function(rules){
+            if ( rules === undefined || rules.no_username === undefined ) { 
+                    $('input#username').bind('focusout',function(){
+                    $.Ovpnc().checkUsername();
+                });
+            }
+            if ( rules === undefined || rules.no_email === undefined ) { 
+                $('input#email').bind('focusout',function(){
+                    $.Ovpnc().checkEmail();
+                });
+            }
             $('input#password').bind('keyup',function(){
                 $('#generated_password_text').empty();
                 if ( $('input#password2').attr('value') != '' )
@@ -103,13 +107,13 @@
         // Set the input fields from the cookie
         //
         setFormFromCookie: function(data, ignore_list){
-            if ( window.DEBUG ) console.log("Going to set form fields with %o", data);
+            if ( window.DEBUG ) log("Going to set form fields with %o", data);
             if ( data !== undefined ){
                 for ( var d in data ){
                     if ( ignore_list !== undefined
                       && jQuery.inArray( d, ignore_list ) > -1
                     ){
-                        if ( window.DEBUG ) console.log( 'Found field element to be ignored: ' + d);
+                        if ( window.DEBUG ) log( 'Found field element to be ignored: ' + d);
                     }
                     else {
                         $('#' + d).attr('value', data[d]);
@@ -117,7 +121,7 @@
                 }
             }
             else {
-                if ( window.DEBUG ) console.log('No data from cookie with which I can set form fields');
+                if ( window.DEBUG ) log('No data from cookie with which I can set form fields');
             }
         }
     };

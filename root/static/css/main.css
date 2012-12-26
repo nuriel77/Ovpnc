@@ -246,8 +246,8 @@ fieldset .constraint_required label:after {
 .submit_form { float:right;margin:5px 30px 0 0;padding:4px 6px 4px 4px; }
 .resetForm{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
 .reset{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
-.form_row { min-width:275px;float:right; }
-.form_row_select { min-width:283px;float:right; }
+.form_row { min-width:225px;max-width:225px;float:right; }
+.form_row_select { min-width:233px;max-width:233px;float:right; }
 #add_form { font-size: 0.9em; }
 .ajaxLoader{
     width:16px;
@@ -291,4 +291,7 @@ fieldset .constraint_required label:after {
     border-radius: 5px;
     opacity:0.5;
     background-color:#cccccc;
+}
+.ui-autocomplete-loading {
+    background: white url('/static/js/jquery-ui/development-bundle/demos/autocomplete/images/ui-anim_basic_16x16.gif') right center no-repeat;
 }

@@ -23,7 +23,7 @@
 
     // Binds for inputs
     $.Forms().setInputBinds();
-    $.Forms().setUserFormInputBinds();
+    $.Forms().setUserFormInputBinds({ no_username: 1, no_email: 1 });
 
     // jQuery UI Datepicker
     $(function() {

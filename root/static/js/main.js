@@ -5,15 +5,24 @@
  */
 "use strict";
 
+// Declare global log function
+var log = function ( msg, obj ){
+    obj === undefined ? console.log(msg) : console.log(msg, obj);
+};
+
+var dump = function (obj){
+    console.log("Dump: %o",obj);
+};
+
 /* Declare Ovpnc namespace */
-(function($) {
+(function ($) {
 
     var mem, config, actions = {};
 
     //
     // Create name space $.Ovpnc
     //
-    $.Ovpnc = function(options) {
+    $.Ovpnc = function (options) {
         var obj = $.extend({},
         mem, actions, config, options);
         return obj;
@@ -62,7 +71,7 @@
         setDebug: function () {
             if ( getURLParameter('debug') !== undefined ){
                 window.DEBUG = 1;
-                console.log('Set debug to on');
+                log('Set debug to on');
             }
         },
         //
@@ -99,7 +108,7 @@
         setConfirmExit: function(modified, action){
             if ( modified === undefined || modified === 0 ) {
                 // On window unload
-                if ( window.DEBUG ) console.log('Form modified, setting provided action.');
+                if ( window.DEBUG ) log('Form modified, setting provided action.');
                 window.onbeforeunload = action;
             }
             return 1;
@@ -109,7 +118,7 @@
         //
         processAjaxReturn: function ( msg, data_types ) {
             if ( msg.resultset !== undefined ) {
-                if ( window.DEBUG ) console.log("msg.resultset: %o", msg.resultset );
+                if ( window.DEBUG ) log("msg.resultset: %o", msg.resultset );
                 $.each( msg.resultset, function(item, data) {
                     $.each( data_types, function(type, icon) {
                         if ( data[type] !== undefined ){
@@ -121,7 +130,7 @@
                 });
             }
             else {
-                if ( window.DEBUG ) console.log("No msg.resultset!");
+                if ( window.DEBUG ) log("No msg.resultset!");
                 alert( data[errors] + ' ' + msg + '</div><div class="clear"></div>' );
                 return false;
             }
@@ -129,7 +138,7 @@
         //
         // Check the username from database
         //
-        checkUsername: function(){
+        checkUsername: function(success_func, error_func){
             var _name = $('input#username').attr('value');
             if ( _name === undefined || _name == '' ) return;
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
@@ -137,8 +146,8 @@
                 url: '/api/clients',
                 data: { username: _name },
                 method: 'GET',
-                success_func: $.Ovpnc().returnedClientData,
-                error_func: $.Ovpnc().errorAjaxReturn
+                success_func: success_func ? success_func : $.Ovpnc().returnedClientData,
+                error_func: error_func ? error_func : $.Ovpnc().errorAjaxReturn
             });
         },
         //
@@ -167,7 +176,7 @@
         // Server status returns error
         //
         errorServerStatus: function(e){
-            if ( window.DEBUG ) console.log("Server status error: %o", e);
+            if ( window.DEBUG ) log("Server status error: %o", e);
             if ( e.responseText !== undefined
                 && e.responseText !== null
                 && e.responseText != ''
@@ -258,7 +267,7 @@
         // Server control error
         //
         errorAjaxServerControl : function(r) {
-            if ( window.DEBUG ) console.log( "errorAjaxServerControl: %o", r);
+            if ( window.DEBUG ) log( "errorAjaxServerControl: %o", r);
             r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
             r = r.rest.error !== undefined ? r.rest.error : r;
             alert( $.Ovpnc().alertErr + ' Error executing command: ' + r + '</div><div class="clear"></div>' );
@@ -268,10 +277,10 @@
         // Verify password inputs match
         //
         verifyPasswordsMatch: function(first, current, f_input){
-            if ( window.DEBUG ) console.log('Got ' + first + ' to match to ' + current );
+            if ( window.DEBUG ) log('Got ' + first + ' to match to ' + current );
             if ( current === undefined || current == '' || first == '' ) return true;
             if ( current !== first ){
-                if ( window.DEBUG ) console.log( 'No match' );
+                if ( window.DEBUG ) log( 'No match' );
                 $('#'+f_input).parent('div')
                     .prepend('<span class="passwd_err error_message error_constraint_required">Passwords do not match</span>');
                 $('#'+f_input).parent('div').find('label').css('color','#8B0000');
@@ -385,7 +394,7 @@
                         $.Ovpnc().removeAjaxLoading();
                 },
                 success: p.success_func ? function(rest){ return p.success_func(rest); } : function(rest) {
-                    if ( window.DEBUG ) console.log("Ajax got back: %o", rest);
+                    if ( window.DEBUG ) log("Ajax got back: %o", rest);
                 },
                 error: p.error_func ? function(rest,xhr,throwError){ return p.error_func(rest,xhr,throwError); } : function(xhr, ajaxOptions, thrownError) {
                     this.tryCount++;
@@ -420,7 +429,7 @@
 						return;
                     }
                     else {
-                        if ( window.DEBUG ) console.log( k + " -> " + v );
+                        if ( window.DEBUG ) log( k + " -> " + v );
                         alert($.Ovpnc().alertOk + ' Error: ' + k + ' -> ' + v +'</div><div class="clear"></div>');
                     }
                 });
@@ -436,7 +445,7 @@
         // Update server status data
         //
         updateServerStatus: function(r) {
-            if ( window.DEBUG ) console.log("%o",r);
+            if ( window.DEBUG ) log("%o",r);
             if (r !== undefined ) {
                 // If we get status back, display
                 if ( r.rest !== undefined && r.rest.status !== undefined) {
@@ -452,7 +461,7 @@
                     // Show or dont show the green on icon
                     $('#on_icon').css('opacity', (r.status.match(/online/i) ? '1' : '0'));
                 } else {
-                    if ( window.DEBUG )  console.log("Server status got %o",r);
+                    if ( window.DEBUG )  log("Server status got %o",r);
                 }
     
                 // Show number of connected clients if any
@@ -637,9 +646,9 @@ $(document).ready(function() {
     if ( document.referrer != '' ){
         var re = new RegExp(_pathname);
         _came_from = document.referrer.replace( re , "$1" );
-        if ( window.DEBUG ) console.log('Came from page: ' + _came_from);
+        if ( window.DEBUG ) log('Came from page: ' + _came_from);
         if ( _came_from !== window.location.pathname ){
-            if ( window.DEBUG ) console.log("Setting last location: " + window.location.pathname + ' got here from: ' + _came_from);
+            if ( window.DEBUG ) log("Setting last location: " + window.location.pathname + ' got here from: ' + _came_from);
             var _store_location = JSON.stringify({ last_page: window.location.pathname });
             $.cookie("Ovpnc_User_Settings", _store_location, {
                 expires: 30,

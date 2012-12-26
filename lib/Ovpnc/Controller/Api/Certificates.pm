@@ -96,7 +96,7 @@ before [qw(
 
     # Assign config params
     # ====================
-    $self->cfg( $c->('Api')->assign_params( $c ) )
+    $self->cfg( $c->controller('Api')->assign_params( $c ) )
         unless $self->_has_conf;
 };
 
@@ -110,9 +110,12 @@ requires user to provide options
 
 sub certificates_POST : Local
                       : Args(0)
-                      : Sitemap
-                      : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+                      : Does('ACL')
+                            AllowedRole('admin')
+                            AllowedRole('can_edit')
+                            ACLDetachTo('denied')
                       : Does('NeedsLogin')
+                      : Sitemap
 {
     my ( $self, $c ) = @_;
 

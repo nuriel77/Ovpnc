@@ -249,41 +249,42 @@ Handle Database error
 
 =cut
 
-sub _db_error : Private {
-    my ( $self, $c, $error_clean, $error, $form ) = @_;
+    sub _db_error : Private {
+        my ( $self, $c, $error_clean, $error, $form ) = @_;
 
-    #$c->response->status(500);    
+        #$c->response->status(500);    
 
-    if ( $error_clean =~ /duplicate entry '(.*)' for key '(.*)' /i ){
-        push @{$c->stash->{error}}, $2 if $2;
-        $form->get_field( $2 )
-            ->get_constraint({ type => 'Callback' })
-            ->force_errors(1);
-        $form->process;
+        if ( $error_clean =~ /duplicate entry '(.*)' for key '(.*)' /i ){
+            push @{$c->stash->{error}}, $2 if $2;
+            $form->get_field( $2 )
+                ->get_constraint({ type => 'Callback' })
+                ->force_errors(1);
+            $form->process;
+        }
+        elsif ( $_ =~ /(execute failed: Column) '(.*)' (.*) \[/g ) {
+            push @{$c->stash->{error}}, $2 if $2;
+            my ($_err) = $error =~ /(execute failed: .*) \[/g;
+            push @{$c->stash->{error}}, "MySQL error: " . $_err if $_err;
+        }
+        elsif ( $_ =~ /(execute failed:.*) \[/g ) {
+            push @{$c->stash->{error}}, "Error: " . $1;
+        }
+        else { 
+            push @{$c->stash->{error}}, "Error: " . $error_clean;
+        }
     }
-    elsif ( $_ =~ /(execute failed: Column) '(.*)' (.*) \[/g ) {
-        push @{$c->stash->{error}}, $2 if $2;
-        my ($_err) = $error =~ /(execute failed: .*) \[/g;
-        push @{$c->stash->{error}}, "MySQL error: " . $_err if $_err;
-    }
-    elsif ( $_ =~ /(execute failed:.*) \[/g ) {
-        push @{$c->stash->{error}}, "Error: " . $1;
-    }
-    else { 
-        push @{$c->stash->{error}}, "Error: " . $error_clean;
-    }
-}
-
+    
 =head2 _error
 
 Handle General error
 
 =cut
 
-sub _error : Private {
-    my ( $self, $c, $error ) = @_;
-    push @{$c->stash->{error}}, $error;
-}
+    sub _error : Private {
+        my ( $self, $c, $error ) = @_;
+        push @{$c->stash->{error}}, $error;
+    }
+
 
 =head2 _get_user_group_id
 
@@ -291,37 +292,39 @@ Get user and group id
 
 =cut
 
-sub _get_user_group_id : Private {
+    sub _get_user_group_id : Private {
 
-    my ( $self, $c )= @_;
+        my ( $self, $c )= @_;
 
-    # Get the group/user
-    # ==================
-    my (undef, undef, undef, $gid) = getpwnam(
-        $c->config->{openvpn_user} );
-
-    my (undef, undef, $uid) = getpwuid( $< );
-
-    return ( $uid, $gid );
-}
+        # Get the group/user
+        # ==================
+        my (undef, undef, undef, $gid) = getpwnam(
+            $c->config->{openvpn_user} );
+    
+        my (undef, undef, $uid) = getpwuid( $< );
+    
+        return ( $uid, $gid );
+    }
+    
 
 =head2 denied
-
+  
 Denied action
-
+    
 =cut
 
-sub denied : Private {
-    my ( $self, $c ) = @_;
+    sub denied : Private {
+        my ( $self, $c ) = @_;
 
-    # Add js / css
-    # ============
-    $c->controller('Root')->include_default_links($c);
-    $c->stash->{this_link}     = 'clients';
-    $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
-    $c->stash->{error_message} = "Access denied";
-    $c->stash->{no_self}       = 1;
-}
+        # Add js / css
+        # ============
+        $c->controller('Root')->include_default_links($c);
+        $c->stash->{this_link}     = 'clients';
+        $c->stash->{title}         = ucfirst( $c->stash->{this_link} );
+        $c->stash->{error_message} = "Access denied";
+        $c->stash->{no_self}       = 1;
+    }
+
 
 
 =head2 end
@@ -330,31 +333,31 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {
-    my ( $self, $c ) = @_;
+    sub end : ActionClass('RenderView') {
+        my ( $self, $c ) = @_;
 
-    $c->stash->{username} = $c->user->get("username")
-      if ( $c->user_exists );
+        $c->stash->{username} = $c->user->get("username")
+          if ( $c->user_exists );
 
-    my $accept = $c->req->header('accept');
-    $c->req->headers->header('accept' => 'application/xhtml+xml'); 
-    my $content_type = $c->req->header('content-type');
-    if($accept =~ /html/){ 
-        $c->res->headers->header('Content-Type' => 'text/html');
-        # Add js / css
-        # ============
-        $c->controller('Root')->include_default_links($c);
-    } 
-    elsif ( $accept =~ /xml/){ 
-        $c->res->headers->header('Accept' => 'text/xml'); 
-        $c->forward('View::XML::Simple');
-    } 
-    elsif ( $accept =~ /json/ ){
-        $c->res->headers->header('Accept' => 'application/json'); 
-        $c->forward('View::JSON');
+        my $accept = $c->req->header('accept');
+        $c->req->headers->header('accept' => 'application/xhtml+xml'); 
+        my $content_type = $c->req->header('content-type');
+        if($accept =~ /html/){ 
+            $c->res->headers->header('Content-Type' => 'text/html');
+            # Add js / css
+            # ============
+            $c->controller('Root')->include_default_links($c);
+        } 
+        elsif ( $accept =~ /xml/){ 
+            $c->res->headers->header('Accept' => 'text/xml'); 
+            $c->forward('View::XML::Simple');
+        } 
+        elsif ( $accept =~ /json/ ){
+            $c->res->headers->header('Accept' => 'application/json'); 
+            $c->forward('View::JSON');
+        }
+    
     }
-
-}
 
 
 =head1 AUTHOR

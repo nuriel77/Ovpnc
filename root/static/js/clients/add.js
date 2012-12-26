@@ -116,12 +116,12 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 fullname: $('#fullname').attr('value')
             });
 
-            if ( window.DEBUG ) console.log("Cookie data: %o",Settings);
+            if ( window.DEBUG ) log("Cookie data: %o",Settings);
             $.cookie( p.cookie_name, Settings, {
                 expires: p.expires ? p.expires : 30,
                 path: p.path_name ? p.path_name : ''
             });
-            if ( window.DEBUG ) console.log('Cookie saved');
+            if ( window.DEBUG ) log('Cookie saved');
 
             // Warn user about changes [for debug only]
             //return "Unsaved modifications";
@@ -205,7 +205,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
         // Successful return from adding client
         //
         returnedClientAdd: function(msg){
-            if ( window.DEBUG ) console.log("returnClientAdd has: %o",msg);
+            if ( window.DEBUG ) log("returnClientAdd has: %o",msg);
             if ( msg.error ){
                 if ( Object.prototype.toString.call( msg.error ) === '[object Array]'
                     && msg.error.length > 0 
@@ -253,7 +253,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 if ( msg.fields_error !== undefined
                     && Object.prototype.toString.call( msg.fields_error ) === '[object Array]'
                 ){
-                    if ( window.DEBUG ) console.log("%o",msg.fields_error);
+                    if ( window.DEBUG ) log("%o",msg.fields_error);
                     //$("#add_client_form").valid();
                     //for ( var i in msg.fields_error ){
                     //    $('label[for="' + msg.fields_error[i] + '"]').css('color','#8B0000');
@@ -279,7 +279,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 alert($.Ovpnc().alertErr + ' Error adding client: ' + r.statusText + '</div><div class="clear"></div>');
             }
             else { 
-                if ( window.DEBUG ) console.log( "%o", r );
+                if ( window.DEBUG ) log( "%o", r );
                 alert($.Ovpnc().alertErr + ' Error adding client: unknown error</div><div class="clear"></div>');
             }
             $.Ovpnc().removeAjaxLoading();

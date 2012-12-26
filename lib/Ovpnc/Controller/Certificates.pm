@@ -1,6 +1,9 @@
 package Ovpnc::Controller::Certificates;
-use Module::Locate qw(locate);
 use Ovpnc::Plugin::ChainCA 'read_random_entropy';
+use POSIX 'mktime';
+use Date::Calc qw(Delta_Days);
+use DateTime::Format::Strptime;
+use Module::Locate qw(locate);
 scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
 scalar locate('JSON::XS')    ? 0 : do { use JSON::XS; };
 use Moose;
@@ -152,7 +155,7 @@ Add a new certificate
 
 =cut
 
-        my $form_elem_country = $form->get_field({name => 'C'});
+        my $form_elem_country = $form->get_field({name => 'KEY_COUNTRY'});
 
         # Set default value for country
         # if it exists in the cookie
@@ -229,9 +232,30 @@ Add a new certificate
         # ===================
         if ( $form->submitted_and_valid ) {    
 
+            # Calculate the days between
+            # the two given dates for expiration
+            # ==================================
+            my $days = $self->_calculate_delta_days(
+                $c->req->params->{start_date},
+                $c->req->params->{KEY_EXPIRE},
+            );
+            $c->req->params->{KEY_EXPIRE} = $days;
+        
+            # For server and client certificates
+            # ==================================
+            if ( $c->req->params->{cert_type} =~ /client|server/ ){
+                $c->req->params->{cmd} = 'gen_cert';
+            }
+            # For generating Root CA certificate 
+            # ==================================
+            elsif ( $c->req->params->{cert_type} eq 'init_ca' ){
+                $c->req->params->{cmd} = 'init_ca';                
+            }
+
+            my $result = $c->controller('Api::Certificates')->certificates_POST( $c );
+            $c->flash->{rest}->{resultset} = $result;
             $c->response->redirect( $c->uri_for('add') );
-            return;
-       
+            return;       
         }
    
         # Check if any errors in form
@@ -240,14 +264,38 @@ Add a new certificate
         if ( $form->has_errors ) {
              # Add js / css
             # ============
-            $c->controller('Root')->include_default_links( $self, $c );
+            $c->controller('Root')->include_default_links( $c );
             $c->forward('View::HTML');    
             return;
         }
 
     }
- 
+
+
+=head2 _calculate_delta_days
+
+Calculate the days between
+two given date formats
+
+=cut 
     
+    sub _calculate_delta_days : Private {
+        my ( $self, $start_date, $key_expire ) = @_;
+
+        my $parser = DateTime::Format::Strptime
+            ->new( pattern => '%d-%m-%Y' );
+
+        $start_date = $parser->parse_datetime( $start_date );
+        $key_expire = $parser->parse_datetime( $key_expire );
+
+        my @start_date = (localtime($start_date->epoch))[5,4,3];
+        my @key_expire = (localtime($key_expire->epoch))[5,4,3];
+        $start_date[0] += 1900 and $start_date[1]++;
+        $key_expire[0] += 1900 and $key_expire[1]++;
+        return Delta_Days(@start_date, @key_expire);
+
+    }
+
 
 =head2 get_country_list
 
@@ -255,23 +303,24 @@ Get country list from the json data
 
 =cut
 
-sub get_country_list : Private {
-    my ( $self, $file ) = @_;
+    sub get_country_list : Private {
+        my ( $self, $file ) = @_;
 
-    die "No file specified" unless $file;
-    my $_list = read_file( $file )
-        or die "Cannot read '$file': $!";
+        die "No file specified" unless $file;
+        my $_list = read_file( $file )
+            or die "Cannot read '$file': $!";
 
-    my @clist = map {
-        {
-            $_->{countryName} => {
-                code => $_->{countryCode},
-                id   => $_->{geonameId},
-              }
-        }
-    } @{ ( $self->json->decode($_list) ) };
-    return \@clist;
-}
+        my @clist = map {
+            {
+                $_->{countryName} => {
+                    code => $_->{countryCode},
+                    id   => $_->{geonameId},
+                  }
+            }
+        } @{ ( $self->json->decode($_list) ) };
+        return \@clist;
+    }
+
 
 =head2 denied
 
@@ -280,17 +329,18 @@ no match for role
 
 =cut
 
-sub denied : Private {
-    my ( $self, $c ) = @_;
+    sub denied : Private {
+        my ( $self, $c ) = @_;
 
-    # Add js / css
-    # ============
-    $c->controller('Root')->include_default_links($c);
-    $c->stash->{this_link}     = $c->req->path;
-    $c->stash->{title}         = ucfirst( $c->req->path );
-    $c->stash->{error_message} = "Access denied";
-    $c->stash->{no_self}       = 1;
-}
+        # Add js / css
+        # ============
+        $c->controller('Root')->include_default_links($c);
+        $c->stash->{this_link}     = $c->req->path;
+        $c->stash->{title}         = ucfirst( $c->req->path );
+        $c->stash->{error_message} = "Access denied";
+        $c->stash->{no_self}       = 1;
+    }
+
 
 =head2 end
 
@@ -298,16 +348,17 @@ Attempt to render a view, if needed.
 
 =cut
 
-sub end : ActionClass('RenderView') {
-    my ( $self, $c ) = @_;
+    sub end : ActionClass('RenderView') {
+        my ( $self, $c ) = @_;
 
-    # Add js / css
-    # ============
-    $c->controller('Root')->include_default_links($c);
+        # Add js / css
+        # ============
+        $c->controller('Root')->include_default_links($c);
 
-    $c->stash->{username} = $c->user->get("username")
-      if ( $c->user_exists );
-}
+        $c->stash->{username} = $c->user->get("username")
+          if ( $c->user_exists );
+    }
+
 
 =head1 AUTHOR
 

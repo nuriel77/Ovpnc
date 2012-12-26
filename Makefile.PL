@@ -27,6 +27,8 @@ requires 'Set::Object';
 requires 'Object::Signature';
 requires 'Digest::MD5';
 requires 'Digest::MD5::File';
+requires 'Date::Calc';
+requires 'DateTime::Format::Strptime';
 requires 'Net::SSLeay';
 requires 'Crypt::CBC';
 requires 'Crypt::OpenSSL::CA';
