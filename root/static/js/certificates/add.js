@@ -113,11 +113,17 @@ jQuery.validator.setDefaults({
                     $(this).parent('span')
                            .find('input')
                            .attr('checked','checked');
+                }).hover(function(){
+                    $(this).css('text-decoration','underline');
+                }, function(){
+                    $(this).css('text-decoration','none');
                 });
             });
             // Run a check on certificate name
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
             $('#certname').bind('focusout',function(){
+                // We require user name as well for the 
+                // path of the user's certificates
                 if ( $('#username').attr('value').match(/\w+/) ){
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates",
@@ -128,7 +134,53 @@ jQuery.validator.setDefaults({
                     });
                 }
             });
-
+            $('#username').bind('focusout',function(){
+                if ( $('#username').attr('value').match(/\w+/) ){
+                    $.Ovpnc().ajaxCall({
+                        url: "/api/clients",
+                        data: { search: $(this).attr('value'), field: 'username' },
+                        method: 'GET',
+                        success_func: $.addCertificate().ajaxCheckUsernameSuccess,
+                        error_func: $.addCertificate().ajaxCheckUsernameError
+                    });
+                }
+            });
+        },
+        //
+        //
+        //
+        ajaxCheckUsernameSuccess: function (d){
+            if ( window.DEBUG ) log ("Check username returns: %o", d );
+            if ( d.rest.resultset !== undefined
+              && Object.prototype.toString.call( d.rest.resultset ) === '[object Array]'
+            ){
+                if ( d.rest.resultset.length > 1 ){
+                    var elem = document.createElement('span');
+                    $( elem ).addClass('error_message error_constraint_required')
+                             .text('Choose an existing user');
+                    $('input#username').parent('div').find('span').remove();
+                    $('input#username').parent('div').find('label').css('color','#8B0000');
+                    $('#username').parent('div').prepend( elem );
+                }
+            }
+        },
+        //
+        //
+        //
+        ajaxCheckUsernameError: function (e){
+            if ( window.DEBUG ) log ("Check username error returns: %o", e );
+            if ( e.responseText ){
+                var _msg = jQuery.parseJSON(e.responseText);
+                if ( window.DEBUG ) log ('Certificate name exists');
+                $('#certname').parent('div').find('label')
+                              .css('color','#8B0000');
+                var elem   = document.createElement('span');
+                $( elem ).addClass('passwd_err error_message error_constraint_required')
+                         .css('margin','4px 0 0 305px')
+                         .text('Certificate name exists!');
+                $('#certname').parent('div').children('.passwd_err').remove();
+                $('#certname').parent('div').append( elem );
+            }
         },
         //
         // Success - no such cert name
@@ -151,6 +203,7 @@ jQuery.validator.setDefaults({
                 $( elem ).addClass('passwd_err error_message error_constraint_required')
                          .css('margin','4px 0 0 305px')
                          .text('Certificate name exists!');
+                $('#certname').parent('div').children('.passwd_err').remove();
                 $('#certname').parent('div').append( elem );
             }
         },        
@@ -219,6 +272,7 @@ jQuery.validator.setDefaults({
         	$.addCertificate().setSelectBind();
         	$.addCertificate().setClickBind();
             $.addCertificate().chooseUser();
+            if ( $('#certname').attr('value') != '' ) $('#certname').focusout();
 
             // First check if a country has already been set
             // by Catalyst FormFu, where 0 means not.
@@ -349,29 +403,34 @@ jQuery.validator.setDefaults({
         setFormEvents: function(){
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
-                $.Ovpnc().setAjaxLoading(1);
+                if ( $('#certname').attr('value') != '' ) $('#certname').focusout();
                 // Check password length and strength
-                var _pw_length = $('input#password').attr('value');
-                if ( _pw_length.length < 8 ) {
-                    $('input#password').parent('div').find('span').remove();
-                    $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
-                    $('input#password').parent('div').find('label').css('color','#8B0000');
-                    $.Ovpnc().removeAjaxLoading();
+                if ( $('input#password').attr('value') != '' ) {
+                    var _pw = $('input#password').attr('value');
+                    if ( _pw.length < 8 ) {
+                        $('input#password').parent('div').find('span').remove();
+                        $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Minimum 8 characters</span>');
+                        $('input#password').parent('div').find('label').css('color','#8B0000');
+                        return false;
+                    }
+                    // Don't submit if passwords don't match or weak
+                    var current = $('input#password2').attr('value');
+                    var first = $('input#password').attr('value');
+                    if ( ! $.Ovpnc().verifyPasswordsMatch(first, current, 'password2' ) ) return false;
+                    if ( $('.top_badPass').is(':visible') ) {
+                        $('input#password').parent('div').find('span').remove();
+                        $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
+                        $('input#password').parent('div').find('label').css('color','#8B0000');
+                        return false;
+                    }
+                }
+                if ( $('#password').attr('value') != '' && $('#password2').attr('value') == '' ){
+                    $('input#password2').parent('div').find('span').remove();
+                    $('input#password2').parent('div').prepend('<span class="error_message error_constraint_required">Verification required</span>');
+                    $('input#password2').parent('div').find('label').css('color','#8B0000');
                     return false;
                 }
-                // Don't submit if passwords don't match or weak
-                var current = $('input#password2').attr('value');
-                var first = $('input#password').attr('value');
-                if ( ! $.Ovpnc().verifyPasswordsMatch(first, current, 'password2' ) ) return false;
-                if ( $('.top_badPass').is(':visible') ) {
-                    $('input#password').parent('div').find('span').remove();
-                    $('input#password').parent('div').prepend('<span class="error_message error_constraint_required">Password is too weak!</span>');
-                    $('input#password').parent('div').find('label').css('color','#8B0000');
-                    $.Ovpnc().removeAjaxLoading();
-                    return false;
-                }
-                $.Ovpnc().checkPasswords();
-                $.Ovpnc().checkEmail();
+                $.Ovpnc().setAjaxLoading(1);
                 $("#add_certificate_form").valid();
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);

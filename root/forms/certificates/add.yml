@@ -55,7 +55,7 @@ elements:
                                   style: "padding:5px;width:575px;"
                                   id: "formTableBorder"
                           -
-                              # Username
+                              # Username (Client's username as in DB)
                               - type: Block
                                 tag: div
                                 elements:
@@ -106,14 +106,13 @@ elements:
                                           id: "password"
                                           class: "form_row"
                                         constraints:
-                                          - Required
                                           - type: MaxLength
                                             max: 200
                                           - type: MinLength
                                             min: 8
-                                          - type: Regex
-                                            regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
-                                            message: "1 lowercase, uppercase, digit and character"
+                                          #- type: Regex
+                                          # regex: '^$|^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
+                                          #  message: "1 lowercase, uppercase, digit and character"
                                       - type: Block
                                         tag: div
                                         attributes_xml:
@@ -138,7 +137,6 @@ elements:
                                           id: "password2"
                                           class: "form_row"
                                         constraints:
-                                          - Required
                                           - type: MaxLength
                                             max: 72
                                           - type: Regex

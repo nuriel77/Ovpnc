@@ -110,7 +110,7 @@ using the openvpn pkitool
         # Assign env for openssl.cnf (temporary)
         # ======================================
         $ENV{KEY_CONFIG} = $_openssl_conf;
-    
+
         # Run the sed command to modify
         # values of the temp openssl.conf
         # ===============================
@@ -135,8 +135,12 @@ using the openvpn pkitool
             run( command => [ @_cmd ], verbose => 0, timeout => $TIMEOUT );
     
         unless ( $success ){
+            my $err = join( "\n", @{$full_buf} );
+            $err =~ /([fault|error].*)$/gi;
+            my $fnd = $1;
+            $fnd =~ s/'/\\\\\\'/g if $fnd;  
             return { error => 'Failed to create csr and key: '
-                . join( "\n", @{$full_buf} ) . ", " . $error_code }
+                    . ( $fnd ? $fnd : $err ) . ", " . $error_code };
         }
         else {
             return { status => join( "\n", @{$full_buf} ) };
@@ -204,7 +208,7 @@ From OpenVPN Documentation:
         ));
         $ca_cert->set_notBefore( $_time_now );
         $ca_cert->set_notAfter( $_time_yr );
-    
+
         my $ca_dn = Crypt::OpenSSL::CA::X509_NAME->new(
             C               => $params->{KEY_COUNTRY}             || 'NL',
             ST              => $params->{KEY_PROVINCE}            || 'NH',
@@ -310,9 +314,11 @@ Example:
             # ================
             unlink $_openssl_conf;
             my $_buf = join( "\n", @{$full_buf} );
-            if ( !$success || $_buf =~ /error/g ){
+            if ( !$success || $_buf =~ /([fault|error].*)$/gi ){
+                my $fnd = $1;
+                $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
                 return { error => 'Failed to create csr and key: '
-                    . $_buf . ", " . $error_code }
+                    . ( $fnd ? $fnd : $_buf ) . ", " . $error_code }
             }
         	else {
     	        return { status => $_buf };
@@ -354,13 +360,27 @@ Example:
                 # openssl.conf
                 # ================
                 unlink $_openssl_conf;
+                my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
                 my $_buf = join "", @{$full_buf};
-                if ( !$success || $_buf =~ /error/g ){
-                    return { error => 'Failed to create csr and key: '
-                        . $_buf . ", " . ( $error_code ? $error_code : '' ) }
+                if ( $_buf =~ /([error|fault].*)/ig ){
+                    my $fnd = $1;
+                    $fnd =~ s/'/\\\\\\'/g if $fnd;
+                    if ($_buf =~ /TXT_DB error number 2/g){
+                        unlink (@_cert_files);
+                        return {
+                            error =>
+                                'Failed to create certificate,' 
+                                . ' serial numbers might be in conflict.' 
+                                . ' Check the index.txt, serial, serial.old and [%X].pem files' };
+                    }
                 }
-                else {
-                    return { status => $_buf };
+
+                unless ( $success ){
+                    unlink (@_cert_files);
+                    my ($fnd) = $_buf =~ /(error.*)/gi;
+                    $fnd =~ s/'/\\\\\\'/g if $fnd;
+                    return { error => 'Failed to create certificate: '
+                        . ( $fnd ? $fnd : $_buf ) . ", " . ( $error_code ? $error_code : '' ) }
                 }
             }
         }
@@ -368,10 +388,8 @@ Example:
         # Check that all files
         # have been created
         # =====================
-        my $client_cert_dir = $cfg->{openvpn_utils}
-                            . '/keys/' . $params->{name};
-        my @_cert_files = glob $cfg->{openvpn_utils}
-                            . '/keys/' . $params->{name} . '.*';
+        my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
+        my $client_cert_dir = $cfg->{openvpn_utils}  . '/keys/' . $params->{KEY_CN};
         if ( @_cert_files ){
             unless ( -d $client_cert_dir ){
                 # Create client cert die
@@ -390,10 +408,10 @@ Example:
                     return { error => 'Certificate creation failed for ' . $_ };
                 }
                 move $_,
-                     $client_cert_dir . '/' . basename($_) . '.' . $params->{KEY_CN}
-                    or return { error => "Cannot move file '" . $_ . "'"
+                     $client_cert_dir . '/' . basename($_)
+                        or return { error => "Cannot move file '" . $_ . "'"
                                . ' to ' . $client_cert_dir . '/' . basename($_)
-                               . '.' . $params->{KEY_CN} . ': ' . $! }; 
+                               . ': ' . $! }; 
             }
             return { status => 'Ok' };
         }

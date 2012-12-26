@@ -4,6 +4,7 @@
 # created by openvpn, it also
 # contains the username/pass
 MDSUM=`md5sum < $1 | sed 's/[\t +|\-]//g'`
+env > /tmp/last_client_env.txt
 
 # Get the md5sum of the
 # username/password from

@@ -105,6 +105,7 @@ Add a new certificate
 
 =cut
 
+
     sub add : Path('add')
             : Args(0)
             : FormConfig
@@ -120,29 +121,7 @@ Add a new certificate
         $c->stash->{title}     = 'Certificates: Add a new certificate';
     
         my $form = $c->stash->{form};
-
-        # Prepand a random salt to the password
-        # =====================================
-        my $form_elem_password = $form->get_field( 'password' );
-        $form_elem_password->filter({
-            type     => 'Callback',
-            callback => sub {
-                # Get a random salt
-                # =================
-                my $random_data = read_random_entropy( 64,
-                    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
-                );
-                # "Hexify" data
-                # =============
-                my $salt = unpack("H*", $random_data);
-                # Set the salt field
-                # ==================
-                $form->add_valid( 'salt', $salt );
-                # Return salt+password
-                # ====================
-                return $salt.shift;
-            }
-         });
+        $form->auto_constraint_class( 'constraint_%t' );
 
         # Process FormFu
         # ==============    

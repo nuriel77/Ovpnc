@@ -135,7 +135,11 @@ requires user to provide options
             delete $c->stash->{assets};
             $c->detach('View::JSON');
         }
-    
+
+        my $temp_cn = $c->req->params->{KEY_CN};
+        my $temp_name = $c->req->params->{name};
+        $c->req->params->{KEY_CN} = $temp_name;
+        $c->req->params->{name} = $temp_cn;
         # Set roles
         # =========
         $self->_roles(
@@ -257,10 +261,11 @@ Get certificate(s) data
             $c->log->debug('Checking dir: ' . $self->cfg->{openvpn_utils} . '/keys/' . $username);
             $c->log->debug('Checking file: ' .$self->cfg->{openvpn_utils} . '/keys/' . $username
                         . '/' . $username . '.crt.' . $certname );
+
             if (
                     -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                 and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
-                        . '/' . $username . '.crt.' . $certname
+                        . '/' . $certname . '.crt'
             ){
                 $self->status_bad_request($c, message => 'Certificate exists');
                 $c->detach('View::JSON');

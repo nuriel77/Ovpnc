@@ -295,3 +295,19 @@ fieldset .constraint_required label:after {
 .ui-autocomplete-loading {
     background: white url('/static/js/jquery-ui/development-bundle/demos/autocomplete/images/ui-anim_basic_16x16.gif') right center no-repeat;
 }
+/* change background of labels for fields with a Required constraint */
+fieldset .constraint_required label {
+    background: transparent;
+}
+fieldset .constraint_regex label {
+    background: transparent;
+}
+fieldset .constraint_maxlength label {
+    background: transparent;
+}
+fieldset .constraint_minlength label {
+    background: transparent;
+}
+fieldset .constraint_required label:after {
+    content: '*'
+}
