@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `enabled` tinyint(1) NOT NULL,
   `username` varchar(64) NOT NULL,
   `password` varbinary(60) NOT NULL,
+  `salt` varchar(128) NOT NULL,
   `password_expires` datetime NOT NULL,
   `fullname` varchar(72) NOT NULL,
   `email` varchar(72) NOT NULL,
