@@ -109,6 +109,11 @@ requires 'Catalyst::View::TT';
 requires 'Catalyst::View::XSLT';
 requires 'Catalyst::View::JSON';
 
+#
+# Optional!
+#
+requires 'Cache::Memcached';
+requires 'Cache::Memcached::libmemcached';
 
 
 test_requires 'Test::More' => '0.88';
