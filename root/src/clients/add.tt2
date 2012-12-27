@@ -26,6 +26,8 @@
         $.Forms().checkCookie( $.addClient().cookieData.cookie_name );
         // Set validation rules
         $.addClient().setFormValidationRules();
+        $('#email').focusout();
+        $('#username').focusout().focus();
     });
 
 </script>

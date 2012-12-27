@@ -25,7 +25,13 @@ if [ -d openvpn/conf/2.0/keys ]; then
             openvpn/conf/2.0/build*
 fi
 chmod 770 .
-rm -rf openvpn/lib*
-cp -r /lib openvpn/.
-ln -s $P/openvpn/lib $P/openvpn/lib64
-chmod 755 $P/openvpn/bin -R
+cd openvpn
+if [ ! -d ./lib ]; then
+    cp -r /lib .
+fi
+chmod 755 bin -R
+file /bin/ls|grep 64 >/dev/null
+if [ $? -eq 0 ];then
+    ln -s lib lib64
+fi
+

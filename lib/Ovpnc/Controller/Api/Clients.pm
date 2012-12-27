@@ -556,7 +556,8 @@ Delete client(s)
     
         my @clients = split ',', $client_list;
     
-        my ( @_delete_ok , @_not_ok );
+        my ( @_delete_ok , @_not_ok , @_errors );
+    CLIENT:
         for my $client (@clients){
             # Find client in database
             # =======================
@@ -565,7 +566,7 @@ Delete client(s)
                  $_res = $c->model('DB::User')->find({ username => $client });
             }
             catch {
-                push @{$c->stash->{error}}, $_;
+                push @_errors, $_;
             };
     
             if ( $_res ){
@@ -574,31 +575,38 @@ Delete client(s)
                 # administrator user
                 # =======================
                 if ( $_res->id == 1 ){
-                    push @{$c->stash->{error}}, "Denied: Cannot delete default administrator!";
-                    $c->res->status(400);
-                    $c->detach;
-                    return;
-                }
-    
-                # Delete entry
-                # ============
-                if ( $_res->delete ) {
-                    push (@_delete_ok, $client);
+                    push @_not_ok, $client;
+                    push @_errors,
+                        "Denied: Cannot delete default administrator!";
+                    next CLIENT;
                 }
                 else {
-                    push (@_not_ok, $client);
-                }
-                # Remove any ccd file
-                # ===================
-                if ( -e $_ccd_dir . '/' . $client ){
-                    unlink $_ccd_dir . '/' . $client
-                        or push (@_not_ok, $client);
+                    # Delete entry
+                    # ============
+                    if ( $_res->delete ) {
+                        push (@_delete_ok, $client);
+                    }
+                    else {
+                        push (@_not_ok, $client);
+                    }
+                    # Remove any ccd file
+                    # ===================
+                    if ( -e $_ccd_dir . '/' . $client ){
+                        unlink $_ccd_dir . '/' . $client
+                            or push (@_not_ok, $client);
+                    }
                 }
             }
         }
     
         $self->status_ok($c,
-            entity => { deleted => [ @_delete_ok ], failed => [ @_not_ok ] }
+            entity => {
+                resultset => {
+                    deleted => [ @_delete_ok ],
+                    failed  => [ @_not_ok ],
+                    errors  => [ @_errors ]
+                }
+            }
         );
     }
 

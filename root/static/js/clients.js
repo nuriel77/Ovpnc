@@ -363,19 +363,32 @@ var total_count = 0;
         // Process success returned from client delete
         //
         clientDeleteReturn: function (r){
-            if ( r.rest.deleted !== undefined  ){
-                if ( r.rest.deleted.length > 0 ){
-                    alert($.Ovpnc().alertOk + ' Total ' + r.rest.deleted.length +' client' + ( r.rest.deleted.length === 1 ? ' ' : 's ' ) + ' deleted</div><div class="clear"></div>' );
+            if ( r.rest.resultset !== undefined ) {
+                var rs = r.rest.resultset;
+                if ( rs.errors !== undefined && rs.errors.length > 0 ){
+                    var _errors = rs.errors;
+                    for ( var e in _errors ){
+                        log(e);
+                        alert( $.Ovpnc().alertErr + ' ' + _errors[e] + '</div><div class="clear"></div>' );
+                    }
                 }
-                else {
-                    alert( $.Ovpnc().alertErr + ' No clients deleted!</div><div class="clear"></div>' );
-                    return;
+    
+                if ( rs.deleted !== undefined  ){
+                    if ( rs.deleted.length > 0 ){
+                        alert($.Ovpnc().alertOk + ' Total ' + rs.deleted.length +' client' + ( rs.deleted.length === 1 ? ' ' : 's ' ) + ' deleted</div><div class="clear"></div>' );
+                    }
+                    else {
+                        alert( $.Ovpnc().alertIcon + ' No clients deleted!</div><div class="clear"></div>' );
+                    }
                 }
+
+                if ( rs.failed !== undefined && rs.failed.length > 0 ){
+                    if ( rs.failed.length != window.clientsToDelete ){
+                        alert( $.Ovpnc().alertIcon + ' ' + rs.failed.length + ' out of ' + window.clientsToDelete + ' client'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
+                    }
+                }
+                $('.pReload').click();
             }
-            if ( r.rest.failed !== undefined && r.rest.failed.length > 0 ){
-                alert( $.Ovpnc().alertIcon + r.rest.failed.length + ' out of ' + total_count + ' client'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
-            }
-            $('.pReload').click();
         },
         //
         // Applt context menu to the flexigrid rows
@@ -441,6 +454,7 @@ var total_count = 0;
             if ( cnf == false ) return false;
             // Execute
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+            window.clientsToDelete = total_count;
             $.Ovpnc().ajaxCall({
                 url: "/api/clients/",
                 data: { client: _clients, _ : '1' },
