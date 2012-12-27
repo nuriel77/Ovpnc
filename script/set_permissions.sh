@@ -9,7 +9,10 @@ chown openvpn.ovpnc openvpn
 chown openvpn.ovpnc openvpn/var openvpn/conf openvpn/tmp -R
 chown ovpnc.ovpnc openvpn/conf/.management openvpn/conf/*
 chmod 600 openvpn/conf/.management openvpn/conf/openvpn*
-chown openvpn.ovpnc openvpn/conf/2.0 openvpn/conf/ccd openvpn/conf/ipp.txt -R
+if [ -d openvpn/conf/2.0 ] && [ -f openvpn/conf/ipp.txt ];then
+chown openvpn.ovpnc openvpn/conf/2.0 openvpn/conf/ipp.txt -R
+fi
+chown openvpn.ovpnc openvpn/conf/ccd
 if [ -d openvpn/conf/2.0/keys ]; then
     chown ovpnc.ovpnc openvpn/conf/2.0/keys/ca.*
     chown ovpnc.ovpnc openvpn/conf/2.0/keys/*.key
