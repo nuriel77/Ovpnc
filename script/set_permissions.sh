@@ -33,8 +33,9 @@ if [ ! -d ./lib ]; then
     cp -r /lib .
 fi
 chmod 755 bin -R
+chmod 770 tmp
 file /bin/ls|grep 64 >/dev/null
-if [ $? -eq 0 ];then
+if [ $? -eq 0 ] && [ ! -L lib64 ];then
     ln -s lib lib64
 fi
 

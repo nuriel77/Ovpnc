@@ -6,7 +6,10 @@ if [ -z $1 ]; then
 fi
 
 cp -r $1 openvpn/conf/
-gunzip openvpn/conf/2.0/openssl-1.0.0.cnf.gz
+if [ -f openvpn/conf/2.0/openssl-1.0.0.cnf.gz ];then
+    gunzip openvpn/conf/2.0/openssl-1.0.0.cnf.gz
+fi
 chmod o-rwx openvpn/conf/2.0/* -R
 chown openvpn.ovpnc openvpn/conf/2.0 -R
 chmod 770 openvpn/conf/2.0/
+echo Directory copied successfully
