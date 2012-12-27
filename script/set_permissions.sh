@@ -5,10 +5,13 @@ chown ovpnc.ovpnc lib root t config config/.* -R
 chmod 600 config/.* ovpnc.*
 chmod 700 config t lib root script script/* tmp tmp/*
 chmod 770 openvpn openvpn/conf
+
 chown openvpn.ovpnc openvpn
 chown openvpn.ovpnc openvpn/var openvpn/conf openvpn/tmp -R
 chown ovpnc.ovpnc openvpn/conf/.management openvpn/conf/*
 chmod 600 openvpn/conf/.management openvpn/conf/openvpn*
+chmod 770 openvpn/var/run openvpn/var/log
+chown openvpn.ovpnc openvpn/var/run openvpn/var/log
 if [ -d openvpn/conf/2.0 ] && [ -f openvpn/conf/ipp.txt ];then
 chown openvpn.ovpnc openvpn/conf/2.0 openvpn/conf/ipp.txt -R
 fi
