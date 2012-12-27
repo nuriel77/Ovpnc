@@ -251,6 +251,7 @@ var total_count = 0;
 
             // Get total selected clients
             var total_count = $('.trSelected', grid).length;
+            if ( window.DEBUG ) log ("Total selected clients: " + total_count);
             var processed = 0;
             var loop = 0;
             var _clients = '';
@@ -292,6 +293,10 @@ var total_count = 0;
                     alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
                     $('.pReload').click();
 
+                },
+                error: function ( xhr, textStatus, errorThrown ) {
+                    if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
+                    alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
                 },
                 complete : function(){
                     $.Ovpnc().removeAjaxLoading();

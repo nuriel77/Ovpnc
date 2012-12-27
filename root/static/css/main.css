@@ -309,6 +309,7 @@ fieldset .constraint_minlength label {
 }
 fieldset .constraint_required label:after {
     content: '*';
+    color: #ff0000;
 }
 
 .movable{ cursor:move; }

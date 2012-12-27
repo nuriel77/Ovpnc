@@ -43,7 +43,6 @@ is valid and okay
 
 =cut
 
-
 sub auto : Private {
 
     my ( $self, $c ) = @_;

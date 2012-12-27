@@ -47,7 +47,7 @@ window.alert = function(message) {
             start : function () { $('#message').css('max-height', '') },
             stop : function () {  window.resized = 1 },
         });
-        $('#message').draggable();
+
         $('#message').css({
             'max-height': limitOffset + 'px',
             'cursor': 'move'
@@ -55,11 +55,13 @@ window.alert = function(message) {
     }
 
     if ( window.firstAlertPassed !== undefined ){
+        if ( window.DEBUG) log( 'first alert passed' );
         // Bind a double click to close it
         $('#message').dblclick(function(){
             $('#message_container').hide(300);
             $('#message_content').remove();
         });
+        $('#message').draggable();
     }
     // Show the message container
     if ( $('#message_container').is(':hidden') ) {

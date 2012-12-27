@@ -4,6 +4,7 @@ use Cwd;
 use namespace::autoclean;
 use Catalyst::Runtime 5.80;
 use v5.10.1;
+use utf8;
 
 =head1 NAME
 
@@ -48,7 +49,6 @@ use Catalyst qw/
   /;
 #  Session::Store::Memcached
 
-
 =head2 CONFIGURATION
 
 Configure the application.
@@ -61,6 +61,10 @@ with an external configuration file acting as an override for
 local deployment.
 
 =cut
+
+__PACKAGE__->config({
+    ENCODING     => 'utf-8',
+});
 
 __PACKAGE__->config(
 

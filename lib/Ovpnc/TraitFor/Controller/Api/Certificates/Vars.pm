@@ -1,6 +1,7 @@
 package Ovpnc::TraitFor::Controller::Api::Certificates::Vars;
 use warnings;
 use strict;
+use utf8;
 use Moose::Role;
 
 # will become defined

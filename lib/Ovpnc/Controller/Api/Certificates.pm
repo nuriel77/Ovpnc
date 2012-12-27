@@ -2,6 +2,7 @@ package Ovpnc::Controller::Api::Certificates;
 use warnings;
 use strict;
 use Moose;
+use utf8;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }

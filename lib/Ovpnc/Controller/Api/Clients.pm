@@ -773,7 +773,7 @@ using crl.pem
             if $c->request->params->{client};
     
         my @clients = split ',', $client_list;
-    
+
         # Trait names should match request method
         # =======================================
         $self->_roles(
@@ -797,7 +797,7 @@ using crl.pem
         unless ( $c->request->params->{no_revoke} ) {
             $_ret_val = $self->_roles->revoke_certificate( \@clients );
         }
-    
+
         unless ( $_ret_val ){
             $self->_disconnect_vpn if $self->_has_vpn;
             $c->controller('Api')->detach_error( $c,
@@ -864,7 +864,7 @@ in ccd
                          : Sitemap
     {
         my ( $self, $c, $client_list ) = @_;
-    
+
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
@@ -946,8 +946,8 @@ in ccd
     
         # Done processing client(s)
         # =========================
-        $self->status_ok( $c, entity => { resultset => $_ret_val } );
         $self->_disconnect_vpn if $self->_has_vpn;
+        $self->status_ok( $c, entity => { resultset => $_ret_val } );
         delete $c->stash->{status} if $c->stash->{status};
     }
 

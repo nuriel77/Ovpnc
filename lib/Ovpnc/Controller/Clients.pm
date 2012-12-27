@@ -3,6 +3,7 @@ use Ovpnc::Plugin::ChainCA 'read_random_entropy';
 use Ovpnc::Plugin::Sanity;
 use Try::Tiny;
 use Digest::MD5 'md5_hex';
+use utf8;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; }

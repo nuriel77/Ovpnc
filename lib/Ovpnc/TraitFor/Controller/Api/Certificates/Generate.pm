@@ -8,6 +8,7 @@ use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
 use Ovpnc::Plugin::ChainCA;
 use Moose::Role;
+use utf8;
 use vars qw/$ca/;
 
 =head1 NAME

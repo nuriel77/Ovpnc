@@ -330,8 +330,9 @@ Example:
             my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
             my $_args = [
                 ( $params->{password} ? '--pass' : '' ),
-                $params->{name}
+                $params->{name},
             ];
+               # '-nameopt multiline,utf8,-esc_msb'
             # If user requested password
             # we use Expect to enter it
             # ==========================
@@ -612,6 +613,8 @@ being used to process certificates
 sed -i 's/^#\\(organizationalUnitName_default = \$ENV::KEY_OU\\)/\\1/' $openssl_conf ;
 sed -i 's/^#\\(commonName_default = \$ENV::KEY_CN\\)/\\1/' $openssl_conf ;
 sed -i 's/^#\\(name_default = \$ENV::KEY_NAME\\)/\\1/' $openssl_conf ;
+sed -i 's/string_mask = nombstr/string_mask = utf8only/' $openssl_conf ;
+sed -i -e '/string_mask = utf8only/ a\\utf8        = yes' $openssl_conf ;
 _OO_
 
     }

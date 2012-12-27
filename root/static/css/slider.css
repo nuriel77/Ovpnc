@@ -55,10 +55,9 @@ ul#sliding-navigation li.sliding-element h3
 
 ul#sliding-navigation li.sliding-element a
 {
-	color: #555;
-/*	background:#222; */
-/*	border: 1px solid #1a1a1a; */
+	color: #555555;
 	text-decoration: none;
+    max-width:80px;
 }
 
 ul#sliding-navigation li.sliding-element a:hover { color: #000; }

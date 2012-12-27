@@ -67,6 +67,7 @@ sub revoke_certificate {
         }
 
     }
+
     return $_ret_val;
 }
 

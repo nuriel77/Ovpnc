@@ -108,17 +108,23 @@ jQuery.validator.setDefaults({
         setClickBind: function (){
             $.addCertificate().checkChanges();
             // Set click on label of radiobutton (choose)
-            $.each( $('.radiogroup').find('label'), function(){
+            $.each( $('.radiogroup').find('input[name=cert_type],label'), function(){
                 $(this).bind('click', function(){
+                    $('.radiogroup').find('input').removeAttr('checked');
                     $(this).parent('span')
                            .find('input')
                            .attr('checked','checked');
+
+                    $.addCertificate().checkCertType(
+                        $('input[name=cert_type]:checked', '#add_certificate_form').val()
+                    );
                 }).hover(function(){
-                    $(this).css('text-decoration','underline');
+                    $(this).css('text-shadow','1px 1px #dddddd');
                 }, function(){
-                    $(this).css('text-decoration','none');
+                    $(this).css('text-shadow','none');
                 });
             });
+
             // Run a check on certificate name
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
             $('#certname').bind('focusout',function(){
@@ -253,6 +259,24 @@ jQuery.validator.setDefaults({
             });
         },
         //
+        // Check the chosen certificat type, act accordingly
+        //
+        checkCertType: function (cType){
+            if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
+            if ( cType === 'server' ){
+                $('#password2').parents('tr:first').slideUp(300);
+                $('#password').parents('tr:first').slideUp(400);
+                $('#generatePassword').parents('tr:first').hide(100);
+            }
+            else if ( cType === 'client' || cType === 'ca' ){
+                if ( $('#password').is(':hidden') ){
+                    $('#password').parents('tr:first').slideDown(400);
+                    $('#password2').parents('tr:first').slideDown(300);
+                    $('#generatePassword').parents('tr:first').show(100);
+                }
+            }
+        },
+        //
         // Main function - init
         //
         certExecActions: function (){
@@ -269,6 +293,12 @@ jQuery.validator.setDefaults({
             $.Ovpnc.cookie = cookie_data;
             // Set fields from cookie (disabled -> implementing "save details as template")
             $.Forms().setFormFromCookie( cookie_data, $.addCertificate().elems);
+            if ( cookie_data.certtype ){
+                $('.radiogroup').find('input').removeAttr('checked');
+                $('input[value=' + cookie_data.certtype +']', '#certtype').attr('checked','checked');
+                $.addCertificate().checkCertType(cookie_data.certtype);
+            }
+
         	$.addCertificate().setSelectBind();
         	$.addCertificate().setClickBind();
             $.addCertificate().chooseUser();
@@ -286,8 +316,6 @@ jQuery.validator.setDefaults({
                 // set by Catalyst FormFu
                 var _default_country = $("#country option:selected").attr('value');
                 if ( window.DEBUG ) log('We got a default: ' + _default_country);
-                log( "cookie has: %o", $.Ovpnc.cookie);
-                if ( window.DEBUG ) log('looking up in cookie for state');
                 $.addCertificate().getStateList( _default_country );
             }    
             // If no country has been set,
@@ -316,7 +344,6 @@ jQuery.validator.setDefaults({
         	else {
         		// Check user's location
         		// and set it as default
-        		log( 'Setting default user location' );
                 if ( $("#country option:selected").attr('value') == 0 ){
                     $("#country option:selected").remove();
                 }
@@ -344,6 +371,7 @@ jQuery.validator.setDefaults({
             }
             // Set the cookie data
             var Settings = JSON.stringify({
+                certtype:       $('input[name=cert_type]:checked', '#certtype').attr('value'),
                 username:       $('#username').attr('value'),
                 certname:       $('#certname').attr('value'),
                 email:          $('#email').attr('value'),
@@ -489,7 +517,6 @@ jQuery.validator.setDefaults({
                     },
                     function( result ) {
                         if ( result.rest === undefined ){
-                            log('No clients with this name');
                             return false;
                         }
                         if ( Object.prototype.toString.call( result.rest.resultset ) !== '[object Array]' ){
