@@ -13,6 +13,7 @@ all_from 'lib/Ovpnc.pm';
 
 requires 'boolean';
 requires 'fields';
+requires 'Socket';
 requires 'Module::Locate';
 requires 'Moose';
 requires 'Moose::Exporter';
@@ -35,7 +36,6 @@ requires 'Crypt::OpenSSL::CA';
 requires 'Crypt::OpenSSL::RSA';
 requires 'Crypt::OpenSSL::Bignum';
 requires 'Crypt::OpenSSL::Random';
-requires 'Socket';
 requires 'IPC::Run';
 requires 'IPC::Cmd';
 requires 'Gepok';

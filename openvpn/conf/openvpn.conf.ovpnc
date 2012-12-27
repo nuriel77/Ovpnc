@@ -7,7 +7,7 @@
 
 # [ Group id=0 ]
 port							8111 ;ServerPort
-local						62.75.156.41 ;VPNServer
+local						0.0.0.0 ;VPNServer
 multihome						;multihome
 
 # [ Group id=1 ]

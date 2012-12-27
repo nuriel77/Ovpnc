@@ -11,6 +11,7 @@ use Proc::ProcessTable;
 use File::Touch;
 use Moose::Role;
 use MooseX::Types::IPv4 'ip4';
+use Try::Tiny;
 use namespace::autoclean;
 
 =head1 NAME
@@ -81,14 +82,12 @@ sub start {
 
         undef $config;
 
-        unless (
-            $self->_check_port_available(
-                $openvpn_addr,
-                $openvpn_port,
-                $openvpn_proto
-            )
-        ) {
-            return { 
+        # Check possible bind to port
+        # ===========================
+        my $_check = $self->_check_port_available($openvpn_addr,$openvpn_port,$openvpn_proto);
+        return $_check if ref $_check and $_check->{error};
+        unless ( $_check ) {
+            return {
                 error => 'Server cannot start. Cannot bind to socket. '
                     . 'Check that the ' . $openvpn_proto . ' address/port '
                     . $openvpn_addr . ':' . $openvpn_port
@@ -342,18 +341,22 @@ Check if OpenVPN port is in user
 
     sub _check_port_available {
         my ( $self, $iaddr, $port, $proto ) = @_;
-
         $proto  ||= 'udp';
         $proto    = getprotobyname($proto)  or die "getprotobyname: $!";
         $port   ||= 1194;
         $iaddr  ||= INADDR_ANY;
         my $type  = $proto eq 'tcp' ? SOCK_STREAM : SOCK_DGRAM;
         my $ipaddr = inet_aton($iaddr);
-        socket(my $sock, PF_INET, $type, $proto) or die "socket: $!";
+        my $sock;
+        try { socket($sock, PF_INET, $type, $proto) or die "socket: $!"; }
+        catch { return { error => $_ } };
         my $name = sockaddr_in($port,$ipaddr)    or die "sockaddr_in: $!";
-        bind($sock, $name)                       and return 1;
-        $! == EADDRINUSE                         and return 0;
-        die "bind: $!";
+        my $status;
+        try {
+            bind($sock, $name) and return 1;
+            $! == EADDRINUSE   and die { error => 'port address combination in use' };
+        }
+        catch { return "Error binding to socket:" . $_ };
     }
 
 =head2 _check_management_password
