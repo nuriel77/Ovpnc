@@ -100,6 +100,7 @@ legend {
 .message {
     padding:8px 10px 3px 0;
     margin:3px;
+    position:relative;
     overflow:hidden;
 	font-size: 0.9em;
 	min-height:15px;
@@ -116,10 +117,9 @@ legend {
 }
 
 #message_close{
+    position:relative;
     float:right;
-    margin: -10px 73px 0px 0px;
     z-index:9009;
-    display:none;
 }
 
 input:-webkit-autofill { color: #ffffff !important; }
@@ -173,7 +173,6 @@ img{
 
 .box_shadow{
 	border:1px solid #cccccc;
-	border-bottom:0;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	background: #cccccc;
@@ -309,5 +308,7 @@ fieldset .constraint_minlength label {
     background: transparent;
 }
 fieldset .constraint_required label:after {
-    content: '*'
+    content: '*';
 }
+
+.movable{ cursor:move; }

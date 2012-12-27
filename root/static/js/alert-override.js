@@ -27,23 +27,12 @@ window.alert = function(message) {
     }
     // Populate the message div
     $('#message').prepend( msgContent );
-
-    if ( ! $('#message_close').is(':visible') ){
-        // Create img element
-        $( msgImage ).addClass('hand_pointer')
-                     .attr('id','message_close')
-                     .attr('src','/static/images/close-gray.png');
-        // Contain image in div
-        $( iDiv ).html( msgImage );
-        $('#message_container').append( iDiv );
-    }
-
     // Calculate the max height
     // which the message div can be
     var outerCenteredOffset = $('#outer_centered').offset();
     var messageContainerOffset = $('#message_container').offset();
     var limitOffset = ( outerCenteredOffset.top - 10 ) - messageContainerOffset.top;
-    
+
     // If the message div becomes too high
     // we limit its height and make
     // it ui-resizable.
@@ -56,9 +45,13 @@ window.alert = function(message) {
             grid: [ 10, 10 ],
             //helper : "resizable-helper",
             start : function () { $('#message').css('max-height', '') },
-            stop : function () {  window.resized = 1 }
+            stop : function () {  window.resized = 1 },
         });
-        $('#message').css('max-height', limitOffset + 'px');
+        $('#message').draggable();
+        $('#message').css({
+            'max-height': limitOffset + 'px',
+            'cursor': 'move'
+        });
     }
 
     if ( window.firstAlertPassed !== undefined ){
@@ -72,6 +65,21 @@ window.alert = function(message) {
     if ( $('#message_container').is(':hidden') ) {
         $('#message_container').slideDown(300);
     }
+
+    // Append a close button
+    /*
+    if ( ! $('#message_close').is(':visible') ){
+        // Create img element
+        $( msgImage ).addClass('hand_pointer')
+                     .attr('id','message_close')
+                     .attr('src','/static/images/close-gray.png');
+        // Get message container offset
+        // Contain image in div
+        $( iDiv ).css('margin', '-31px 95px 0px 0px').html( msgImage );
+        $('#message_container').append( iDiv );
+    }
+    */
+
     return false;
 };
 
