@@ -289,7 +289,7 @@ var total_count = 0;
                         $('.pReload').click();
                         return;
                     }
-                    alert( _data_types[errors] + ' ' + msg + '</div><div class="clear"></div>' );
+                    alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
                     $('.pReload').click();
 
                 },

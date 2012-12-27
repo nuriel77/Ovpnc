@@ -117,7 +117,7 @@ before [qw(
 
     # Assign config params
     # ====================
-    $self->cfg( $c->controller->('Api')->assign_params( $c ) )
+    $self->cfg( $c->controller('Api')->assign_params( $c ) )
         if ( ref $c && ! $self->_has_conf );
 };
 

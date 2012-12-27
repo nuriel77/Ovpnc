@@ -555,7 +555,6 @@ Delete client(s)
         $client_list = $c->request->params->{client} if $c->request->params->{client};
     
         my @clients = split ',', $client_list;
-    
         my ( @_delete_ok , @_not_ok , @_errors );
     CLIENT:
         for my $client (@clients){
@@ -570,14 +569,13 @@ Delete client(s)
             };
     
             if ( $_res ){
-                
                 # Deny removal of default
                 # administrator user
                 # =======================
                 if ( $_res->id == 1 ){
                     push @_not_ok, $client;
                     push @_errors,
-                        "Denied: Cannot delete default administrator!";
+                        $client . ": Denied. Cannot delete the default administrator!";
                     next CLIENT;
                 }
                 else {
@@ -1019,6 +1017,8 @@ Get revoked client list
     {
         my ( $self, $c ) = @_;
     
+        my $_ret_val;
+
         my $openvpn_dir = $self->cfg->{openvpn_dir} =~ /^\//
             ? $self->cfg->{openvpn_dir}
             :  $self->cfg->{home} . '/' . $self->cfg->{openvpn_dir};
@@ -1034,10 +1034,9 @@ Get revoked client list
         # Check readable
         # ==============
         unless ( -r $crl_index ) {
-            $self->status_forbidden( $c,
-                    message => 'Cannot read '
-                  . $crl_index
-                  . ', file does not exists or is not readable' );
+            push @{$_ret_val->{'General Fault'}->{errors}},
+                'Cannot read ' . $crl_index . ', file does not exists or is not readable';
+            $self->status_ok($c, entity => { resultset => $_ret_val });
             $self->_disconnect_vpn if $self->_has_vpn;
             $c->detach;
         }
