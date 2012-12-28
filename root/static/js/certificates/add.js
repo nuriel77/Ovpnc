@@ -114,7 +114,6 @@ jQuery.validator.setDefaults({
                     $(this).parent('span')
                            .find('input')
                            .attr('checked','checked');
-
                     $.addCertificate().checkCertType(
                         $('input[name=cert_type]:checked', '#add_certificate_form').val()
                     );
@@ -133,7 +132,11 @@ jQuery.validator.setDefaults({
                 if ( $('#username').attr('value').match(/\w+/) ){
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates",
-                        data: { certname: $(this).attr('value'), name: $('#username').attr('value') },
+                        data: {
+                            certname: $(this).attr('value'),
+                            name: $('#username').attr('value'),
+                            type: $('#certtype').attr('value')
+                        },
                         method: 'GET',
                         success_func: $.addCertificate().ajaxCheckCertSuccess,
                         error_func: $.addCertificate().ajaxCheckCertError
@@ -291,8 +294,34 @@ jQuery.validator.setDefaults({
                 $('#password2').parents('tr:first').slideUp(300);
                 $('#password').parents('tr:first').slideUp(400);
                 $('#generatePassword').parents('tr:first').hide(100);
+                // Check if Root CA exists,
+                // if not, display a warning
+                $.Ovpnc().ajaxCall({
+                    url: "/api/certificates",
+                    data: {
+                        certname: 'ca',
+                        type: 'ca',
+                        name: 'anyuser'
+                    },
+                    method: 'GET',
+                    success_func: $.addCertificate().ajaxCheckCASuccess,
+                    error_func: $.addCertificate().ajaxCheckCAError
+                });
             }
             else if ( cType === 'client' ){
+                // Check if Root CA exists,
+                // if not, display a warning
+                $.Ovpnc().ajaxCall({
+                    url: "/api/certificates",
+                    data: {
+                        certname: 'ca',
+                        type: 'ca',
+                        name: 'anyuser'
+                    },
+                    method: 'GET',
+                    success_func: $.addCertificate().ajaxCheckCASuccess,
+                    error_func: $.addCertificate().ajaxCheckCAError
+                });
                 if ( $('#password').is(':hidden') ){
                     $('#password').parents('tr:first').slideDown(400);
                     $('#password2').parents('tr:first').slideDown(300);
@@ -300,6 +329,17 @@ jQuery.validator.setDefaults({
                 }
             }
             else if ( cType === 'ca' ){
+                if ( window.checkNoDupMessage !== undefined ){
+                    window.checkNoDupMessage = undefined;
+                    $.each( $('.err_text'), function(){
+                        if ( $(this).text().match(/You must have a Root CA/) ){
+                            $(this).parent('div').remove();
+                            if ( $('#message').text() == '' ){
+                                $('#message_container').hide();
+                            }
+                        }
+                    });
+                }
                 if ( $('#password').is(':hidden') ){
                     $('#password').parents('tr:first').slideDown(400);
                     $('#password2').parents('tr:first').slideDown(300);
@@ -313,6 +353,37 @@ jQuery.validator.setDefaults({
                               }).focusout();
             }
             else {
+            }
+        },
+        //
+        // Handle error return from checking Root CA
+        //
+        ajaxCheckCAError: function (e){
+            // Error actually means that
+            // the Root CA already exists
+            // This is okay if the user
+            // is on certtype server or client
+            // he can now create them because
+            // he has a Root CA.
+            if ( window.DEBUG ) log( "ajaxCheckCASuccess got back: %o", e);
+            return;
+        },
+        //
+        // Handle return from checking Root CA
+        //
+        ajaxCheckCASuccess: function (r){
+            // Success actually means that
+            // the Root CA doesn't exists
+            // In this case we want to display
+            // a warning to the user to create
+            // one because he is now on the
+            // certtype server or client.
+            if ( window.DEBUG ) log( "ajaxCheckCASuccess got back: %o", r);
+            if ( window.checkNoDupMessage === undefined ){
+                window.checkNoDupMessage = 1;
+                alert(
+                    $.Ovpnc().alertIcon + ' You must have a Root CA, only then server and client certificates can be generated.</div><div class="clear"></div>'
+                );
             }
         },
         //
@@ -470,7 +541,8 @@ jQuery.validator.setDefaults({
         setFormEvents: function(){
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
-                if ( $('#certname').attr('value') != '' ) $('#certname').focusout();
+                $('#certname').focusout();
+                $('#username').focusout();
                 // Check password length and strength
                 if ( $('input#password').attr('value') != '' ) {
                     var _pw = $('input#password').attr('value');
@@ -505,7 +577,7 @@ jQuery.validator.setDefaults({
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
                 },
-                1000 );
+                1500 );
                 if ( $('.error_message').is(':visible') || $('.client_error').is(':visible') ) {
                     $.Ovpnc().removeAjaxLoading();
                     return false;

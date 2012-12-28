@@ -313,10 +313,18 @@ Example:
             # ================
             unlink $_openssl_conf;
             my $_buf = join( "\n", @{$full_buf} );
-            if ( !$success or $_buf =~ /(error.*)/gi ){
+            if ( !$success or $_buf =~ /(wrong.*)/ig or $_buf =~ /(error.*)/ig ){
                 my $fnd = $1;
                 warn "[error] OpenSSL ERROR: " . $_buf;
                 $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
+                if ( $fnd and $fnd =~ /error|wrong/gi ){
+                    return {
+                        error =>
+                            'Failed to create certificate.' 
+                            . ' Index file might be corrupt.'
+                            . ' Got error: ' . $fnd
+                    };
+                }
                 return { error => 'Failed to create csr and key for server: '
                     . ( $fnd ? $fnd : $_buf )
                     . ( $error_code ? ", " . $error_code : '' )
@@ -369,12 +377,12 @@ Example:
                 unlink $_openssl_conf;
                 my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
                 my $_buf = join "", @{$full_buf};
-                if ( $_buf =~ /(error.*)/ig ){
+                if ( $_buf =~ /(wrong.*)/ig || $_buf =~ /(error.*)/ig ){
                     my $fnd = $1;
-                    warn "[error] OpenSSL ERROR: " . $_buf;
                     $fnd =~ s/'/\\\\\\'/g if $fnd;
+                    warn "[error] OpenSSL ERROR: " . $_buf;
+                    unlink (@_cert_files);
                     if ($_buf =~ /TXT_DB error number 2/g){
-                        unlink (@_cert_files);
                         return {
                             error =>
                                 'Failed to create certificate,' 
@@ -382,13 +390,24 @@ Example:
                                 . ' Check the index.txt, serial, serial.old and [%X].pem files'
                         };
                     }
+                    else {
+                        return {
+                            error =>
+                                'Failed to create certificate.' 
+                                . ' Index file might be corrupt.'
+                                . ( $fnd ? ' Got error: ' . $fnd : '' )
+                        };                        
+                    }
                 }
 
                 unless ( $success ){
                     unlink (@_cert_files);
-                    my ($fnd) = $_buf =~ /(error.*)/gi;
+                    my $fnd;
+                    if ( $_buf =~ /(error.*)/gi || $_buf =~ /(wrong.*)/ig ){
+                        $fnd = $1;
+                        $fnd =~ s/'/\\\\\\'/g;
+                    }
                     warn "[error] OpenSSL ERROR: " . $_buf;
-                    $fnd =~ s/'/\\\\\\'/g if $fnd;
                     return { error => 'Failed to create certificate: '
                         . ( $fnd ? $fnd : $_buf )
                         . ( $error_code ? ", " . $error_code : '' )
@@ -440,7 +459,7 @@ Example:
                         if $_ =~ /\.crt|\.key$/;
                 }
             }
-            if ( @_certs_ok ){
+            if ( @_certs_ok > 0 ){
                 return { resultset => \@_certs_ok };
             }
             else {

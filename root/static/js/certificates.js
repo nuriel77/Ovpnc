@@ -147,6 +147,12 @@ var total_count = 0;
         // Update / modify data in the certificate's table
         //
         updateFlexgrid : function(){
+            // If no results, flexigrid applies
+            // a blocking div, remove it.
+            if ( $('.gBlock').is(':visible') ){
+                $('.gBlock').remove();
+                return;
+            }
             $('#flexme').find('tr').children('td[abbr="name"]')
                         .children('div').each(function(k, v)
             {

@@ -90,7 +90,7 @@ action to run
 
         # Log user in if login params are provided
         # =======================================
-        $c->controller->('Api')->auth_user( $c )
+        $c->controller('Api')->auth_user( $c )
             unless $c->user_exists();
 
         # Set the expiration time
@@ -203,6 +203,7 @@ requires user to provide options
         # Process return value
         # ====================
         if ( ref $_ret_val ){
+
             # Any errors? put in error stash
             # ==============================
             if ( $_ret_val->{error} ){
@@ -218,25 +219,41 @@ requires user to provide options
             # ===================================
             elsif ( ref $_ret_val eq 'HASH' ){
                 if ( $_ret_val->{resultset} and $form ){
-                    # Should return undef on success
-                    # ==============================
-                    my $_chk = $self->_update_db_certificate(
-                                    $c,
-                                    $_ret_val->{resultset},
-                                    $req,
-                                    ( $form ? $form : undef ) );
-                    return $_chk if $_chk->{error};
+
+                    my $_chk =
+                        $self->_update_db_certificate(
+                            $c,
+                            [@{$_ret_val->{resultset}}],
+                            $req,
+                            ( $form ? $form : undef )
+                        );
+                    # If errors, "rollback"
+                    # =====================
+                    if ( $_chk->{error} ){
+                        my ($_dir) = $_ret_val->{resultset}->[0]->{file} =~ /^(.*)\/.*$/;
+                        unlink $_dir if $c->req->params->{cert_type} eq 'client';
+                        return $_chk;
+                    }
                 }
                 elsif ( $_ret_val->{status}
                     and ref $_ret_val->{status} eq 'ARRAY'
                 ) {
-                    my @files = @{$_ret_val->{status}}[0,1];
+
+                    my $files;
+                    push @{$files}, @{$_ret_val->{status}}[0,1];
+
                     my $_chk = $self->_update_db_certificate(
                                     $c,
-                                    \@files,
+                                    [@{$files}],
                                     $req,
                                     ( $form ? $form : undef ) );
-                    return $_chk if $_chk->{error};                    
+                    # If errors, "rollback"
+                    # =====================
+                    if ( $_chk->{error} ){
+                        my ($_dir) = $files->[0] =~ /^(.*)\/.*$/;
+                        unlink $_dir if $c->req->params->{cert_type} eq 'client';
+                        return $_chk;
+                    }
                 }
 
                 if ( $form ){
@@ -330,7 +347,7 @@ L<Three>    Get all certificates - sorted results by field
         ){
 
             $username .= '/';
-            $username = '' if $certname eq 'ca';
+            $username = '' if $certname eq 'ca' or $c->req->params->{type} eq 'server';
             if (
                     -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                 and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
@@ -517,13 +534,8 @@ Needs a root CA
 
         my $_ret_val = shift->_roles->gen_ca_signed_certificate( @_ );
         if ( defined $_ret_val && ref $_ret_val ){
-            return (
-                ref $_ret_val eq 'ARRAY'
-                    ? { status => $_ret_val }
-                    : $_ret_val
-            );
+            return $_ret_val;
         }
-
         return undef;
 
     }
@@ -544,6 +556,9 @@ the new certificate/key details
             my ($cert_file) = shift @{$resultset};
             my ($key_file) = shift @{$resultset};
             my $user = $c->find_user({ username => $req->{KEY_CN} });
+            unless ( $user ){
+                return { error => 'Choose an existing user.' };
+            }
             my $start_date = $form->param_value('start_date');
             $start_date =~ s/([0-9]+)\-([0-9]+)\-([0-9]+)/$3-$2-$1/;
 

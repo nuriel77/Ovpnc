@@ -153,6 +153,12 @@ var total_count = 0;
         // Update / modify data in the client's table
         //
         updateFlexgrid : function(r){
+            // If no results, flexigrid applies
+            // a blocking div, remove it.
+            if ( $('.gBlock').is(':visible') ){
+                $('.gBlock').remove();
+                return;
+            }
             // Set the right color - on/off notice according
             // to client's status
             var _checker = 0;
