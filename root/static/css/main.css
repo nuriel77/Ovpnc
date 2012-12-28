@@ -281,7 +281,14 @@ fieldset .constraint_required label:after {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
 
 }
-
+#loaderText{
+    display:none;
+    margin:45px 6px 6px 7px;
+    text-align:center;
+    color:#555555;
+    text-shadow: 1px 1px #dddddd;
+}
+.movable{ cursor:move; }
 #on_icon { position:absolute;margin-right: 5px; opacity: 0; }
 .err_text { float:left; margin-bottom:3px; }
 .resizable-helper {
@@ -311,5 +318,3 @@ fieldset .constraint_required label:after {
     content: '*';
     color: #ff0000;
 }
-
-.movable{ cursor:move; }

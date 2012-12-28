@@ -249,10 +249,10 @@ jQuery.validator.setDefaults({
                     $.addCertificate().setSelectCountryGeonameId(result.geonames[0].countryName);
                 }
                 else {
-                    debug('Error getting country name '  + $.Ovpnc().geoUsername() );
+                   log ('Error getting country name '  + $.Ovpnc().geoUsername() );
                 }
              }).error(function(xhr, ajaxOptions, thrownError) {
-                debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+                log ("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
                 return false;
             }).complete(function(){
                  $.ajaxSetup({ async: true, cache: false });
@@ -263,17 +263,43 @@ jQuery.validator.setDefaults({
         //
         checkCertType: function (cType){
             if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
+            $('.error_message').remove();
+            if ( $('#certname').attr('readonly') ){
+                $('#certname').removeAttr('readonly')
+                              .attr('value','')
+                              .css({
+                                'background-color':'',
+                                'color':''
+                              });
+                $('label').css('color','');
+            }
+            $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
                 $('#password2').parents('tr:first').slideUp(300);
                 $('#password').parents('tr:first').slideUp(400);
                 $('#generatePassword').parents('tr:first').hide(100);
             }
-            else if ( cType === 'client' || cType === 'ca' ){
+            else if ( cType === 'client' ){
                 if ( $('#password').is(':hidden') ){
                     $('#password').parents('tr:first').slideDown(400);
                     $('#password2').parents('tr:first').slideDown(300);
                     $('#generatePassword').parents('tr:first').show(100);
                 }
+            }
+            else if ( cType === 'ca' ){
+                if ( $('#password').is(':hidden') ){
+                    $('#password').parents('tr:first').slideDown(400);
+                    $('#password2').parents('tr:first').slideDown(300);
+                    $('#generatePassword').parents('tr:first').show(100);
+                }
+                $('#certname').attr('readonly','readonly')
+                              .attr('value','ca')
+                              .css({
+                                'background-color':'#cccccc',
+                                'color':'#777777'
+                              }).focusout();
+            }
+            else {
             }
         },
         //
@@ -458,7 +484,10 @@ jQuery.validator.setDefaults({
                     $('input#password2').parent('div').find('label').css('color','#8B0000');
                     return false;
                 }
-                $.Ovpnc().setAjaxLoading(1);
+                $.Ovpnc().setAjaxLoading(
+                    1,
+                    ( $('#certtype').attr('value') === 'ca' ? 'This might take a while...' : '' )
+                );
                 $("#add_certificate_form").valid();
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
@@ -562,7 +591,7 @@ jQuery.validator.setDefaults({
         				if ( window.DEBUG ) log('CountryName: ' + result.countryName );
         				$.addCertificate().setSelectCountryGeonameId( result.countryName )		
         	        }).error(function(xhr, ajaxOptions, thrownError) {
-        				if ( window.DEBUG ) debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        				if ( window.DEBUG ) log("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         				$('#s_country').find('.ajaxLoader').remove();
         				return false;
         		    }).complete(function(){
@@ -671,7 +700,7 @@ jQuery.validator.setDefaults({
         		// Update city list	
         		$.addCertificate().getCityList( geoId );
             }).error(function(xhr, ajaxOptions, thrownError) {
-        		if ( window.DEBUG ) debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		if ( window.DEBUG ) log("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
         		$('#s_state').find('.ajaxLoader').remove();	
         		$('#s_city').find('.ajaxLoader').remove();	
@@ -748,7 +777,7 @@ jQuery.validator.setDefaults({
         			if ( window.DEBUG ) log( 'City is now '+$("select#city option:selected").attr('value') );
         		}
         	}).error(function(xhr, ajaxOptions, thrownError) {
-        		if ( window.DEBUG ) debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
+        		if ( window.DEBUG ) log("Error getting JSON: " + xhr.status + ", " + thrownError.toString())
         		// Remove ajax loader
         		$('#s_city').find('.ajaxLoader').remove();
         		return false;
@@ -791,7 +820,7 @@ jQuery.validator.setDefaults({
         		$.addCertificate().getStateList( result.geonames[0].geonameId );
         		
         	}).error(function(xhr, ajaxOptions, thrownError) {
-            	if ( window.DEBUG ) debug("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
+            	if ( window.DEBUG ) log("Error getting JSON: " + xhr.status + ", " + thrownError.toString());
                 return false;
             }).complete(function(){
         		 $.ajaxSetup({ async: true, cache: false });

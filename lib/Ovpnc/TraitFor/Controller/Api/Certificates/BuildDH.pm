@@ -142,7 +142,7 @@ sub build_dh
         # ==
         return  {
             status => {
-                filename => $_dh_file,
+                file     => $_dh_file,
                 digest   => $_new_digest,
             }
         }

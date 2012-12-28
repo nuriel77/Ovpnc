@@ -139,11 +139,11 @@ directory.
                 $_digest->{key} = file_md5_hex( $ca_key_file );
                 return [
                     {
-                        filename => $ca_cert_file,
+                        file   => $ca_cert_file,
                         digest => $_digest->{crt}
                     },
                     {
-                        filename => $ca_key_file,
+                        file   => $ca_key_file,
                         digest => $_digest->{key}
                     }
                 ];
@@ -200,23 +200,38 @@ necessary for functionality.
     sub gen_ca_signed_certificate {
         my ( $self, $params ) = @_;
 
-        return { error => 'No parameters supplied at gen_server_certificate' }
+        return { error => 'No parameters supplied at gen_ca_signed_certificate' }
             unless $params;
 
         # Generate a new key and csr
         # ==========================
         my $_new_csr = $self->_ca->gen_certificate( $params, $self->_cfg );
-        if ( $_new_csr ){
-            return $_new_csr if ( ref $_new_csr eq 'HASH' && $_new_csr->{error} );
-    
+        if ( $_new_csr and ref $_new_csr ){
+            return $_new_csr if ( $_new_csr->{error} );
+
+            # Get file digests
+            # ================
+            my @_digests;
+            if ( $_new_csr->{resultset} ) {
+                for ( @{$_new_csr->{resultset}} ){
+                    push @_digests, {
+                        file    => $_,
+                        digest  => file_md5_hex( $_ ) || 'null',
+                    };
+                }
+
+            }
+
             # Sign the new CSR
             # ================
             if ( my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg ) ) { 
-                unless ( -e $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN} ){
+                if ( ! -e $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN}
+                  and $params->{cert_type} !~ /server|ca/
+                ){
                     touch $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN}
                         or warn "Did not create client ccd file: " . $!;
                 }
-                return { status => 'ok' };
+                return { status => 'ok', resultset => \@_digests };
             }
         } else {
             return { error => 'Did not create new certificate(s) for ' . $params->{name} };

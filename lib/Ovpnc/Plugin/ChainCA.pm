@@ -139,8 +139,11 @@ using the openvpn pkitool
             $err =~ /([fault|error].*)$/gi;
             my $fnd = $1;
             $fnd =~ s/'/\\\\\\'/g if $fnd;  
-            return { error => 'Failed to create csr and key: '
-                    . ( $fnd ? $fnd : $err ) . ", " . $error_code };
+            return {
+                error => 'Failed to create Root CA: '
+                . ( $fnd ? $fnd : $err )
+                . ( $error_code ? ", " . $error_code : '' )
+            };
         }
         else {
             return { status => join( "\n", @{$full_buf} ) };
@@ -258,15 +261,11 @@ Example:
         # have some client with this name
         # ================================
         if ( -e $cfg->{openvpn_utils} . '/keys/'
-                . $params->{name} . '/' . $params->{name} . '.crt.' . $params->{KEY_CN}
+                . $params->{KEY_CN} . '/' . $params->{name} . '.crt'
         ) {
             if ( ! $params->{overwrite} ){
-                return { error => 'Certificate name \\\'' . $params->{KEY_CN} . '\\\' for '
-                            . $params->{name} . ' already exists' }
-            }
-            else {
-                unlink $params->{name} . '/' . $params->{name} . '.' . $_ . '.' . $params->{KEY_CN}
-                    for qw/crt key csr/;
+                return { error => 'Certificate name \\\'' . $params->{name} . '\\\''
+                        . ' - already exists' }
             }
         }
 
@@ -314,15 +313,22 @@ Example:
             # ================
             unlink $_openssl_conf;
             my $_buf = join( "\n", @{$full_buf} );
-            if ( !$success || $_buf =~ /([fault|error].*)$/gi ){
+            if ( !$success or $_buf =~ /(error.*)/gi ){
                 my $fnd = $1;
+                warn "[error] OpenSSL ERROR: " . $_buf;
                 $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
-                return { error => 'Failed to create csr and key: '
-                    . ( $fnd ? $fnd : $_buf ) . ", " . $error_code }
+                return { error => 'Failed to create csr and key for server: '
+                    . ( $fnd ? $fnd : $_buf )
+                    . ( $error_code ? ", " . $error_code : '' )
+                };
             }
         	else {
-    	        return { status => $_buf };
+                #if ( $_buf =~ /.*(Write out database with . new entries.*)[\r\n]*(Data Base Updated.*)/gi ){
+                #    return { status => $1 . ', ' . $2 };
+                #}
+    	        #return { status => $_buf };
         	}
+
         }
         # Certificate type client
         # =======================
@@ -363,8 +369,9 @@ Example:
                 unlink $_openssl_conf;
                 my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
                 my $_buf = join "", @{$full_buf};
-                if ( $_buf =~ /([error|fault].*)/ig ){
+                if ( $_buf =~ /(error.*)/ig ){
                     my $fnd = $1;
+                    warn "[error] OpenSSL ERROR: " . $_buf;
                     $fnd =~ s/'/\\\\\\'/g if $fnd;
                     if ($_buf =~ /TXT_DB error number 2/g){
                         unlink (@_cert_files);
@@ -372,17 +379,24 @@ Example:
                             error =>
                                 'Failed to create certificate,' 
                                 . ' serial numbers might be in conflict.' 
-                                . ' Check the index.txt, serial, serial.old and [%X].pem files' };
+                                . ' Check the index.txt, serial, serial.old and [%X].pem files'
+                        };
                     }
                 }
 
                 unless ( $success ){
                     unlink (@_cert_files);
                     my ($fnd) = $_buf =~ /(error.*)/gi;
+                    warn "[error] OpenSSL ERROR: " . $_buf;
                     $fnd =~ s/'/\\\\\\'/g if $fnd;
                     return { error => 'Failed to create certificate: '
-                        . ( $fnd ? $fnd : $_buf ) . ", " . ( $error_code ? $error_code : '' ) }
+                        . ( $fnd ? $fnd : $_buf )
+                        . ( $error_code ? ", " . $error_code : '' )
+                    };
                 }
+                #if ( $_buf =~ /.*(Write out database with . new entries.*)[\r\n]*(Data Base Updated.*)/gi ){
+                #    return { status => $1 . ', ' . $2 };
+                #}
             }
         }
 
@@ -392,8 +406,8 @@ Example:
         my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
         my $client_cert_dir = $cfg->{openvpn_utils}  . '/keys/' . $params->{KEY_CN};
         if ( @_cert_files ){
-            unless ( -d $client_cert_dir ){
-                # Create client cert die
+            if ( ! -d $client_cert_dir and $params->{cert_type} ne 'server' ){
+                # Create client cert dir
                 # ======================
                 mkdir $client_cert_dir, 0700
                     or return { error => 'Cannot create certificate directory: ' . $! };
@@ -403,18 +417,35 @@ Example:
             # Then check their file
             # size indicates not empty
             # ========================
+            my @_certs_ok;
             for ( @_cert_files ){
+                # If one of the certs is empty return error
                 if ( -s $_ == 0 ){
                     unlink (@_cert_files);
                     return { error => 'Certificate creation failed for ' . $_ };
                 }
-                move $_,
-                     $client_cert_dir . '/' . basename($_)
-                        or return { error => "Cannot move file '" . $_ . "'"
-                               . ' to ' . $client_cert_dir . '/' . basename($_)
-                               . ': ' . $! }; 
+                # Type client move to client keys directory
+                if ( $params->{cert_type} eq 'client' ){
+                    move $_,
+                         $client_cert_dir . '/' . basename($_)
+                            or return { error => "Cannot move file '" . $_ . "'"
+                                   . ' to ' . $client_cert_dir . '/' . basename($_)
+                                   . ': ' . $! }; 
+                    push @_certs_ok, $client_cert_dir . '/' . basename($_)
+                        if $_ =~ /\.crt|\.key$/;
+                }
+                # Type server leave in main keys dir
+                else {
+                    push @_certs_ok, $_
+                        if $_ =~ /\.crt|\.key$/;
+                }
             }
-            return { status => 'Ok' };
+            if ( @_certs_ok ){
+                return { resultset => \@_certs_ok };
+            }
+            else {
+                return { error => 'Something went wrong while creating certificates' };
+            }
         }
     }
 

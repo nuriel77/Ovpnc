@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Certificates;
 use Ovpnc::Plugin::ChainCA 'read_random_entropy';
 use POSIX 'mktime';
+use URI::Escape;
 use Date::Calc qw(Delta_Days);
 use DateTime::Format::Strptime;
 use Module::Locate qw(locate);
@@ -157,24 +158,32 @@ Add a new certificate
             }
             # For generating Root CA certificate 
             # ==================================
-            elsif ( $c->req->params->{cert_type} eq 'init_ca' ){
+            elsif ( $c->req->params->{cert_type} eq 'ca' ){
                 $c->req->params->{cmd} = 'init_ca';                
             }
 
             # Run action on api controller
             # ============================
-            $c->req->params->{from_form} = 1;
             my $result = $c->controller('Api::Certificates')
-                ->certificates_POST( $c );
+                ->certificates_POST( $c, $form );
 
             # Handle results
             # ==============
             if ( $result and $result->{status} ){
-                $c->flash->{resultset} =
-                    "Certificate add process returned: " . $result->{status};
+                if ( ref $result->{status} eq 'HASH' or ! ref $result->{status} ) {
+                    $c->flash->{resultset} =
+                        "Certificate add process returned: " . $result->{status};
+                }
+                elsif ( ref $result->{status} eq 'ARRAY' ) {
+                    if ( scalar @{$result->{status}} == 4 ){
+                        $c->flash->{resultset} =
+                            "Root certificate, key, DH permissions, and TA key file created successfully."
+                    }
+                }
             }
             elsif ( $result and $result->{error} ){
-                $c->flash->{error} = "Error: " . $result->{error};
+                my ($_escp) = ( split /\n/, $result->{error} )[0];
+                $c->flash->{error} = "Error: " . uri_escape( $_escp );
             }
             else {
                 $c->flash->{error} = "Error: Status unknown";

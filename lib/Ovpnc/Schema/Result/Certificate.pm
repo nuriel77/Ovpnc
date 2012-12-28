@@ -47,13 +47,64 @@ __PACKAGE__->table("certificates");
 =head2 user_id
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
-=head2 common_name
+=head2 name
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 72
+
+=head2 key_cn
 
   data_type: 'varchar'
   is_nullable: 0
   size: 42
+
+=head2 key_org
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 key_ou
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 key_country
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 2
+
+=head2 key_province
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 128
+
+=head2 key_city
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 128
+
+=head2 key_size
+
+  data_type: 'smallint'
+  is_nullable: 0
+
+=head2 key_expire
+
+  data_type: 'integer'
+  is_nullable: 0
+
+=head2 key_email
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 40
 
 =head2 revoked
 
@@ -61,39 +112,39 @@ __PACKAGE__->table("certificates");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 created
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 expires
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 type
+=head2 cert_type
 
   data_type: 'varchar'
   is_nullable: 0
   size: 12
 
-=head2 attributes
+=head2 cert_file
 
   data_type: 'text'
   is_nullable: 0
 
-=head2 key_size
+=head2 key_file
 
-  data_type: 'smallint'
+  data_type: 'text'
   is_nullable: 0
 
-=head2 password
+=head2 cert_digest
 
-  data_type: 'char'
+  data_type: 'varchar'
   is_nullable: 0
-  size: 59
+  size: 40
+
+=head2 key_digest
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 40
+
+=head2 created
+
+  data_type: 'date'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
 
 =head2 modified
 
@@ -108,35 +159,45 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "user_id",
-  { data_type => "integer", is_nullable => 0 },
-  "common_name",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "name",
+  { data_type => "varchar", is_nullable => 0, size => 72 },
+  "key_cn",
   { data_type => "varchar", is_nullable => 0, size => 42 },
+  "key_org",
+  { data_type => "text", is_nullable => 0 },
+  "key_ou",
+  { data_type => "text", is_nullable => 0 },
+  "key_country",
+  { data_type => "varchar", is_nullable => 0, size => 2 },
+  "key_province",
+  { data_type => "varchar", is_nullable => 0, size => 128 },
+  "key_city",
+  { data_type => "varchar", is_nullable => 0, size => 128 },
+  "key_size",
+  { data_type => "smallint", is_nullable => 0 },
+  "key_expire",
+  { data_type => "integer", is_nullable => 0 },
+  "key_email",
+  { data_type => "varchar", is_nullable => 0, size => 40 },
   "revoked",
   {
     data_type => "datetime",
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
-  "created",
-  {
-    data_type => "datetime",
-    datetime_undef_if_invalid => 1,
-    is_nullable => 0,
-  },
-  "expires",
-  {
-    data_type => "datetime",
-    datetime_undef_if_invalid => 1,
-    is_nullable => 0,
-  },
-  "type",
+  "cert_type",
   { data_type => "varchar", is_nullable => 0, size => 12 },
-  "attributes",
+  "cert_file",
   { data_type => "text", is_nullable => 0 },
-  "key_size",
-  { data_type => "smallint", is_nullable => 0 },
-  "password",
-  { data_type => "char", is_nullable => 0, size => 59 },
+  "key_file",
+  { data_type => "text", is_nullable => 0 },
+  "cert_digest",
+  { data_type => "varchar", is_nullable => 0, size => 40 },
+  "key_digest",
+  { data_type => "varchar", is_nullable => 0, size => 40 },
+  "created",
+  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 0 },
   "modified",
   {
     data_type => "timestamp",
@@ -158,41 +219,32 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 UNIQUE CONSTRAINTS
+=head1 RELATIONS
 
-=head2 C<name>
+=head2 user
 
-=over 4
+Type: belongs_to
 
-=item * L</common_name>
-
-=back
+Related object: L<Ovpnc::Schema::Result::User>
 
 =cut
 
-__PACKAGE__->add_unique_constraint("name", ["common_name"]);
+__PACKAGE__->belongs_to(
+  "user",
+  "Ovpnc::Schema::Result::User",
+  { id => "user_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-21 00:27:03
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3VRdBAX2t1tsYcaH0YIDJA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-28 00:54:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6buY7xYdTH827a1RrvNMVw
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 
 __PACKAGE__->add_columns(
-    '+password' => {
-      data_type => 'CHAR',
-      size      => 59,
-      encode_column => 1,
-      encode_class  => 'Crypt::Eksblowfish::Bcrypt',
-      encode_args   => { key_nul => 0, cost => 14, salt_random => 20 },
-      encode_check_method => 'check_password',
-    }
-);
-
-__PACKAGE__->add_columns(
-   modified => { data_type => 'datetime', set_on_create => 1 },
-   created => { data_type => 'datetime', set_on_create => 1 },
-   expires => { data_type => 'datetime' },
+   modified => { data_type => 'datetime',   set_on_create => 1 },
+   created  => { data_type => 'date',       set_on_create => 1 },
 );
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

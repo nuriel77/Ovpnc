@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Api::Certificates;
 use warnings;
 use strict;
+use Try::Tiny;
 use Moose;
 use utf8;
 use namespace::autoclean;
@@ -123,7 +124,7 @@ requires user to provide options
                           : Does('NeedsLogin')
                           : Sitemap
     {
-        my ( $self, $c ) = @_;
+        my ( $self, $c, $form ) = @_;
     
         my $req = $c->request->params;
     
@@ -137,10 +138,17 @@ requires user to provide options
             $c->detach('View::JSON');
         }
 
+        # Switch between common_name and name
+        # This is because we want multiple 
+        # certificate names per client name.
+        # for OpenVPN checks the CN has to be
+        # the same as the client's username
+        # ===================================
         my $temp_cn = $c->req->params->{KEY_CN};
         my $temp_name = $c->req->params->{name};
         $c->req->params->{KEY_CN} = $temp_name;
         $c->req->params->{name} = $temp_cn;
+
         # Set roles
         # =========
         $self->_roles(
@@ -182,7 +190,7 @@ requires user to provide options
         # No command match?
         # =================
         unless ( $_found ){
-            if ( $c->req->params->{from_form} ){
+            if ( $form ){
                 return { error => 'Unknown option ' . $req->{cmd} };
             }
             else {
@@ -198,7 +206,7 @@ requires user to provide options
             # Any errors? put in error stash
             # ==============================
             if ( $_ret_val->{error} ){
-                if ( $c->req->params->{from_form} ){
+                if ( $form ){
                     return $_ret_val;
                 }
                 else {
@@ -209,7 +217,29 @@ requires user to provide options
             # be the newely generated filename(s)
             # ===================================
             elsif ( ref $_ret_val eq 'HASH' ){
-                if ( $c->req->params->{from_form} ){
+                if ( $_ret_val->{resultset} and $form ){
+                    # Should return undef on success
+                    # ==============================
+                    my $_chk = $self->_update_db_certificate(
+                                    $c,
+                                    $_ret_val->{resultset},
+                                    $req,
+                                    ( $form ? $form : undef ) );
+                    return $_chk if $_chk->{error};
+                }
+                elsif ( $_ret_val->{status}
+                    and ref $_ret_val->{status} eq 'ARRAY'
+                ) {
+                    my @files = @{$_ret_val->{status}}[0,1];
+                    my $_chk = $self->_update_db_certificate(
+                                    $c,
+                                    \@files,
+                                    $req,
+                                    ( $form ? $form : undef ) );
+                    return $_chk if $_chk->{error};                    
+                }
+
+                if ( $form ){
                     return $_ret_val;
                 }
                 else {
@@ -218,7 +248,7 @@ requires user to provide options
                 }
             }
             else {
-                if ( $c->req->params->{from_form} ){
+                if ( $form ){
                     return { error => "Something went wrong with command " . $req->{cmd} };
                 }
                 else {
@@ -227,7 +257,7 @@ requires user to provide options
             }
         }
         else {
-            if ( $c->req->params->{from_form} ){
+            if ( $form ){
                 return { error => "Something went wrong with command " . $req->{cmd} };
             }
             else {
@@ -255,24 +285,63 @@ Get certificate(s) data
     {
         my ( $self, $c ) = @_;
 
+        # Searching for a single certificate
+        # Used mainly by the certificates
+        # add form in order to prevent user
+        # from using an existing certificate
+        # ==================================
         if (
                 my $certname    = $c->req->params->{certname}
             and my $username    = $c->req->params->{name}
         ){
+
+            $username .= '/';
+            $username = '' if $certname eq 'ca';
             $c->log->debug('Checking dir: ' . $self->cfg->{openvpn_utils} . '/keys/' . $username);
             $c->log->debug('Checking file: ' .$self->cfg->{openvpn_utils} . '/keys/' . $username
-                        . '/' . $username . '.crt.' . $certname );
+                        . $certname . '.crt' );
 
             if (
                     -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                 and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
-                        . '/' . $certname . '.crt'
+                        . $certname . '.crt'
             ){
                 $self->status_bad_request($c, message => 'Certificate exists');
                 $c->detach('View::JSON');
             }
             $self->status_ok($c, entity => { status => 'ok' } );
         }
+        # Get all certificates
+        # ====================
+        else {
+            my $rs = $c->model('DB::Certificate')->search;
+            unless ($rs){
+                $self->status_not_found($c, message => 'No certifictes');
+                $c->detach('View::JSON');
+            }
+            warn "NOW: ". $rs;
+            # Skipping Root CA...
+            my @column_names = $rs->result_source->columns;
+            my $certificates;
+            while ( my $cert = $rs->next ) {
+                my $modified = $cert->modified;
+                my $created = $cert->created;
+                my $revoked = $cert->revoked;
+                $certificates->{$cert->name} =
+                    [{
+                        map { # Avoid having 'null' in JSON output by using double quotes
+                            $_ => (
+                                $_ eq 'modified' ? "$modified"
+                              : $_ eq 'created'  ? "$created"
+                              : $_ eq 'revoked'  ? "$revoked"
+                              : $cert->$_ 
+                            )
+                        } @column_names
+                    }];
+            }
+            $self->status_ok($c, entity => { resultset => $certificates });
+        }
+
     }
 
 
@@ -335,7 +404,7 @@ Generate ta.key secret
     	    return $_ret_val if $_ret_val->{error};
                 warn "Did not chown 0400 new tls file!"
                     unless $self->_roles->set_chown_chmod(
-                        $_ret_val->{status}->{filename} ? $_ret_val->{status}->{filename} : undef,
+                        $_ret_val->{status}->{file} ? $_ret_val->{status}->{file} : undef,
                         0400
                     );
                 return $_ret_val->{status} ? $_ret_val->{status} : $_ret_val;
@@ -409,6 +478,61 @@ Needs a root CA
 
         return undef;
 
+    }
+
+
+=head2 _update_db_certificate
+
+Update the database with
+the new certificate/key details
+
+=cut
+
+    sub _update_db_certificate : Private {
+        my ( $self, $c, $resultset, $req, $form ) = @_;
+
+            my $_ret_val = {};
+
+            my ($cert_file) = shift @{$resultset};
+            my ($key_file) = shift @{$resultset};
+            my $user = $c->find_user({ username => $req->{KEY_CN} });
+            my $start_date = $form->param_value('start_date');
+            $start_date =~ s/([0-9]+)\-([0-9]+)\-([0-9]+)/$3-$2-$1/;
+
+            # update dbic row with
+            # submitted values from form
+            # ==========================
+            try     {
+                $c->model('DB::Certificate')->update_or_create({
+                    user_id         => $user->id,
+                    name            => $req->{name},
+                    created         => $start_date,
+                    key_cn          => $req->{KEY_CN},
+                    key_expire      => $req->{KEY_EXPIRE},
+                    key_size        => $req->{KEY_SIZE},
+                    cert_type       => $req->{cert_type},
+                    key_country     => $req->{KEY_COUNTRY},
+                    key_province    => $req->{KEY_PROVINCE},
+                    key_city        => $req->{KEY_CITY},
+                    key_email       => $req->{KEY_EMAIL},
+                    key_org         => $req->{KEY_ORG},
+                    key_ou          => $req->{KEY_OU},
+                    key_file        => $key_file->{file},
+                    key_digest      => $key_file->{digest},
+                    cert_file       => $cert_file->{file},
+                    cert_digest     => $cert_file->{digest}
+                });
+            }
+            catch   {
+                $c->log->error( $_ );
+                push @{$_ret_val->{error}}, $_;
+            };
+
+            $_ret_val->{status} = 1;
+
+            return $_ret_val->{error}
+                ? { error => join ";", @{$_ret_val->{error}} }
+                : $_ret_val;
     }
 
 

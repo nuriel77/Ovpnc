@@ -103,7 +103,7 @@ sub build_ta
         # ==
         return  {
             status => {
-                filename => $_ta_key,
+                file     => $_ta_key,
                 digest   => $_new_digest,
             }
         }
