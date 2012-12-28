@@ -31,26 +31,28 @@ var total_count = 0;
                 preProcess: $.Certificate().formatCertificateResults,
                 colModel: [
                 // TODO: Save table proportions in cookie
-                    { display: 'ID', name : 'id', width: 15, sortable : false, align: 'right', hide: true },
-                    { display: 'UserID', name : 'user_id', width: 15, sortable : true, align: 'right', hide: true },
-                    { display: 'Name', name : 'name', width : 85, sortable : true, align: 'left'},
-                    { display: 'Type', name : 'cert_type', width : 50, sortable : true, align: 'left'},
-                    { display: 'CN', name : 'key_cn', width : 85, sortable : true, align: 'left'},
-                    { display: 'Created', name : 'created', width: 125, sortable : true, align: 'left', hide: false },
-                    { display: 'Modified', name : 'modified', width: 125, sortable : true, align: 'left', hide: false },
-                    { display: 'Revoked', name : 'revoked', width: 50, sortable : true, align: 'left', hide: false },
-                    { display: 'Key Size', name : 'key_size', width : 45, sortable : true, align: 'right', hide: false },
-                    { display: 'Expires', name : 'key_expire', width : 40, sortable : true, align: 'right'},
-                    { display: 'Country', name : 'key_country', width : 40, sortable : true, align: 'center'},
-                    { display: 'Province', name : 'key_province', width : 100, sortable : true, align: 'left' },
-                    { display: 'City', name : 'key_city', width : 100, sortable : true, align: 'left' },
-                    { display: 'Org', name : 'key_org', width: 100, sortable : true, align: 'left', hide: false },
-                    { display: 'Org Unit', name : 'key_ou', width: 100, sortable : true, align: 'left', hide: false },
-                    { display: 'Email', name : 'key_email', width : 80, sortable : true, align: 'left', hide: false },
-                    { display: 'Key File', name : 'key_file', width: 400, sortable : true, align: 'left', hide: true },
-                    { display: 'Cert File', name : 'cert_file', width: 400, sortable : true, align: 'left', hide: true },
-                    { display: 'Key MD5', name : 'key_digest', width: 240, sortable : false, align: 'right', hide: true },
-                    { display: 'Cert MD5', name : 'cert_digest', width: 240, sortable : false, align: 'right', hide: true }
+                    { display: 'ID',        name : 'id',            width : 15, sortable : false, align: 'right', hide: true },
+                    { display: 'UserID',    name : 'user_id',       width : 15, sortable : true, align: 'right', hide: true },
+                    { display: 'User',      name : 'user',          width : 85, sortable : true, align: 'left'},
+                    { display: 'Name',      name : 'name',          width : 85, sortable : true, align: 'left'},
+                    { display: 'Created By',name : 'created_by',    width : 85, sortable : true, align: 'left'},
+                    { display: 'Type',      name : 'cert_type',     width : 50, sortable : true, align: 'left'},
+                    { display: 'CN',        name : 'key_cn',        width : 85, sortable : true, align: 'left'},
+                    { display: 'Created',   name : 'created',       width: 125, sortable : true, align: 'left', hide: false },
+                    { display: 'Modified',  name : 'modified',      width: 125, sortable : true, align: 'left', hide: false },
+                    { display: 'Revoked',   name : 'revoked',       width: 50, sortable : true, align: 'left', hide: false },
+                    { display: 'Key Size',  name : 'key_size',      width : 45, sortable : true, align: 'right', hide: false },
+                    { display: 'Expires',   name : 'key_expire',    width : 40, sortable : true, align: 'right'},
+                    { display: 'Country',   name : 'key_country',   width : 40, sortable : true, align: 'center'},
+                    { display: 'Province',  name : 'key_province',  width : 100, sortable : true, align: 'left' },
+                    { display: 'City',      name : 'key_city',      width : 100, sortable : true, align: 'left' },
+                    { display: 'Org',       name : 'key_org',       width: 100, sortable : true, align: 'left', hide: false },
+                    { display: 'Org Unit',  name : 'key_ou',        width: 100, sortable : true, align: 'left', hide: false },
+                    { display: 'Email',     name : 'key_email',     width : 80, sortable : true, align: 'left', hide: false },
+                    { display: 'Key File',  name : 'key_file',      width: 400, sortable : true, align: 'left', hide: true },
+                    { display: 'Cert File', name : 'cert_file',     width: 400, sortable : true, align: 'left', hide: true },
+                    { display: 'Key MD5',   name : 'key_digest',    width: 240, sortable : false, align: 'right', hide: true },
+                    { display: 'Cert MD5',  name : 'cert_digest',   width: 240, sortable : false, align: 'right', hide: true }
                 ],
                 buttons : [
                     { name: 'Add', bclass: 'add', onpress : $.Certificate().addCertificate },
@@ -61,18 +63,20 @@ var total_count = 0;
                     { separator: true }
                 ],
                 searchitems : [
-                    { display: 'Name', name : 'name', isdefault: true },
-                    { display: 'Type', name : 'cert_type'},
-                    { display: 'Common name', name : 'key_cn'},
-                    { display: 'Expires', name : 'key_expire'},
-                    { display: 'Created', name : 'created'},
-                    { display: 'Modified', name : 'modified'},
-                    { display: 'Revoked', name : 'revoked'},
-                    { display: 'Email', name : 'email'},
-                    { display: 'Key Size', name : 'key_size'},
-                    { display: 'Country', name : 'key_country'},
-                    { display: 'Province', name : 'key_province'},
-                    { display: 'City', name : 'key_city'}
+                    { display: 'Name',          name : 'name', isdefault: true },
+                    { display: 'Created By',    name : 'created_by' },
+                    { display: 'Username',      name : 'user' },
+                    { display: 'Type',          name : 'cert_type' },
+                    { display: 'Common name',   name : 'key_cn' },
+                    { display: 'Expires',       name : 'key_expire' },
+                    { display: 'Created',       name : 'created' },
+                    { display: 'Modified',      name : 'modified' },
+                    { display: 'Revoked',       name : 'revoked' },
+                    { display: 'Email',         name : 'email' },
+                    { display: 'Key Size',      name : 'key_size' },
+                    { display: 'Country',       name : 'key_country' },
+                    { display: 'Province',      name : 'key_province' },
+                    { display: 'City',          name : 'key_city' }
                 ],
                 sortname: "name",
                 sortorder: "asc",
@@ -100,7 +104,9 @@ var total_count = 0;
             return [
                 c.id            ? c.id          : 'unknown',
                 c.user_id       ? c.user_id     : 'unknown',
+                c.user          ? c.user        : 'unknown',
                 c.name          ? c.name        : 'unknown',
+                c.created_by    ? c.created_by  : 'unknown',
                 c.cert_type     ? c.cert_type   : 'unknown',
                 c.key_cn        ? c.key_cn      : 'unknown',
                 c.created       ? c.created     : '0000-00-00 00:00',
@@ -178,7 +184,7 @@ var total_count = 0;
                         $(this).parent().parent('tr')
                                 .children('td[abbr="name"]')
                                 .children('div')
-                                .css('color','red')
+                                .css('color','#ff0000')
                                 .attr('title','Unknown user?!');
                     }
                     if ( inner_text === 'UNDEF' ){

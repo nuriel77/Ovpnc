@@ -70,7 +70,6 @@
         if ( window.DEBUG) log("Result: [% resultset %]");
     [% END %]
 
+    $('#ca_username').attr('value','[% username %]');
+
 </script>
-
-
-

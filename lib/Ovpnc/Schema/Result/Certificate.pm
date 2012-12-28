@@ -50,7 +50,19 @@ __PACKAGE__->table("certificates");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 user
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 72
+
 =head2 name
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 72
+
+=head2 created_by
 
   data_type: 'varchar'
   is_nullable: 0
@@ -160,7 +172,11 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "user_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "user",
+  { data_type => "varchar", is_nullable => 0, size => 72 },
   "name",
+  { data_type => "varchar", is_nullable => 0, size => 72 },
+  "created_by",
   { data_type => "varchar", is_nullable => 0, size => 72 },
   "key_cn",
   { data_type => "varchar", is_nullable => 0, size => 42 },
@@ -237,8 +253,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-28 00:54:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6buY7xYdTH827a1RrvNMVw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-28 19:58:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GuuuFywNna1aveFEUMztpA
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

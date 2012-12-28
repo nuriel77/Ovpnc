@@ -39,6 +39,7 @@ jQuery.validator.setDefaults({
     $.addCertificate.pathname = window.location.pathname;
     $.addCertificate.users = new Array();
 	$.addCertificate.html_mem = new Array();
+	$.addCertificate.html_mem_username = new Array();
 
 	var items = new Object({
 		elems : [ 'country', 'state', 'city' ],
@@ -111,9 +112,14 @@ jQuery.validator.setDefaults({
             $.each( $('.radiogroup').find('input[name=cert_type],label'), function(){
                 $(this).bind('click', function(){
                     $('.radiogroup').find('input').removeAttr('checked');
+                    $('.simpletable').find('label').css('color','#000000');     
                     $(this).parent('span')
                            .find('input')
                            .attr('checked','checked');
+                    // Once we get a click, check
+                    // the certificate type so we
+                    // display or hide certain fields
+                    // and/or run backend checks
                     $.addCertificate().checkCertType(
                         $('input[name=cert_type]:checked', '#add_certificate_form').val()
                     );
@@ -146,7 +152,9 @@ jQuery.validator.setDefaults({
                 }
             });
             $('#username').bind('focusout',function(){
-                if ( $('#username').attr('value').match(/\w+/) ){
+                if ( $('#username').attr('value').match(/\w+/)
+                  && ! $('#certtype').attr('value').match(/server|ca/)
+                ){
                     $.Ovpnc().ajaxCall({
                         url: "/api/clients",
                         data: { search: $(this).attr('value'), field: 'username' },
@@ -282,15 +290,7 @@ jQuery.validator.setDefaults({
         checkCertType: function (cType){
             if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
             $('.error_message').remove();
-            if ( $('#certname').attr('readonly') ){
-                $('#certname').removeAttr('readonly')
-                              .attr('value','')
-                              .css({
-                                'background-color':'',
-                                'color':''
-                              });
-                $('label').css('color','');
-            }
+
             $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
                 $('#password2').parents('tr:first').slideUp(300);
@@ -309,6 +309,13 @@ jQuery.validator.setDefaults({
                     success_func: $.addCertificate().ajaxCheckCASuccess,
                     error_func: $.addCertificate().ajaxCheckCAError
                 });
+                // Set server type defaults
+                $('#username').parent('div').find('label').text('Common Name');
+                $('#certname').removeAttr('readonly')
+                              .css({
+                                color: '',
+                                'background-color': ''
+                              });
             }
             else if ( cType === 'client' ){
                 // Check if Root CA exists,
@@ -329,6 +336,13 @@ jQuery.validator.setDefaults({
                     $('#password2').parents('tr:first').slideDown(300);
                     $('#generatePassword').parents('tr:first').show(100);
                 }
+                if ( $('#username').attr('value') != '' ) $('#username').focusout();
+                $('#username').parent('div').find('label').text('Username');
+                $('#certname').removeAttr('readonly')
+                              .css({
+                                color: '',
+                                'background-color': ''
+                              });
             }
             else if ( cType === 'ca' ){
                 if ( window.checkNoDupMessage !== undefined ){
@@ -343,18 +357,34 @@ jQuery.validator.setDefaults({
                     });
                 }
                 if ( $('#password').is(':hidden') ){
-                    $('#password').parents('tr:first').slideDown(400);
-                    $('#password2').parents('tr:first').slideDown(300);
-                    $('#generatePassword').parents('tr:first').show(100);
+                    $('#password').parents('tr:first').slideDown(300);
+                    $('#password2').parents('tr:first').slideDown(200);
+                    $('#generatePassword').parents('tr:first').show(350);
                 }
-                $('#certname').attr('readonly','readonly')
-                              .attr('value','ca')
+                $('#username').parent('div').find('label').text('Common Name');
+                $('#certname').attr('value', 'ca')
+                              .attr('readonly','readonly')
                               .css({
-                                'background-color':'#cccccc',
-                                'color':'#777777'
-                              }).focusout();
+                                color: '#888888',
+                                'background-color': '#CCCCCC'
+                              });
             }
             else {
+            }
+            // Set and / or hide certain fields
+            $.addCertificate().applyNonClientCertType(cType);
+        },
+        //
+        // Hide certain fields if certype is server or ca
+        //
+        applyNonClientCertType: function (type) {
+            if ( type === 'ca' ){
+            }
+            else if ( type === 'server' ) {
+
+            }
+            else {
+
             }
         },
         //
@@ -415,6 +445,7 @@ jQuery.validator.setDefaults({
         	$.addCertificate().setClickBind();
             $.addCertificate().chooseUser();
             if ( $('#certname').attr('value') != '' ) $('#certname').focusout();
+            if ( $('#username').attr('value') != '' ) $('#username').focusout();
 
             // First check if a country has already been set
             // by Catalyst FormFu, where 0 means not.
@@ -545,6 +576,7 @@ jQuery.validator.setDefaults({
             $('#submit_add_certificate_form').click(function(e){
                 $('#certname').focusout();
                 $('#username').focusout();
+                if ( ! $('#username').attr('value').match(/\w+/) ) return false;
                 // Check password length and strength
                 if ( $('input#password').attr('value') != '' ) {
                     var _pw = $('input#password').attr('value');

@@ -294,11 +294,15 @@ Example:
         # Incase cert_type is server
         # ==========================
         if ( $params->{cert_type} eq 'server'){
+
             my @_cmd = (
                 $cfg->{openvpn_utils} . '/pkitool',
                 '--server',
-                $params->{name}
+                $params->{certname}
             );
+
+            # Check can run
+            # =============
             unless ( can_run( $cfg->{ssl_bin} ) ){
                 unlink $_openssl_conf;
                 return { error => 'Cannot run openssl! ' . $! };
@@ -312,8 +316,14 @@ Example:
             # openssl.conf
             # ================
             unlink $_openssl_conf;
+
+            # Rearrange output data
+            # =====================
             my $_buf = join( "\n", @{$full_buf} );
-            if ( !$success or $_buf =~ /(wrong.*)/ig or $_buf =~ /(error.*)/ig ){
+            if ( !$success
+                 or $_buf =~ /(wrong.*)/ig
+                 or $_buf =~ /(error.*)/ig
+            ){
                 my $fnd = $1;
                 warn "[error] OpenSSL ERROR: " . $_buf;
                 $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
@@ -422,10 +432,15 @@ Example:
         # Check that all files
         # have been created
         # =====================
-        my @_cert_files = glob $cfg->{openvpn_utils} . '/keys/' . $params->{name} . '.*';
+        my @_cert_files = glob $cfg->{openvpn_utils}
+                          . '/keys/'
+                          . ( $params->{cert_type} eq 'server' ? $params->{certname} : $params->{name} )
+                          . '.*';
         my $client_cert_dir = $cfg->{openvpn_utils}  . '/keys/' . $params->{KEY_CN};
         if ( @_cert_files ){
-            if ( ! -d $client_cert_dir and $params->{cert_type} ne 'server' ){
+            if ( $params->{cert_type} ne 'server' 
+              && ! -d $client_cert_dir
+            ){
                 # Create client cert dir
                 # ======================
                 mkdir $client_cert_dir, 0700

@@ -76,6 +76,14 @@ elements:
                                            - type: MaxLength
                                              max: 42
                           -
+                              # Placehoder for ca username
+                              - type: Hidden
+                                name: ca_username
+                                label: "ca_username"
+                                attributes_xml:
+                                  id: "ca_username"
+                                  style: "display:none"
+                          -
                               # Certificate name
                               - type: Block
                                 tag: div

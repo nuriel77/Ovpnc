@@ -209,6 +209,7 @@ necessary for functionality.
         # Generate a new key and csr
         # ==========================
         my $_new_csr = $self->_ca->gen_certificate( $params, $self->_cfg );
+
         if ( $_new_csr and ref $_new_csr ){
             return $_new_csr if ( $_new_csr->{error} );
 

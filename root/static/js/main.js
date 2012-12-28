@@ -675,7 +675,7 @@ $(document).ready(function() {
     // Only on main screen
     // Or if never displayed before
     if ($.cookie('Ovpnc_User_Settings') === null || $.Ovpnc().pathname === '/') {
-        $.Ovpnc.username = ucfirst($('#username').attr('name'));
+        $.Ovpnc.username = ucfirst($('#login_username').attr('name'));
         alert($.Ovpnc().alertOk + 'Hello ' + $.Ovpnc.username
         + ', welcome to OpenVPN Controller!');
     }

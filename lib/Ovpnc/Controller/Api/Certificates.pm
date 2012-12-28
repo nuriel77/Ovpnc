@@ -151,7 +151,18 @@ requires user to provide options
 
         $c->stash->{certname} = $c->req->params->{name};
         $c->stash->{name} = $c->req->params->{KEY_CN};
-        my $check_not_exists = $self->certificates_GET( $c, 1 );
+
+        # Check if current user's name has
+        # been submitted, force add it.
+        # ================================
+        $req->{ca_username} = $c->user->get("name")
+            unless $req->{ca_username};
+
+        # Check if such a certificate exists
+        # ==================================
+        my $check_not_exists = $self->certificates_GET(
+            $c, $c->stash->{certname}, $c->stash->{name} );
+        
         if ( $check_not_exists
                 and ref $check_not_exists
                 and $check_not_exists->{error}
@@ -317,7 +328,7 @@ L<Three>    Get all certificates - sorted results by field
                          : Does('NeedsLogin')
                          : Sitemap
     {
-        my ( $self, $c, $inner ) = @_;
+        my ( $self, $c, $certname_int, $name_int ) = @_;
 
         # get column names
         # ================
@@ -330,7 +341,7 @@ L<Three>    Get all certificates - sorted results by field
         # ===============================
         if ($field){
             unless ( $field ~~ @{$columns} ) {
-                if ( ! $inner ){ 
+                if ( ! $certname_int ){ 
                     $self->status_not_found($c,
                         message => "Unknown field name: '" . $field . "'",
                     );
@@ -356,10 +367,12 @@ L<Three>    Get all certificates - sorted results by field
         # add form in order to prevent user
         # from using an existing certificate
         # ==================================
-        if ( $inner ){
-            $c->req->params->{certname} = $c->{stash}->{certname};
-            $c->req->params->{name} = $c->{stash}->{name};
-        }
+
+
+        $c->req->params->{certname}     = $certname_int if $certname_int;
+        $c->req->params->{name}         = $name_int     if $name_int;
+        $c->req->params->{cert_type}    = $c->req->params->{type} if $c->req->params->{type};
+
         if (
                 my $certname    = $c->req->params->{certname}
             and my $username    = $c->req->params->{name}
@@ -367,8 +380,7 @@ L<Three>    Get all certificates - sorted results by field
 
             $username .= '/';
             my $username_mem = $username;
-            $username = '' if $certname eq 'ca' or $c->req->params->{type} eq 'server';
-
+            $username = '' if $c->req->params->{cert_type} =~ /ca|server/;
             if (
                 (
                         -d $self->cfg->{openvpn_utils} . '/keys/' . $username
@@ -384,7 +396,7 @@ L<Three>    Get all certificates - sorted results by field
                     )
                 )
             ){
-                if ( ! $inner ){ 
+                if ( ! $certname_int ){ 
                     $self->status_bad_request($c, message => 'Certificate exists');
                     $c->detach('View::JSON');
                 }
@@ -434,6 +446,7 @@ L<Three>    Get all certificates - sorted results by field
                                 $_ eq 'modified' ? "$modified"
                               : $_ eq 'created'  ? "$created"
                               : $_ eq 'revoked'  ? "$revoked"
+                              : $_ eq 'user'     ? $cert->user->username
                               : $cert->$_ 
                             )
                         } @column_names
@@ -591,10 +604,31 @@ the new certificate/key details
 
             my ($cert_file) = shift @{$resultset};
             my ($key_file) = shift @{$resultset};
-            my $user = $c->find_user({ username => $req->{KEY_CN} });
+
+            # For client type we check valid
+            # usernames, for serve and ca
+            # any common name can be provided.
+            # We therefore use the ca_username
+            # hidden field to write to database
+            # which user has created the ca/server
+            # ====================================
+            my $user = $c->find_user({
+                username => (
+                    $req->{cert_type} =~ /server|ca/
+                        ? $req->{ca_username}
+                        : $req->{KEY_CN}
+                )
+            });
             unless ( $user ){
                 return { error => 'Choose an existing user.' };
             }
+
+            # When certificate type is ca
+            # it always gets the name ca.{crt,key,csr}...
+            # ===========================================
+            $req->{name} = 'ca' if $req->{cert_type} eq 'ca';
+            $req->{name} = $req->{certname} if $req->{cert_type} eq 'server';
+
             my $start_date = $form->param_value('start_date');
             $start_date =~ s/([0-9]+)\-([0-9]+)\-([0-9]+)/$3-$2-$1/;
 
@@ -604,7 +638,9 @@ the new certificate/key details
             try     {
                 $c->model('DB::Certificate')->update_or_create({
                     user_id         => $user->id,
-                    name            => $req->{name},
+                    user            => $user->username,
+                    name            => $req->{certname},
+                    created_by      => $req->{ca_username},
                     created         => $start_date,
                     key_cn          => $req->{KEY_CN},
                     key_expire      => $req->{KEY_EXPIRE},
