@@ -354,27 +354,26 @@ of Ovpnc/OpenVPN
         # =========================================
         $sort_by =~ s/\bname\b/username/ if $sort_by;
     
-        # return only role 'client'
-        # we get the id of role type 'client'
-        # ===================================
         my @_role_names;
         try {
-            @_role_names = $c->model('DB::Role')->search({ name => ['admin', 'client'] });
+            @_role_names = $c->model('DB::Role')->search(
+                { name => ( $c->req->params->{role_name} || ['admin', 'client'] ) } ,
+                { select => 'id' }
+            );
         }
         catch {
             push @{$c->stash->{error}}, $_;
         };
     
         # Query resultset
-        # ===============
-    
+        # ===============    
         my @_clients;
         try {
                 @_clients = $c->model('DB::User')->search_rs(
                 # If $param is provided, return
                 # only the result of $param
                 # Otherwise, only clients which
-                # have role_id of 'client', this
+                # have role_id specified, this
                 # is then for use by flexgrid
                 # ==============================
                 ( $keyname && $param->{$keyname}

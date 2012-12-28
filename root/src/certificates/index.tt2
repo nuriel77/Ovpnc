@@ -1,8 +1,29 @@
-<div style="margin:10px 0 0 10px">
-    <a href="[% c.uri_for('/certificates/add') %]">Add a certificate (temporary link)</a>
+<div id="certificate_wrapper">
+    <!-- certificate_table -->
+    <div id="certificate_table" style="margin:10px 15px 0 15px;border-radius:5px;">
+      <table id="flexme" style="" cellpadding="0" cellspacing="0" border="0">
+      </table>
+    </div><!-- certificate_table -->
+</div><!-- certificate_wrapper -->
+<div id="traffic">
 </div>
-<div style="margin:10px 0 0 10px">
-    <br />
-    <br />
-    [% content %]
-</div>
+<script type="text/javascript">
+$(document).ready(function(){
+    // Declare flexigrid. Will run an
+    // ajax call to get clients data
+    $.Certificate().setCertificatesTable();
+
+    // Show the certificate's table
+    $('.flexigrid').slideDown(300);
+
+    // Show or hide actions
+    [% UNLESS c.check_user_roles("can_edit") OR c.check_user_roles("admin") %]
+        // Hide non-accessible action buttons
+        $('.tDiv').empty();
+    [% ELSE %]
+        // Apply the context menu
+        $.Certificate().applyContextMenu();
+    [% END %]
+
+});
+</script>

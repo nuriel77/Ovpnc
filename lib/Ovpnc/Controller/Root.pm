@@ -246,7 +246,7 @@ Include static files, dynamically
                     js/jQuery-contextMenu/src/jquery.contextMenu.js
                     js/Flexigrid/css/flexigrid.css
                     js/Flexigrid/js/flexigrid.js
-                ) if $c->req->path =~ /clients\/*$/i;
+                ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;
         }
     
         return 1 if $c->stash->{no_self};

@@ -1,4 +1,424 @@
-// Document ready
-$(document).ready(function(){
-    log('at certificates index');
-});
+/* Certificates */
+
+$.Ovpnc().count = 0;
+var total_count = 0;
+
+(function($) {
+
+    // Create Certificate() namespace
+    $.Certificate = function(options) {
+        var obj = $.extend({},
+        mem, actions );
+        return obj;
+    };
+
+    var mem = {
+        processed: 0,
+        loop:  0,
+        total_count: 0
+    };
+
+    var actions = {
+        //
+        // Set the Flexigrid table
+        //
+        setCertificatesTable: function() {
+            $.ajaxSetup({ cache: false, async: true });
+            $('#flexme').flexigrid({            
+                url: '/api/certificates',
+                dataType: 'json',
+                method: "GET",
+                preProcess: $.Certificate().formatCertificateResults,
+                colModel: [
+                // TODO: Save table proportions in cookie
+                    { display: 'ID', name : 'id', width: 15, sortable : false, align: 'right', hide: true },
+                    { display: 'UserID', name : 'user_id', width: 15, sortable : true, align: 'right', hide: true },
+                    { display: 'Name', name : 'name', width : 100, sortable : true, align: 'left'},
+                    { display: 'Type', name : 'cert_type', width : 85, sortable : true, align: 'left'},
+                    { display: 'CN', name : 'key_cn', width : 85, sortable : true, align: 'left'},
+                    { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
+                    { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false },
+                    { display: 'Revoked', name : 'revoked', width: 40, sortable : true, align: 'right', hide: false },
+                    { display: 'Key Size', name : 'key_size', width : 40, sortable : true, align: 'left', hide: false },
+                    { display: 'Expires', name : 'key_expire', width : 60, sortable : true, align: 'center'},
+                    { display: 'Country', name : 'key_country', width : 60, sortable : true, align: 'center'},
+                    { display: 'Province', name : 'key_province', width : 150, sortable : true, align: 'left' },
+                    { display: 'City', name : 'key_city', width : 100, sortable : true, align: 'left' },
+                    { display: 'Org', name : 'key_org', width: 80, sortable : true, align: 'right', hide: false },
+                    { display: 'Org Unit', name : 'key_ou', width: 100, sortable : true, align: 'right', hide: false },
+                    { display: 'Email', name : 'key_email', width : 80, sortable : true, align: 'left', hide: false },
+                    { display: 'Key File', name : 'key_file', width: 40, sortable : true, align: 'right', hide: true },
+                    { display: 'Cert File', name : 'cert_file', width: 40, sortable : true, align: 'right', hide: true },
+                    { display: 'Key MD5', name : 'key_digest', width: 40, sortable : false, align: 'right', hide: true },
+                    { display: 'Cert MD5', name : 'cert_digest', width: 40, sortable : false, align: 'right', hide: true }
+                ],
+                buttons : [
+                    { name: 'Add', bclass: 'add', onpress : $.Certificate().addCertificate },
+                    { name: 'Delete', bclass: 'delete', onpress : $.Certificate().deleteCertificate },
+                    { name: 'Revoke', bclass: 'block', onpress : blockCertificates },
+                    { name: 'Unblock', bclass: 'unblock', onpress : unblockCertificates },
+                    { name: 'Properties', bclass: 'properties', onpress : test_edit },
+                    { separator: true }
+                ],
+                searchitems : [
+                    { display: 'Name', name : 'name', isdefault: true },
+                    { display: 'Type', name : 'cert_type'},
+                    { display: 'Common name', name : 'key_cn'},
+                    { display: 'Expires', name : 'key_expire'},
+                    { display: 'Created', name : 'created'},
+                    { display: 'Modified', name : 'modified'},
+                    { display: 'Revoked', name : 'revoked'},
+                    { display: 'Email', name : 'email'},
+                    { display: 'Key Size', name : 'key_size'},
+                    { display: 'Country', name : 'key_country'},
+                    { display: 'Province', name : 'key_province'},
+                    { display: 'City', name : 'key_city'}
+                ],
+                sortname: "name",
+                sortorder: "asc",
+                usepager: true,
+                title: 'Certificates',
+                useRp: true,
+                rp: 15,
+                showTableToggleBtn: false,
+                width: $('#middle_frame').width() - 40,
+                height: 300
+            });
+        },
+        //
+        // Prepare certificate data for flexigrid
+        //
+        prepareCertificateColData: function (c){
+           /*
+            * Some fields need to contain
+            * placeholders '-' because they
+            * only get updated when server
+            * status request returns
+            * this keeps flexigrid from
+            * messing up the order
+            */
+            return [
+                c.id            ? c.id          : 'unknown',
+                c.user_id       ? c.user_id     : 'unknown',
+                c.name          ? c.name        : 'unknown',
+                c.cert_type     ? c.cert_type   : 'unknown',
+                c.key_cn        ? c.key_cn      : 'unknown',
+                c.created       ? c.created     : '0000-00-00 00:00',
+                c.modified      ? c.modified    : '0000-00-00 00:00',
+                c.revoked       ? c.revoked     : '0000-00-00 00:00',
+                c.key_size      ? c.key_size    : '-',
+                c.key_expire    ? c.key_expire  : 0,
+                c.key_country   ? c.key_country : '-',
+                c.key_province  ? c.key_province: '-',
+                c.key_city      ? c.key_city    : '-',
+                c.key_org       ? c.key_org     : '-',
+                c.key_ou        ? c.key_ou      : '-',
+                c.key_email     ? c.key_email   : '-',
+                c.key_file      ? c.key_file    : 'unknown',
+                c.cert_file     ? c.cert_file   : 'unknown',
+                c.key_digest    ? c.key_diget   : '-',
+                c.cert_digest   ? c.cert_digest : '-'
+            ]
+        },
+        //
+        // process only the certificate array
+        //
+        formatCertificateResults: function (obj){
+            if ( window.DEBUG ) log ("Flex got certificates: %o", obj);
+            if ( obj.rest !== undefined && obj.rest.length !== undefined ){
+                var __rows = new Array();
+                var __count = 0;
+                for ( var index in obj.rest ){
+                    $.Ovpnc().count++;
+                    __count++;
+                    __rows.push({
+                       id: $.Ovpnc().count,
+                       cell: $.Certificate().prepareCertificateColData(obj.rest[index])
+                    });
+                }
+                return {
+                    total: __count,
+                    page: 1,
+                    rows: __rows
+                }
+            }
+        },
+        //
+        // Update / modify data in the certificate's table
+        //
+        updateFlexgrid : function(r){
+            $('#flexme').find('tr').children('td[abbr="name"]')
+                        .children('div').each(function(k, v)
+            {
+                // Apply select field also on right-click
+                $(this).parent('td').parent('tr').bind("contextmenu",function(e){
+                    $(this).addClass('trSelected');
+                });
+                // One more loop to find all neighbor td's
+                // set them up with context menu class
+                // Add parent name to each so we can easily
+                // access / know which name it is when clicking
+                // any of the td's
+                $(this).parent('td').parent('tr').children('td')
+                            .children('div').each(function(z, x){
+                    var inner_text = x.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                    // Color unknown certificates in red
+                    if ( inner_text === 'unknown' ){
+                        $(this).parent().parent('tr')
+                                .children('td[abbr="name"]')
+                                .children('div')
+                                .css('color','red')
+                                .attr('title','Unknown user?!');
+                    }
+                    if ( inner_text === 'UNDEF' ){
+                        $(this).parent().parent('tr').remove();
+                    }
+                    // Add context menu
+                    var _username = $(this).parent().parent('tr').children('td[abbr="name"]').children('div').text();
+                    _username = _username.replace(/^(.*)<span class="inner_flexi_text">on<\/span>$/gi, "$1");
+                    $(this).addClass('context-menu-one box menu-1')
+                           .css('cursor','cell').attr('parent', _username );
+                });
+            });
+        },
+        //
+        // Revoke certificate(s)
+        //
+        blockUnblockCertificates: function (button, grid, action){
+            if ( action === undefined ){
+                action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
+            }
+
+            // Get total selected certificates
+            var total_count = $('.trSelected', grid).length;
+            if ( window.DEBUG ) log ("Total selected certificates: " + total_count);
+            var processed = 0;
+            var loop = 0;
+            var _certificates = '';
+            $.each($('.trSelected', grid), function() {
+                // Get the certificate's name of this grid
+                var certificate = $('td:nth-child(2) div', this).html();
+                var _tr = this;
+                // Get rid of any html
+                certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                _certificate += certificate + ',';
+                loop++;
+            });
+
+            // return if no selected certificates
+            if ( loop == 0 ) return;
+
+            // Revoke Certificate(s)
+            $.Ovpnc().setAjaxLoading();
+
+            $.ajax({
+                url: '/api/certificates',
+                type: action,
+                cache: false,
+                timeout: 5000,
+                data: { _ : '1', certificate: _certificates },
+                dataType: 'json',
+                success: function (msg) {
+                    if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
+                    var _data_types = {
+                        errors:      $.Ovpnc().alertErr,
+                        warnings:    $.Ovpnc().alertIcon,
+                        status:      $.Ovpnc().alertOk
+                    };
+                    if ( msg.rest !== undefined ) {
+                        $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
+                        $('.pReload').click();
+                        return;
+                    }
+                    alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
+                    $('.pReload').click();
+
+                },
+                error: function ( xhr, textStatus, errorThrown ) {
+                    if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
+                    alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
+                },
+                complete : function(){
+                    $.Ovpnc().removeAjaxLoading();
+                }
+            });
+        },
+        //
+        // Check if certificate names match
+        //
+        checkCertificatesMatch: function(certificates, current_certificate) {
+            for (var i in certificates){
+                if (certificates[i].name === current_certificate) return certificates[i];
+            }
+            return false;
+        },
+        //
+        // Check if a series of ajax calls completed
+        //
+        checkCompleteBlock: function(loop, processed, total_count, action){
+            if ( processed === total_count ){
+                alert($.Ovpnc().alertInfo
+                        + ' Total ' + processed
+                        + ' certificates' + ( processed === 1 ? ' ' : 's ' )
+                        + action + 'd</div><div class="clear"></div>' );
+                // Update the table
+                $('.pReload').click();
+                return;
+            }
+            if ( loop === total_count ){
+                $('.pReload').click();
+                if ( processed === 0 ){
+                    if ( total_count > 1 )
+                        alert( $.Ovpnc().alertIcon + ' No certificates ' + action + 'd!</div><div class="clear"></div>' );
+                }
+                else {
+                    alert( $.Ovpnc().alertIcon + ' Only ' + processed + ' out of ' + total_count + ' certificates ' + action + 'd</div><div class="clear"></div>' );
+                }
+            }
+        },
+        //
+        // Process error returned from certificates delete
+        //
+        certificateDeleteError: function (e){
+            if ( e.responseText !== undefined ){
+                var msg = jQuery.parseJSON( e.responseText );
+                var _msg;
+                if ( msg.rest && msg.rest.error ) {
+                    _msg = msg.rest.error;
+                }
+                else if ( msg.rest && msg.rest.status ){
+                    _msg = msg.rest.status;
+                }
+                else if ( msg.rest && msg.rest.status ){
+                    _msg = msg.rest.status;
+                }
+                else if ( msg.status ){
+                    _msg = msg.status;
+                }
+                else if ( msg.error ){
+                    _msg = msg.error;
+                }
+                alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
+            }
+            else {
+                alert( $.Ovpnc().alertErr + ' Error: No certificates deleted!</div><div class="clear"></div>' );
+            }
+        },
+        //
+        // Process success returned from certificate delete
+        //
+        certificateDeleteReturn: function (r){
+            if ( r.rest.resultset !== undefined ) {
+                var rs = r.rest.resultset;
+                if ( rs.errors !== undefined && rs.errors.length > 0 ){
+                    var _errors = rs.errors;
+                    for ( var e in _errors ){
+                        log(e);
+                        alert( $.Ovpnc().alertErr + ' ' + _errors[e] + '</div><div class="clear"></div>' );
+                    }
+                }
+    
+                if ( rs.deleted !== undefined  ){
+                    if ( rs.deleted.length > 0 ){
+                        alert($.Ovpnc().alertOk + ' Total ' + rs.deleted.length +' certificate' + ( rs.deleted.length === 1 ? ' ' : 's ' ) + ' deleted</div><div class="clear"></div>' );
+                    }
+                    else {
+                        alert( $.Ovpnc().alertIcon + ' No certificates deleted!</div><div class="clear"></div>' );
+                    }
+                }
+
+                if ( rs.failed !== undefined && rs.failed.length > 0 ){
+                    if ( rs.failed.length != window.certificatesToDelete ){
+                        alert( $.Ovpnc().alertIcon + ' ' + rs.failed.length + ' out of ' + window.certificatesToDelete + ' certificate'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
+                    }
+                }
+                $('.pReload').click();
+            }
+        },
+        //
+        // Applt context menu to the flexigrid rows
+        //
+        applyContextMenu: function (){
+            $.contextMenu({
+                selector: '.context-menu-one',
+                trigger: 'right',
+                delay: 500,
+                autoHide: true,
+                callback: function(key, options) {
+                    var elem = options.$trigger;
+                    if ( window.DEBUG ) log(key);
+                    var certificate = elem.context.getAttribute("parent");
+                    if ( key.match(/block|unblock/i) ){
+                        $.Certificate().blockUnblockCertificates(key, $('.flexigrid'));
+                    }
+                    else if ( key.match(/delete/i) ){
+                        deleteCertificate(key, $('.flexigrid'));
+                    }
+                    else if ( key.match(/edit/i) ){
+                        // TODO
+                    }
+                },
+                items: {
+                    "properties": {name: "Edit", icon: "edit"},
+                    "delete": {name: "Delete", icon: "delete"},
+                    "sep1": "---------",
+                    "block": {name: "Block", icon: "block"},
+                    "unblock": {name: "Unblock", icon: "unblock"}
+                }
+            });
+            $('.context-menu-one').on('click', function(e){
+                if ( window.DEBUG ) log('clicked', this);
+            });
+        },
+        //
+        // Redirect to certificates/add
+        // 
+        addCertificate: function () {
+            window.location = '/certificates/add';
+        },
+        //
+        // Delete a certificate
+        // 
+        deleteCertificate: function (button, grid){
+            // Get total selected certificate(s)
+            var total_count = $('.trSelected', grid).length;
+            var _loop = 0;
+            var _certificates = '';
+            $.each($('.trSelected', grid), function() {
+                // Get the certificates name of this grid
+                var certificate = $('td:nth-child(2) div', this).html();
+                // Get rid of any html tags, extract the name.
+                certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                _certificates += certificate + ',';
+                _loop++;
+            });
+            // Return nothing if none selected
+            if ( _loop == 0 ) return;
+            // Confirm delete
+            var cnf = confirm('Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) );
+            if ( cnf == false ) return false;
+            // Execute
+            //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+            window.certificatesToDelete = total_count;
+            $.Ovpnc().ajaxCall({
+                url: "/api/certificates/",
+                data: { certificate: _certificates, _ : '1' },
+                method: 'REMOVE',
+                success_func: $.Certificate().certificateDeleteReturn,
+                error_func: $.Certificate().certificateDeleteError,
+                loader: 1,
+                timeout: 15000
+            });
+        }
+
+    };
+
+})(jQuery);
+
+function blockCertificates(button, grid){
+    $.Certificate().blockUnblockCertificates(button, grid, 'revoke');
+}
+
+function unblockCertificates(button, grid){
+    $.Certificate().blockUnblockCertificates(button, grid, 'unrevoke');
+}

@@ -271,19 +271,53 @@ requires user to provide options
 =head2 certificates_GET
 
 Get certificate(s) data
+Options:
+
+L<One>      Get a specific certificate by name/match user
+            Used by the certificate/add to check no 
+            duplicates when create a new certificate
+L<Two>      Get a specific certificate by field
+L<Three>    Get all certificates - sorted results by field
 
 =cut
 
     sub certificates_GET : Local
-                     : Args(0)
-                     : Does('ACL')
-                        AllowedRole('admin')
-                        AllowedRole('can_edit')
-                        ACLDetachTo('denied')
-                     : Does('NeedsLogin')
-                     : Sitemap
+                         : Args(0)
+                         : Does('ACL')
+                            AllowedRole('admin')
+                            AllowedRole('can_edit')
+                            ACLDetachTo('denied')
+                         : Does('NeedsLogin')
+                         : Sitemap
     {
         my ( $self, $c ) = @_;
+
+        # get column names
+        # ================
+        my $cert_rs = $c->model('DB::Certificate')->search;
+        my $columns = [$cert_rs->result_source->columns];
+
+        my $field          = $c->req->params->{field};
+
+        # Check if requested field exists
+        # ===============================
+        if ($field){
+            unless ( $field ~~ @{$columns} ) {
+                $self->status_not_found($c,
+                    message => "Unknown field name: '" . $field . "'",
+                );
+                $c->detach;
+            };
+        }
+
+        # Assign the flexgrid request params
+        # ==================================
+        my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
+          @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
+
+        if ( $sort_by and $sort_by !~ @{$columns} ){
+            $sort_by             = 'name';
+        }
 
         # Searching for a single certificate
         # Used mainly by the certificates
@@ -297,10 +331,6 @@ Get certificate(s) data
 
             $username .= '/';
             $username = '' if $certname eq 'ca';
-            $c->log->debug('Checking dir: ' . $self->cfg->{openvpn_utils} . '/keys/' . $username);
-            $c->log->debug('Checking file: ' .$self->cfg->{openvpn_utils} . '/keys/' . $username
-                        . $certname . '.crt' );
-
             if (
                     -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                 and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
@@ -311,24 +341,41 @@ Get certificate(s) data
             }
             $self->status_ok($c, entity => { status => 'ok' } );
         }
+        # Search for a specific field
+        # ===========================
+        elsif (
+                my $search         = $c->req->params->{search}
+                and $field
+        ){
+
+            my $certificates =
+                $self->_get_searched_field($c, $field, $search);
+        }
         # Get all certificates
         # ====================
         else {
-            my $rs = $c->model('DB::Certificate')->search;
+            my $rs = [$cert_rs->search(
+                {},
+                {
+                    order_by => ( $sort_by && $sort_order )
+                        ? "$sort_by $sort_order"
+                        : "name ASC",
+                    select => $columns
+                }
+            )->all];
             unless ($rs){
                 $self->status_not_found($c, message => 'No certifictes');
                 $c->detach('View::JSON');
             }
-            warn "NOW: ". $rs;
             # Skipping Root CA...
-            my @column_names = $rs->result_source->columns;
+            my @column_names = @{$columns};
             my $certificates;
-            while ( my $cert = $rs->next ) {
+            for my $cert ( @$rs ) {
                 my $modified = $cert->modified;
                 my $created = $cert->created;
-                my $revoked = $cert->revoked;
-                $certificates->{$cert->name} =
-                    [{
+                my $revoked = $cert->revoked || '0000-00-00 00:00:00';
+                push @{$certificates},
+                    {
                         map { # Avoid having 'null' in JSON output by using double quotes
                             $_ => (
                                 $_ eq 'modified' ? "$modified"
@@ -337,9 +384,10 @@ Get certificate(s) data
                               : $cert->$_ 
                             )
                         } @column_names
-                    }];
+                    };
             }
-            $self->status_ok($c, entity => { resultset => $certificates });
+
+            $self->status_ok($c, entity => $certificates );
         }
 
     }
@@ -533,6 +581,38 @@ the new certificate/key details
             return $_ret_val->{error}
                 ? { error => join ";", @{$_ret_val->{error}} }
                 : $_ret_val;
+    }
+
+
+=head2 _get_searched_field
+
+Get sorted results from DB
+
+=cut
+
+    sub _get_searched_field : Private {
+        my ( $self, $c, $field, $search ) = @_;
+
+        my $_result = $c->model('DB::Certificate')->search(
+                { $field => { -like => $search . "%" } },
+                { select => $field }
+            )->single;
+
+        if ( defined $_result ){
+            $self->status_ok($c,
+                entity => { resultset => $_result->$field }
+            );
+            $c->detach;
+            return;
+        }
+        else {
+            my $_complete_result = [ $c->model('DB::Certificate')->search({},{select=>$field})->all ];
+            $self->status_ok($c,
+                entity => { resultset => [ map { $_->$field } @{$_complete_result} ] }
+            );
+            $c->detach;
+        }
+
     }
 
 

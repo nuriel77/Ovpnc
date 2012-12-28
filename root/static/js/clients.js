@@ -160,8 +160,6 @@ var total_count = 0;
                         .children('div').each(function(k, v)
             {
                 // Apply select field also on right-click
-                // right-click will also remove all other
-                // selected elements
                 $(this).parent('td').parent('tr').bind("contextmenu",function(e){
                     $(this).addClass('trSelected');
                 });
