@@ -56,7 +56,7 @@ var total_count = 0;
                     { name: 'Add', bclass: 'add', onpress : $.Certificate().addCertificate },
                     { name: 'Delete', bclass: 'delete', onpress : $.Certificate().deleteCertificate },
                     { name: 'Revoke', bclass: 'block', onpress : blockCertificates },
-                    { name: 'Unblock', bclass: 'unblock', onpress : unblockCertificates },
+                    { name: 'Unrevoke', bclass: 'unblock', onpress : unblockCertificates },
                     { name: 'Properties', bclass: 'properties', onpress : test_edit },
                     { separator: true }
                 ],
@@ -368,8 +368,8 @@ var total_count = 0;
                     "properties": {name: "Edit", icon: "edit"},
                     "delete": {name: "Delete", icon: "delete"},
                     "sep1": "---------",
-                    "block": {name: "Block", icon: "block"},
-                    "unblock": {name: "Unblock", icon: "unblock"}
+                    "block": {name: "Revoke", icon: "block"},
+                    "unblock": {name: "Unrevoke", icon: "unblock"}
                 }
             });
             $('.context-menu-one').on('click', function(e){

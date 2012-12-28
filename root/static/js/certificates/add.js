@@ -157,10 +157,22 @@ jQuery.validator.setDefaults({
         //
         ajaxCheckUsernameSuccess: function (d){
             if ( window.DEBUG ) log ("Check username returns: %o", d );
-            if ( d.rest.resultset !== undefined
-              && Object.prototype.toString.call( d.rest.resultset ) === '[object Array]'
-            ){
-                if ( d.rest.resultset.length > 1 ){
+            var _err = 0;
+            // We make sure this client name
+            // exists, user must choose an 
+            // existing user from the list
+            if ( d.rest.resultset !== undefined ){
+                if ( Object.prototype.toString.call( d.rest.resultset ) === '[object Array]' ){
+                    if ( d.rest.resultset.length > 1 ){
+                        _err++;
+                    }
+                }
+                else {
+                    if ( d.rest.resultset !== $('input#username').attr('value') ){
+                        _err++;
+                    }
+                }
+                if ( _err != 0 ) {
                     var elem = document.createElement('span');
                     $( elem ).addClass('error_message error_constraint_required')
                              .text('Choose an existing user');
@@ -168,6 +180,7 @@ jQuery.validator.setDefaults({
                     $('input#username').parent('div').find('label').css('color','#8B0000');
                     $('#username').parent('div').prepend( elem );
                 }
+
             }
         },
         //
