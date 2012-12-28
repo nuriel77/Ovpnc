@@ -129,7 +129,9 @@ jQuery.validator.setDefaults({
             $('#certname').bind('focusout',function(){
                 // We require user name as well for the 
                 // path of the user's certificates
-                if ( $('#username').attr('value').match(/\w+/) ){
+                if ( $('#username').attr('value').match(/\w+/)
+                  || $('#certtype').attr('value') === 'ca'
+                ){
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates",
                         data: {

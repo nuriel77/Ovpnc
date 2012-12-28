@@ -149,6 +149,16 @@ requires user to provide options
         $c->req->params->{KEY_CN} = $temp_name;
         $c->req->params->{name} = $temp_cn;
 
+        $c->stash->{certname} = $c->req->params->{name};
+        $c->stash->{name} = $c->req->params->{KEY_CN};
+        my $check_not_exists = $self->certificates_GET( $c, 1 );
+        if ( $check_not_exists
+                and ref $check_not_exists
+                and $check_not_exists->{error}
+        ){
+            return $check_not_exists;
+        }
+
         # Set roles
         # =========
         $self->_roles(
@@ -307,7 +317,7 @@ L<Three>    Get all certificates - sorted results by field
                          : Does('NeedsLogin')
                          : Sitemap
     {
-        my ( $self, $c ) = @_;
+        my ( $self, $c, $inner ) = @_;
 
         # get column names
         # ================
@@ -320,10 +330,15 @@ L<Three>    Get all certificates - sorted results by field
         # ===============================
         if ($field){
             unless ( $field ~~ @{$columns} ) {
-                $self->status_not_found($c,
-                    message => "Unknown field name: '" . $field . "'",
-                );
-                $c->detach;
+                if ( ! $inner ){ 
+                    $self->status_not_found($c,
+                        message => "Unknown field name: '" . $field . "'",
+                    );
+                    $c->detach;
+                }
+                else {
+                    return { error => "Unknown field name: '" . $field . "'" };
+                }
             };
         }
 
@@ -341,20 +356,41 @@ L<Three>    Get all certificates - sorted results by field
         # add form in order to prevent user
         # from using an existing certificate
         # ==================================
+        if ( $inner ){
+            $c->req->params->{certname} = $c->{stash}->{certname};
+            $c->req->params->{name} = $c->{stash}->{name};
+        }
         if (
                 my $certname    = $c->req->params->{certname}
             and my $username    = $c->req->params->{name}
         ){
 
             $username .= '/';
+            my $username_mem = $username;
             $username = '' if $certname eq 'ca' or $c->req->params->{type} eq 'server';
+
             if (
-                    -d $self->cfg->{openvpn_utils} . '/keys/' . $username
-                and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
-                        . $certname . '.crt'
+                (
+                        -d $self->cfg->{openvpn_utils} . '/keys/' . $username
+                    and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
+                            . $certname . '.crt'
+                )
+                 or
+                (
+                    $self->_check_cert_name_db(
+                        $c,
+                        $certname,
+                        ( $username eq '' ? $username_mem : $username )
+                    )
+                )
             ){
-                $self->status_bad_request($c, message => 'Certificate exists');
-                $c->detach('View::JSON');
+                if ( ! $inner ){ 
+                    $self->status_bad_request($c, message => 'Certificate exists');
+                    $c->detach('View::JSON');
+                }
+                else {
+                    return { error => 'Certificate exists' };
+                }
             }
             $self->status_ok($c, entity => { status => 'ok' } );
         }
@@ -499,7 +535,7 @@ Self signed
         my $_ret_val = $self->_roles->init_ca( @_ );
 
         if ( defined $_ret_val && ref $_ret_val eq 'HASH' && $_ret_val->{error} ){
-    	return $_ret_val;
+        	return $_ret_val;
         }
 
         if ( defined $_ret_val && ref $_ret_val ){
@@ -596,6 +632,36 @@ the new certificate/key details
             return $_ret_val->{error}
                 ? { error => join ";", @{$_ret_val->{error}} }
                 : $_ret_val;
+    }
+
+=head2 _check_cert_name_db
+
+Check if name/user combination 
+of certificate exists in DB
+
+=cut
+
+    sub _check_cert_name_db : Private {
+        my ( $self, $c, $certname, $username ) = @_;
+
+        $username =~ s/\///g;
+
+        my $rs;
+        try {
+            $rs = $c->model('DB::Certificate')->search(
+                { key_cn => $username, name      => $certname },
+                { select => 'id' }
+            )->single;
+        }
+        catch {
+            $c->log->error('Database error: ' . $_);
+            push @{$c->{stash}->{error}},
+                'Database error detected: ' . $_;
+            return;
+        };
+
+        return $rs ? 1 : undef;
+
     }
 
 
