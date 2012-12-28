@@ -16,6 +16,14 @@ $(document).ready(function(){
     // Show the certificate's table
     $('.flexigrid').slideDown(300);
 
+    var _wait_apply_to_grids =
+        setInterval(function() {
+            if ( $('#flexme').is(':visible') ){
+                $.Certificate().updateFlexgrid();
+                window.clearInterval(_wait_apply_to_grids);
+            }
+        }, 250 );
+
     // Show or hide actions
     [% UNLESS c.check_user_roles("can_edit") OR c.check_user_roles("admin") %]
         // Hide non-accessible action buttons

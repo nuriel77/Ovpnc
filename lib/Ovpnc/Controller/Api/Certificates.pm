@@ -373,7 +373,7 @@ L<Three>    Get all certificates - sorted results by field
             for my $cert ( @$rs ) {
                 my $modified = $cert->modified;
                 my $created = $cert->created;
-                my $revoked = $cert->revoked || '0000-00-00 00:00:00';
+                my $revoked = $cert->revoked || '-';
                 push @{$certificates},
                     {
                         map { # Avoid having 'null' in JSON output by using double quotes

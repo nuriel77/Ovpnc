@@ -72,5 +72,5 @@
 /*
     Add icons to jQuery.context menu
 */
-.context-menu-item.icon-block { background-image: url(/static/images/kill_certificate.png); }
+.context-menu-item.icon-block { background-image: url(/static/images/kill_client.png); }
 .context-menu-item.icon-unblock { background-image: url(/static/images/unblock.png); }

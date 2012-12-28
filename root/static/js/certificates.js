@@ -33,24 +33,24 @@ var total_count = 0;
                 // TODO: Save table proportions in cookie
                     { display: 'ID', name : 'id', width: 15, sortable : false, align: 'right', hide: true },
                     { display: 'UserID', name : 'user_id', width: 15, sortable : true, align: 'right', hide: true },
-                    { display: 'Name', name : 'name', width : 100, sortable : true, align: 'left'},
-                    { display: 'Type', name : 'cert_type', width : 85, sortable : true, align: 'left'},
+                    { display: 'Name', name : 'name', width : 85, sortable : true, align: 'left'},
+                    { display: 'Type', name : 'cert_type', width : 50, sortable : true, align: 'left'},
                     { display: 'CN', name : 'key_cn', width : 85, sortable : true, align: 'left'},
-                    { display: 'Created', name : 'created', width: 100, sortable : true, align: 'right', hide: false },
-                    { display: 'Modified', name : 'modified', width: 100, sortable : true, align: 'right', hide: false },
-                    { display: 'Revoked', name : 'revoked', width: 40, sortable : true, align: 'right', hide: false },
-                    { display: 'Key Size', name : 'key_size', width : 40, sortable : true, align: 'left', hide: false },
-                    { display: 'Expires', name : 'key_expire', width : 60, sortable : true, align: 'center'},
-                    { display: 'Country', name : 'key_country', width : 60, sortable : true, align: 'center'},
-                    { display: 'Province', name : 'key_province', width : 150, sortable : true, align: 'left' },
+                    { display: 'Created', name : 'created', width: 125, sortable : true, align: 'left', hide: false },
+                    { display: 'Modified', name : 'modified', width: 125, sortable : true, align: 'left', hide: false },
+                    { display: 'Revoked', name : 'revoked', width: 50, sortable : true, align: 'left', hide: false },
+                    { display: 'Key Size', name : 'key_size', width : 45, sortable : true, align: 'right', hide: false },
+                    { display: 'Expires', name : 'key_expire', width : 40, sortable : true, align: 'right'},
+                    { display: 'Country', name : 'key_country', width : 40, sortable : true, align: 'center'},
+                    { display: 'Province', name : 'key_province', width : 100, sortable : true, align: 'left' },
                     { display: 'City', name : 'key_city', width : 100, sortable : true, align: 'left' },
-                    { display: 'Org', name : 'key_org', width: 80, sortable : true, align: 'right', hide: false },
-                    { display: 'Org Unit', name : 'key_ou', width: 100, sortable : true, align: 'right', hide: false },
+                    { display: 'Org', name : 'key_org', width: 100, sortable : true, align: 'left', hide: false },
+                    { display: 'Org Unit', name : 'key_ou', width: 100, sortable : true, align: 'left', hide: false },
                     { display: 'Email', name : 'key_email', width : 80, sortable : true, align: 'left', hide: false },
-                    { display: 'Key File', name : 'key_file', width: 40, sortable : true, align: 'right', hide: true },
-                    { display: 'Cert File', name : 'cert_file', width: 40, sortable : true, align: 'right', hide: true },
-                    { display: 'Key MD5', name : 'key_digest', width: 40, sortable : false, align: 'right', hide: true },
-                    { display: 'Cert MD5', name : 'cert_digest', width: 40, sortable : false, align: 'right', hide: true }
+                    { display: 'Key File', name : 'key_file', width: 400, sortable : true, align: 'left', hide: true },
+                    { display: 'Cert File', name : 'cert_file', width: 400, sortable : true, align: 'left', hide: true },
+                    { display: 'Key MD5', name : 'key_digest', width: 240, sortable : false, align: 'right', hide: true },
+                    { display: 'Cert MD5', name : 'cert_digest', width: 240, sortable : false, align: 'right', hide: true }
                 ],
                 buttons : [
                     { name: 'Add', bclass: 'add', onpress : $.Certificate().addCertificate },
@@ -82,7 +82,7 @@ var total_count = 0;
                 rp: 15,
                 showTableToggleBtn: false,
                 width: $('#middle_frame').width() - 40,
-                height: 300
+                height: 400
             });
         },
         //
@@ -116,7 +116,7 @@ var total_count = 0;
                 c.key_email     ? c.key_email   : '-',
                 c.key_file      ? c.key_file    : 'unknown',
                 c.cert_file     ? c.cert_file   : 'unknown',
-                c.key_digest    ? c.key_diget   : '-',
+                c.key_digest    ? c.key_digest  : '-',
                 c.cert_digest   ? c.cert_digest : '-'
             ]
         },
@@ -146,12 +146,12 @@ var total_count = 0;
         //
         // Update / modify data in the certificate's table
         //
-        updateFlexgrid : function(r){
+        updateFlexgrid : function(){
             $('#flexme').find('tr').children('td[abbr="name"]')
                         .children('div').each(function(k, v)
             {
                 // Apply select field also on right-click
-                $(this).parent('td').parent('tr').bind("contextmenu",function(e){
+                $(this).parent('td').parent('tr').bind("contextmenu",function(){
                     $(this).addClass('trSelected');
                 });
                 // One more loop to find all neighbor td's
@@ -160,8 +160,13 @@ var total_count = 0;
                 // access / know which name it is when clicking
                 // any of the td's
                 $(this).parent('td').parent('tr').children('td')
-                            .children('div').each(function(z, x){
-                    var inner_text = x.innerHTML.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                            .children('div').each( function(z, x){
+                    var inner_text = x.innerHTML;
+                    if ( inner_text === 'ca'
+                     &&  $(this).parent('td').attr('abbr').match(/cert_type|name/)
+                    ){
+                        $(this).css('text-shadow','1px 1px #cccccc');
+                    }
                     // Color unknown certificates in red
                     if ( inner_text === 'unknown' ){
                         $(this).parent().parent('tr')
@@ -174,10 +179,11 @@ var total_count = 0;
                         $(this).parent().parent('tr').remove();
                     }
                     // Add context menu
-                    var _username = $(this).parent().parent('tr').children('td[abbr="name"]').children('div').text();
-                    _username = _username.replace(/^(.*)<span class="inner_flexi_text">on<\/span>$/gi, "$1");
+                    var _name = $(this).parent().parent('tr')
+                                       .children('td[abbr="name"]')
+                                       .children('div').text();
                     $(this).addClass('context-menu-one box menu-1')
-                           .css('cursor','cell').attr('parent', _username );
+                           .css('cursor','cell').attr('parent', _name );
                 });
             });
         },
