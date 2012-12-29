@@ -291,12 +291,12 @@ var dump = function (obj){
         //
         // Set processing overlay div and ajax loader
         //
-        setAjaxLoading: function(no_overlay,append_text){
-            if ( window.DEBUG ) log ( 'Got append_text for ajaxLoader: ' + append_text );
+        setAjaxLoading: function(no_overlay,append_text){            
             $('body').prepend( $.Ovpnc().ajaxLoaderFloating );
             if ( append_text !== undefined
               && append_text.match(/\w+/)
             ){
+                if ( window.DEBUG ) log ( 'Got append_text for ajaxLoader: ' + append_text );
                 $('#ajaxLoaderFloating').append('<div id="loaderText">' + append_text + '</div>');
                 $('#loaderText').slideDown(350);
             }
@@ -480,11 +480,14 @@ var dump = function (obj){
                 // Update the table with any online clients data
                 // This applies only to path /clients
         
-                if (r.rest.clients !== undefined
+                if (
+                    r.rest.clients !== undefined
                     && $.Ovpnc().pathname === '/clients'
                     && $('#flexme').is(':visible')
                 ) {
-                    $.Client().updateFlexgrid(r);
+                    if ( $.Ovpnc().pathname === '/clients' ){
+                        $.Client().updateFlexgrid(r);
+                    }
                 }
             }
             return false;

@@ -52,6 +52,7 @@ Method modifier
 before [qw(
         certificates_GET
         certificates_POST
+        certificates_DELETE
     )] => sub {
     my ( $self, $c ) = @_;
 
@@ -149,7 +150,7 @@ requires user to provide options
         $c->req->params->{KEY_CN} = $temp_name;
         $c->req->params->{name} = $temp_cn;
 
-        $c->stash->{certname} = $c->req->params->{name};
+        $c->stash->{cert_name} = $c->req->params->{name};
         $c->stash->{name} = $c->req->params->{KEY_CN};
 
         # Check if current user's name has
@@ -161,7 +162,7 @@ requires user to provide options
         # Check if such a certificate exists
         # ==================================
         my $check_not_exists = $self->certificates_GET(
-            $c, $c->stash->{certname}, $c->stash->{name} );
+            $c, $c->stash->{cert_name}, $c->stash->{name} );
         
         if ( $check_not_exists
                 and ref $check_not_exists
@@ -329,7 +330,7 @@ L<Three>    Get all certificates - sorted results by field
                          : Does('NeedsLogin')
                          : Sitemap
     {
-        my ( $self, $c, $certname_int, $name_int ) = @_;
+        my ( $self, $c, $cert_name_int, $name_int ) = @_;
 
         # get column names
         # ================
@@ -342,7 +343,7 @@ L<Three>    Get all certificates - sorted results by field
         # ===============================
         if ($field){
             unless ( $field ~~ @{$columns} ) {
-                if ( ! $certname_int ){ 
+                if ( ! $cert_name_int ){ 
                     $self->status_not_found($c,
                         message => "Unknown field name: '" . $field . "'",
                     );
@@ -359,9 +360,10 @@ L<Three>    Get all certificates - sorted results by field
         my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
           @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
 
-        if ( $sort_by and $sort_by !~ @{$columns} ){
-            $sort_by             = 'name';
-        }
+        $sort_by ||= 'name';
+        #if ( $sort_by and $sort_by !~ @{$columns} ){
+        #    $sort_by             = 'name';
+        #}
 
         # Searching for a single certificate
         # Used mainly by the certificates
@@ -370,12 +372,12 @@ L<Three>    Get all certificates - sorted results by field
         # ==================================
 
 
-        $c->req->params->{certname}     = $certname_int if $certname_int;
+        $c->req->params->{cert_name}     = $cert_name_int if $cert_name_int;
         $c->req->params->{name}         = $name_int     if $name_int;
         $c->req->params->{cert_type}    = $c->req->params->{type} if $c->req->params->{type};
 
         if (
-                my $certname    = $c->req->params->{certname}
+                my $cert_name    = $c->req->params->{cert_name}
             and my $username    = $c->req->params->{name}
         ){
 
@@ -386,18 +388,18 @@ L<Three>    Get all certificates - sorted results by field
                 (
                         -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                     and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
-                            . $certname . '.crt'
+                            . $cert_name . '.crt'
                 )
                  or
                 (
                     $self->_check_cert_name_db(
                         $c,
-                        $certname,
+                        $cert_name,
                         ( $username eq '' ? $username_mem : $username )
                     )
                 )
             ){
-                if ( ! $certname_int ){ 
+                if ( ! $cert_name_int ){ 
                     $self->status_bad_request($c, message => 'Certificate exists');
                     $c->detach('View::JSON');
                 }
@@ -485,12 +487,86 @@ sub certificates_DELETE : Local
                         : Sitemap
     {
         my ( $self, $c ) = @_;
-        $self->status_ok(
-            $c,
-            entity => {
-                some => 'dsta',
-                foo  => 'is real bar-x',
-            },
+
+        my $req = $c->req->params;
+
+        # client and certificate name
+        # must be provided (min 1)
+        # ===========================
+        my $certificates;
+        my (@certs, @clients);
+        if ( ! $req->{clients} or ! $req->{certificates} ){
+            $self->status_bad_request($c, message =>
+                "Missing params. Both clients and certificates must be provided (min 1)."
+            );
+            delete $c->stash->{assets};
+            $c->detach('View::JSON');
+        }
+        # Check if same number of
+        # client names as certificates
+        # ============================
+        else {
+            @certs = split ",", $req->{certificates};
+            @clients = split ",", $req->{clients}; 
+            if ( scalar @certs != scalar @clients ){
+                $self->status_bad_request($c, message =>
+                    "Certificates number does not match to clients number: "
+                    . "[ " . scalar @certs . ' - ' . scalar @clients . " ]."
+                );
+                delete $c->stash->{assets};
+                $c->detach('View::JSON');
+            }
+        }
+
+        # Make a hash using certnames
+        # as keys as clients as values
+        # ============================
+        $certificates = $self->_map_certs_clients(\@certs, \@clients);
+
+        # Get the certificates data
+        # =========================
+        my @rs = $c->model('DB::Certificate')->search(
+                {
+                    name => { in => [ @certs ] },
+                    user => { in => [ @clients ] }
+                }
+            )->all;
+
+        unless ( @rs > 0 ){
+            $self->status_bad_request($c, message =>
+                'Certificate(s) not found in database!'
+            );
+            delete $c->stash->{assets};
+            $c->detach('View::JSON');        
+        }
+
+        warn " --- C: " . $_->name for ( @rs );
+
+        # Set roles
+        # =========
+        $self->_roles(
+            $self->new_with_traits(
+                traits         => [ qw( Vars Delete ) ],
+                openvpn_dir    => $c->config->{openvpn_dir},
+                openssl_bin    => $c->config->{openssl_bin},
+                openssl_conf   => $c->config->{openssl_conf},
+                _req           => $c->request->params,
+                _cfg           => $self->cfg,
+            )
+        );
+
+        # Same as source ./vars
+        # =====================
+        $self->_roles->set_environment_vars;
+
+        my $_ret_val = $self->_roles->delete_certificates( \@rs );
+
+        my $_chk_revoke = $c->forward('/api/clients_REVOKE',
+            $req->{clients}, $req->{certificates}
+        );
+
+        $self->status_ok($c,
+            entity => $_ret_val,
         );
     }
 
@@ -637,7 +713,7 @@ the new certificate/key details
             # it always gets the name ca.{crt,key,csr}...
             # ===========================================
             $req->{name} = 'ca' if $req->{cert_type} eq 'ca';
-            $req->{name} = $req->{certname} if $req->{cert_type} eq 'server';
+            $req->{name} = $req->{cert_name} if $req->{cert_type} eq 'server';
 
             my $start_date = $form->param_value('start_date');
             $start_date =~ s/([0-9]+)\-([0-9]+)\-([0-9]+)/$3-$2-$1/;
@@ -651,7 +727,7 @@ the new certificate/key details
                 $c->model('DB::Certificate')->update_or_create({
                     user_id         => $user->id,
                     user            => $user->username,
-                    name            => $req->{certname},
+                    name            => $req->{cert_name},
                     created_by      => $req->{ca_username},
                     created         => $start_date,
                     key_cn          => $req->{KEY_CN},
@@ -691,14 +767,14 @@ of certificate exists in DB
 =cut
 
     sub _check_cert_name_db : Private {
-        my ( $self, $c, $certname, $username ) = @_;
+        my ( $self, $c, $cert_name, $username ) = @_;
 
         $username =~ s/\///g;
 
         my $rs;
         try {
             $rs = $c->model('DB::Certificate')->search(
-                { key_cn => $username, name      => $certname },
+                { key_cn => $username, name      => $cert_name },
                 { select => 'id' }
             )->single;
         }
@@ -744,6 +820,26 @@ Get sorted results from DB
         }
 
     }
+
+
+=head2 _map_certs_clients
+
+In action _DELETE map
+certificate names to
+the client names
+
+=cut
+
+    sub _map_certs_clients : Private {
+        my ( $self, $certs, $clients ) = @_;
+        my $certificates;
+        for my $i ( 0 .. @{$clients} ){
+            next unless $certs->[$i] or $clients->[$i];
+            $certificates->{$certs->[$i]}->{username} = $clients->[$i];
+        }
+        return $certificates;
+    }
+
 
 
 =head2 _send_err

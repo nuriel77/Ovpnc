@@ -758,8 +758,8 @@ using crl.pem
                        : Sitemap
     {
 
-        my ( $self, $c, $client_list ) = @_;
-    
+        my ( $self, $c, $client_list, $cert_list ) = @_;
+
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
@@ -770,7 +770,11 @@ using crl.pem
         # ========================================
         $client_list = $c->request->params->{client}
             if $c->request->params->{client};
-    
+
+        $cert_list = $c->request->params->{cert_name}
+            if $c->request->params->{cert_name};
+
+        my @cert_names = split ',', $cert_list if $cert_list;
         my @clients = split ',', $client_list;
 
         # Trait names should match request method
@@ -794,7 +798,8 @@ using crl.pem
         # Revoke client's certificate
         # ===========================
         unless ( $c->request->params->{no_revoke} ) {
-            $_ret_val = $self->_roles->revoke_certificate( \@clients );
+            $_ret_val = $self->_roles->revoke_certificate(
+                \@clients, ( @cert_names ? \@cert_names : undef ) );
         }
 
         unless ( $_ret_val ){

@@ -5,11 +5,11 @@ jQuery.validator.setDefaults({
     messages: {
         username: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9_]</div>",
         address: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z0-9\\-\\.\\(\\) ]</div>",
-        certname: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
+        cert_name: "<div style='margin-left:40px;'>Invalid input, allowed regex: [a-zA-Z\\-\\.\\' ]</div>",
     },
     rules: {
         username: { test_regex: "([a-zA-Z0-9_]*)" },
-        certname: { test_regex: "[a-zA-Z\-\'\. ]*" },
+        cert_name: { test_regex: "[a-zA-Z\-\'\. ]*" },
         address: { test_regex: "([a-zA-Z0-9\-\.\'\(\) ]*)" }
     },
     errorClass: "client_error",
@@ -67,7 +67,7 @@ jQuery.validator.setDefaults({
         				required: true,
         				maxlength: 42
         			},
-        			certname: {
+        			cert_name: {
         				required: true,
         				maxlength: 42
         			},
@@ -132,18 +132,18 @@ jQuery.validator.setDefaults({
 
             // Run a check on certificate name
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-            $('#certname').bind('focusout',function(){
+            $('#cert_name').bind('focusout',function(){
                 // We require user name as well for the 
                 // path of the user's certificates
                 if ( $('#username').attr('value').match(/\w+/)
                   || $('#certtype').attr('value') === 'ca'
                   
                 ){
-                    if ( ! $('#certname').attr('value').match(/\w/) ) return false;
+                    if ( ! $('#cert_name').attr('value').match(/\w/) ) return false;
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates",
                         data: {
-                            certname: $('#certname').attr('value'),
+                            cert_name: $('#cert_name').attr('value'),
                             name: $('#username').attr('value'),
                             type: $('#certtype').attr('value')
                         },
@@ -206,14 +206,14 @@ jQuery.validator.setDefaults({
             if ( e.responseText ){
                 var _msg = jQuery.parseJSON(e.responseText);
                 if ( window.DEBUG ) log ('Certificate name exists');
-                $('#certname').parent('div').find('label')
+                $('#cert_name').parent('div').find('label')
                               .css('color','#8B0000');
                 var elem   = document.createElement('span');
                 $( elem ).addClass('passwd_err error_message error_constraint_required')
                          .css('margin','4px 0 0 305px')
                          .text('Certificate name exists!');
-                $('#certname').parent('div').children('.passwd_err').remove();
-                $('#certname').parent('div').append( elem );
+                $('#cert_name').parent('div').children('.passwd_err').remove();
+                $('#cert_name').parent('div').append( elem );
             }
         },
         //
@@ -231,14 +231,14 @@ jQuery.validator.setDefaults({
             if ( e.responseText ){
                 var _msg = jQuery.parseJSON(e.responseText);
                 if ( window.DEBUG ) log ('Certificate name exists');
-                $('#certname').parent('div').find('label')
+                $('#cert_name').parent('div').find('label')
                               .css('color','#8B0000');
                 var elem   = document.createElement('span');
                 $( elem ).addClass('passwd_err error_message error_constraint_required')
                          .css('margin','4px 0 0 305px')
                          .text('Certificate name exists!');
-                $('#certname').parent('div').children('.passwd_err').remove();
-                $('#certname').parent('div').append( elem );
+                $('#cert_name').parent('div').children('.passwd_err').remove();
+                $('#cert_name').parent('div').append( elem );
             }
         },        
         //
@@ -292,8 +292,8 @@ jQuery.validator.setDefaults({
         checkCertType: function (cType){
             if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
             $('.error_message').remove();
-            if ( $('#certname').attr('value') != '' ){
-                $('#certname').focusout();
+            if ( $('#cert_name').attr('value') != '' ){
+                $('#cert_name').focusout();
             }
 
 
@@ -307,7 +307,7 @@ jQuery.validator.setDefaults({
                 $.Ovpnc().ajaxCall({
                     url: "/api/certificates",
                     data: {
-                        certname: 'ca',
+                        cert_name: 'ca',
                         type: 'ca',
                         name: 'anyuser'
                     },
@@ -317,14 +317,14 @@ jQuery.validator.setDefaults({
                 });
                 // Set server type defaults
                 $('#username').parent('div').find('label').text('Common Name');
-                $('#certname').removeAttr('readonly')
+                $('#cert_name').removeAttr('readonly')
                               .css({
                                 color: '',
                                 'background-color': ''
                               }).focusout();
             }
             else if ( cType === 'client' ){
-                $('#certname').removeAttr('readonly')
+                $('#cert_name').removeAttr('readonly')
                               .attr('value','')
                               .css({
                                 color: '',
@@ -337,7 +337,7 @@ jQuery.validator.setDefaults({
                 $.Ovpnc().ajaxCall({
                     url: "/api/certificates",
                     data: {
-                        certname: 'ca',
+                        cert_name: 'ca',
                         type: 'ca',
                         name: 'anyuser'
                     },
@@ -371,7 +371,7 @@ jQuery.validator.setDefaults({
                     $('#password2').parents('tr:first').slideDown(200);
                     $('#generatePassword').parents('tr:first').show(350);
                 }
-                $('#certname').attr('value', 'ca')
+                $('#cert_name').attr('value', 'ca')
                               .attr('readonly','readonly')
                               .css({
                                 color: '#888888',
@@ -403,8 +403,8 @@ jQuery.validator.setDefaults({
         ajaxCheckCAError: function (e){
             if ( window._first_move !== undefined ){
                 var _wait_remove =  setInterval(function() {
-                    $('#certname').parent('div').find('label').css('color','#333333');
-                    $('#certname').parent('div').find('.error_message').remove();
+                    $('#cert_name').parent('div').find('label').css('color','#333333');
+                    $('#cert_name').parent('div').find('.error_message').remove();
                     window.clearInterval(_wait_remove);
                 }, 400 );
                 window._first_move = undefined;
@@ -463,7 +463,7 @@ jQuery.validator.setDefaults({
         	$.addCertificate().setSelectBind();
         	$.addCertificate().setClickBind();
             $.addCertificate().chooseUser();
-            if ( $('#certname').attr('value') != '' ) $('#certname').focusout();
+            if ( $('#cert_name').attr('value') != '' ) $('#cert_name').focusout();
             if ( $('#username').attr('value') != '' ) $('#username').focusout();
 
             // First check if a country has already been set
@@ -535,7 +535,7 @@ jQuery.validator.setDefaults({
             var Settings = JSON.stringify({
                 certtype:       $('input[name=cert_type]:checked', '#certtype').attr('value'),
                 username:       $('#username').attr('value'),
-                certname:       $('#certname').attr('value'),
+                cert_name:       $('#cert_name').attr('value'),
                 email:          $('#email').attr('value'),
                 organization:   $('#organization').attr('value'),
                 org_unit:       $('#org_unit').attr('value'),
@@ -594,7 +594,7 @@ jQuery.validator.setDefaults({
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
 
-                $('#certname').focusout();
+                $('#cert_name').focusout();
                 $('#username').focusout();
 
                 if ( ! $('#username').attr('value').match(/\w+/) ) return false;

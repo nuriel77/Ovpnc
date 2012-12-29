@@ -66,7 +66,7 @@ elements:
                                           title: "Certificate's name"
                                           placeholder: "my_certificate_1"
                                           class: "form_row"
-                                          id: "certname"
+                                          id: "cert_name"
                                         constraints:
                                            - Required
                                            - type: Regex

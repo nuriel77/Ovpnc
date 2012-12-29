@@ -159,17 +159,20 @@ var total_count = 0;
                 $('.gBlock').remove();
                 return;
             }
+
+            // Apply select field also on right-click
+            $('#flexme').find('tr').bind("contextmenu",function(){
+                $(this).addClass('trSelected');
+            });
+
             // Set the right color - on/off notice according
             // to client's status
             var _checker = 0;
             $('#flexme').find('tr').children('td[abbr="username"]')
                         .children('div').each(function(k, v)
             {
-                // Apply select field also on right-click
-                $(this).parent('td').parent('tr').bind("contextmenu",function(e){
-                    $(this).addClass('trSelected');
-                });
-                // One more loop to find all neighbor td's
+
+                // loop to find all neighbor td's
                 // set them up with context menu class
                 // Add parent name to each so we can easily
                 // access / know which name it is when clicking

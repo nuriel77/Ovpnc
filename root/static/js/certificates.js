@@ -134,6 +134,15 @@ var total_count = 0;
         //
         formatCertificateResults: function (obj){
             if ( window.DEBUG ) log ("Flex got certificates: %o", obj);
+
+            var _wait_update_flexigrid =
+                setInterval(function() {
+                    $.Certificate().updateFlexgrid();
+                    if ( $('.context-menu').is(':visible') ) {
+                        window.clearInterval(_wait_update_flexigrid);
+                    }
+            }, 250 );
+
             if ( obj.rest !== undefined && obj.rest.length !== undefined ){
                 var __rows = new Array();
                 var __count = 0;
@@ -162,13 +171,15 @@ var total_count = 0;
                 $('.gBlock').remove();
                 return;
             }
+
+            // Apply select field also on right-click
+            $('#flexme').find('tr').bind("contextmenu",function(){
+                $(this).addClass('trSelected');
+            });
+
             $('#flexme').find('tr').children('td[abbr="name"]')
                         .children('div').each(function(k, v)
             {
-                // Apply select field also on right-click
-                $(this).parent('td').parent('tr').bind("contextmenu",function(){
-                    $(this).addClass('trSelected');
-                });
                 // One more loop to find all neighbor td's
                 // set them up with context menu class
                 // Add parent name to each so we can easily
@@ -177,11 +188,6 @@ var total_count = 0;
                 $(this).parent('td').parent('tr').children('td')
                             .children('div').each( function(z, x){
                     var inner_text = x.innerHTML;
-                    if ( inner_text === 'ca'
-                     &&  $(this).parent('td').attr('abbr').match(/cert_type|name/)
-                    ){
-                        $(this).css('text-shadow','1px 1px #cccccc');
-                    }
                     // Color unknown certificates in red
                     if ( inner_text === 'unknown' ){
                         $(this).parent().parent('tr')
@@ -373,7 +379,7 @@ var total_count = 0;
                         $.Certificate().blockUnblockCertificates(key, $('.flexigrid'));
                     }
                     else if ( key.match(/delete/i) ){
-                        deleteCertificate(key, $('.flexigrid'));
+                        $.Certificate().deleteCertificate(key, $('.flexigrid'));
                     }
                     else if ( key.match(/edit/i) ){
                         // TODO
@@ -405,26 +411,32 @@ var total_count = 0;
             var total_count = $('.trSelected', grid).length;
             var _loop = 0;
             var _certificates = '';
+            var _clients = '';
             $.each($('.trSelected', grid), function() {
                 // Get the certificates name of this grid
-                var certificate = $('td:nth-child(2) div', this).html();
+                var certificate = $('td:nth-child(1) div', this).html();
+                var clients = $('td:nth-child(3) div', this).html();
                 // Get rid of any html tags, extract the name.
                 certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                 _certificates += certificate + ',';
+                _clients += clients + ',';
                 _loop++;
             });
+
             // Return nothing if none selected
             if ( _loop == 0 ) return;
+
             // Confirm delete
             var cnf = confirm('Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) );
             if ( cnf == false ) return false;
+
             // Execute
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
             window.certificatesToDelete = total_count;
             $.Ovpnc().ajaxCall({
                 url: "/api/certificates/",
-                data: { certificate: _certificates, _ : '1' },
-                method: 'REMOVE',
+                data: { certificates: _certificates, _ : '1', clients: _clients },
+                method: 'DELETE',
                 success_func: $.Certificate().certificateDeleteReturn,
                 error_func: $.Certificate().certificateDeleteError,
                 loader: 1,

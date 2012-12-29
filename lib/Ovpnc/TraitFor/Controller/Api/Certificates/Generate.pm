@@ -13,11 +13,14 @@ use vars qw/$ca/;
 
 =head1 NAME
 
-Ovpnc::TraitFor::Controller::Api::Certificates::InitCA - Ovpnc Controller Trait
+Ovpnc::TraitFor::Controller::Api::Certificates::Generate - Ovpnc Controller Trait
 
 =head1 DESCRIPTION
 
 Ovpnc Certificates Root CA
+Generate keys and x509
+certificates, generate
+CRL and verify files
 
 =head1 METHODS
 

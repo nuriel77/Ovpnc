@@ -265,11 +265,11 @@ Example:
         # ================================
         if ( -e $cfg->{openvpn_utils} . '/keys/'
                 . $params->{KEY_CN} . '/'
-                . $params->{certname} . '.crt'
+                . $params->{cert_name} . '.crt'
         ) {
             if ( ! $params->{overwrite} ){
                 return { error => 'Certificate name \\\''
-                        . $params->{certname} . '\\\''
+                        . $params->{cert_name} . '\\\''
                         . ' - already exists' }
             }
         }
@@ -578,7 +578,7 @@ Generate client certificate via pkitool
         my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
         my $_args = [
             ( $params->{password} ? '--pass' : '' ),
-            $params->{certname},
+            $params->{cert_name},
         ];
 
         # If user requested password
@@ -621,7 +621,7 @@ Generate client certificate via pkitool
             # =========================
             my @_cert_files =
                 glob $cfg->{openvpn_utils}
-                    . '/keys/' . $params->{certname}
+                    . '/keys/' . $params->{cert_name}
                     . '.*';
 
             # Check for errors
@@ -653,7 +653,7 @@ Generate server certificate via pkitool
         my @_cmd = (
             $cfg->{openvpn_utils} . '/pkitool',
             '--server',
-            $params->{certname}
+            $params->{cert_name}
         );
 
         # Check can run
@@ -722,7 +722,7 @@ and return the details or errors
         my @_cert_files =
             glob $cfg->{openvpn_utils}
                  . '/keys/'
-                 . $params->{certname}
+                 . $params->{cert_name}
                  . '.*';
         
         # Get the new serial
