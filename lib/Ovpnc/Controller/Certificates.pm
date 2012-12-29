@@ -1,6 +1,7 @@
 package Ovpnc::Controller::Certificates;
 use Ovpnc::Plugin::ChainCA 'read_random_entropy';
 use POSIX 'mktime';
+use Try::Tiny;
 use URI::Escape;
 use Date::Calc qw(Delta_Days);
 use DateTime::Format::Strptime;
@@ -121,8 +122,34 @@ Add a new certificate
     
         $c->stash->{title}     = 'Certificates: Add a new certificate';
     
+        # Get the form object
+        # ===================
         my $form = $c->stash->{form};
         $form->auto_constraint_class( 'constraint_%t' );
+
+        # Get the username for current
+        # logged in user id, set in 
+        # form as ca_username
+        # ============================
+        my $ca_username_element =
+            $form->get_field({ name => 'ca_username' });
+        my $rs =
+            $c->model('DB::User')
+                ->search(
+                    { id => $c->session->{__user}->{id} },
+                    { select => 'username' })
+                ->single;
+        $ca_username_element->value( $rs->username );
+
+        # Check if a root and/or
+        # server certificate exist
+        # Add to stash to display
+        # ========================
+        if ( $c->req->params->{cert_type} eq 'server' ){
+            if ( my $_chk_certs = $self->_chk_main_certs( $c ) ){ 
+                push @{$c->flash->{error}}, $_chk_certs;
+            }
+        }
 
         # Process FormFu
         # ==============    
@@ -150,7 +177,7 @@ Add a new certificate
                 && delete $c->req->params->{KEY_STATE_TEXT};
             $c->req->params->{KEY_CITY} = $c->req->params->{KEY_CITY_TEXT}
                 && delete $c->req->params->{KEY_CITY_TEXT};
-
+    
             # For server and client certificates
             # ==================================
             if ( $c->req->params->{cert_type} =~ /client|server/ ){
@@ -161,12 +188,12 @@ Add a new certificate
             elsif ( $c->req->params->{cert_type} eq 'ca' ){
                 $c->req->params->{cmd} = 'init_ca';                
             }
-
+    
             # Run action on api controller
             # ============================
             my $result = $c->controller('Api::Certificates')
                 ->certificates_POST( $c, $form );
-
+    
             # Handle results
             # ==============
             if ( $result and $result->{status} ){
@@ -301,6 +328,50 @@ two given date formats
         return Delta_Days(@start_date, @key_expire);
 
     }
+
+=head2 _chk_main_certs
+
+Check if Root CA or server
+certificate have already
+been created
+
+=cut
+
+    sub _chk_main_certs : Private {
+        my ( $self, $c ) = @_;
+
+        my $_main_certs;
+        try {
+            $_main_certs = $c->model('DB::Certificate')->search(
+                { cert_type => [ 'ca', 'server' ] },
+                { select => 'cert_type' }
+            );
+        }
+        catch {
+            push @{$c->flash->{error}}, $_;
+            return undef;
+        };
+        my ( $have_server, $have_ca );
+        while ( my $t = $_main_certs->next ){            
+            $have_server = 1 if $t->cert_type eq 'server';
+            $have_ca     = 1 if $t->cert_type eq 'ca';
+        }
+
+        if ( not $have_ca and not $have_server ){
+            return
+                'You must have a Root CA, only then server and client certificates can be generated.';
+        }
+        if ( ( $have_ca and not $have_server )
+              and $c->req->params->{cert_type} ne 'server'
+        ){
+            return 
+                'You must have a serve certificate before you can generate client certificates.';
+        }
+
+        return undef;
+
+    }
+
 
 
 =head2 get_country_list

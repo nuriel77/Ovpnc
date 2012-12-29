@@ -118,6 +118,12 @@ __PACKAGE__->table("certificates");
   is_nullable: 0
   size: 40
 
+=head2 key_serial
+
+  data_type: 'char'
+  is_nullable: 0
+  size: 2
+
 =head2 revoked
 
   data_type: 'datetime'
@@ -196,6 +202,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "key_email",
   { data_type => "varchar", is_nullable => 0, size => 40 },
+  "key_serial",
+  { data_type => "char", is_nullable => 0, size => 2 },
   "revoked",
   {
     data_type => "datetime",
@@ -253,8 +261,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-28 19:58:55
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GuuuFywNna1aveFEUMztpA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-29 01:41:26
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NMufGYH2JaXOhcPnMCyL3g
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

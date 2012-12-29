@@ -221,6 +221,7 @@ requires user to provide options
                 $c->detach('View::JSON');
             }
         }
+
         # Process return value
         # ====================
         if ( ref $_ret_val ){
@@ -453,7 +454,16 @@ L<Three>    Get all certificates - sorted results by field
                     };
             }
 
-            $self->status_ok($c, entity => $certificates );
+            # Make sure the sorting is as requested
+            # =====================================
+            my @_sorted = sort {
+                    ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
+                cmp
+                    ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
+            } @{$certificates};
+            @_sorted = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+            
+            $self->status_ok($c, entity => \@_sorted );
         }
 
     }
@@ -632,6 +642,8 @@ the new certificate/key details
             my $start_date = $form->param_value('start_date');
             $start_date =~ s/([0-9]+)\-([0-9]+)\-([0-9]+)/$3-$2-$1/;
 
+            my $serial = @{$resultset}[-1];
+            
             # update dbic row with
             # submitted values from form
             # ==========================
@@ -650,6 +662,7 @@ the new certificate/key details
                     key_province    => $req->{KEY_PROVINCE},
                     key_city        => $req->{KEY_CITY},
                     key_email       => $req->{KEY_EMAIL},
+                    key_serial      => $serial->{serial} || '0',
                     key_org         => $req->{KEY_ORG},
                     key_ou          => $req->{KEY_OU},
                     key_file        => $key_file->{file},

@@ -216,15 +216,16 @@ necessary for functionality.
             # Get file digests
             # ================
             my @_digests;
+
             if ( $_new_csr->{resultset} ) {
                 for ( @{$_new_csr->{resultset}} ){
                     push @_digests, {
                         file    => $_,
                         digest  => file_md5_hex( $_ ) || 'null',
-                    };
+                    } unless ref $_;
                 }
-
             }
+            push @_digests, @{$_new_csr->{resultset}}[-1];
 
             # Sign the new CSR
             # ================

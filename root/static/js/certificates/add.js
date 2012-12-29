@@ -137,11 +137,13 @@ jQuery.validator.setDefaults({
                 // path of the user's certificates
                 if ( $('#username').attr('value').match(/\w+/)
                   || $('#certtype').attr('value') === 'ca'
+                  
                 ){
+                    if ( ! $('#certname').attr('value').match(/\w/) ) return false;
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates",
                         data: {
-                            certname: $(this).attr('value'),
+                            certname: $('#certname').attr('value'),
                             name: $('#username').attr('value'),
                             type: $('#certtype').attr('value')
                         },
@@ -290,6 +292,10 @@ jQuery.validator.setDefaults({
         checkCertType: function (cType){
             if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
             $('.error_message').remove();
+            if ( $('#certname').attr('value') != '' ){
+                $('#certname').focusout();
+            }
+
 
             $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
@@ -315,11 +321,19 @@ jQuery.validator.setDefaults({
                               .css({
                                 color: '',
                                 'background-color': ''
-                              });
+                              }).focusout();
             }
             else if ( cType === 'client' ){
+                $('#certname').removeAttr('readonly')
+                              .attr('value','')
+                              .css({
+                                color: '',
+                                'background-color': ''
+                              });
+
                 // Check if Root CA exists,
                 // if not, display a warning
+                window._first_move = 1;
                 $.Ovpnc().ajaxCall({
                     url: "/api/certificates",
                     data: {
@@ -331,6 +345,7 @@ jQuery.validator.setDefaults({
                     success_func: $.addCertificate().ajaxCheckCASuccess,
                     error_func: $.addCertificate().ajaxCheckCAError
                 });
+
                 if ( $('#password').is(':hidden') ){
                     $('#password').parents('tr:first').slideDown(400);
                     $('#password2').parents('tr:first').slideDown(300);
@@ -338,11 +353,6 @@ jQuery.validator.setDefaults({
                 }
                 if ( $('#username').attr('value') != '' ) $('#username').focusout();
                 $('#username').parent('div').find('label').text('Username');
-                $('#certname').removeAttr('readonly')
-                              .css({
-                                color: '',
-                                'background-color': ''
-                              });
             }
             else if ( cType === 'ca' ){
                 if ( window.checkNoDupMessage !== undefined ){
@@ -361,13 +371,13 @@ jQuery.validator.setDefaults({
                     $('#password2').parents('tr:first').slideDown(200);
                     $('#generatePassword').parents('tr:first').show(350);
                 }
-                $('#username').parent('div').find('label').text('Common Name');
                 $('#certname').attr('value', 'ca')
                               .attr('readonly','readonly')
                               .css({
                                 color: '#888888',
                                 'background-color': '#CCCCCC'
-                              });
+                              }).focusout();
+                $('#username').parent('div').find('label').text('Common Name').focus();
             }
             else {
             }
@@ -391,6 +401,15 @@ jQuery.validator.setDefaults({
         // Handle error return from checking Root CA
         //
         ajaxCheckCAError: function (e){
+            if ( window._first_move !== undefined ){
+                var _wait_remove =  setInterval(function() {
+                    $('#certname').parent('div').find('label').css('color','#333333');
+                    $('#certname').parent('div').find('.error_message').remove();
+                    window.clearInterval(_wait_remove);
+                }, 400 );
+                window._first_move = undefined;
+            }
+
             // Error actually means that
             // the Root CA already exists
             // This is okay if the user
@@ -574,9 +593,12 @@ jQuery.validator.setDefaults({
         setFormEvents: function(){
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
+
                 $('#certname').focusout();
                 $('#username').focusout();
+
                 if ( ! $('#username').attr('value').match(/\w+/) ) return false;
+
                 // Check password length and strength
                 if ( $('input#password').attr('value') != '' ) {
                     var _pw = $('input#password').attr('value');
@@ -603,15 +625,18 @@ jQuery.validator.setDefaults({
                     $('input#password2').parent('div').find('label').css('color','#8B0000');
                     return false;
                 }
-                $.Ovpnc().setAjaxLoading(
-                    1,
-                    ( $('#certtype').attr('value') === 'ca' ? 'This might take a while...' : '' )
-                );
+
                 $("#add_certificate_form").valid();
+
                 var _wait =  setInterval(function() {
                     window.clearInterval(_wait);
                 },
                 1500 );
+
+                $.Ovpnc().setAjaxLoading(
+                    1,
+                    ( $('#certtype').attr('value') === 'ca' ? 'This might take a while...' : '' )
+                );
                 if ( $('.error_message').is(':visible') || $('.client_error').is(':visible') ) {
                     $.Ovpnc().removeAjaxLoading();
                     return false;
@@ -629,10 +654,12 @@ jQuery.validator.setDefaults({
                     modified: $.addCertificate.form_modified,
                     expires: 14
                 });
-
+    
                 $.addCertificate().convertLocationIDs();
-
+    
                 return true;
+
+
 
             });
         },

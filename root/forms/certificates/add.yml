@@ -55,6 +55,25 @@ elements:
                                   style: "padding:5px;width:575px;"
                                   id: "formTableBorder"
                           -
+                              # Certificate name
+                              - type: Block
+                                tag: div
+                                elements:
+                                      - type: Text
+                                        name: KEY_CN
+                                        label: "Cert Name:"
+                                        attributes_xml:
+                                          title: "Certificate's name"
+                                          placeholder: "my_certificate_1"
+                                          class: "form_row"
+                                          id: "certname"
+                                        constraints:
+                                           - Required
+                                           - type: Regex
+                                             regex: '^[\-_a-zA-Z\d\s]*\z'
+                                           - type: MaxLength
+                                             max: 42
+                          -
                               # Username (Client's username as in DB)
                               - type: Block
                                 tag: div
@@ -83,25 +102,6 @@ elements:
                                 attributes_xml:
                                   id: "ca_username"
                                   style: "display:none"
-                          -
-                              # Certificate name
-                              - type: Block
-                                tag: div
-                                elements:
-                                      - type: Text
-                                        name: KEY_CN
-                                        label: "Cert Name:"
-                                        attributes_xml:
-                                          title: "Certificate's name"
-                                          placeholder: "my_certificate_1"
-                                          class: "form_row"
-                                          id: "certname"
-                                        constraints:
-                                           - Required
-                                           - type: Regex
-                                             regex: '^[\-_a-zA-Z\d\s]*\z'
-                                           - type: MaxLength
-                                             max: 42
                           -
                               # Password
                               - type: Block

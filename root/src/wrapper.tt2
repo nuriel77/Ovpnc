@@ -88,6 +88,7 @@
                             <input type="hidden" name="token" id="token" value="[% token %]" />
                         [% END %]
 					[% END %]
+
 				</div>
 
 				[% IF c.user_exists %]
