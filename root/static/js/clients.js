@@ -283,7 +283,7 @@ var total_count = 0;
                 type: action,
                 cache: false,
                 timeout: 5000,
-                data: { _ : '1', client: _clients },
+                data: { _ : '1', clients: _clients },
                 dataType: 'json',
                 success: function (msg) {
                     if ( window.DEBUG ) log("block/unblock returned: %o",msg);
@@ -469,7 +469,7 @@ var total_count = 0;
             window.clientsToDelete = total_count;
             $.Ovpnc().ajaxCall({
                 url: "/api/clients/",
-                data: { client: _clients, _ : '1' },
+                data: { clients: _clients, _ : '1' },
                 method: 'REMOVE',
                 success_func: $.Client().clientDeleteReturn,
                 error_func: $.Client().clientDeleteError,

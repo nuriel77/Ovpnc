@@ -244,8 +244,8 @@ Include static files, dynamically
                     js/jQuery-contextMenu/src/jquery.contextMenu.css
                     js/jQuery-contextMenu/src/jquery.ui.position.js
                     js/jQuery-contextMenu/src/jquery.contextMenu.js
-                    js/Flexigrid/css/flexigrid.css
-                    js/Flexigrid/js/flexigrid.js
+                    js/Flexigrid/css/flexigrid.pack.css
+                    js/Flexigrid/js/flexigrid.pack.js
                 ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;
         }
     

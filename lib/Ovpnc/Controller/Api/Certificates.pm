@@ -431,10 +431,12 @@ L<Three>    Get all certificates - sorted results by field
                     select => $columns
                 }
             )->all];
+
             unless ($rs){
                 $self->status_not_found($c, message => 'No certifictes');
                 $c->detach('View::JSON');
             }
+
             # Skipping Root CA...
             my @column_names = @{$columns};
             my $certificates;
@@ -454,6 +456,12 @@ L<Three>    Get all certificates - sorted results by field
                             )
                         } @column_names
                     };
+            }
+
+            unless ( $certificates ){
+                $self->status_ok($c, entity =>
+                   { resultset => [ 'No certificates' ] });
+                $c->detach('View::JSON');
             }
 
             # Make sure the sorting is as requested
@@ -494,7 +502,7 @@ sub certificates_DELETE : Local
         # must be provided (min 1)
         # ===========================
         my $certificates;
-        my (@certs, @clients);
+        my ($certs, $clients);
         if ( ! $req->{clients} or ! $req->{certificates} ){
             $self->status_bad_request($c, message =>
                 "Missing params. Both clients and certificates must be provided (min 1)."
@@ -506,12 +514,12 @@ sub certificates_DELETE : Local
         # client names as certificates
         # ============================
         else {
-            @certs = split ",", $req->{certificates};
-            @clients = split ",", $req->{clients}; 
-            if ( scalar @certs != scalar @clients ){
+            @{$certs} = split ",", $req->{certificates};
+            @{$clients} = split ",", $req->{clients}; 
+            if ( scalar @{$certs} != scalar @{$clients} ){
                 $self->status_bad_request($c, message =>
                     "Certificates number does not match to clients number: "
-                    . "[ " . scalar @certs . ' - ' . scalar @clients . " ]."
+                    . "[ " . scalar @{$certs} . ' - ' . scalar @{$clients} . " ]."
                 );
                 delete $c->stash->{assets};
                 $c->detach('View::JSON');
@@ -521,14 +529,14 @@ sub certificates_DELETE : Local
         # Make a hash using certnames
         # as keys as clients as values
         # ============================
-        $certificates = $self->_map_certs_clients(\@certs, \@clients);
+        #$certificates = $self->_map_certs_clients(\@certs, \@clients);
 
         # Get the certificates data
         # =========================
         my @rs = $c->model('DB::Certificate')->search(
                 {
-                    name => { in => [ @certs ] },
-                    user => { in => [ @clients ] }
+                    name => { in => $certs },
+                    user => { in => $clients }
                 }
             )->all;
 
@@ -540,16 +548,49 @@ sub certificates_DELETE : Local
             $c->detach('View::JSON');        
         }
 
-        warn " --- C: " . $_->name for ( @rs );
+        # Run verifications that this is
+        # not a 'CA' or 'server' type being
+        # deleted while other certificates
+        # still exists. Remove from array if so.
+        # ======================================
+        my ( $rs, $path_certs );
+        ($certs, $clients, $rs)              = $self->_check_not_ca( $c, $certs, $clients, \@rs );
+        ($certs, $clients, $rs, $path_certs) = $self->_check_not_server( $c, $certs, $clients, $rs );
+
+        # [- debug - ]
+        #$c->controller('Api')->detach_error( $c,
+        #   "     Paths:     " . ( join ", ", @{$path_certs} )
+        #  .".    Certs:     " . ( join ", ", @{$certs} )
+        #  .".    Clients:   " . ( join ", ", @{$clients} )
+        #);
+
+        unless ( @{$certs} ){
+            $self->status_bad_request($c, message =>
+                'No certificates left for removal.'
+            );
+            delete $c->stash->{assets};
+            $c->detach('View::JSON');
+        }
+
+        $c->log->debug( " --- C: " . $_->name )
+            for ( @{$rs} );
 
         # Set roles
         # =========
         $self->_roles(
             $self->new_with_traits(
-                traits         => [ qw( Vars Delete ) ],
+                traits         => [
+                  qw/
+                     Vars
+                     Delete
+                     +Ovpnc::TraitFor::Controller::Api::Clients::Revoke
+                  /
+                ],
                 openvpn_dir    => $c->config->{openvpn_dir},
                 openssl_bin    => $c->config->{openssl_bin},
                 openssl_conf   => $c->config->{openssl_conf},
+                openvpn_utils  => $self->cfg->{openvpn_utils},
+                home           => $self->cfg->{home},
                 _req           => $c->request->params,
                 _cfg           => $self->cfg,
             )
@@ -559,14 +600,26 @@ sub certificates_DELETE : Local
         # =====================
         $self->_roles->set_environment_vars;
 
-        my $_ret_val = $self->_roles->delete_certificates( \@rs );
+        # Revoke certificates
+        # ===================
+        my $_chk_revoke = $self->_roles->revoke_certificate(
+            $clients, $path_certs ); 
 
-        my $_chk_revoke = $c->forward('/api/clients_REVOKE',
-            $req->{clients}, $req->{certificates}
-        );
+        unless ( $_chk_revoke ){
+            $c->controller('Api')->detach_error( $c,
+                'No reply from backend!');
+            return;
+        }
+
+        # Delete from DB and files
+        # ========================
+        my $_ret_val = $self->_roles->delete_certificates( $rs );
 
         $self->status_ok($c,
-            entity => $_ret_val,
+            entity => {
+                resultset => $_ret_val,
+                errors => $c->stash->{error}
+            },
         );
     }
 
@@ -820,6 +873,176 @@ Get sorted results from DB
         }
 
     }
+
+=head _check_not_ca
+
+Make sure user is not trying
+to delete the Root CA while
+other certificates exists
+
+=cut
+
+    sub _check_not_ca : Private {
+        my $self = shift;
+        my $c = shift;
+        my @certs = @{(shift)};
+        my @clients = @{(shift)};
+        my @rs = @{(shift)};
+
+        # Count non-CA certificates
+        # =========================
+        my $non_ca_count;
+        try {
+            $non_ca_count =
+                $c->model('DB::Certificate')->search({
+                    cert_type => { 'not in' => [ 'ca' ] }
+                 })->count;
+        }
+        catch {
+            $self->status_bad_request($c, message =>
+                    'Database query error: '
+                    . (split(/\n/, $_))[0]
+            );
+            delete $c->stash->{assets};
+            $c->detach('View::JSON');        
+        };
+        
+        # Check this is not a Root CA
+        # being deleted. We first check
+        # how many non-CA certificate
+        # types there are, only if none
+        # allow the Root CA to be deleted
+        # ===============================
+        my $rs_index = 0;
+     CERTS:
+        for my $cert ( @rs ){
+            if ( $cert->cert_type eq 'ca' ){
+                # Loop cert names
+                # ===============
+                for my $i ( 0 .. @certs ){
+                    # Find the "offending" one
+                    # ========================
+                    if ( $certs[$i] eq $cert->name ){
+                        if ( $non_ca_count and $non_ca_count > 0 ){
+                            $c->log->debug('Ignoring CA certificate ' . $cert->name );
+                            # Remove from arrays
+                            # ==================
+                            splice ( @certs, $i ,1 );
+                            splice ( @clients, $i ,1 );
+                            splice ( @rs, $rs_index, 1);
+                            # Compensate on removal
+                            # =====================
+                            $i--;
+
+                            push @{$c->{stash}->{error}},
+                                 $cert->name . 
+                                 ': Denied. Cannot delete Root CA while other certificates exists.';
+
+                            next CERTS;
+                        }
+                    }
+                }
+            }
+            $rs_index++;
+        }
+        return (\@certs, \@clients, \@rs);
+     }
+
+
+=head _check_not_server
+
+Make sure user is not trying
+to delete server certificate
+other client certificates exists
+Here we also determine the path
+for each certificate, since 'ca'
+and 'server' remain in main keys
+directory and client's get own
+directory, so we need to append.
+
+=cut
+
+    sub _check_not_server : Private {
+        my $self = shift;
+        my $c = shift;
+        my @certs = @{(shift)};
+        my @clients = @{(shift)};
+        my @rs = @{(shift)};
+        
+        my @path_certs;
+        my $non_server_count;
+
+        # Count non-CA or non server
+        # ==========================
+        try {
+            $non_server_count =
+                $c->model('DB::Certificate')->search({
+                    cert_type => { 'not in' => [ 'server', 'ca' ] }
+                })->count;
+        }
+        catch {
+            $self->status_bad_request($c, message =>
+                    'Database query error: '
+                    . (split(/\n/, $_))[0]
+            );
+            delete $c->stash->{assets};
+            $c->detach('View::JSON');        
+        };
+
+        # Check this is not a 'server'
+        # being deleted. First check
+        # how many non-CA and 'server'
+        # types there are, only if none
+        # allow to delete the 'server' cert
+        # =================================
+        my $rs_index = 0;
+        CERTS:
+        for my $cert ( @rs ){
+            if ( $cert->cert_type eq 'server' ){
+                # Loop cert names
+                # ===============
+                for my $i ( 0 .. @certs ){
+                    # Find the "offending" one
+                    # ========================
+                    if ( $certs[$i] eq $cert->name ){
+                        if ( $non_server_count and $non_server_count > 0 ){
+                            $c->log->debug('Ignoring server certificate ' . $cert->name );
+
+                            # remove from arrays
+                            # ==================
+                            splice ( @certs, $i, 1 );
+                            splice ( @clients, $i, 1 );
+                            splice ( @rs, $rs_index, 1 );
+
+                            # Compensate for the missing element
+                            # ==================================
+                            $i--;
+                            push @{$c->{stash}->{error}},
+                                 $cert->name .
+                                 ': Denied. Cannot delete type server while other certificates exists.';
+                            next CERTS;
+                        }
+                        else {
+                            # Define server cert-dir path
+                            # ===========================
+                            push @path_certs, $certs[$i];
+                        }
+                    }
+                }
+            }
+            elsif ( $cert->cert_type eq 'client' ) {
+                # Define client cert-dir path
+                # ===========================
+                push @path_certs, $clients[$rs_index] . '/' . $certs[$rs_index];
+            }
+            else {
+                push @path_certs, $certs[$rs_index];
+            }
+            $rs_index++;
+        }
+
+        return (\@certs, \@clients, \@rs, \@path_certs);
+     }
 
 
 =head2 _map_certs_clients

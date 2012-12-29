@@ -546,12 +546,12 @@ Delete client(s)
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
-          unless defined( $client_list // $c->request->params->{client} );
+          unless defined( $client_list // $c->request->params->{clients} );
     
         # Override anything in the path by setting
         # params from post if they exists
         # ========================================
-        $client_list = $c->request->params->{client} if $c->request->params->{client};
+        $client_list = $c->request->params->{clients} if $c->request->params->{clients};
     
         my @clients = split ',', $client_list;
         my ( @_delete_ok , @_not_ok , @_errors );
@@ -638,12 +638,12 @@ client.)
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
-          unless defined( $client // $c->req->params->{client} );
+          unless defined( $client // $c->req->params->{clients} );
     
         # Assign from post params if exists
         # This will override params in the path
         # =====================================
-        $client = $c->req->params->{client} if $c->req->params->{client};
+        $client = $c->req->params->{client} if $c->req->params->{clients};
     
         # Client configuration dir
         # ========================
@@ -709,10 +709,10 @@ Re-enable a disabled client
         # ========================================
         $self->_client_error($c)
           unless $client
-              or $c->req->params->{client};
+              or $c->req->params->{clients};
     
         # TODO: Make all actions array capable!
-        $client = $c->req->params->{client} if $c->req->params->{client};
+        $client = $c->req->params->{clients} if $c->req->params->{clients};
     
         my $_ccd_dir = $c->config->{openvpn_dir} . '/conf/ccd';
         if ( -e $_ccd_dir . '/' . $client ) {
@@ -762,17 +762,17 @@ using crl.pem
 
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error($c)
-          unless defined( $client_list // $c->request->params->{client} );
-    
+        $self->_client_error( $c )
+          unless defined ( $client_list // $c->request->params->{clients} );
+
         # Override anything in the path by setting
         # params from post if they exists
         # ========================================
-        $client_list = $c->request->params->{client}
-            if $c->request->params->{client};
+        $client_list = $c->request->params->{clients}
+            if $c->request->params->{clients};
 
-        $cert_list = $c->request->params->{cert_name}
-            if $c->request->params->{cert_name};
+        $cert_list = $c->request->params->{certificates}
+            if $c->request->params->{certificates};
 
         my @cert_names = split ',', $cert_list if $cert_list;
         my @clients = split ',', $client_list;
@@ -841,7 +841,7 @@ using crl.pem
                     "Failed to update database for '$client': " . $_;
             };
         }
-            
+
         # Done processing client(s)
         # =========================
         $self->status_ok( $c, entity => { resultset => $_ret_val } );
@@ -872,12 +872,12 @@ in ccd
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
-          unless defined ( $client_list // $c->request->params->{client} );
+          unless defined ( $client_list // $c->request->params->{clients} );
     
         # Override anything in the path by setting
         # params from post if they exists
         # ========================================
-        $client_list = $c->request->params->{client} if $c->request->params->{client};
+        $client_list = $c->request->params->{clients} if $c->request->params->{clients};
     
         my @clients = split ',', $client_list;
     

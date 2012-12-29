@@ -57,20 +57,37 @@ Delete Certificates
             my $_dir = $cert->cert_type eq 'client'
                 ? $keys_dir . $user->username . '/' . $cert->name . '.*'
                 : $keys_dir . $cert->name . '.*';
+
             # Remove the certificate serial pem
             # =================================
-            my $serial_cert_file = $keys_dir . $cert->key_serial . '.pem';
-            if ( -f $serial_cert_file ){
-                unlink $serial_cert_file
-                    or push @{$collector->{$cert->name}->{warnings}},
-                            'Cannot remove serial certificate file '
-                            . $serial_cert_file . ': ' . $!;
+            if ( $cert->cert_type ne 'ca' ){
+                my $serial_cert_file = $keys_dir . $cert->key_serial . '.pem';
+                if ( -f $serial_cert_file ){
+                    unlink $serial_cert_file
+                        or push @{$collector->{$cert->name}->{warnings}},
+                                'Cannot remove serial certificate file '
+                                . $serial_cert_file . ': ' . $!;
+                }
+                else {
+                    push @{$collector->{$cert->name}->{warnings}},
+                         'Cannot remove serial certificate file '
+                         . $serial_cert_file . ': does not exists';
+                         
+                }
             }
-            else {
-                push @{$collector->{$cert->name}->{warnings}},
-                     'Cannot remove serial certificate file '
-                     . $serial_cert_file . ': does not exists';
-                     
+            # If CA is being remove, remove
+            # all files which are not needed
+            # ==============================
+            elsif ( $cert->cert_type eq 'ca' ){
+                for (
+                    glob ($keys_dir . 'index.txt*'),
+                    glob ($keys_dir . 'crl*'),
+                    glob ($keys_dir . 'serial*'),
+                ){
+                    unlink ($_)
+                        or push @{$collector->{$cert->name}->{errors}},
+                             'Cannot remove old index, crl and serial: ' . $_;
+                }
             }
             
             # Delete all certificates and keys

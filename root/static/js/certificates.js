@@ -86,6 +86,7 @@ var total_count = 0;
                 title: 'Certificates',
                 useRp: true,
                 rp: 15,
+                errormsg: 'No results',
                 showTableToggleBtn: false,
                 width: $('#middle_frame').width() - 40,
                 height: 400
@@ -134,6 +135,14 @@ var total_count = 0;
         //
         formatCertificateResults: function (obj){
             if ( window.DEBUG ) log ("Flex got certificates: %o", obj);
+            if ( obj.rest !== undefined
+              && obj.rest.resultset !== undefined
+              && obj.rest.resultset[0] !== undefined
+              && obj.rest.resultset[0] == 'No certificates'
+            ){
+                $('#flexme').find('tr').remove();
+                return;
+            }
 
             var _wait_update_flexigrid =
                 setInterval(function() {
@@ -247,19 +256,23 @@ var total_count = 0;
                 dataType: 'json',
                 success: function (msg) {
                     if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
+                    $('.pReload').click();
                     var _data_types = {
                         errors:      $.Ovpnc().alertErr,
                         warnings:    $.Ovpnc().alertIcon,
                         status:      $.Ovpnc().alertOk
                     };
                     if ( msg.rest !== undefined ) {
-                        $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
-                        $('.pReload').click();
-                        return;
+                        $.Ovpnc().processAjaxReturn(
+                            msg.rest,
+                            _data_types
+                        );
                     }
-                    alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
-                    $('.pReload').click();
-
+                    if ( msg.error !== undefined ){
+                        for ( var e in msg.error ){
+                            alert( $.Ovpnc().alertErr + ' ' + e + '</div><div class="clear"></div>' );
+                        }
+                    }
                 },
                 error: function ( xhr, textStatus, errorThrown ) {
                     if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
@@ -307,25 +320,31 @@ var total_count = 0;
         // Process error returned from certificates delete
         //
         certificateDeleteError: function (e){
+            if ( window.DEBUG ) log ( "delete error: %o", e);
             if ( e.responseText !== undefined ){
                 var msg = jQuery.parseJSON( e.responseText );
                 var _msg;
+                if ( window.DEBUG ) log ( "delete error(parsed): %o", msg);
                 if ( msg.rest && msg.rest.error ) {
                     _msg = msg.rest.error;
+                    alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
                 }
-                else if ( msg.rest && msg.rest.status ){
+                if ( msg.rest && msg.rest.status ){
                     _msg = msg.rest.status;
+                    alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
                 }
-                else if ( msg.rest && msg.rest.status ){
+                if ( msg.rest && msg.rest.status ){
                     _msg = msg.rest.status;
+                    alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
                 }
-                else if ( msg.status ){
+                if ( msg.status ){
                     _msg = msg.status;
+                    alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
                 }
-                else if ( msg.error ){
+                if ( msg.error ){
                     _msg = msg.error;
+                    alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
                 }
-                alert( $.Ovpnc().alertErr + ' Certificate'+(total_count>1?'s':'')+' failed delete: ' + _msg + '</div><div class="clear"></div>' );
             }
             else {
                 alert( $.Ovpnc().alertErr + ' Error: No certificates deleted!</div><div class="clear"></div>' );
@@ -335,31 +354,20 @@ var total_count = 0;
         // Process success returned from certificate delete
         //
         certificateDeleteReturn: function (r){
-            if ( r.rest.resultset !== undefined ) {
-                var rs = r.rest.resultset;
-                if ( rs.errors !== undefined && rs.errors.length > 0 ){
-                    var _errors = rs.errors;
-                    for ( var e in _errors ){
-                        log(e);
-                        alert( $.Ovpnc().alertErr + ' ' + _errors[e] + '</div><div class="clear"></div>' );
-                    }
-                }
-    
-                if ( rs.deleted !== undefined  ){
-                    if ( rs.deleted.length > 0 ){
-                        alert($.Ovpnc().alertOk + ' Total ' + rs.deleted.length +' certificate' + ( rs.deleted.length === 1 ? ' ' : 's ' ) + ' deleted</div><div class="clear"></div>' );
-                    }
-                    else {
-                        alert( $.Ovpnc().alertIcon + ' No certificates deleted!</div><div class="clear"></div>' );
-                    }
-                }
-
-                if ( rs.failed !== undefined && rs.failed.length > 0 ){
-                    if ( rs.failed.length != window.certificatesToDelete ){
-                        alert( $.Ovpnc().alertIcon + ' ' + rs.failed.length + ' out of ' + window.certificatesToDelete + ' certificate'+(total_count>1?'s':'')+' failed delete</div><div class="clear"></div>' );
-                    }
-                }
+            if ( window.DEBUG ) log("certificateDeleteReturn: %o", r);
+            var _data_types = {
+                errors:      $.Ovpnc().alertErr,
+                warnings:    $.Ovpnc().alertIcon,
+                messages:     $.Ovpnc().alertOk
+            };
+            if ( r.rest !== undefined ) {
+                $.Ovpnc().processAjaxReturn( r.rest, _data_types );
                 $('.pReload').click();
+            }
+            if ( r.error !== undefined ){
+                for ( var i in r.error ){
+                    alert( $.Ovpnc().alertErr + ' ' + r.error[i] + '</div><div class="clear"></div>' );
+                }
             }
         },
         //
@@ -414,7 +422,7 @@ var total_count = 0;
             var _clients = '';
             $.each($('.trSelected', grid), function() {
                 // Get the certificates name of this grid
-                var certificate = $('td:nth-child(1) div', this).html();
+                var certificate = $('td:nth-child(4) div', this).html();
                 var clients = $('td:nth-child(3) div', this).html();
                 // Get rid of any html tags, extract the name.
                 certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");

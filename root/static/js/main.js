@@ -116,23 +116,41 @@ var dump = function (obj){
         //
         // Process a resultset returned from the api
         //
-        processAjaxReturn: function ( msg, data_types ) {
+        processAjaxReturn: function ( msg, data_types, err ) {
             if ( msg.resultset !== undefined ) {
                 if ( window.DEBUG ) log("msg.resultset: %o", msg.resultset );
                 $.each( msg.resultset, function(item, data) {
-                    $.each( data_types, function(type, icon) {
-                        if ( data[type] !== undefined ){
-                            for ( var i in data[type] ){
-                                alert( icon + ' ' + item + ': ' + data[type][i] + '</div><div class="clear"></div>' );
+                    if ( Object.prototype.toString.call(item) !== '[object String]' ){
+                        $.each ( data, function( indx, obj ){
+                            $.each( data_types, function(type, icon) {
+                                if ( obj[type] !== undefined ){
+                                    for ( var i in obj[type] ){
+                                        alert( icon + ' ' + indx + ': ' + obj[type][i] + '</div><div class="clear"></div>' );
+                                    }
+                                }
+                            });
+                        });
+                    }
+                    else {
+                        $.each( data_types, function(type, icon) {
+                            if ( data[type] !== undefined ){
+                                for ( var i in data[type] ){
+                                    alert( icon + ' ' + item + ': ' + data[type][i] + '</div><div class="clear"></div>' );
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
             }
             else {
                 if ( window.DEBUG ) log("No msg.resultset!");
                 alert( data[errors] + ' ' + msg + '</div><div class="clear"></div>' );
                 return false;
+            }
+            if ( err !== undefined ){
+                for ( var i in err ){
+                    alert( $.Ovpnc().alertErr + ' ' + err[i] + '</div><div class="clear"></div>' );
+                }
             }
         },
         //
