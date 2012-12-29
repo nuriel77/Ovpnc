@@ -11,7 +11,7 @@ Ovpnc::TraitFor::Controller::Api::Certificates::Delete - Ovpnc Controller Trait
 
 =head1 DESCRIPTION
 
-Ovpnc Certificates Root CA
+Ovpnc Certificates - Delete
 
 =head1 METHODS
 
