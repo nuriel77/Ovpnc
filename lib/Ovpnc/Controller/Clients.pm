@@ -309,9 +309,9 @@ Get user and group id
     
 
 =head2 denied
-  
+
 Denied action
-    
+
 =cut
 
     sub denied : Private {

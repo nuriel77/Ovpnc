@@ -22,7 +22,7 @@ error message to user.
 
 =cut
 
-=head2
+=head2 cfg
 
 cfg - accessor
 

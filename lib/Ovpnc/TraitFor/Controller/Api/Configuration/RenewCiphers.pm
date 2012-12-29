@@ -6,6 +6,21 @@ scalar locate('File::Copy') ? 0 : do { use File::Copy; };
 use Moose::Role;
 use vars qw/$list $lines/;
 
+=head1 NAME
+
+Ovpnc::TraitFor::Controller::Api::Configuration::RenewCiphers - Ovpnc Controller Trait
+
+=head1 DESCRIPTION
+
+Reads OpenSSL output to populate
+the schema file with the current
+possible ciphers
+
+=head1 METHODS
+
+=cut
+
+
 has 'schema_file' => (
     is       => 'ro',
     isa      => 'Str',

@@ -4,6 +4,21 @@ use strict;
 use utf8;
 use Moose::Role;
 
+=head1 NAME
+
+Ovpnc::TraitFor::Controller::Api::Certificates::Vars - Ovpnc Controller Trait
+
+=head1 DESCRIPTION
+
+Ovpnc set environmental variables
+to be used by openvpn utilities
+
+=head1 METHODS
+
+=cut
+
+
+
 # will become defined
 # for all other traits
 # ====================
@@ -67,5 +82,11 @@ sub set_environment_vars
 
     return \%_oe;
 }
+
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
 
 1;

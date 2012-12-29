@@ -8,6 +8,21 @@ use namespace::autoclean;
 use vars qw( $openvpn_dir $tools $vars $_ret_val );
 use constant TIMEOUT    => 5;
 
+
+
+=head1 NAME
+
+Ovpnc::TraitFor::Controller::Api::Clients::Revoke - Ovpnc Controller Trait
+
+=head1 DESCRIPTION
+
+Revoke x509 certificates
+
+=head1 METHODS
+
+=cut
+
+
 has openvpn_dir => (
     is       => 'ro',
     isa      => 'Str',
@@ -27,7 +42,7 @@ has home => (
 );
 
 
-=head2
+=head2 revoke_certificate
 
 Revoke certificate(s)
 

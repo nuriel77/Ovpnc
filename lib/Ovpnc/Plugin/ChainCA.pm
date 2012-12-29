@@ -250,7 +250,7 @@ From OpenVPN Documentation:
 
     
 =head1 gen_certificate 
-    
+
 USER CERTIFICATE SIGNING REQUEST
 Example:
   openssl req -nodes -batch -newkey rsa:1024 -keyout userkey.pem -out user.p10
@@ -535,7 +535,7 @@ _OO_
     }
 
 
-=head2
+=head2 _check_cert_errors
 
 Check output buffer of openssl
 to check if any errors

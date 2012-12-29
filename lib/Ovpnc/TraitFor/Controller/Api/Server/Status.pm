@@ -4,6 +4,20 @@ use strict;
 use Moose::Role;
 use namespace::autoclean;
 
+
+=head1 NAME
+
+Ovpnc::TraitFor::Controller::Api::Server::Status - Ovpnc Controller Trait
+
+=head1 DESCRIPTION
+
+Revoke x509 certificates
+
+=head1 METHODS
+
+=cut
+
+
 has vpn => (
     is        => 'ro',
     isa       => 'Object',
@@ -18,7 +32,8 @@ has regex => (
     required => 1,
 );
 
-=head2
+
+=head2 get_status
 
 Gets the status
 
@@ -72,5 +87,12 @@ sub get_status {
 
     return $data;
 }
+
+
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
 
 1;

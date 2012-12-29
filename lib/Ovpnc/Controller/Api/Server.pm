@@ -212,7 +212,8 @@ sub logs_GET : Path('server/logs')
     }
 }
 
-=head2
+
+=head2 server_POST
 
 VPN control commands
 /api/server/[start, stop, restart]

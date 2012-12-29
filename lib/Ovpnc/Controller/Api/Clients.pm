@@ -741,10 +741,12 @@ Re-enable a disabled client
     }
     
 
-=head2
-    
-Revoke's client certificate
-using crl.pem
+=head2 clients_REVOKE
+
+Revoke client(s) certificates
+using crl.pem. Try to disconnect
+if client is online and server
+is running
 
 =cut
 
@@ -849,7 +851,7 @@ using crl.pem
     }
     
 
-=head2
+=head2 clients_UNREVOKE
 
 Unrevoke a client's certificate
 and remove the appended
@@ -957,9 +959,9 @@ in ccd
 
 
 =head2 list_recent
-    
-List recently created books
-    
+
+List recently created clients
+
 =cut
     
     sub list_recent : Path('clients/list_recent')
@@ -1004,7 +1006,7 @@ List recently created books
     }
     
     
-=head2
+=head2 list_revoked
 
 Get revoked client list
 

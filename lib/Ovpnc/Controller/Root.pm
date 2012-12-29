@@ -275,10 +275,10 @@ Include static files, dynamically
     
 
 =head2 sitemap
-    
+
 Display XML of all links
 of this web/api application 
-  
+
 =cut
     
     sub sitemap : Path('/sitemap') {
@@ -287,6 +287,7 @@ of this web/api application
         $c->stash( current_view => 'View::XML::Simple' );
         $c->response->body( $c->sitemap_as_xml );
     }
+
 
 =head2 ovpnc_config
 

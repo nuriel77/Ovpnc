@@ -711,7 +711,7 @@ Self signed
     }
 
 
-=head2
+=head2 _gen_cert
 
 Generate a signed certificate
 Needs a root CA
@@ -874,7 +874,8 @@ Get sorted results from DB
 
     }
 
-=head _check_not_ca
+
+=head2 _check_not_ca
 
 Make sure user is not trying
 to delete the Root CA while
@@ -949,7 +950,7 @@ other certificates exists
      }
 
 
-=head _check_not_server
+=head2 _check_not_server
 
 Make sure user is not trying
 to delete server certificate

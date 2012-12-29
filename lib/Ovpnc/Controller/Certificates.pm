@@ -242,8 +242,8 @@ Add a new certificate
         # ==================
         $c->stash->{countries} = [ sort { $a cmp $b } @clist ];
 
-=comment Countries datastructure
-    
+=head2 Countries Datastructure Example
+
 [
   {
     Andorra => {
