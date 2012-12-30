@@ -168,6 +168,28 @@ var dump = function (obj){
             }
         },
         //
+        // Used by pages having flexigrid table
+        //
+        styleFlexigrid: function () {
+            // Show ajax loader before data
+            // loads up from ajax call
+            $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
+            // Style the select boxes of flexigrid
+            $('.sDiv2, .pGroup').find('select').css({
+                '-moz-border-radius': '5px',
+                'border-radius': '5px',
+                'padding': '2px',
+                'border': '1px inset #CCCCCC'
+            });
+            // Force show the hGrip
+            $('.hGrip').css('height', $('.flexigrid').height() +'px');
+            // Move the selectAll and unSelectAll to the right
+            $('.flexigrid').find('.tDiv2').css('float','none');
+            $('.flexigrid').find('.fbutton').find('.selectAll, .unSelectAll')
+                           .parent('div').parent('.fbutton').css('float','right');
+            $('.flexigrid').find('.fbutton').find('.selectAll, .unSelectAll').css('padding-left','15px');
+        },
+        //
         // Confirm leaving page
         //
         setConfirmExit: function(modified, action){

@@ -1,0 +1,54 @@
+/*
+        Override flexigrid default
+    style to apply round corners
+*/
+.mDiv {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        -moz-border-top-left-radius: 5px;
+        -moz-border-top-right-radius: 5px;
+}
+.vGrip {
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        -moz-border-bottom-left-radius: 5px;
+        -moz-border-bottom-right-radius: 5px;
+}
+.flexigrid {
+    display: none;
+    z-index:3001;
+    font-family: Verdana, helvetica, arial, sans-serif;
+    font-size:0.85em;
+}
+.flexigrid div.fbutton .add {
+    background: url(../js/Flexigrid/demo/images/add.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .delete {
+    background: url(../js/Flexigrid/demo/images/close.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .block {
+    background: url(/static/images/kill_client.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .unblock {
+    background: url(/static/images/unblock.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .edit {
+    background: url(/static/images/edit-icon.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .properties {
+    background: url(/static/images/properties.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .selectAll {
+    background: url(/static/images/plus.png) no-repeat center left;
+}
+
+.flexigrid div.fbutton .unSelectAll {
+    background: url(/static/images/minus.png) no-repeat center left;
+}
+

@@ -56,12 +56,14 @@ var total_count = 0;
                     { display: 'Cert MD5',  name : 'cert_digest',   width: 240, sortable : false, align: 'right', hide: true }
                 ],
                 buttons : [
-                    { name: 'Add', bclass: 'add', onpress : $.Certificate().addCertificate },
-                    { name: 'Delete', bclass: 'delete', onpress : $.Certificate().deleteCertificate },
-                    { name: 'Revoke', bclass: 'block', onpress : blockCertificates },
-                    { name: 'Unrevoke', bclass: 'unblock', onpress : unblockCertificates },
-                    { name: 'Properties', bclass: 'properties', onpress : test_edit },
-                    { separator: true }
+                    { name: 'Add',          bclass: 'add', onpress : $.Certificate().addCertificate },
+                    { name: 'Delete',       bclass: 'delete', onpress : $.Certificate().deleteCertificate },
+                    { name: 'Revoke',       bclass: 'block', onpress : blockCertificates },
+                    { name: 'Unrevoke',     bclass: 'unblock', onpress : unblockCertificates },
+                    { name: 'Properties',   bclass: 'properties', onpress : test_edit },
+                    { separator: true },
+                    { name: 'Unselect All', bclass: 'unSelectAll', onpress: function (){ $('.bDiv').find('tr').removeClass('trSelected'); } },
+                    { name: 'Select All',   bclass: 'selectAll',   onpress: function (){ $('.bDiv').find('tr').addClass('trSelected'); } }
                 ],
                 searchitems : [
                     { display: 'Name',          name : 'name', isdefault: true },
@@ -91,18 +93,7 @@ var total_count = 0;
                 width: $('#middle_frame').width() - 40,
                 height: $(document).height() * 0.45
             });
-            // Show ajax loader before data
-            // loads up from ajax call
-            $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
-            // Style the select boxes of flexigrid
-            $('.sDiv2, .pGroup').find('select').css({
-                '-moz-border-radius': '5px',
-                'border-radius': '5px',
-                'padding': '2px',
-                'border': '1px inset #CCCCCC'
-            });
-            // Force show the hGrip
-            $('.hGrip').css('height', $('.flexigrid').height() +'px');
+            $.Ovpnc().styleFlexigrid();
         },
         //
         // Prepare certificate data for flexigrid

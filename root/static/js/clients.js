@@ -54,7 +54,9 @@ var total_count = 0;
                     { name: 'Block', bclass: 'block', onpress : blockClients },
                     { name: 'Unblock', bclass: 'unblock', onpress : unblockClients },
                     { name: 'Properties', bclass: 'properties', onpress : test_edit },
-                    { separator: true}
+                    { separator: true},
+                    { name: 'Unselect All', bclass: 'unSelectAll', onpress: function (){ $('.bDiv').find('tr').removeClass('trSelected'); } },
+                    { name: 'Select All',   bclass: 'selectAll',   onpress: function (){ $('.bDiv').find('tr').addClass('trSelected'); } }
                 ],
                 searchitems : [
                     { display: 'Virtual IP', name : 'virtual_ip'},
@@ -77,18 +79,7 @@ var total_count = 0;
                 width: $('#middle_frame').width() - 40,
                 height: $(document).height() * 0.4
             });
-            // Show ajax loader before data
-            // loads up from ajax call
-            $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
-            // Style the select boxes of flexigrid
-            $('.sDiv2, .pGroup').find('select').css({
-                '-moz-border-radius': '5px',
-                'border-radius': '5px',
-                'padding': '2px',
-                'border': '1px inset #CCCCCC'
-            });
-            // Force show the hGrip
-            $('.hGrip').css('height', $('.flexigrid').height() +'px');
+            $.Ovpnc().styleFlexigrid();
         },
         //
         // Prepare client data for flexigrid
