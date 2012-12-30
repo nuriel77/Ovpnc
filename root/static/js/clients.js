@@ -116,6 +116,7 @@ var total_count = 0;
         // only the clients array
         //
         formatClientResults: function (obj){
+            if ( window.DEBUG ) log ("Flex got clients: %o", obj);
             // This will force to update
             // online_data and not wait
             var is_felxgrid_ready =

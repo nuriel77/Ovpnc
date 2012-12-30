@@ -285,7 +285,6 @@ of Ovpnc/OpenVPN
               modified/
         ];
 
-    
         if (
               my $search         = $c->req->params->{search}
           and my $field          = $c->req->params->{field}
@@ -317,7 +316,7 @@ of Ovpnc/OpenVPN
                 $c->detach;
             }
         }
-    
+
         # If req param 'page' we don't
         # run this check, this means
         # the call originated from 
@@ -368,15 +367,17 @@ of Ovpnc/OpenVPN
         # Query resultset
         # ===============    
         my @_clients;
+        my $rs;
         try {
-                @_clients = $c->model('DB::User')->search_rs(
+                $rs = $c->model('DB::User')->search(
                 # If $param is provided, return
                 # only the result of $param
                 # Otherwise, only clients which
                 # have role_id specified, this
                 # is then for use by flexgrid
                 # ==============================
-                ( $keyname && $param->{$keyname}
+                (
+                    $keyname && $param->{$keyname}
                     ? { $keyname => $param->{$keyname} }
                     : { 'user_roles.role_id' => [ map { $_->id } @_role_names ] }
                 ),
@@ -387,12 +388,27 @@ of Ovpnc/OpenVPN
                     join   => 'user_roles',
                     select => $_columns
                 },
-            )->all;
+            );
         }
         catch {
             push @{$c->stash->{error}}, $_;
         };
-    
+
+        unless ($rs){
+            $self->status_not_found($c, message => 'No certifictes');
+            $c->detach('View::JSON');
+        }
+
+        $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text) .'%' )
+            if $search_by && $search_text;
+
+        @_clients = $rs->search({})->all;
+
+        my $paged_rs = $rs->search({}, {
+            page => $page,
+            rows => $rows,
+        });
+
         # - Now let's start matching the list of
         # all users to those who are online
         # we shall append the online data

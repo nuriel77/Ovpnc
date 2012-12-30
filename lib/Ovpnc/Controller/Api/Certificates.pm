@@ -434,7 +434,7 @@ L<Three>    Get all certificates - sorted results by field
                 $c->detach('View::JSON');
             }
         
-            $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text))
+            $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text) .'%' )
                 if $search_by && $search_text;
 
             my $paged_rs = $rs->search({}, {
