@@ -91,6 +91,7 @@ var total_count = 0;
                 width: $('#middle_frame').width() - 40,
                 height: 400
             });
+            $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
         },
         //
         // Prepare certificate data for flexigrid
@@ -149,6 +150,7 @@ var total_count = 0;
                     if ( window.DEBUG ) log('Waiting for flexigrid');
                     if ( $('#flexme').is(':visible') ) {
                         if ( window.DEBUG ) log('stop flexigrid update check');
+                        $('#ajaxLoaderFlexgridLoading').remove();
                         window.clearInterval(_wait_update_flexigrid);
                     }
                     $.Certificate().updateFlexgrid();

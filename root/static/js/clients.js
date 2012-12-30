@@ -77,6 +77,7 @@ var total_count = 0;
                 width: $('#middle_frame').width() - 40,
                 height: 300
             });
+            $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
         },
         //
         // Prepare client data for flexigrid
@@ -127,9 +128,10 @@ var total_count = 0;
                             method: 'GET',
                             success_func: $.Ovpnc().updateServerStatus
                         });
+                        $('#ajaxLoaderFlexgridLoading').remove();
                         window.clearInterval(is_felxgrid_ready);
                     }
-                }, 100);
+                }, 150);
 
             if ( obj.rest !== undefined && obj.rest.length !== undefined ){
                 var __rows = new Array();

@@ -255,6 +255,9 @@ fieldset .constraint_required label:after {
     background-repeat: no-repeat;
     background-position: center center;
 }
+#ajaxLoaderFlexgridLoading{
+    margin:10px 0 0 10px;
+}
 #ajaxLoaderFloating{
     background-image: url(/static/images/ajax-loader-floating.gif);
     background-repeat: no-repeat;

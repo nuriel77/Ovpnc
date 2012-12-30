@@ -361,9 +361,6 @@ L<Three>    Get all certificates - sorted results by field
           @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
 
         $sort_by ||= 'name';
-        #if ( $sort_by and $sort_by !~ @{$columns} ){
-        #    $sort_by             = 'name';
-        #}
 
         # Searching for a single certificate
         # Used mainly by the certificates
@@ -436,7 +433,10 @@ L<Three>    Get all certificates - sorted results by field
                 $self->status_not_found($c, message => 'No certifictes');
                 $c->detach('View::JSON');
             }
-
+        
+            $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text))
+                if $search_by && $search_text;
+ 
             # Skipping Root CA...
             my @column_names = @{$columns};
             my $certificates;

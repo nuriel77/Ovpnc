@@ -711,9 +711,9 @@ var dump = function (obj){
             $('#outer_centered').css('margin-left', o + '%');
             if ( f > 601 )
                 $('#middle_frame').css('min-width', f + 'px');
-            if ( $('.flexigrid').is(':visible') ){
-                $('.flexigrid').css('max-width', ( $('#middle_frame').width() - 40 ) + 'px' );
-            }
+            //if ( $('.flexigrid').is(':visible') ){
+            //   $('.flexigrid').css('max-width', ( $('#middle_frame').width() - 40 ) + 'px' );
+            //}
         }
     };
 
