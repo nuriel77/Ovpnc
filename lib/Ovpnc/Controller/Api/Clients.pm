@@ -402,12 +402,15 @@ of Ovpnc/OpenVPN
         $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text) .'%' )
             if $search_by && $search_text;
 
-        @_clients = $rs->search({})->all;
+        my $paged_rs;
+        if ( $rows and $page ){
+            $paged_rs = $rs->search({}, {
+                page => $page,
+                rows => $rows,
+            });
+        }
 
-        my $paged_rs = $rs->search({}, {
-            page => $page,
-            rows => $rows,
-        });
+        @_clients = $paged_rs ? $paged_rs->search({})->all : $rs->search({})->all;
 
         # - Now let's start matching the list of
         # all users to those who are online
@@ -416,7 +419,7 @@ of Ovpnc/OpenVPN
         # - Simplify the resultset array.
         # =====================================
         @_clients = map { $_->{_column_data} } @_clients;
-    
+
         if ( $keyname && $param->{$keyname} ) {
             my $_client_data = $_clients[0]->{$keyname};
             $self->status_ok( $c, entity => { $keyname => $_client_data } );
@@ -493,9 +496,12 @@ of Ovpnc/OpenVPN
         for ( @_clients ){
             push @_list, $_ if scalar keys %{$_} != 0;
         }
-        
-        $self->status_ok( $c, entity => [ @_list ] )
-          if @_list > 0;
+
+        $self->status_ok($c, entity => {
+            total     => $rs->count,
+            page      => $page,
+            rows      => \@_list
+        }) if @_list > 0;
     }
         
 
