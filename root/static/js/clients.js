@@ -75,9 +75,20 @@ var total_count = 0;
                 rp: 15,
                 showTableToggleBtn: false,
                 width: $('#middle_frame').width() - 40,
-                height: 300
+                height: $(document).height() * 0.4
             });
+            // Show ajax loader before data
+            // loads up from ajax call
             $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
+            // Style the select boxes of flexigrid
+            $('.sDiv2, .pGroup').find('select').css({
+                '-moz-border-radius': '5px',
+                'border-radius': '5px',
+                'padding': '2px',
+                'border': '1px inset #CCCCCC'
+            });
+            // Force show the hGrip
+            $('.hGrip').css('height', $('.flexigrid').height() +'px');
         },
         //
         // Prepare client data for flexigrid
