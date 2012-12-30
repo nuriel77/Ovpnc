@@ -146,10 +146,12 @@ var total_count = 0;
 
             var _wait_update_flexigrid =
                 setInterval(function() {
-                    $.Certificate().updateFlexgrid();
-                    if ( $('.context-menu').is(':visible') ) {
+                    if ( window.DEBUG ) log('Waiting for flexigrid');
+                    if ( $('#flexme').is(':visible') ) {
+                        if ( window.DEBUG ) log('stop flexigrid update check');
                         window.clearInterval(_wait_update_flexigrid);
                     }
+                    $.Certificate().updateFlexgrid();
             }, 250 );
 
             if ( obj.rest !== undefined && obj.rest.length !== undefined ){
@@ -394,7 +396,7 @@ var total_count = 0;
                     }
                 },
                 items: {
-                    "properties": {name: "Edit", icon: "edit"},
+                    "properties": {name: "Details", icon: "edit"},
                     "delete": {name: "Delete", icon: "delete"},
                     "sep1": "---------",
                     "block": {name: "Revoke", icon: "block"},
