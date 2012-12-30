@@ -110,7 +110,25 @@ var dump = function (obj){
         ajaxCheckCASuccess: function (r) {
             if ( window.DEBUG ) log("ajaxCheckCASuccess got: %o",r);
             var msg = jQuery.parseJSON(r.responseText);
-            alert( $.Ovpnc().alertErr + ' You must have both a Root CA and a server certificate before you can start up the server.</div><div class="clear"></div>' );
+            var _fountText = 0;
+            // Avoid duplicate messages
+            // If user already alerted
+            // apply shake effect to msg div
+            if ( $('#message_container').is(':hidden') ){
+                $('#message_container').show(300);
+            }
+            $.each( $('.message_content').find('.err_text'), function(){
+                log("found text: " + $(this).text() );
+                if ( $(this).text().match(/You must have both a Root CA and a server certificate before you can start up the server/) ){
+                    _fountText++;
+                }
+            });
+            if ( _fountText == 0 ) {
+                alert( $.Ovpnc().alertErr + ' You must have both a Root CA and a server certificate before you can start up the server.</div><div class="clear"></div>' );
+            }
+            else {
+                $('#message_container').effect("shake", { times:3, distance: 3 }, 500);
+            }
             return false;
         },
         //
