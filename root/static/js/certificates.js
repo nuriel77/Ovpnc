@@ -156,22 +156,21 @@ var total_count = 0;
                     $.Certificate().updateFlexgrid();
             }, 250 );
 
-            if ( obj.rest !== undefined && obj.rest.length !== undefined ){
+            if ( obj.rest !== undefined && obj.rest.rows !== undefined ){
                 var __rows = new Array();
                 var __count = 0;
-                for ( var index in obj.rest ){
-                    $.Ovpnc().count++;
+                for ( var index in obj.rest.rows ){
                     __count++;
                     __rows.push({
-                       id: $.Ovpnc().count,
-                       cell: $.Certificate().prepareCertificateColData(obj.rest[index])
+                       id: __count,
+                       cell: $.Certificate().prepareCertificateColData(obj.rest.rows[index])
                     });
                 }
                 return {
-                    total: __count,
-                    page: 1,
-                    rows: __rows
-                }
+                    total: obj.rest.total,
+                    page:  obj.rest.page,
+                    rows:   __rows
+                };
             }
         },
         //

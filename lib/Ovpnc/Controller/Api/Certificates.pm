@@ -419,7 +419,7 @@ L<Three>    Get all certificates - sorted results by field
         # Get all certificates
         # ====================
         else {
-            my $rs = [$cert_rs->search(
+            my $rs = $cert_rs->search(
                 {},
                 {
                     order_by => ( $sort_by && $sort_order )
@@ -427,7 +427,7 @@ L<Three>    Get all certificates - sorted results by field
                         : "name ASC",
                     select => $columns
                 }
-            )->all];
+            );
 
             unless ($rs){
                 $self->status_not_found($c, message => 'No certifictes');
@@ -436,11 +436,16 @@ L<Three>    Get all certificates - sorted results by field
         
             $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text))
                 if $search_by && $search_text;
+
+            my $paged_rs = $rs->search({}, {
+                page => $page,
+                rows => $rows,
+            });
  
             # Skipping Root CA...
             my @column_names = @{$columns};
             my $certificates;
-            for my $cert ( @$rs ) {
+            while ( my $cert = $paged_rs->next ) {
                 my $modified = $cert->modified;
                 my $created = $cert->created;
                 my $revoked = $cert->revoked || '-';
@@ -473,7 +478,11 @@ L<Three>    Get all certificates - sorted results by field
             } @{$certificates};
             @_sorted = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
             
-            $self->status_ok($c, entity => \@_sorted );
+            $self->status_ok($c, entity => {
+                total     => $rs->count,
+                page      => $page,
+                rows      => \@_sorted
+            });
         }
 
     }
