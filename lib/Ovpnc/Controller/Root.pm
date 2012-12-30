@@ -58,7 +58,8 @@ sub auto : Private {
       && ! $c->model('DB')->storage->connected
     ){
  
-        $c->log->debug('Database not connected. Testing initial connection.');
+        $c->log->debug('Database not connected. Testing initial connection.')
+            if $ENV{CATALYST_DEBUG};
 
         $c->session->{_db_tested} = 1;
 
@@ -101,7 +102,8 @@ sub auto : Private {
         };
     }
     else {
-        $c->log->debug('Already connected to database.');
+        $c->log->debug('Already connected to database.')
+            if $ENV{CATALYST_DEBUG};
     }
 
 }
@@ -137,6 +139,7 @@ around [qw(ovpnc_config index)] => sub {
     # ============
 
     my $_err = Ovpnc::Plugin::Sanity->action( $c->config );
+
     if ( $_err and ref $_err eq 'ARRAY' ) {
         if ( $c->namespace eq 'api' ){
             push @{$c->stash->{error}}, $_err;
@@ -171,14 +174,11 @@ sub index : Chained('/base')
           : Does('ACL')
             AllowedRole('admin')
             AllowedRole('client')
+            AllowedRole('can_edit')
             ACLDetachTo('denied')
           : Sitemap
 {
     my ( $self, $c ) = @_;
-
-    # Get username for geoname api service
-    # ====================================
-    #$c->stash->{geo_username} = $c->config->{geo_username};
 
     # This page will be referred to as 'root'
     # =======================================
@@ -199,6 +199,7 @@ Standard 404 error page
         $c->response->status(404);
         $c->forward('View::HTML');
     }
+
 
 
 =head2 include_default_links
@@ -274,6 +275,7 @@ Include static files, dynamically
     }
     
 
+
 =head2 sitemap
 
 Display XML of all links
@@ -287,6 +289,7 @@ of this web/api application
         $c->stash( current_view => 'View::XML::Simple' );
         $c->response->body( $c->sitemap_as_xml );
     }
+
 
 
 =head2 ovpnc_config
@@ -322,7 +325,11 @@ Attempt to render a view, if needed.
 
         $self->_apply_username_to_stash($c)
             unless $c->stash->{username};
+
+        #$c->res->status(200);
+        #$c->forward('View::HTML');
     }
+
 
 =head2 _apply_username_to_stash
 

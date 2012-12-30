@@ -340,7 +340,7 @@ Attempt to render a view, if needed.
         $c->stash->{username} = $c->user->get("username")
           if ( $c->user_exists );
 
-        my $accept = $c->req->header('accept');
+        my $accept = $c->req->header('accept') || '';
         $c->req->headers->header('accept' => 'application/xhtml+xml'); 
         my $content_type = $c->req->header('content-type');
         if($accept =~ /html/){ 

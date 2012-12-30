@@ -11,6 +11,7 @@ use Module::Install::Catalyst; # Complain loudly if you don't have
 name 'Ovpnc';
 all_from 'lib/Ovpnc.pm';
 
+requires 'autobox::Core';
 requires 'boolean';
 requires 'fields';
 requires 'Socket';
@@ -108,6 +109,7 @@ requires 'Catalyst::Script::Server';
 requires 'Catalyst::View::TT';
 requires 'Catalyst::View::XSLT';
 requires 'Catalyst::View::JSON';
+requires 'Test::WWW::Mechanize::Catalyst';
 
 #
 # Optional!

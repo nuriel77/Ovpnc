@@ -89,6 +89,53 @@ var dump = function (obj){
             $.Ovpnc().pollFreq );
         },
         //
+        // Check for existance of Root CA
+        //
+        checkRootCAExistance: function (){
+            $.Ovpnc().ajaxCall({
+                url: "/api/certificates",
+                data: {
+                    cert_name: 'check_any',
+                    type: 'server',
+                    name: 'anyuser'
+                },
+                method: 'GET',
+                success_func: $.Ovpnc().ajaxCheckCASuccess,
+                error_func: $.Ovpnc().ajaxCheckCAError
+            });
+        },
+        //
+        // Handle return of checkRootCAExistance
+        //
+        ajaxCheckCASuccess: function (r) {
+            if ( window.DEBUG ) log("ajaxCheckCASuccess got: %o",r);
+            var msg = jQuery.parseJSON(r.responseText);
+            alert( $.Ovpnc().alertErr + ' You must have both a Root CA and a server certificate before you can start up the server.</div><div class="clear"></div>' );
+            return false;
+        },
+        //
+        // Handle error return of checkRootCAExistance
+        //
+        ajaxCheckCAError: function (e) {
+            if ( window.DEBUG ) log("ajaxCheckCAError got: %o",e);
+            var msg = jQuery.parseJSON(e.responseText);
+            if ( msg.rest.error !== undefined
+              && msg.rest.error === 'Certificate exists'
+            ){
+                var cmd = 'start';
+                if ( window.DEBUG ) log("Root CA status:" + msg.rest.error);
+                $.Ovpnc().ajaxCall({
+                    url: "/api/server/",
+                    data: { command: cmd },
+                    method: 'POST',
+                    success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
+                    error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
+                    loader: 1
+                });
+                return true;
+            }
+        },
+        //
         // Data return from client action
         //
         returnedClientData: function (r){
@@ -236,14 +283,20 @@ var dump = function (obj){
         // Server control call
         //
         serverAjaxControl: function(cmd) {
-            $.Ovpnc().ajaxCall({
-                url: "/api/server/",
-                data: { command: cmd },
-                method: 'POST',
-                success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
-                error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
-                loader: 1
-            });
+            if ( cmd === 'start' ){
+                $.Ovpnc().checkRootCAExistance();
+                return;
+            }
+            else {
+                $.Ovpnc().ajaxCall({
+                    url: "/api/server/",
+                    data: { command: cmd },
+                    method: 'POST',
+                    success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
+                    error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
+                    loader: 1
+                });
+            }
         },
         //
         // Server control success

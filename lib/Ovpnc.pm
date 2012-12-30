@@ -263,7 +263,7 @@ __PACKAGE__->config(
         flash_to_stash => 1,
 
         # Session via file
-        storage        => 'tmp/session',
+        storage        => $ENV{OVPNC_SESSION_DIR} || 'tmp/session',
 
         # Session via database
         #dbic_class => 'DB::Session',

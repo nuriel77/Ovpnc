@@ -812,6 +812,7 @@ the new certificate/key details
                 : $_ret_val;
     }
 
+
 =head2 _check_cert_name_db
 
 Check if name/user combination 
@@ -825,19 +826,35 @@ of certificate exists in DB
         $username =~ s/\///g;
 
         my $rs;
-        try {
-            $rs = $c->model('DB::Certificate')->search(
-                { key_cn => $username, name      => $cert_name },
-                { select => 'id' }
-            )->single;
-        }
-        catch {
-            $c->log->error('Database error: ' . $_);
-            push @{$c->{stash}->{error}},
-                'Database error detected: ' . $_;
-            return;
-        };
 
+        if ( $cert_name eq 'check_any' ) {
+             try {
+                $rs = $c->model('DB::Certificate')->search(
+                    { cert_type => 'server' },
+                    { select => 'id' }
+                )->single;
+            }
+            catch {
+                $c->log->error('Database error: ' . $_);
+                    push @{$c->{stash}->{error}},
+                        'Database error detected: ' . $_;
+                return;
+            };
+        }
+        else {
+            try {
+                $rs = $c->model('DB::Certificate')->search(
+                    { key_cn => $username, name      => $cert_name },
+                    { select => 'id' }
+                )->single;
+            }
+            catch {
+            $c->log->error('Database error: ' . $_);
+                push @{$c->{stash}->{error}},
+                    'Database error detected: ' . $_;
+                return;
+            };
+        }
         return $rs ? 1 : undef;
 
     }

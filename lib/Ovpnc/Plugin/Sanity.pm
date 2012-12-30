@@ -206,11 +206,12 @@ sub action {
     }
 
     sub _check_app_user {
-        return (
-            $< == 0
-            ? "This application should not be run under root user!"
-            : 0
-        );
+        if (
+             not $ENV{OVPNC_NO_ROOT_USER_CHECK}
+             and $< == 0 
+        ){
+            return "This application should not be run under root user!"
+        }
     }
 
     sub _check_config {

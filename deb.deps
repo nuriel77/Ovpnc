@@ -1,4 +1,5 @@
 apt-get install build-essential \
+                libautobox-core-perl \
                 libdate-calc-perl \
                 libmodule-install-perl \
                 libobject-signature-perl \
