@@ -153,13 +153,29 @@ jQuery.validator.setDefaults({
                     });
                 }
             });
+/*
+             $.Ovpnc().chooseUser({
+                element: $('.qsbox'),
+                like: 1,
+                rows: 5,
+                field: function () { return $('.sDiv2').find('select').val().toLowerCase() },
+                no_return_all: 1,
+                min_length: 1,
+                db: window.location.pathname === '/clients' ? 'user' : window.location.pathname
+            });
+*/
             $('#username').bind('focusout',function(){
-                if ( $('#username').attr('value').match(/\w+/)
+                if ( $('#username').attr('value') != ''
                   && ! $('#certtype').attr('value').match(/server|ca/)
                 ){
                     $.Ovpnc().ajaxCall({
                         url: "/api/clients",
-                        data: { search: $(this).attr('value'), field: 'username' },
+                        data: {
+                            search: $(this).attr('value'),
+                            field: 'username',
+                            rows: 12,
+                            db: 'user'
+                        },
                         method: 'GET',
                         success_func: $.addCertificate().ajaxCheckUsernameSuccess,
                         error_func: $.addCertificate().ajaxCheckUsernameError
@@ -462,7 +478,13 @@ jQuery.validator.setDefaults({
 
         	$.addCertificate().setSelectBind();
         	$.addCertificate().setClickBind();
-            $.Ovpnc().chooseUser({ element: $('#username') });
+            $.Ovpnc().chooseUser({
+                element: $('#username'),
+                rows: 12,
+                db: 'user',
+                like: 1,
+            });
+
             if ( $('#cert_name').attr('value') != '' ) $('#cert_name').focusout();
             if ( $('#username').attr('value') != '' ) $('#username').focusout();
 

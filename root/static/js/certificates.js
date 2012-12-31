@@ -446,21 +446,23 @@ var total_count = 0;
             // Return nothing if none selected
             if ( _loop == 0 ) return;
 
-            // Confirm delete
-            var cnf = confirm('Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) );
-            if ( cnf == false ) return false;
-
-            // Execute
-            //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-            window.certificatesToDelete = total_count;
-            $.Ovpnc().ajaxCall({
-                url: "/api/certificates/",
-                data: { certificates: _certificates, _ : '1', clients: _clients },
-                method: 'DELETE',
-                success_func: $.Certificate().certificateDeleteReturn,
-                error_func: $.Certificate().certificateDeleteError,
-                loader: 1,
-                timeout: 15000
+            $.Ovpnc().confirmDiag({
+                message: "<div>" + $.Ovpnc().alertIcon + " Warning!</div><br /></br /><div>" + 'Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) + '</div>',
+                action: function () {
+                    // Execute
+                    //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+                    window.certificatesToDelete = total_count;
+                    $.Ovpnc().ajaxCall({
+                        url: "/api/certificates/",
+                        data: { certificates: _certificates, _ : '1', clients: _clients },
+                        method: 'DELETE',
+                        success_func: $.Certificate().certificateDeleteReturn,
+                        error_func: $.Certificate().certificateDeleteError,
+                        loader: 1,
+                        timeout: 15000
+                    });
+                },
+                params: { button: button, grid: grid }, //action: 'delete' }
             });
         }
 

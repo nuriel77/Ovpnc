@@ -85,3 +85,19 @@ function getURLParameter(sParam){
         }
     }
 }
+
+function getMousePosition(e) { 
+    e = e || window.event; 
+    var cursor = {x:0, y:0}; 
+    if (e.pageX || e.pageY) { 
+        cursor.x = e.pageX; 
+        cursor.y = e.pageY; 
+    } 
+    else { 
+        var de = document.documentElement; 
+        var b = document.body; 
+        cursor.x = e.clientX + (de.scrollLeft || b.scrollLeft) - (de.clientLeft || 0); 
+        cursor.y = e.clientY + (de.scrollTop || b.scrollTop) - (de.clientTop || 0); 
+    } 
+    return cursor; 
+} 

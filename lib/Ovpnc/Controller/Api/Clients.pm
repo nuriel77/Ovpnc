@@ -3,6 +3,8 @@ use warnings;
 use strict;
 use Try::Tiny;
 use Scalar::Util 'looks_like_number';
+use Tie::File;
+use Fcntl 'O_RDONLY';
 use Moose;
 use namespace::autoclean;
 use vars qw( $REGEX );
@@ -291,16 +293,28 @@ of Ovpnc/OpenVPN
         ){
             if ( $field ~~ @{$_columns} or $c->req->params->{db} ){
                 my $qdb = $c->req->params->{db} ||= 'user';
+                $qdb =~ s/\/add//g;
                 $qdb =~ s/\///g;
                 $qdb =~ s/s$//g;
                 my $db = 'DB::'.ucfirst($qdb);
-                my $_result = $c->model("$db")->search(
-                    { $field => ( $c->req->params->{like} ? { -like => $search . "%" } : $search ) },
-                    {
-                        select => $field,
-                        rows   => $c->req->params->{rows} || 20
-                    }
-                );
+                my $_result;
+                if ( $c->req->params->{like} ){
+                    $_result = $c->model( $db )->search(
+                        { $field => { -like => $search . "%" } },
+                        {
+                            select => $field,
+                            rows   => $c->req->params->{rows} || 12,
+                        }
+                    );
+                }
+                else {
+                    $_result = $c->model( $db )->search(
+                        { $field => $search },
+                        {
+                            select => $field,
+                        }
+                    )->single;
+                }
                 if ( $_result and $_result != 0 ){
                     unless ( $c->req->params->{like} ){
                         $self->status_ok($c,
@@ -581,11 +595,11 @@ Delete client(s)
     {
         my ( $self, $c, $client_list ) = @_;
     
-        my $_ccd_dir = $self->cfg->{openvpn_ccd} =~ /^\//
+        my $ccd_dir = $self->cfg->{openvpn_ccd} =~ /^\//
             ? $self->cfg->{openvpn_ccd}
             : $self->cfg->{openvpn_dir} . '/'
                 . $self->cfg->{openvpn_ccd};
-    
+
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
@@ -594,8 +608,16 @@ Delete client(s)
         # Override anything in the path by setting
         # params from post if they exists
         # ========================================
-        $client_list = $c->request->params->{clients} if $c->request->params->{clients};
-    
+        $client_list = $c->request->params->{clients}
+            if $c->request->params->{clients};
+
+        # Trait names should match request method
+        # =======================================
+        $self->_roles( $self->_get_roles( $c->request->method ) );
+
+        my ( $delete_ok, $not_ok, $errors ) = $self->_roles->remove_clients( $c, $client_list, $ccd_dir );
+
+=disabled
         my @clients = split ',', $client_list;
         my ( @_delete_ok , @_not_ok , @_errors );
     CLIENT:
@@ -638,13 +660,13 @@ Delete client(s)
                 }
             }
         }
-    
+=cut
         $self->status_ok($c,
             entity => {
                 resultset => {
-                    deleted => [ @_delete_ok ],
-                    failed  => [ @_not_ok ],
-                    errors  => [ @_errors ]
+                    deleted => $delete_ok,
+                    failed  => $not_ok,
+                    errors  => $errors
                 }
             }
         );
@@ -967,8 +989,9 @@ in ccd
     
         # Check if client's certificate is revoked
         # ========================================
+        $c->req->params->{no_detach} = 1; 
         my $revoked = $c->forward('list_revoked');
-    
+
         my $_ret_val;
 
       CLIENT:
@@ -1169,10 +1192,13 @@ Get revoked client list
             # Keep data also in stash->{status}
             # It is being used by other controllers
             # =====================================
+            return $revoked_clients
+                if $c->req->params->{no_detach};
             $self->status_ok( $c, entity => $revoked_clients );
-            $c->stash->{status} = $revoked_clients;
         }
         else {
+            return { status => 'No revoked clients' }
+                if $c->req->params->{no_detach};
             $self->status_not_found( $c, message => 'No revoked clients' );
         }
     }
@@ -1209,11 +1235,8 @@ who is revoked
         my ( $self, $crl_index ) = @_;
         my ( $Y, $M, $D, $h, $m, $s );
         my $obj = [];
-
-        open( FH, "<", $crl_index )
-          or die "Cannot read $crl_index: $!";
-
-        while ( my $line = <FH> ) {
+        tie my @array, "Tie::File", $crl_index;
+        for my $line ( @array ){
             # 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=(.*)\/.*'
             my ( $revoke_time, $CN, $name ) = $line =~ /$REGEX->{client}->{crl}/g;
             if ( $revoke_time and $CN and $name ) {
@@ -1228,8 +1251,7 @@ who is revoked
                 push( @{$obj}, { CN => $CN, cert_name => $name, kill_time => $kill_time } );
             }
         }
-    
-        close FH;
+        untie @array;
         return $obj;
     }
 

@@ -452,7 +452,7 @@ var total_count = 0;
                         $.Client().blockUnblockClients(key, $('.flexigrid'));
                     }
                     else if ( key.match(/delete/i) ){
-                        deleteClient(key, $('.flexigrid'));
+                        $.Client().deleteClient(key, $('.flexigrid'));
                     }
                     else if ( key.match(/edit/i) ){
                         // TODO

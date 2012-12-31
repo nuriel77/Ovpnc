@@ -114,15 +114,16 @@ var dump = function (obj){
                  stack: true,
                  height: "auto",
                  width: "auto",
-                 minWidth: 900,
                  zIndex:9010,
+                 position: [ getMousePosition().x, getMousePosition().y ],
                  buttons: [
-                    { text: "cancel", click: function () { $(this).dialog("close"); return false;} },
+                    { text: "cancel", click: function () { $(this).dialog("close").remove(); return false;} },
                     { text: "ok",     click: function () { $(this).dialog("close"); p.action( p.params );return true; } }
                  ],
             });
-    
-            $('#confirmDialog').dialog('open').html('<span>' + p.message + '</span>').show();
+            $('#confirmDialog').dialog('open')
+                               .html('<span>' + p.message + '</span>')
+                               .show(200);
             return false;
         },
         //
@@ -155,7 +156,7 @@ var dump = function (obj){
                 $('#message_container').show(300);
             }
             $.each( $('.message_content').find('.err_text'), function(){
-                log("found text: " + $(this).text() );
+                if ( window.DEBUG ) log("found text: " + $(this).text() );
                 if ( $(this).text().match(/You must have both a Root CA and a server certificate before you can start up the server/) ){
                     _fountText++;
                 }
@@ -344,6 +345,8 @@ var dump = function (obj){
                 url: '/api/clients',
                 data: { username: _name },
                 method: 'GET',
+                db: 'user',
+                rows: 12,
                 success_func: success_func ? success_func : $.Ovpnc().returnedClientData,
                 error_func: error_func ? error_func : $.Ovpnc().errorAjaxReturn
             });
