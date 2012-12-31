@@ -229,44 +229,42 @@ var total_count = 0;
             if ( action === undefined ){
                 action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
             }
-
-            // Get total selected certificates
+            // Get total selected certificate(s)
             var total_count = $('.trSelected', grid).length;
-            if ( window.DEBUG ) log ("Total selected certificates: " + total_count);
-            var processed = 0;
-            var loop = 0;
+            var _loop = 0;
             var _certificates = '';
+            var _clients = '';
             $.each($('.trSelected', grid), function() {
-                // Get the certificate's name of this grid
-                var certificate = $('td:nth-child(2) div', this).html();
-                var _tr = this;
-                // Get rid of any html
+                // Get the certificates name of this grid
+                var certificate = $('td:nth-child(4) div', this).html();
+                var clients = $('td:nth-child(3) div', this).html();
+                // Get rid of any html tags, extract the name.
                 certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                _certificate += certificate + ',';
-                loop++;
+                _certificates += certificate + ',';
+                _clients += clients + ',';
+                _loop++;
             });
 
-            // return if no selected certificates
-            if ( loop == 0 ) return;
+            // Return nothing if none selected
+            if ( _loop == 0 ) return;
 
             // Revoke Certificate(s)
             $.Ovpnc().setAjaxLoading();
-
             $.ajax({
                 url: '/api/certificates',
                 type: action,
                 cache: false,
                 timeout: 5000,
-                data: { _ : '1', certificate: _certificates },
+                data: { _ : '1', certificates: _certificates, clients: _clients },
                 dataType: 'json',
                 success: function (msg) {
                     if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
-                    $('.pReload').click();
                     var _data_types = {
                         errors:      $.Ovpnc().alertErr,
                         warnings:    $.Ovpnc().alertIcon,
                         status:      $.Ovpnc().alertOk
                     };
+                    $('.pReload').click();
                     if ( msg.rest !== undefined ) {
                         $.Ovpnc().processAjaxReturn(
                             msg.rest,
@@ -285,6 +283,15 @@ var total_count = 0;
                 },
                 complete : function(){
                     $.Ovpnc().removeAjaxLoading();
+                    /*
+                    var _wait_update_blockUnblock =
+                        setInterval(function() {
+                            if ( ! $('.loading').is(':visible') ){
+                                $('.pReload').click();
+                                window.clearInterval(_wait_update_blockUnblock);
+                            }
+                    }, 250 );
+                    */
                 }
             });
         },

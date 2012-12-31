@@ -41,6 +41,10 @@ has home => (
     required => 1,
 );
 
+has rval => (
+    is       => 'rw',
+    isa      => 'HashRef',
+);
 
 =head2 revoke_certificate
 
@@ -58,39 +62,60 @@ Revoke certificate(s)
         # ====================
         $vars = $tools . '/vars';
 
-        for my $client ( @{$clients} ){
+        # Check can run tool
+        # ==================
+        unless ( can_run( $tools . '/revoke-full' ) ){
+            return { error => "Error revoking certificate(s), cannot run "
+                             . $tools . '/revoke-full' };
+        }
 
-            # Prepare a return object
-            # for client status/errors
-            # ========================
-            $_ret_val->{$client} = {
-                errors => [],
-                warnings => [],
-                status => []
-            };
+        $tools .= '/revoke-full';
+
+        $self->rval({});
+
+        for my $i ( 0 .. $#{$clients} ){
 
             # Revoke certificates - when $cert_names
-            # has been provided revoke only that
-            # certificate, otherwise all certificates
+            # has been provided revoke only these
+            # certificates, otherwise all certificates
             # belonging to the client (found in his dir)
             # ==========================================
             unless ( $cert_names ){ 
+
                 my $_chk = 0;
-                for my $cert ( glob $tools . '/keys/' . $client . '/*.crt' ){
+
+                # Prepare a return object
+                # for client status/errors
+                # ========================
+                $self->rval->{$clients->[$i]} =
+                    {
+                        errors => [],
+                        warnings => [],
+                        status => []
+                    };
+
+                for my $cert ( glob $tools . '/keys/' . $clients->[$i] . '/*.crt' ){
                     $_chk++;
                     $cert =~ s{\.[^.]+$}{};
-                    $self->_revoke_certificate( $tools, [ $cert ], $client );
+                    $self->_revoke_certificate( $tools, $cert, $clients->[$i] );
                 }
-                push (@{$_ret_val->{$client}->{warnings}}, 'Has no certificates')
+
+                push (@{$self->rval->{$clients->[$i]}->{warnings}}, 'Has no certificates')
                     unless ($_chk);
             }
             else {
-                $self->_revoke_certificate( $tools, $cert_names, $client );
+                $self->rval->{$cert_names->[$i]} =
+                    {
+                        errors => [],
+                        warnings => [],
+                        status => []
+                    };
+                $self->_revoke_certificate( $tools, $cert_names->[$i], $clients->[$i] );
             }
     
         }
-    
-        return $_ret_val;
+
+        return $self->rval;
     }
 
 
@@ -101,76 +126,67 @@ Revoke a certificate - private
 =cut
 
     sub _revoke_certificate {
-        my ($self, $tools, $certs, $client) = @_;
+        my ( $self, $revoke_tool, $cert, $client ) = @_;
 
-        for my $cert ( @{$certs} ){
-        
-            # Build command
-            # =============
-            my @_cmd = ( $tools . '/revoke-full', $cert );
+        # Build command
+        # =============
+        my @_cmd = ( $revoke_tool, $cert );
 
-            # Check if can run
+        # Run command
+        # ===========
+        my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
+            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
+
+        my $_check_ret_val = join( "\n", @{$full_buf} );
+        $_check_ret_val =~ s/\n/;/g;
+
+        if ( $success ){
+            # Already in revoke list
+            # ======================
+            if ( $_check_ret_val =~ /already revoked/gi ){
+                push @{$self->rval->{$client}->{warnings}},
+                        "Revocation failure, certificate "
+                       . basename($cert) . ": Already revoked";
+            }
+            # Didn't find certificate
+            # =======================
+            elsif ( $_check_ret_val =~ /No such file or directory/gi ){
+                push @{$self->rval->{$client}->{errors}},
+                    "Revocation failure, certificate ". basename($cert) . ": "
+                      . "No such certificates";
+            }
+            # ERROR in output
             # ===============
-            if ( can_run( $tools . '/revoke-full' ) ){
-
-                # Run command
-                # ===========
-                my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
-                    run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
-
-                my $_check_ret_val = join( "\n", @{$full_buf} );
-                $_check_ret_val =~ s/\n/;/g;
-                if ( $success ){
-                    # Already in revoke list
-                    # ======================
-                    if ( $_check_ret_val =~ /already revoked/gi ){
-                        push @{$_ret_val->{$client}->{warnings}},
-                                "Revocation failure, certificate "
-                              . basename($cert) . ": Already revoked";
-                    }
-                    elsif ( $_check_ret_val =~ /No such file or directory/gi ){
-                        die "No certs: " . $_check_ret_val;
-                        push @{$_ret_val->{$client}->{errors}},
-                                "Revocation failure, certificate ". basename($cert) . ": "
-                              . "No such certificates";
-                    }
-                    # Explicit ERROR in output
-                    # ========================
-                    elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
-                        push @{$_ret_val->{$client}->{errors}},
-                               "Revocation failure, certificate " . basename($cert) . ": "
-                              . ( $1 ? '\': ' . $1 : '\'' ) .';';
-                    }
-                    # If we match this, certificate
-                    # has been revoked successfully
-                    # =============================
-                    elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
-                        push @{$_ret_val->{$client}->{status}},
-                            'Certificate ' . basename($cert) . ' revoked ok';
-                    }
-                    # Anything else is unknown
-                    # ========================
-                    else {
-                        push @{$_ret_val->{$client}->{warnings}},
-                            'Certificate ' . basename($cert) . ' unknown status: '
-                            . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
-                    }
-    
-                }
-                # Could be a timeout (if yes, it will
-                # appear in the error_code)
-                # ===================================
-                else {
-                    push @{$_ret_val->{$client}->{errors}},
-                        basename($cert) . ' got timeout out error(?): ' . $_check_ret_val . ';'
-                        . ( $error_code ? $error_code : '' ).';';
-                }
+            elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
+                push @{$self->rval->{$client}->{errors}},
+                       "Revocation failure, certificate " . basename($cert) . ": "
+                      . ( $1 ? '\': ' . $1 : '\'' ) .';';
             }
+            # If we match this, certificate
+            # has been revoked successfully
+            # =============================
+            elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
+                push @{$self->rval->{$client}->{status}},
+                    'Certificate ' . basename($cert) . ' revoked ok';
+            }
+            # Anything else is unknown
+            # ========================
             else {
-                die "Error revoking certificate " . basename($cert)
-                    . ", cannot run " . $tools . '/revoke-full';
+                push @{$self->rval->{$client}->{warnings}},
+                    'Certificate ' . basename($cert) . ' unknown status: '
+                    . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
             }
+    
         }
+        # Could be a timeout (if yes, it will
+        # appear in the error_code)
+        # ===================================
+        else {
+            push @{$self->rval->{$client}->{errors}},
+                basename($cert) . ' got timeout out error(?): ' . $_check_ret_val . ';'
+                . ( $error_code ? $error_code : '' ).';';
+        }
+
     }
 
 

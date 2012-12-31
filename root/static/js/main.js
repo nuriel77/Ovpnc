@@ -52,7 +52,7 @@ var dump = function (obj){
     // Ovnpc config items
     //
     config = {
-        pollFreq: 10000,
+        pollFreq: 20000,
         // Get server status from api every n milliseconds
         opacityEffectDuration: 3000,
         // Sets the timing of the opacity fadein/out effect

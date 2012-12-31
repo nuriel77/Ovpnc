@@ -2,6 +2,8 @@ package Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke;
 use warnings;
 use strict;
 use IPC::Cmd qw( can_run run );
+use Tie::File;
+use Fcntl 'O_RDWR';
 use Moose::Role;
 use namespace::autoclean;
 use vars qw( $openvpn_dir $tools );
@@ -40,13 +42,29 @@ has home => (
     required => 1,
 );
 
+
+=head2 unrevoke_certificate
+
+Unrevoke client certificate
+
+=head2 Example format index.txt
+
+Example of how revoked and non-revoked
+lines in the L<index.txt> look like
+
+R       141230142646Z   121230221454Z   0E      unknown /C=US/ST=Louisiana/L=East Baton Rouge Parish/O=X-VPS/OU=Development/CN=bart/name=bart1/emailAddress=nuri@de-bar.com
+V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Province/O=X-VPS/OU=Development/CN=bart/name=bart01/emailAddress=nuri@de-bar.com
+
+=cut
+
+
 sub unrevoke_certificate {
     my ( $self, $client, $ssl_config, $ssl_bin, $cert_name ) = @_;
 
     my $_ret_val;
 
     $openvpn_dir = $self->openvpn_dir;
-    $tools = $self->openvpn_utils;
+    $tools       = $self->openvpn_utils;
 
     # vars script location
     # ====================
@@ -59,24 +77,35 @@ sub unrevoke_certificate {
     # If single certificate is provided
     # only unrevoke this certificate
     # =================================
-    my $command = $cert_name
-        ?
-"/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/name=$cert_name\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file"
-        : 
-"/bin/sed -i 's/^R[[:space:]]*\\([a-zA-Z0-9]*\\)[[:space:]][a-zA-Z0-9]*[[:space:]]\\([0-9]*[[:space:]].*\\/CN=$client\\/.*\\)/V\\t\\1\\t\\t\\2/g' $index_file";
 
     if ( -e $index_file and -w $index_file ) {
 
-        # Run command
-        # ===========
-        $_ret_val = `$command`;
-        chomp($_ret_val);
+        my $regex = $cert_name
+            ? qr[^R\t\w+.*\/CN=$client\/name=$cert_name\/.*$]
+            : qr[^R\t\w+.*\/CN=$client\/name=.*$];
+
+        my $o = tie my @array, 'Tie::File', $index_file, mode => O_RDWR;
+        my $_qchk = 0;
+
+        # Remove revoked fields
+        # =====================
+        for (@array){
+            if ( /$regex/ ) {
+                my @line = split /\t/;
+                $line[0] = 'V';
+                $line[2] = '';
+                $_ = join "\t", @line;
+                undef(@line);
+                $_qchk++;
+            }
+        }
+        undef $o;
+        untie @array;
 
         # Check exit status
         # =================
-        if ( $? >> 8 != 0 ) {
-            return { errors => ['Un-revocation failure for ' . $client . ': ' . $_ret_val ]};
-        }
+        return { errors => ['Un-revocation failure for ' . $client . ': ' . $_ret_val ]}
+            if $_qchk == 0;
 
         # Regenerate the crl.pem
         # ======================
@@ -103,7 +132,7 @@ sub unrevoke_certificate {
         $_ret_val =~ s/\n/;/g;
 
         if ( $success ){
-            return { status => [ 'Unrevoked ok' ] }
+            return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
         }
         else {
             return {

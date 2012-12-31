@@ -798,8 +798,9 @@ is running
         $cert_list = $c->request->params->{certificates}
             if $c->request->params->{certificates};
 
-        my @cert_names = split ',', $cert_list if $cert_list;
-        my @clients = split ',', $client_list;
+        my @cert_names = map { $_ if $_ ne '' } split ',', $cert_list
+            if $cert_list;
+        my @clients    = map { $_ if $_ ne '' } split ',', $client_list;
 
         # Trait names should match request method
         # =======================================
@@ -839,31 +840,52 @@ is running
         # ==========================
         my $_disconnect_client_ok;
         $_disconnect_client_ok = 1 if $self->_has_vpn;
-        for my $client ( @clients ){
+        for my $i ( 0 .. $#clients ){
+
             # See if vpn is currently on,
             # if yes, try to diconnect the
             # client (might not be online)
             # ============================
             if ( $_disconnect_client_ok ){
-                if ( my $str = $self->kill_connection( $client ) ) {
-                    push @{$_ret_val->{$client}->{status}},
+                if ( my $str = $self->kill_connection( $clients[$i] ) ) {
+                    push @{$_ret_val->{$clients[$i]}->{status}},
                         'Disconnect from VPN status: ' . $str;
                 }
                 else {
-                    push @{$_ret_val->{$client}->{info}},
+                    push @{$_ret_val->{$clients[$i]}->{info}},
                         'Disconnect from VPN status: not found online';
                 }
             }
             # Update database
             # ===============
             try {
-                $c->model('DB::User')->find({ username => $client })
+                $c->model('DB::User')->find({ username => $clients[$i] })
                     ->update({ revoked => 1 });
             }
             catch {
-                push @{$c->stash->{$client}->{errors}},
-                    "Failed to update database for '$client': " . $_;
+                push @{$c->stash->{$clients[$i]}->{errors}},
+                    "Failed to update database for user '$clients[$i]': " . $_;
             };
+            if ( @cert_names ){
+                try {
+                    $c->model('DB::Certificate')->search({ user => $clients[$i], name => $cert_names[$i] })
+                        ->update({ revoked => DateTime->now });
+                }
+                catch {
+                    push @{$c->stash->{$clients[$i]}->{errors}},
+                        "Failed to update database for '$clients[$i]': " . $_;
+                };
+            }
+            else {
+                try {
+                    $c->model('DB::Certificate')->search({ user => $clients[$i] })
+                        ->update({ revoked => DateTime->now });
+                }
+                catch {
+                    push @{$c->stash->{$clients[$i]}->{errors}},
+                        "Failed to update database for '$clients[$i]': " . $_;
+                };
+            }
         }
 
         # Done processing client(s)
@@ -891,7 +913,7 @@ in ccd
                          : Does('NeedsLogin')
                          : Sitemap
     {
-        my ( $self, $c, $client_list ) = @_;
+        my ( $self, $c, $client_list, $cert_list ) = @_;
 
         # Verify that a client name was provided
         # ======================================
@@ -901,10 +923,14 @@ in ccd
         # Override anything in the path by setting
         # params from post if they exists
         # ========================================
-        $client_list = $c->request->params->{clients} if $c->request->params->{clients};
-    
-        my @clients = split ',', $client_list;
-    
+        $client_list = $c->request->params->{clients}
+            if $c->request->params->{clients};
+        my @clients = map { $_ if $_ ne '' } split ',', $client_list;
+        $cert_list = $c->request->params->{certificates}
+            if $c->request->params->{certificates};
+        my @certificates = map { $_ if $_ ne '' } split ',', $cert_list
+            if $c->request->params->{certificates};
+
         # Trait names should match request method
         # =======================================
         $self->_roles (
@@ -923,13 +949,13 @@ in ccd
         my $revoked = $c->forward('list_revoked');
     
         my $_ret_val;
-    
+
       CLIENT:
-        for my $client ( @clients ){
+        for my $i ( 0 .. $#clients ){
             # Prepare a return object
             # for client status/errors
             # ========================
-            $_ret_val->{$client} = {
+            $_ret_val->{$clients[$i]} = {
                 errors => [],
                 warnings => [],
                 status => []
@@ -937,9 +963,15 @@ in ccd
 
             # Check if in CRL
             # ===============
-            unless ( $self->_match_revoked( $revoked, $client, $c->req->params->{cert_name} ) ) {
-                push ( @{$_ret_val->{$client}->{errors}},
-                        ( $c->req->params->{cert_name}
+            unless (
+                $self->_match_revoked(
+                    $revoked,
+                    $clients[$i],
+                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} )
+                )
+            ) {
+                push ( @{$_ret_val->{$clients[$i]}->{errors}},
+                        ( ( $c->req->params->{cert_name} || @certificates )
                             ? "Unrevoke failed: certificate is not revoked"
                             : "Unrevoke failed: not in the Revoked list" ));
                         
@@ -948,30 +980,68 @@ in ccd
     
             # Update database
             # ===============
+            unless ( @certificates ){
+                try {
+                    $c->model('DB::Certificate')->search({
+                        user => $clients[$i],
+                    })->update({ revoked => '0000-00-00 00:00:00' });
+                }
+                catch {
+                    push @{$c->stash->{$clients[$i]}->{errors}},
+                        "Failed to update database for '$clients[$i]': " . $_;
+                };
+            }
+            else {
+                try {
+                    $c->model('DB::Certificate')->search({
+                        user => $clients[$i],
+                        name => $certificates[$i],
+                    })->update({ revoked => '0000-00-00 00:00:00' });
+                }
+                catch {
+                    push @{$c->stash->{$clients[$i]}->{errors}},
+                        "Failed to update database for '$clients[$i]': " . $_;
+                }; 
+            }
+            
+            # Since we unrevoked all or one
+            # certificate we do not consider
+            # the user to be revoked anymore
+            # ==============================
             try {
-                $c->model('DB::User')->find({ username => $client })
+                $c->model('DB::User')->find({ username => $clients[$i] })
                     ->update({ revoked => 0 });
             }
             catch {
-                push @{$_ret_val->{$client}->{errors}},
+                push @{$_ret_val->{$clients[$i]}->{errors}},
                     "DB query failed: " . $_;
             };
-    
+
             # Unrevoke a revoked client's certificate
             # =======================================
-            my $_revoke_status = 
+            my $_unrevoke_status = 
                 $self->_roles->unrevoke_certificate(
-                    $client,
+                    $clients[$i],
                     $self->cfg->{ssl_config},
                     $c->config->{openssl_bin},
-                    $c->req->params->{cert_name}
+                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} )
                 );
-            for ( keys %{$_revoke_status} ){
-                push @{ $_ret_val->{$client}->{$_} },
-                    $_revoke_status->{$_};                
+    
+            if (@certificates){
+                for ( keys %{$_unrevoke_status} ){
+                    push @{ $_ret_val->{$certificates[$i]}->{$_} },
+                        $_unrevoke_status->{$_};          
+                }
+            }
+            else {
+                for ( keys %{$_unrevoke_status} ){
+                    push @{ $_ret_val->{$clients[$i]}->{$_} },
+                        $_unrevoke_status->{$_};          
+                }
             }
         }
-    
+
+
         # Done processing client(s)
         # =========================
         $self->_disconnect_vpn if $self->_has_vpn;
@@ -1070,7 +1140,7 @@ Get revoked client list
         }
     
         my $revoked_clients = $self->_read_crl_index_file($crl_index);
-    
+
         if (    $revoked_clients
             and ref $revoked_clients eq 'ARRAY'
             and @{$revoked_clients} > 0 )
@@ -1153,7 +1223,7 @@ to see if he is there
 
     sub _match_revoked : Private {
         my ( $self, $revoked, $client, $cert_name ) = @_;
-    
+
         if ( $revoked and ref $revoked eq 'ARRAY' ) {
             for ( @{$revoked} ) {
                 if ( $cert_name ){

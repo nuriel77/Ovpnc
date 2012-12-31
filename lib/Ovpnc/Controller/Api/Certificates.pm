@@ -523,7 +523,7 @@ sub certificates_DELETE : Local
         # client names as certificates
         # ============================
         else {
-            @{$certs} = split ",", $req->{certificates};
+            @{$certs}   = split ",", $req->{certificates};
             @{$clients} = split ",", $req->{clients}; 
             if ( scalar @{$certs} != scalar @{$clients} ){
                 $self->status_bad_request($c, message =>
@@ -581,9 +581,6 @@ sub certificates_DELETE : Local
             $c->detach('View::JSON');
         }
 
-        $c->log->debug( " --- C: " . $_->name )
-            for ( @{$rs} );
-
         # Set roles
         # =========
         $self->_roles(
@@ -622,15 +619,142 @@ sub certificates_DELETE : Local
 
         # Delete from DB and files
         # ========================
-        my $_ret_val = $self->_roles->delete_certificates( $rs );
+        my $_ret_val = $self->_roles->delete_certificates( $rs )
+            unless $req->{no_delete};
 
-        $self->status_ok($c,
-            entity => {
-                resultset => $_ret_val,
-                errors => $c->stash->{error}
-            },
-        );
+        if ( $req->{no_delete} ){
+            return $_chk_revoke;
+        } 
+        else {
+            $self->status_ok($c,
+                entity => {
+                    resultset => $_ret_val,
+                    errors => $c->stash->{error}
+                },
+            );
+        }
     }
+
+
+
+=head2 certificates_UNREVOKE
+
+Un-Revoke certificate(s)
+sends to clients_UNREVOKE
+
+=cut
+
+   sub certificates_UNREVOKE : Local
+                             : Args(0)
+                             : Sitemap
+    {
+        my ( $self, $c ) = @_;
+        $c->detach('/api/clients_UNREVOKE');
+    }
+
+
+
+=head2 certificates_REVOKE
+
+Revoke certificate(s)
+sends to _DELETE with no_delete param
+
+=cut
+
+   sub certificates_REVOKE : Local
+                           : Args(0)
+                           : Does('ACL')
+                               AllowedRole('admin')
+                               AllowedRole('can_edit')
+                               ACLDetachTo('denied')
+                           : Does('NeedsLogin')
+                           : Sitemap
+    {
+        my ( $self, $c ) = @_;
+
+
+        $c->req->params->{no_delete} = 1;
+
+        my @certificates = split ',', $c->req->params->{certificates};
+        my @clients      = split ',', $c->req->params->{clients};
+
+        # Check if such a certificate exists
+        # ==================================
+        # just to make sure:
+        $c->req->params->{no_delete} ||= 1;
+        my $chk_revoke = $self->certificates_DELETE(
+            $c, $c->req->params->{clients}, $c->req->params->{certificates} );
+#            $c, \@clients, \@certificates );
+
+        if ( $chk_revoke ){
+            for my $i ( 0 .. $#certificates ){
+                if (     $chk_revoke->{$clients[$i]}
+                     and $chk_revoke->{$clients[$i]}->{status}
+                     and my @status = @{$chk_revoke->{$clients[$i]}->{status}}
+                ) {
+
+                    for my $cert_status ( @status ){
+                        my ($cert_name) = $cert_status =~ /Certificate.(.*).revoked ok/;
+                        if ( $cert_name and $cert_name eq $certificates[$i] ){
+                            try {
+                                $c->model('DB::Certificate')->search({
+                                    name => $cert_name,
+                                    user => $clients[$i]
+                                })->update({ revoked => DateTime->now });
+                            }
+                            catch {
+                                $c->log->error('DB Error: ' . $_);
+                                push @{$c->stash->{$cert_name}->{errors}},
+                                    "Failed to update database for '$cert_name': " . $_
+                                    . " user: '$clients[$i]'";
+                            };
+                            try {
+                                my $check_total_revoked =
+                                    $c->model('DB::Certificate')->search({
+                                        user    => $clients[$i],
+                                        revoked => { in => [ '0000-00-00 00:00:00' ] }                                
+                                    })->count;
+                                if ( $check_total_revoked == 0 ){
+                                    $c->log->debug('Updating user, setting to revoked because all certificates are revoked.');
+                                    $c->model('DB::User')->search({
+                                        username => $clients[$i]
+                                    })->update({ revoked => 1 });
+                                }
+                            }
+                            catch {
+                                $c->log->error('DB Error: ' . $_);
+                                push @{$c->stash->{$cert_name}->{errors}},
+                                    "Failed to update database for user status: " . $_
+                                    . " user: '$clients[$i]'";
+                            };
+                        }
+                    }
+                }
+                elsif (
+                    $chk_revoke->{$clients[$i]}
+                    and $chk_revoke->{$clients[$i]}->{warnings}
+                ){
+                    $c->stash->{rest}->{$certificates[$i]}->{errors} =
+                        $chk_revoke->{$clients[$i]}->{warnings};
+                }
+                elsif (
+                    $chk_revoke->{$clients[$i]}
+                    and $chk_revoke->{$clients[$i]}->{errors}
+                ){
+                    $c->stash->{$certificates[$i]}->{errors} =
+                        $chk_revoke->{$clients[$i]}->{errors};
+                }
+                else {
+                    push @{$c->stash->{$certificates[$i]}->{errors}},
+                        "Failed to get status for '$certificates[$i]', user: '$clients[$i]'";
+                }
+                #$chk_revoke->{$certificates[$i]} = $chk_revoke->{$clients[$i]};
+                #delete $chk_revoke->{$clients[$i]};
+            }
+            $self->status_ok($c, entity => { resultset => $chk_revoke } );
+        }
+    }
+
 
 
 =head2 _build_dh

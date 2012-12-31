@@ -15,6 +15,7 @@ requires 'autobox::Core';
 requires 'boolean';
 requires 'fields';
 requires 'Socket';
+requires 'Tie::File';
 requires 'Module::Locate';
 requires 'Moose';
 requires 'Moose::Exporter';
