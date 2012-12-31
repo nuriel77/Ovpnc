@@ -94,7 +94,7 @@ Revoke certificate(s)
                         status => []
                     };
 
-                for my $cert ( glob $tools . '/keys/' . $clients->[$i] . '/*.crt' ){
+                for my $cert ( glob $self->_set_openvpn_utils . '/keys/' . $clients->[$i] . '/*.crt' ){
                     $_chk++;
                     $cert =~ s{\.[^.]+$}{};
                     $self->_revoke_certificate( $tools, $cert, $clients->[$i] );

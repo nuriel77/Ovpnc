@@ -263,6 +263,14 @@ var total_count = 0;
             // Get total selected clients
             var total_count = $('.trSelected', grid).length;
             if ( window.DEBUG ) log ("Total selected clients: " + total_count);
+
+            // Warn user when unrevoking
+            if ( action === 'unrevoke' ){
+                var cnf = confirm("Warning!\r\n'Unblock' will un-revoke all the certificates belonging to\rthe"
+                                + " client" + (total_count>1?'s':'') + ".\rAre you sure you want to proceed?");
+                if ( cnf == false ) return false;
+            }
+
             var processed = 0;
             var loop = 0;
             var _clients = '';
