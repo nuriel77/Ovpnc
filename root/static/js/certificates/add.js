@@ -462,7 +462,7 @@ jQuery.validator.setDefaults({
 
         	$.addCertificate().setSelectBind();
         	$.addCertificate().setClickBind();
-            $.addCertificate().chooseUser();
+            $.Ovpnc().chooseUser({ element: $('#username') });
             if ( $('#cert_name').attr('value') != '' ) $('#cert_name').focusout();
             if ( $('#username').attr('value') != '' ) $('#username').focusout();
 
@@ -677,46 +677,6 @@ jQuery.validator.setDefaults({
                 }
                 $('#KEY_'+ inn[i].toUpperCase() + '_TEXT').attr('value', cVal);
             }
-        },
-        //
-        // Get Username from API
-        //
-        chooseUser: function(){
-            $( "#username" ).autocomplete({
-                source: function( request, response ){
-                    // Exec ajax call
-                    $.ajaxSetup({ async: true, cache: false, timeout: 5000 });
-                    $.getJSON('/api/clients', {
-                        search: request.term ? request.term : '_O_O_O_',
-                        field: 'username'
-                    },
-                    function( result ) {
-                        if ( result.rest === undefined ){
-                            return false;
-                        }
-                        if ( Object.prototype.toString.call( result.rest.resultset ) !== '[object Array]' ){
-                            response({ value: result.rest.resultset });
-                            return;
-                        }
-                        else if ( result.rest.resultset !== undefined
-                          && Object.prototype.toString.call( result.rest.resultset ) === '[object Array]'
-                          && result.rest.resultset.length > 0
-                        ){
-                            response( $.map( result.rest.resultset, function ( item ) {
-                                return {
-                                    label: item,
-                                    value: item
-                                }
-                            }));
-                        }
-                    }).error(function(xhr, ajaxOptions, thrownError) {
-                        dump(xhr);log("error: " + xhr.responseText);
-                    }).complete(function(){
-                        $.ajaxSetup({ async: true, cache: false });
-                    });
-                },
-                minLength: 0
-            });
         },
         //
         // Get user's location from browser

@@ -171,6 +171,17 @@ var dump = function (obj){
         // Used by pages having flexigrid table
         //
         styleFlexigrid: function () {
+
+            $.Ovpnc().chooseUser({
+                element: $('.qsbox'),
+                like: 1,
+                rows: 5,
+                field: function () { return $('.sDiv2').find('select').val().toLowerCase() },
+                no_return_all: 1,
+                min_length: 1,
+                db: window.location.pathname === '/clients' ? 'user' : window.location.pathname  
+            });
+
             // Show ajax loader before data
             // loads up from ajax call
             $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
@@ -199,6 +210,51 @@ var dump = function (obj){
                 window.onbeforeunload = action;
             }
             return 1;
+        },
+        //
+        // Get Username from API
+        //
+        chooseUser: function(p){
+            $( p.element ).autocomplete({
+                source: function( request, response ){
+                    // Exec ajax call
+                    $.ajaxSetup({ async: true, cache: false, timeout: 5000 });
+                    $.getJSON('/api/clients', {
+                        search: request.term ? request.term : '_O_O_O_',
+                        field: p.field ? p.field() : 'username',
+                        like: p.like ? 1 : undefined,
+                        rows: p.rows ? p.rows : undefined,
+                        no_return_all: p.no_return_all ? 1 : undefined,
+                        db: p.db ? p.db : window.location.pathname
+                    },
+                    function( result ) {
+                        if ( result.rest === undefined ){
+                            return false;
+                        }
+                        if ( Object.prototype.toString.call( result.rest.resultset ) !== '[object Array]' ){
+                            response({ value: result.rest.resultset });
+                            return;
+                        }
+                        else if ( result.rest.resultset !== undefined
+                          && Object.prototype.toString.call( result.rest.resultset ) === '[object Array]'
+                          && result.rest.resultset.length > 0
+                        ){
+                            response( $.map( result.rest.resultset, function ( item ) {
+                                return {
+                                    label: item,
+                                    value: item
+                                }
+                            }));
+                        }
+                    }).error(function(xhr, ajaxOptions, thrownError) {
+                        dump(xhr);log("error: " + xhr.responseText);
+                    }).complete(function(){
+                        $.ajaxSetup({ async: true, cache: false });
+                        $(p.element).removeClass('ui-autocomplete-loading');
+                    });
+                },
+                minLength: p.min_length ? p.min_length : 0,
+            });
         },
         //
         // Process a resultset returned from the api

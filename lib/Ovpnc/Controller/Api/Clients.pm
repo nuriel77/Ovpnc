@@ -289,23 +289,44 @@ of Ovpnc/OpenVPN
               my $search         = $c->req->params->{search}
           and my $field          = $c->req->params->{field}
         ){
-            if ( $field ~~ @{$_columns} ){
-                my $_result = $c->model('DB::User')->search(
-                    { $field => { -like => $search . "%" } },
-                    { select => $field }
-                )->single;
-                if ( defined $_result ){
-                    $self->status_ok($c,
-                        entity => { resultset => $_result->$field }
-                    );
+            if ( $field ~~ @{$_columns} or $c->req->params->{db} ){
+                my $qdb = $c->req->params->{db} ||= 'user';
+                $qdb =~ s/\///g;
+                $qdb =~ s/s$//g;
+                my $db = 'DB::'.ucfirst($qdb);
+                my $_result = $c->model("$db")->search(
+                    { $field => ( $c->req->params->{like} ? { -like => $search . "%" } : $search ) },
+                    {
+                        select => $field,
+                        rows   => $c->req->params->{rows} || 20
+                    }
+                );
+                if ( $_result and $_result != 0 ){
+                    unless ( $c->req->params->{like} ){
+                        $self->status_ok($c,
+                            entity => { resultset => ( defined $_result->$field ? $_result->$field : [] ) } );
+                    }
+                    else {
+                        my @rs;
+                        while ( $_ = $_result->next ) { push @rs, $_->$field };
+                        $self->status_ok($c,
+                            entity => { resultset => \@rs  } );
+                    }
                     $c->detach;
                     return;
                 }
                 else {
-                    my $_complete_result = [$c->model('DB::User')->search({},{select=>$field})->all ];
-                    $self->status_ok($c,
-                        entity => { resultset => [ map { $_->$field } @{$_complete_result} ] }
-                    );
+                    unless ( $c->req->params->{no_return_all} ){
+                        my $_complete_result = [$c->model('DB::User')->search({},{select=>$field})->all ];
+                        $self->status_ok($c,
+                            entity => { resultset => [ map { $_->$field } @{$_complete_result} ] }
+                        );
+                    }
+                    else {
+                        $self->status_ok($c,
+                            entity => { resultset => [] }
+                        );
+                    }
                     $c->detach;
                 }
             }
