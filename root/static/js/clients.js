@@ -264,63 +264,84 @@ var total_count = 0;
             var total_count = $('.trSelected', grid).length;
             if ( window.DEBUG ) log ("Total selected clients: " + total_count);
 
-            // Warn user when unrevoking
             if ( action === 'unrevoke' ){
-                var cnf = confirm("Warning!\r\n'Unblock' will un-revoke all the certificates belonging to\rthe"
-                                + " client" + (total_count>1?'s':'') + ".\rAre you sure you want to proceed?");
-                if ( cnf == false ) return false;
+                $.Ovpnc().confirmDiag({
+                    message: "<div>" + $.Ovpnc().alertIcon + "<b>Warning!</b></div><br /></br /><div>"
+                           + "'Unblock' will un-revoke all the certificates belonging to the"
+                           + " client" + (total_count>1?'s':'') + ".</div><div>Are you sure you want to proceed?</div>",
+                    action: $.Client().proceedBlockUnblock,
+                    params: { button: button, grid: grid, action: action }
+                });
+            }
+            else {
+                $.Client().proceedBlockUnblock( button, grid, action);
+            }
+        },
+        //
+        // Proceed with revoke/unrevoke after optional confirm dialog
+        //
+        proceedBlockUnblock: function ( button, grid, action ) {
+            if ( window.DEBUG ) log ( "B: %o",button );
+            if ( typeof button === 'object'
+              && grid === undefined
+            ){
+                grid = button.grid;
+                action = button.action;
+                button = button.button;
             }
 
-            var processed = 0;
-            var loop = 0;
-            var _clients = '';
-            $.each($('.trSelected', grid), function() {
-                // Get the client's name of this grid
-                var client = $('td:nth-child(2) div', this).html();
-                var _tr = this;
-                // Get rid of any html
-                client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                _clients += client + ',';
-                loop++;
-            });
+            var total_count = $('.trSelected', grid).length;
+                        var processed = 0;
+                        var loop = 0;
+                        var _clients = '';
+                        $.each($('.trSelected', grid), function() {
+                            // Get the client's name of this grid
+                            var client = $('td:nth-child(2) div', this).html();
+                            var _tr = this;
+                            // Get rid of any html
+                            client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                            _clients += client + ',';
+                            loop++;
+                        });
 
-            // return if no selected clients
-            if ( loop == 0 ) return;
+                        // return if no selected clients
+                        if ( loop == 0 ) return;
 
-            // Revoke client/disconnect
-            $.Ovpnc().setAjaxLoading();
+                        // Revoke client/disconnect
+                        $.Ovpnc().setAjaxLoading();
+            
+                        $.ajax({
+                            url: '/api/clients',
+                            type: action,
+                            cache: false,
+                            timeout: 5000,
+                            data: { _ : '1', clients: _clients },
+                            dataType: 'json',
+                            success: function (msg) {
+                                if ( window.DEBUG ) log("block/unblock returned: %o",msg);
+                                var _data_types = {
+                                    errors:      $.Ovpnc().alertErr,
+                                    warnings:    $.Ovpnc().alertIcon,
+                                    status:      $.Ovpnc().alertOk
+                                };
+                                if ( msg.rest !== undefined ) {
+                                    $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
+                                    $('.pReload').click();
+                                    return;
+                                }
+                                alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
+                                $('.pReload').click();
+            
+                            },
+                            error: function ( xhr, textStatus, errorThrown ) {
+                                if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
+                                alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
+                            },
+                            complete : function(){
+                                $.Ovpnc().removeAjaxLoading();
+                            }
+                        });
 
-            $.ajax({
-                url: '/api/clients',
-                type: action,
-                cache: false,
-                timeout: 5000,
-                data: { _ : '1', clients: _clients },
-                dataType: 'json',
-                success: function (msg) {
-                    if ( window.DEBUG ) log("block/unblock returned: %o",msg);
-                    var _data_types = {
-                        errors:      $.Ovpnc().alertErr,
-                        warnings:    $.Ovpnc().alertIcon,
-                        status:      $.Ovpnc().alertOk
-                    };
-                    if ( msg.rest !== undefined ) {
-                        $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
-                        $('.pReload').click();
-                        return;
-                    }
-                    alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
-                    $('.pReload').click();
-
-                },
-                error: function ( xhr, textStatus, errorThrown ) {
-                    if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
-                    alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
-                },
-                complete : function(){
-                    $.Ovpnc().removeAjaxLoading();
-                }
-            });
         },
         //
         // Check if client names match
@@ -459,37 +480,41 @@ var total_count = 0;
         // Delete a client
         // 
         deleteClient: function (button, grid){
-            // Get total selected clients
             var total_count = $('.trSelected', grid).length;
-            var _loop = 0;
-            var _clients = '';
-            $.each($('.trSelected', grid), function() {
-                // Get the client's name of this grid
-                var client = $('td:nth-child(2) div', this).html();
-                // Get rid of any html tags, extract the name.
-                client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                _clients += client + ',';
-                _loop++;
-            });
-            // Return nothing if none selected
-            if ( _loop == 0 ) return;
             // Confirm delete
-            var cnf = confirm('Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ) );
-            if ( cnf == false ) return false;
-            // Execute
-            //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-            window.clientsToDelete = total_count;
-            $.Ovpnc().ajaxCall({
-                url: "/api/clients/",
-                data: { clients: _clients, _ : '1' },
-                method: 'REMOVE',
-                success_func: $.Client().clientDeleteReturn,
-                error_func: $.Client().clientDeleteError,
-                loader: 1,
-                timeout: 15000
+            $.Ovpnc().confirmDiag({
+                message: 'Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ),
+                action: function () {
+                    // Get total selected clients
+                    //var total_count = $('.trSelected', grid).length;
+                    var _loop = 0;
+                    var _clients = '';
+                    $.each($('.trSelected', grid), function() {
+                        // Get the client's name of this grid
+                        var client = $('td:nth-child(2) div', this).html();
+                        // Get rid of any html tags, extract the name.
+                        client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                        _clients += client + ',';
+                        _loop++;
+                    });
+                    // Return nothing if none selected
+                    if ( _loop == 0 ) return;
+        
+                    // Execute
+                    //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+                    window.clientsToDelete = total_count;
+                    $.Ovpnc().ajaxCall({
+                        url: "/api/clients/",
+                        data: { clients: _clients, _ : '1' },
+                        method: 'REMOVE',
+                        success_func: $.Client().clientDeleteReturn,
+                        error_func: $.Client().clientDeleteError,
+                        loader: 1,
+                        timeout: 15000
+                    });
+                }
             });
         }
-
     };
 
 })(jQuery);

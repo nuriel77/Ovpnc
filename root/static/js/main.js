@@ -89,6 +89,43 @@ var dump = function (obj){
             $.Ovpnc().pollFreq );
         },
         //
+        // Confirmation dialog
+        //
+        confirmDiag: function (p) {
+            if ( window.DEBUG ) log ( "confirmDiag got: %o",p );
+
+            var cDiv = document.createElement('div');
+
+            $( cDiv ).css({
+                'display':'none',
+                'color'  :'#555555'
+            });
+
+            $( 'body' ).prepend( cDiv );
+
+            $( cDiv ).attr('id','confirmDialog')
+                    .dialog({
+                 autoOpen: false,
+                 title: "Confirm action",
+                 hide: "explode",
+                 modal:true,
+                 closeText: 'close',
+                 closeOnEscape: true,
+                 stack: true,
+                 height: "auto",
+                 width: "auto",
+                 minWidth: 900,
+                 zIndex:9010,
+                 buttons: [
+                    { text: "cancel", click: function () { $(this).dialog("close"); return false;} },
+                    { text: "ok",     click: function () { $(this).dialog("close"); p.action( p.params );return true; } }
+                 ],
+            });
+    
+            $('#confirmDialog').dialog('open').html('<span>' + p.message + '</span>').show();
+            return false;
+        },
+        //
         // Check for existance of Root CA
         //
         checkRootCAExistance: function (){

@@ -84,4 +84,3 @@ window.alert = function(message) {
 
     return false;
 };
-

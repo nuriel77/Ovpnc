@@ -213,8 +213,10 @@ Include static files, dynamically
 
         if ( $c->user_exists ){
             $c->stash->{expires} = scalar(localtime($c->_session_expires));
-            $c->log->info( " -------- Current time : " . scalar(localtime(time())) );
-            $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
+            if ( $ENV{CATALYST_DEBUG} ){
+                $c->log->info( " -------- Current time : " . scalar(localtime(time())) );
+                $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
+            }
         }
 
         # Include defaults

@@ -84,8 +84,10 @@ sub unrevoke_certificate {
             ? qr[^R\t\w+.*\/CN=$client\/name=$cert_name\/.*$]
             : qr[^R\t\w+.*\/CN=$client\/name=.*$];
 
-        my $o = tie my @array, 'Tie::File', $index_file, mode => O_RDWR;
         my $_qchk = 0;
+
+        my $o = tie my @array, 'Tie::File', $index_file, mode => O_RDWR;
+        $o->flock;
 
         # Remove revoked fields
         # =====================
