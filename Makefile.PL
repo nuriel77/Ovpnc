@@ -12,6 +12,7 @@ name 'Ovpnc';
 all_from 'lib/Ovpnc.pm';
 
 requires 'autobox::Core';
+requires 'Archive::Tar';
 requires 'boolean';
 requires 'fields';
 requires 'Socket';

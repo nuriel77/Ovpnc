@@ -615,52 +615,11 @@ Delete client(s)
         # =======================================
         $self->_roles( $self->_get_roles( $c->request->method ) );
 
-        my ( $delete_ok, $not_ok, $errors ) = $self->_roles->remove_clients( $c, $client_list, $ccd_dir );
+        # Run action
+        # ==========
+        my ( $delete_ok, $not_ok, $errors ) =
+                $self->_roles->remove_clients( $c, $client_list, $ccd_dir );
 
-=disabled
-        my @clients = split ',', $client_list;
-        my ( @_delete_ok , @_not_ok , @_errors );
-    CLIENT:
-        for my $client (@clients){
-            # Find client in database
-            # =======================
-            my $_res;
-            try {
-                 $_res = $c->model('DB::User')->find({ username => $client });
-            }
-            catch {
-                push @_errors, $_;
-            };
-    
-            if ( $_res ){
-                # Deny removal of default
-                # administrator user
-                # =======================
-                if ( $_res->id == 1 ){
-                    push @_not_ok, $client;
-                    push @_errors,
-                        $client . ": Denied. Cannot delete the default administrator!";
-                    next CLIENT;
-                }
-                else {
-                    # Delete entry
-                    # ============
-                    if ( $_res->delete ) {
-                        push (@_delete_ok, $client);
-                    }
-                    else {
-                        push (@_not_ok, $client);
-                    }
-                    # Remove any ccd file
-                    # ===================
-                    if ( -e $_ccd_dir . '/' . $client ){
-                        unlink $_ccd_dir . '/' . $client
-                            or push (@_not_ok, $client);
-                    }
-                }
-            }
-        }
-=cut
         $self->status_ok($c,
             entity => {
                 resultset => {
