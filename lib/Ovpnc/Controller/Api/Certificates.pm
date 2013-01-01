@@ -1,6 +1,8 @@
 package Ovpnc::Controller::Api::Certificates;
 use warnings;
 use strict;
+use File::stat;
+use IO::File;
 use Try::Tiny;
 use Moose;
 use utf8;
@@ -53,7 +55,6 @@ before [qw(
         certificates_GET
         certificates_POST
         certificates_DELETE
-        get_cert
     )] => sub {
     my ( $self, $c ) = @_;
 
@@ -319,7 +320,6 @@ L<One>      Get a specific certificate by name/match user
             duplicates when create a new certificate
 L<Two>      Get a specific certificate by field
 L<Three>    Get all certificates - sorted results by field
-L<Four>     Archive and download certificate + key
 
 =cut
 
@@ -761,76 +761,6 @@ sends to _DELETE with no_delete param
         }
     }
 
-
-=head2 get_cert
-
-Get (download) certificates
-and keys, first archive
-Expects one client name
-and 'all' or any cert names.
-if 'all' is specified, then all
-of the client's certs will be
-archived for download.
-
-=cut
-
-    sub get_cert : Path('certificates/get_cert')
-                 : Args(2)
-                 : Does('ACL')
-                     AllowedRole('admin')
-                     AllowedRole('can_edit')
-                     ACLDetachTo('denied')
-                 : Does('NeedsLogin')
-                 : Sitemap
-    {
-
-        my ( $self, $c, $client, $certs ) = @_;
-
-        my $format = $c->req->params->{format} ||= 'tar';
-        my @formats = qw[ tar gzip bzip ];
-
-        unless ( grep $format ~~ $_, @formats ){
-            $self->status_bad_request($c,
-                message => 'Unknown format: ' . $format
-                            . '. Supported formats: '
-                            . join ', ', @formats
-            ); 
-            $c->detach;
-        }
-     
-        # Set roles
-        # =========
-        $self->_roles(
-            $self->new_with_traits(
-                traits => [ 'Archive' ],
-                _cfg   => $self->cfg,
-            )
-        );
-
-        # Get request 'get_cert'
-        # will download the certificate + key
-        # ===================================
-        if ( $client ){
-            my $_ret_val =
-                $self->_roles->archive_certificates(
-                    $c,
-                    $client,
-                    $format,
-                    ( $certs ? $certs : undef )
-                );
-
-            if ( $_ret_val and ! $c->stash->{error} ){
-                $self->status_ok($c, entity => $_ret_val);
-                $c->detach;
-            }
-        }
-        else {
-            $self->status_bad_request($c,
-                message => 'No certificate name(s) provided' );
-            $c->detach;
-        }
-
-    }
 
 
 =head2 _build_dh
@@ -1329,7 +1259,7 @@ Last action of this controller
         # is not needed in JSON output
         # ============================
         delete $c->stash->{assets};
-    
+
         # Forward to JSON view
         # ====================
         $c->forward(

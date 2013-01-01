@@ -31,6 +31,13 @@ sub encode_json
     # =========================
     delete $c->stash->{assets} if $c->stash->{assets};
 
+    if ( $c->stash->{content_transfer} ) {
+        $c->response->headers->header('Content-Type' => $c->stash->{content_transfer} );
+        $c->detach;
+        return;
+    }
+
+
     $c->response->headers->header('Content-Type' => 'application/json');
 
     # Return JSON

@@ -80,6 +80,7 @@ requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Plugin::StackTrace';
 requires 'Catalyst::Plugin::Cache';
+requires 'Catalyst::Plugin::Alarm';
 requires 'Catalyst::Plugin::Assets';
 requires 'Catalyst::Plugin::Redirect';
 requires 'Catalyst::Controller::REST';

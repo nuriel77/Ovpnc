@@ -31,6 +31,7 @@ use Catalyst qw/
   -Debug
   ConfigLoader
   Assets
+  Alarm
   Static::Simple
   Compress::Gzip
   Compress::Deflate
@@ -74,8 +75,8 @@ __PACKAGE__->config(
     'default'       => 'application/json',
     'stash_key'     => 'rest',
     'map' => { 
-        'text/html' => [ 'View', 'HTML', ], 
-        'text/xml' => [ 'View', 'XML::Simple', ], 
+        'text/html'     => [ 'View', 'HTML', ], 
+        'text/xml'      => [ 'View', 'XML::Simple', ], 
         'application/x-www-form-urlencoded' => 'JSON',
         'application/json'                  => 'JSON',
     },
@@ -109,6 +110,17 @@ __PACKAGE__->config(
 	}
 );
 
+# Alarm
+# =====
+__PACKAGE__->config(
+    alarm => {
+        timeout => 60,
+        global  => 120,
+        handler => sub { die "The application timed-out." }
+    }
+);
+
+
 # Cache::Memcached::libmemcached
 # ==============================
 __PACKAGE__->config(
@@ -133,14 +145,15 @@ __PACKAGE__->config(
 	            qr/^(images|css|js)/,
 	        ],
 			mime_types => {
+                tar  => 'application/x-tar',
                 html => 'text/html',
-				js  => 'application/javascript',
+				js   => 'application/javascript',
 				json => 'application/json',
-				css => 'text/css',
-				xml => 'text/xml',
-                jpg => 'image/jpg',
-                png => 'image/png',
-                ico => 'image/x-icon',
+				css  => 'text/css',
+				xml  => 'text/xml',
+                jpg  => 'image/jpg',
+                png  => 'image/png',
+                ico  => 'image/x-icon',
             },
 	    }
 	}
