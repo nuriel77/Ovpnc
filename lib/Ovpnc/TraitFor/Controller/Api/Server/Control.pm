@@ -125,7 +125,7 @@ sub start {
         my $proc    = Proc::Simple->new();
         my $_status = $proc->start(@cmd);
 
-        sleep 1;    # give it a moment, very important.
+        sleep 2;    # give it a moment, very important.
 
         return { error => "An error occured starting up the openvpn server!" }
           unless ($_status);
@@ -290,10 +290,48 @@ when the server stops
 
     sub _stop_end_action {
         my $self = shift;
-        unlink glob $self->cfg->{openvpn_tmpdir} . 'openvpn_cc_*.tmp';
+        my @tmp = glob $self->cfg->{tmp_dir} . 'openvpn_cc_*.tmp';
+        unlink @tmp if @tmp;
         $self->_disconnect_vpn;
         return { status => "OpenVPN is stopped" };
     }
+
+=head2 read_create_pid
+
+Read and / or create new pid file
+
+=cut
+
+    sub _read_create_pid{
+        my $self = shift;
+        my $_pid;
+    my $i = 0;
+        for ( 0 .. 6 ) {
+            $i++;
+            warn "$i ... Waiting for pid to be created";
+            if ( -f $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
+                my $pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
+                warn "$i ... FOUND PID";
+                return $pid if $pid ne '';
+            }
+            sleep 1;
+        }
+
+        my (undef, undef, undef, $gid) = getpwnam(
+            $self->cfg->{openvpn_group} );
+        my (undef, undef, $uid) = getpwuid( $< );
+        my ($_rundir) = $self->cfg->{openvpn_pid} =~ /^(.*)\/.*$/;
+        unless ( -e $_rundir ) {
+            mkdir $_rundir;
+            chmod 0770, $_rundir;
+            chown $uid, $gid, $_rundir;
+        }
+        touch $self->cfg->{openvpn_pid};
+        chmod 0660, $self->cfg->{openvpn_pid};
+        chown $uid, $gid, $self->cfg->{openvpn_pid};
+        return undef;
+    }
+
 
 =head2 _check_running
 
@@ -303,34 +341,24 @@ Check if the OpenVPN server is running
 
     sub _check_running {
         my $self = shift;
-        my $_pid;
         my $openvpn_bin = $self->cfg->{openvpn_bin};
-    
-        if ( -e $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
-            $_pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
-        }
-        else {
-            my (undef, undef, undef, $gid) = getpwnam(
-                $self->cfg->{openvpn_group} );
-            my (undef, undef, $uid) = getpwuid( $< );
-            my ($_rundir) = $self->cfg->{openvpn_pid} =~ /^(.*)\/.*$/;
-            unless ( -e $_rundir ) {
-                mkdir $_rundir;
-                chmod 0770, $_rundir;
-                chown $uid, $gid, $_rundir;
-            }
-            touch $self->cfg->{openvpn_pid};
-            chmod 0660, $self->cfg->{openvpn_pid};
-            chown $uid, $gid, $self->cfg->{openvpn_pid};
-        }
-    
+
+        my $_pid = $self->_read_create_pid;
+        warn "RETURNED PID: $_pid";
+        return undef unless $_pid;
+
         my $t = Proc::ProcessTable->new;
-        foreach my $p ( @{ $t->table } ) {
-            if ( $p->cmndline =~ /$openvpn_bin/g && ( $_pid && $_pid == $p->pid ) ){
-                return $p->pid;
+        for ( 0 .. 10 ){
+            foreach my $p ( @{ $t->table } ) {
+                if ( $p->cmndline =~ /$openvpn_bin/g
+                  && ( $_pid && $_pid == $p->pid )
+                ){
+                    return $p->pid;
+                }
             }
+            sleep 0.5;
         }
-        return;
+        return undef;
     }
 
 =head2 _check_port_available

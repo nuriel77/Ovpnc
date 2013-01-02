@@ -235,11 +235,10 @@ sub server_POST : Local
 {
     my ( $self, $c, $command ) = @_;
 
-    do {
-        $self->status_bad_request($c, message => 'Missing command(param: cmd=?)');
-        $self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
-    } unless defined( $command // $c->request->params->{command} );
+    if ( !$c->req->params->{command} && !$command ){
+        $self->_missing_params($c, 'Missing command(param: command=?)' );
+    }
+   
 
     # Assign from post parameters
     # will override anything in the path
@@ -304,34 +303,35 @@ or return server offline
 
 =cut
 
-sub server_GET : Local
-               : Args(0)
-               : Does('ACL')
-                    AllowedRole('admin')
-                    AllowedRole('client')
-                    ACLDetachTo('denied')
-               : Sitemap
-{
-    my ( $self, $c ) = @_;
-
-    my $_role = $self->new_with_traits(
-        traits         => ['Control'],
-        cfg            => $self->cfg,
-        app_root       => $c->config->{home},
-        app_user       => $c->user_exists ? $c->user->get("username") : '',
-    ) or die "Could not get role 'Control': $!";
-
-    my $_pid = $_role->_check_running( $self->_has_vpn ? $self->vpn : undef );
-
-    if ( $_pid ){
-        $self->status_ok($c, entity => { pid => $_pid } );
-        return $_pid;
+    sub server_GET : Local
+                   : Args(0)
+                   : Does('ACL')
+                        AllowedRole('admin')
+                        AllowedRole('client')
+                        ACLDetachTo('denied')
+                   : Sitemap
+    {
+        my ( $self, $c ) = @_;
+    
+        my $_role = $self->new_with_traits(
+            traits         => ['Control'],
+            cfg            => $self->cfg,
+            app_root       => $c->config->{home},
+            app_user       => $c->user_exists ? $c->user->get("username") : '',
+        ) or die "Could not get role 'Control': $!";
+    
+        my $_pid = $_role->_check_running( $self->_has_vpn ? $self->vpn : undef );
+    
+        if ( $_pid ){
+            $self->status_ok($c, entity => { pid => $_pid } );
+            return $_pid;
+        }
+        else {
+            $self->status_not_found($c, message => "Server offline");
+            return;
+        }
     }
-    else {
-        $self->status_not_found($c, message => "Server offline");
-        return;
-    }
-}
+
 
 =head2 sanity
 
@@ -342,38 +342,53 @@ is down, will return status 403 to user.
 
 =cut
 
-sub sanity : Private {
-    my ( $self, $c, $params ) = @_;
+    sub sanity : Private {
+        my ( $self, $c, $params ) = @_;
 
-    # Check permitted method for
-    # non Catalyst REST complient
-    # ===========================
-    my $_flag = 0;
-    if ( $params && ref $params->{permitted} ) {
-        for ( @{ $params->{permitted} } ) {
-            $_flag++ && last if ( $c->request->method eq $_ );
+        # Check permitted method for
+        # non Catalyst REST complient
+        # ===========================
+        my $_flag = 0;
+        if ( $params && ref $params->{permitted} ) {
+            for ( @{ $params->{permitted} } ) {
+                $_flag++ && last if ( $c->request->method eq $_ );
+            }
+            unless ($_flag) {
+                $self->_disconnect_vpn;
+                $c->response->status(415);
+                $self->stash->{rest} =
+                    'Method '
+                  . $c->request->method
+                  . ' not permitted at '
+                  . ( caller(1) )[3];
+                $c->detach;
+            }
         }
-        unless ($_flag) {
-            $self->_disconnect_vpn;
-            $c->response->status(415);
-            $self->stash->{rest} =
-                'Method '
-              . $c->request->method
-              . ' not permitted at '
-              . ( caller(1) )[3];
+
+        # Check connection
+        # ================
+        if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
+            $self->_disconnect_vpn;    # Just to clear the handle
+            $self->status_ok( $c, entity => { status => 'Server offline' });
             $c->detach;
         }
+        return 1;
     }
 
-    # Check connection
-    # ================
-    if ( !$params->{no_connect} && $self->vpn && !$self->vpn->connect ) {
-        $self->_disconnect_vpn;    # Just to clear the handle
-        $self->status_ok( $c, entity => { status => 'Server offline' });
+
+=head2 _missing_params
+
+Act on missing parameters
+
+=cut
+
+    sub _missing_params : Private{
+        my ( $self, $c, $msg ) = @_;
+        $self->status_bad_request($c, message => $msg);
+        $self->_disconnect_vpn if $self->_has_vpn;
         $c->detach;
     }
-    return 1;
-}
+
 
 =head2 denied
 
@@ -382,26 +397,40 @@ no match for role
 
 =cut
 
-sub denied : Private {
-    my ( $self, $c ) = @_;
-    $self->status_forbidden( $c, message => 'Access denied' );
-    $c->detach;
-}
+    sub denied : Private {
+        my ( $self, $c ) = @_;
+        $self->status_forbidden( $c, message => 'Access denied' );
+        $c->detach;
+    }
 
-sub end : Private {
-    my ( $self, $c ) = @_;
+=head2 end
 
-    # Clean up the File::Assets
-    # it is set to null but
-    # is not needed in JSON output
-    # ============================
-    delete $c->stash->{assets};
+Default end action
 
-    # Forward to JSON view
-    # ====================
-    $c->forward(
-        ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
-}
+=cut
+
+    sub end : Private {
+        my ( $self, $c ) = @_;
+
+        # Clean up the File::Assets
+        # it is set to null but
+        # is not needed in JSON output
+        # ============================
+        delete $c->stash->{assets};
+
+        # Forward to JSON view
+        # ====================
+        $c->forward(
+            ( $c->request->params->{xml} ? 'View::XML::Simple' : 'View::JSON' ) );
+    }
+
+
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
+
 
 __PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
