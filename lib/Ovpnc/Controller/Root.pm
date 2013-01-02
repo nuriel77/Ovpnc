@@ -56,9 +56,10 @@ sub auto : Private {
 
     # Test DB connection
     # ==================
-    if ( ! $c->session->{_db_tested}
-      && ! $c->model('DB')->storage->connected
-    ){
+#    if ( #! $c->session->{_db_tested}
+      #&&
+#        ! $c->model('DB')->storage->connected
+#    ){
  
         $c->log->debug('Database not connected. Testing initial connection.')
             if $ENV{CATALYST_DEBUG};
@@ -102,11 +103,11 @@ sub auto : Private {
             }
             $c->detach;
         };
-    }
-    else {
-        $c->log->debug('Already connected to database.')
-            if $ENV{CATALYST_DEBUG};
-    }
+#    }
+#    else {
+#        $c->log->debug('Already connected to database.')
+#            if $ENV{CATALYST_DEBUG};
+#    }
 
 }
 
@@ -139,7 +140,6 @@ around [qw(ovpnc_config index)] => sub {
 
     # Sanity check
     # ============
-
     my $_err = Ovpnc::Plugin::Sanity->action( $c->config );
 
     if ( $_err and ref $_err eq 'ARRAY' ) {

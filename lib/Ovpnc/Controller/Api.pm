@@ -279,7 +279,10 @@ sub assign_params : Private {
 
         # Ovpnc temporary directory
         # =========================
-        tmp_dir     => $cfg->{openvpn_dir} . '/tmp/',
+        tmp_dir     => ( $cfg->{openvpn_tmpdir} =~ /^\//
+            ? $cfg->{openvpn_tmpdir}
+            : $cfg->{openvpn_dir} . '/' . $cfg->{openvpn_tmpdir}
+        ),
 
         # OpenVPN pid file
         # ================

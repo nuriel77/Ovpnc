@@ -145,6 +145,7 @@ var total_count = 0;
               && obj.rest.resultset[0] == 'No certificates'
             ){
                 $('#flexme').find('tr').remove();
+                $('#ajaxLoaderFlexgridLoading').remove();
                 return;
             }
 

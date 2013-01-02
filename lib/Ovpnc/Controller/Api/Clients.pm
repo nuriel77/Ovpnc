@@ -102,7 +102,7 @@ or after, or around...
           )
       ] => sub {
         my ( $orig, $self, $c, $params ) = @_;
-    
+
         # Assign global config params
         # ===========================
         $self->cfg( $c->controller('Api')->assign_params( $c ) )
@@ -261,7 +261,7 @@ of Ovpnc/OpenVPN
             $param->{$keyname} = $c->req->params->{$keyname}
                 if $keyname;
         }
-    
+
         # client configuration dir
         # ========================
         my $_ccd_dir = $self->cfg->{openvpn_ccd}  =~ /^\//
@@ -272,7 +272,7 @@ of Ovpnc/OpenVPN
         # ==================================
         my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
           @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
-    
+
         my $_columns = [
             qw/
               id
@@ -401,6 +401,7 @@ of Ovpnc/OpenVPN
     
         # Query resultset
         # ===============    
+
         my @_clients;
         my $rs;
         try {

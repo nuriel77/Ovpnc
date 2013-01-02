@@ -183,7 +183,8 @@ var dump = function (obj){
                     method: 'POST',
                     success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
                     error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
-                    loader: 1
+                    loader: 1,
+                    timeout: 10000
                 });
                 return true;
             }
@@ -444,7 +445,8 @@ var dump = function (obj){
                     method: 'POST',
                     success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
                     error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
-                    loader: 1
+                    loader: 1,
+                    timeout: 10000
                 });
             }
         },
@@ -490,7 +492,7 @@ var dump = function (obj){
         errorAjaxServerControl : function(r) {
             if ( window.DEBUG ) log( "errorAjaxServerControl: %o", r);
             r = r.responseText !== undefined ? jQuery.parseJSON(r.responseText) : r;
-            r = r.rest.error !== undefined ? r.rest.error : r;
+            r = ( r.rest && r.rest.error !== undefined ) ? r.rest.error : r;
             alert( $.Ovpnc().alertErr + ' Error executing command: ' + r + '</div><div class="clear"></div>' );
             return false;
         },
@@ -691,17 +693,17 @@ var dump = function (obj){
                 } else {
                     if ( window.DEBUG )  log("Server status got %o",r);
                 }
-    
+
                 if ( r.rest !== undefined ){
                     // Show number of connected clients if any
                     $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
-            
+
                     // In the title of the server status
                     if (r.rest.title !== undefined) $.Ovpnc().populateVersion(r.rest.title);
-            
+
                     // Update the table with any online clients data
                     // This applies only to path /clients
-        
+
                     if (
                         r.rest.clients !== undefined
                         && $.Ovpnc().pathname === '/clients'
