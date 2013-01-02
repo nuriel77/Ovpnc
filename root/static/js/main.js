@@ -93,20 +93,17 @@ var dump = function (obj){
         //
         confirmDiag: function (p) {
             if ( window.DEBUG ) log ( "confirmDiag got: %o",p );
-
+            if ( p.run_before ) p.run_before();
             var cDiv = document.createElement('div');
-
             $( cDiv ).css({
                 'display':'none',
                 'color'  :'#555555'
             });
-
             $( 'body' ).prepend( cDiv );
-
             $( cDiv ).attr('id','confirmDialog')
                     .dialog({
                  autoOpen: false,
-                 title: "Confirm action",
+                 title: p.title ? p.title : "Confirm action",
                  hide: "explode",
                  modal:true,
                  closeText: 'close',
@@ -116,7 +113,7 @@ var dump = function (obj){
                  width: "auto",
                  zIndex:9010,
                  position: [ getMousePosition().x, getMousePosition().y ],
-                 buttons: [
+                 buttons: p.buttons ? p.buttons : [
                     { text: "cancel", click: function () { $(this).dialog("close").remove(); return false;} },
                     { text: "ok",     click: function () { $(this).dialog("close"); p.action( p.params );return true; } }
                  ],
@@ -124,6 +121,7 @@ var dump = function (obj){
             $('#confirmDialog').dialog('open')
                                .html('<span>' + p.message + '</span>')
                                .show(200);
+            if ( p.run_after ) p.run_after();
             return false;
         },
         //
@@ -209,6 +207,23 @@ var dump = function (obj){
         // Used by pages having flexigrid table
         //
         styleFlexigrid: function () {
+
+            // Select/Unselect all (Ctrl a or u)
+            var isCtrl = false;
+            $(document).keyup(function (e) {
+                if (e.which == 17) isCtrl = false;
+            }).keydown(function (e) {
+                if (e.which == 17) isCtrl = true;
+                if ( isCtrl == true ){
+                    if ( e.which == 65 ){
+                        $('.bDiv').find('tr').addClass('trSelected');
+                    }
+                    else if ( e.which == 85 ){
+                        $('.bDiv').find('tr').removeClass('trSelected');
+                    }
+                    return false;
+                }
+            });
 
             $.Ovpnc().chooseUser({
                 element: $('.qsbox'),

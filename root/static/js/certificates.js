@@ -61,6 +61,7 @@ var total_count = 0;
                     { name: 'Revoke',       bclass: 'block', onpress : blockCertificates },
                     { name: 'Unrevoke',     bclass: 'unblock', onpress : unblockCertificates },
                     { name: 'Properties',   bclass: 'properties', onpress : test_edit },
+                    { name: 'Download',     bclass: 'download', onpress : downloadCertificates },
                     { separator: true },
                     { name: 'Unselect All', bclass: 'unSelectAll', onpress: function (){ $('.bDiv').find('tr').removeClass('trSelected'); } },
                     { name: 'Select All',   bclass: 'selectAll',   onpress: function (){ $('.bDiv').find('tr').addClass('trSelected'); } }
@@ -221,6 +222,33 @@ var total_count = 0;
                            .css('cursor','cell').attr('parent', _name );
                 });
             });
+        },
+        //
+        // Download Certificates
+        //
+        downloadCertificates: function (button, grid){
+            // Get total selected certificate(s)
+            var total_count  = $('.trSelected', grid).length,
+                _loop        = 0,
+                certificates = '',
+                client       = '';
+
+            if ( total_count > 1 ){
+                alert( $.Ovpnc().alertErr + ' You may only download one certificate each time</div><div class="clear"></div>');
+                return false;
+            }
+
+            $.each($('.trSelected', grid), function() {
+                // Get the certificates name of this grid
+                certificate = $('td:nth-child(4) div', this).html();
+                client = $('td:nth-child(3) div', this).html();
+                _loop++;
+            });
+
+            if ( _loop == 0 ){
+                return false;
+            }
+            window.location.href = '/api/certificates/download/' + client + '/' + certificate + '?format=' + button;
         },
         //
         // Revoke certificate(s)
@@ -404,13 +432,25 @@ var total_count = 0;
                     else if ( key.match(/edit/i) ){
                         // TODO
                     }
+                    else if ( key.match(/tar|[gb]?zip/) ){
+                        $.Certificate().downloadCertificates(key, $('.flexigrid'));
+                    }
                 },
                 items: {
-                    "properties": {name: "Details", icon: "edit"},
-                    "delete": {name: "Delete", icon: "delete"},
-                    "sep1": "---------",
-                    "block": {name: "Revoke", icon: "block"},
-                    "unblock": {name: "Unrevoke", icon: "unblock"}
+                    "properties":   { name: "Details",   icon: "edit" },
+                    "delete":       { name: "Delete",    icon: "delete" },
+                    "sep1":         "---------",
+                    "block":        { name: "Revoke",    icon: "block" },
+                    "unblock":      { name: "Unrevoke",  icon: "unblock" },
+                    "download" :    {
+                        "name"  : "Download",
+                        "items" : {
+                            "tar"   :       { name: "tar" },
+                            "gzip"  :       { name: "gzip" },
+                            "bzip"  :       { name: "bzip" },
+                            "zip"   :       { name: "zip" }
+                        }
+                    }
                 }
             });
             $('.context-menu-one').on('click', function(e){
@@ -476,4 +516,61 @@ function blockCertificates(button, grid){
 
 function unblockCertificates(button, grid){
     $.Certificate().blockUnblockCertificates(button, grid, 'unrevoke');
+}
+
+function downloadCertificates(button, grid){
+    var aDiv = document.createElement('div'),
+        bDiv = document.createElement('div'),
+        cDiv = document.createElement('div');
+
+    $( aDiv ).attr('id', 'formatsDiv');
+    $( bDiv ).html( 'Choose a format:' );
+    $( cDiv ).attr('id', 'radioGroup');
+    $.each ( [ 'tar', 'gzip', 'bzip', 'zip' ], function (i, t){
+        var sDiv = document.createElement('div'),
+            iDiv = document.createElement('input'),
+            lDiv = document.createElement('label');
+        if ( i == 0 ) $( iDiv ).attr('checked', 'checked');
+        $( iDiv ).attr({
+            name: 'format',
+            type: 'radio',
+            value: t
+        });
+        $( lDiv ).text(' ' + t);
+        $( sDiv ).append( iDiv )
+                 .append( lDiv )
+                 .addClass('dialog_radiobuttons');
+        $( cDiv ).append( sDiv );
+    });
+
+    $( aDiv ).append( bDiv ).append( cDiv );
+
+    $.Ovpnc().confirmDiag({
+        run_after: function() {
+            $('.dialog_radiobuttons').bind('click', function(){
+                $('.dialog_radiobuttons').children('input').removeAttr('checked');
+                $(this).children('input').attr('checked', 'checked');
+            }).hover(function(){
+                $(this).css('color','#000090');
+            }, function(){
+                $(this).css('color','');
+            });
+        }, 
+        message: $( aDiv ).html(),
+        title: 'Choose a format',
+        buttons: [
+                    { 
+                        text: "cancel",   click: function () {
+                            $(this).dialog("close").remove(); return false;
+                        } 
+                    },
+                    { 
+                        text: "Download", click: function () {
+                            $.Certificate().downloadCertificates( $('.dialog_radiobuttons').children('input[type="radio"]:checked').attr('value'), grid );
+                            $(this).dialog("close");
+                            return true;
+                        } 
+                    }
+                ],
+    });
 }

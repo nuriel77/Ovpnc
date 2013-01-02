@@ -181,8 +181,8 @@ on this system
         my ( $self, $format ) = @_;
 
         if ( $format eq 'bzip' ){
-            return { error => 'zlib support/libraries missing' }
-                unless Archive::Tar->has_bzip_support;
+            return { error => 'bzip2 support/libraries missing' }
+                unless Archive::Tar->has_bzip2_support;
         }
         else {
             return { error => 'zlib support/libraries missing' }

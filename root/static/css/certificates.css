@@ -24,7 +24,9 @@
 .certificate_keys{ float:left; font-weight:bold; }
 .certificate_hidden_data{ display:none; }
 .unkill_me { margin: 0 0 40px 0; border-bottom: border-bottom:1px solid #999; }
-
+.dialog_radiobuttons{
+    padding:2px;
+}
 
 /* Add icons to jQuery.context menu */
 .context-menu-item.icon-block { background-image: url(/static/images/kill_client.png); }

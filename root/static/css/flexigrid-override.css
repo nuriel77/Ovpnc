@@ -52,3 +52,6 @@
     background: url(/static/images/minus.png) no-repeat center left;
 }
 
+.flexigrid div.fbutton .download {
+    background: url(/static/images/download-icon.png) no-repeat center left;
+}

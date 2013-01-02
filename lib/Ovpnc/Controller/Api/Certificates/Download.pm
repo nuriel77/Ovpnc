@@ -118,15 +118,18 @@ archived for download.
         my ( $self, $c, $client, $certs ) = @_;
 
         my $format = $c->req->params->{format} ||= 'tar';
-        my @formats = qw[ tar gzip bzip ];
+        my @formats = qw[ tar gzip bzip zip ];
 
         $c->detach if !$client or !$certs;
 
+        # Validate format type
+        # ====================
         unless ( grep $format ~~ $_, @formats ){
-            $self->status_bad_request($c,
-                message => 'Unknown format: ' . $format
-                            . '. Supported formats: '
-                            . join ', ', @formats
+            $c->res->status(400);
+            $c->res->body(
+                'Unknown format: ' . $format
+                . '. Supported formats: '
+                . join ', ', @formats
             );
             $c->detach;
         }
