@@ -525,7 +525,7 @@ function downloadCertificates(button, grid){
         cDiv = document.createElement('div');
 
     $( aDiv ).attr('id', 'formatsDiv');
-    $( bDiv ).html( 'Choose a format:' );
+    $( bDiv ).html( 'Choose a format:<br />' );
     $( cDiv ).attr('id', 'radioGroup');
     $.each ( [ 'tar', 'gzip', 'bzip', 'zip' ], function (i, t){
         var sDiv = document.createElement('div'),

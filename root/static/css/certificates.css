@@ -24,7 +24,9 @@
 .certificate_keys{ float:left; font-weight:bold; }
 .certificate_hidden_data{ display:none; }
 .unkill_me { margin: 0 0 40px 0; border-bottom: border-bottom:1px solid #999; }
+#radioGroup { margin-top:3px; }
 .dialog_radiobuttons{
+    margin-top:1px;
     padding:2px;
 }
 

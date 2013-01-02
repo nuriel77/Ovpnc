@@ -52,6 +52,8 @@ sub auto : Private {
     $c->stash->{title} = ucfirst($c->req->path)
         unless $c->stash->{title};
 
+    $c->stash->{server_poll_freq} = $c->config->{server_poll_freq};
+
     # Test DB connection
     # ==================
     if ( ! $c->session->{_db_tested}
@@ -251,7 +253,7 @@ Include static files, dynamically
                     js/Flexigrid/js/flexigrid.pack.js
                 ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;
         }
-    
+
         return 1 if $c->stash->{no_self};
     
         # Include according to pathname

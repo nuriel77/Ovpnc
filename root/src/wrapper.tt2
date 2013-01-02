@@ -90,7 +90,6 @@
 					[% END %]
 
 				</div>
-
 				[% IF c.user_exists %]
 					<!-- right frame -->
 					<div id="right_frame">

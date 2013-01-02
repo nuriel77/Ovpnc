@@ -52,7 +52,6 @@ var dump = function (obj){
     // Ovnpc config items
     //
     config = {
-        pollFreq: 20000,
         // Get server status from api every n milliseconds
         opacityEffectDuration: 3000,
         // Sets the timing of the opacity fadein/out effect
@@ -86,7 +85,7 @@ var dump = function (obj){
             $.Ovpnc._serverInterval = setInterval(function() {
                 $.Ovpnc().getServerStatus();
             },
-            $.Ovpnc().pollFreq );
+            ( window.pollFreq || 20000 ) );
         },
         //
         // Confirmation dialog

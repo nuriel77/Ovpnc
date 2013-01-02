@@ -38,3 +38,7 @@
       </ul>
     </div>
 [% END %]
+[% IF server_poll_freq %]
+    <script>(function($){ window.pollFreq = [% server_poll_freq %] * 1000 })(jQuery);</script>
+[% END %]
+
