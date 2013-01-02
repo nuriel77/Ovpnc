@@ -33,6 +33,7 @@ requires 'boolean';
 requires 'fields';
 requires 'Socket';
 requires 'Tie::File';
+requires 'DateTime::Format::MySQL';
 requires 'Module::Locate';
 requires 'Moose';
 requires 'Moose::Exporter';
