@@ -692,8 +692,10 @@ var dump = function (obj){
                     if ( window.DEBUG )  log("Server status got %o",r);
                 }
     
-                // Show number of connected clients if any
-                $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
+                if ( r.rest !== undefined ){
+                    // Show number of connected clients if any
+                    $('#online_clients_number').text(r.rest.clients !== undefined ? r.rest.clients.length : 0);
+                }
         
                 // In the title of the server status
                 if (r.rest.title !== undefined) $.Ovpnc().populateVersion(r.rest.title);
