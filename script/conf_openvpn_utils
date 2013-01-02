@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z $1 ]; then
-    echo Provide the directory of easy-rsa/2.0
+    echo Please provide the directory of the easy-rsa/2.0
     echo Example: $0 /usr/share/doc/openvpn/examples/easy-rsa/2.0
     exit 1
 fi
@@ -13,3 +13,8 @@ chmod o-rwx openvpn/conf/2.0/* -R
 chown openvpn.ovpnc openvpn/conf/2.0 -R
 chmod 770 openvpn/conf/2.0/
 echo Directory copied successfully
+if [ ! -f openvpn/conf/openvpn.conf.ovpnc ];then
+    touch openvpn/conf/openvpn.conf.ovpnc
+    chown ovpnc.ovpnc openvpn/conf/openvpn.conf.ovpnc
+    chmod 600 openvpn/conf/openvpn.conf.ovpnc
+fi

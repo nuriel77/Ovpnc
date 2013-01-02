@@ -256,7 +256,7 @@ var total_count = 0;
         //
         blockUnblockCertificates: function (button, grid, action){
             if ( action === undefined ){
-                action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
+                action = button.match(/unblock/i) ? 'unrevoke' : 'revoke';
             }
             // Get total selected certificate(s)
             var total_count = $('.trSelected', grid).length;
@@ -521,6 +521,7 @@ function unblockCertificates(button, grid){
 }
 
 function downloadCertificates(button, grid){
+    if ( $('.trSelected', grid).length == 0 ) return false;
     var aDiv = document.createElement('div'),
         bDiv = document.createElement('div'),
         cDiv = document.createElement('div');

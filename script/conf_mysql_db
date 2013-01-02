@@ -1,5 +1,9 @@
 #!/bin/bash
-echo -e "Warning! This script will restore the ovpnc database.\nAll data will be lost. Break now (^c) if you wish to cancel."
+if [ ! -f .first_setup ]; then
+    echo -e "Warning! This script will restore the ovpnc database.\nAll data will be lost. Break now (^c) if you wish to cancel."
+else
+    rm -rf .first_setup
+fi
 echo Enter mysql pass for $USER:
 tm=$(stty -g)
 stty -echo
