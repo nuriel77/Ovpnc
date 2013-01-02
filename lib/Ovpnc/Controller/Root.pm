@@ -56,8 +56,8 @@ sub auto : Private {
     # Test DB connection
     # ==================
     if ( not defined $c->stash->{_db_tested} ){
-         $c->log->debug('Database not connected. Testing initial connection.');
-            #if $ENV{CATALYST_DEBUG};
+         $c->log->debug('Database not connected. Testing initial connection.')
+            if $ENV{CATALYST_DEBUG};
 
         # Verify that the database is accessible
         # ======================================
@@ -101,7 +101,7 @@ sub auto : Private {
     }
     else {
         $c->log->debug('Already connected to database.')
-            #if $ENV{CATALYST_DEBUG};
+            if $ENV{CATALYST_DEBUG};
     }
 
 }

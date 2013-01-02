@@ -344,11 +344,9 @@ Check if the OpenVPN server is running
 
         my $_pid = $self->_read_create_pid;
         if ( !$_pid and $command eq 'start' ){
-            warn "Got NO PID back, sleeping 1 and retrying";
             sleep 1;
             for ( 0 .. 5 ){
                 $_pid = $self->_read_create_pid;
-                warn "Now I got a PID ... $_pid" if $_pid;
                 last if $_pid;
             }
         }
