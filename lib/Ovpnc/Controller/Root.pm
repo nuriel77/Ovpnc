@@ -55,20 +55,16 @@ sub auto : Private {
 
     # Test DB connection
     # ==================
-    if (
-            ! $c->session->{_db_tested}
-        and 
-            ! $c->model('DB')->storage->connected
-    ){
-         $c->log->debug('Database not connected. Testing initial connection.')
-            if $ENV{CATALYST_DEBUG};
-
-        #$c->session->{_db_tested} = 1;
+    if ( not defined $c->stash->{_db_tested} ){
+         $c->log->debug('Database not connected. Testing initial connection.');
+            #if $ENV{CATALYST_DEBUG};
 
         # Verify that the database is accessible
         # ======================================
         try { 
-            $c->model('DB::User')->count;
+            if ( my $count = $c->model('DB::User')->count ){
+                $c->stash->{_db_tested} = 1;
+            }
         }
         catch {
             if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
@@ -105,7 +101,7 @@ sub auto : Private {
     }
     else {
         $c->log->debug('Already connected to database.')
-            if $ENV{CATALYST_DEBUG};
+            #if $ENV{CATALYST_DEBUG};
     }
 
 }

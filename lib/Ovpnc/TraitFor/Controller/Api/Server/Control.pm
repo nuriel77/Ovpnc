@@ -64,7 +64,7 @@ sub start {
 
     # Check connected or not to mgmt port
     # ===================================
-    my $_pid = $self->_check_running;
+    my $_pid = $self->_check_running('start');
     if ( $_pid || ( $self->_has_vpn && $self->vpn->{objects} ) ) {
         $self->_disconnect_vpn;
         return { error => 'Server already started with pid ' . $_pid };
@@ -125,13 +125,12 @@ sub start {
         my $proc    = Proc::Simple->new();
         my $_status = $proc->start(@cmd);
 
-        sleep 2;    # give it a moment, very important.
+        sleep 5;    # give it a moment, very important.
 
         return { error => "An error occured starting up the openvpn server!" }
           unless ($_status);
 
-        unless ( $self->_check_running ) {
-
+        unless ( $self->_check_running('start') ) {
             # Not running?
             # ============
             return { error =>
@@ -143,7 +142,7 @@ sub start {
             # ===================================
             if ( -e $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
                 undef $_pid;
-                $_pid = $self->_check_running;
+                $_pid = $self->_check_running('start');
                 my $_file_pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
 
                 if ( $_file_pid == $_pid ) {
@@ -304,17 +303,14 @@ Read and / or create new pid file
 
     sub _read_create_pid{
         my $self = shift;
-        my $_pid;
-    my $i = 0;
-        for ( 0 .. 6 ) {
-            $i++;
-            warn "$i ... Waiting for pid to be created";
-            if ( -f $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
-                my $pid = read_file( $self->cfg->{openvpn_pid}, chomp => 1 );
-                warn "$i ... FOUND PID";
-                return $pid if $pid ne '';
-            }
-            sleep 1;
+        my $pid;
+
+        if ( -f $self->cfg->{openvpn_pid} and -r $self->cfg->{openvpn_pid} ) {
+            open ( my $PID, "<", $self->cfg->{openvpn_pid} )
+                or die "Cannot open pid file: $!";
+            $pid = do { local($/); <$PID> };
+            close $PID;
+            return $pid;
         }
 
         my (undef, undef, undef, $gid) = getpwnam(
@@ -340,23 +336,32 @@ Check if the OpenVPN server is running
 =cut
 
     sub _check_running {
-        my $self = shift;
+        my ( $self, $command ) = @_;
+
+        $command ||= 'stop';
+
         my $openvpn_bin = $self->cfg->{openvpn_bin};
 
         my $_pid = $self->_read_create_pid;
-        warn "RETURNED PID: $_pid";
+        if ( !$_pid and $command eq 'start' ){
+            warn "Got NO PID back, sleeping 1 and retrying";
+            sleep 1;
+            for ( 0 .. 5 ){
+                $_pid = $self->_read_create_pid;
+                warn "Now I got a PID ... $_pid" if $_pid;
+                last if $_pid;
+            }
+        }
+
         return undef unless $_pid;
 
         my $t = Proc::ProcessTable->new;
-        for ( 0 .. 10 ){
-            foreach my $p ( @{ $t->table } ) {
-                if ( $p->cmndline =~ /$openvpn_bin/g
-                  && ( $_pid && $_pid == $p->pid )
-                ){
-                    return $p->pid;
-                }
+        foreach my $p ( @{ $t->table } ) {
+            if ( $p->cmndline =~ /$openvpn_bin/g
+              && ( $_pid && $_pid == $p->pid )
+            ){
+                return $p->pid;
             }
-            sleep 0.5;
         }
         return undef;
     }
