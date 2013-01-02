@@ -37,8 +37,10 @@ Test Ovpnc application using Test::WWW::Mechanize::Catalyst
 
 # Define users
 # ============
-ok ( my $mech = Test::WWW::Mechanize::Catalyst->new,
-    'Create new test user-agent' );
+ok (
+        my $mech = Test::WWW::Mechanize::Catalyst->new( cookie_jar => {} ),
+        'Create new test user-agent'
+);
 
 
 # Fire up

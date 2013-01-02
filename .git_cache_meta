@@ -1,5 +1,5 @@
-chown 0 .git_cache_meta
-chgrp 0 .git_cache_meta
+chown 1011 .git_cache_meta
+chgrp 1012 .git_cache_meta
 touch -c -d "2012-12-26 21:46:21.0000000000" .git_cache_meta
 chmod 0644 .git_cache_meta
 chown 0 .gitignore
@@ -50,6 +50,10 @@ chown 1011 lib/Ovpnc/Controller/Api/Certificates.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Certificates.pm
 touch -c -d "2013-01-01 06:01:49.0000000000" lib/Ovpnc/Controller/Api/Certificates.pm
 chmod 0640 lib/Ovpnc/Controller/Api/Certificates.pm
+chown 0 lib/Ovpnc/Controller/Api/Certificates/Download.pm
+chgrp 0 lib/Ovpnc/Controller/Api/Certificates/Download.pm
+touch -c -d "2013-01-02 04:50:35.0000000000" lib/Ovpnc/Controller/Api/Certificates/Download.pm
+chmod 0640 lib/Ovpnc/Controller/Api/Certificates/Download.pm
 chown 1011 lib/Ovpnc/Controller/Api/Clients.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Clients.pm
 touch -c -d "2013-01-01 06:01:49.0000000000" lib/Ovpnc/Controller/Api/Clients.pm
@@ -134,10 +138,6 @@ chown 1011 lib/Ovpnc/Schema/ResultSet/User.pm
 chgrp 1012 lib/Ovpnc/Schema/ResultSet/User.pm
 touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Schema/ResultSet/User.pm
 chmod 0640 lib/Ovpnc/Schema/ResultSet/User.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Archive.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Archive.pm
-touch -c -d "2013-01-01 06:01:49.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Archive.pm
-chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Archive.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
 touch -c -d "2012-12-28 03:21:05.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
@@ -150,6 +150,10 @@ chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 touch -c -d "2012-12-29 22:13:57.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
+chown 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
+chgrp 0 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
+touch -c -d "2013-01-02 04:50:35.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
+chmod 0640 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
 touch -c -d "2012-12-29 22:13:57.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
@@ -450,6 +454,10 @@ chown 1011 root/static/images/close-gray.png
 chgrp 1012 root/static/images/close-gray.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/close-gray.png
 chmod 0600 root/static/images/close-gray.png
+chown 1011 root/static/images/download-icon.png
+chgrp 1012 root/static/images/download-icon.png
+touch -c -d "2013-01-02 04:50:35.0000000000" root/static/images/download-icon.png
+chmod 0640 root/static/images/download-icon.png
 chown 1011 root/static/images/edit-icon.png
 chgrp 1012 root/static/images/edit-icon.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/edit-icon.png

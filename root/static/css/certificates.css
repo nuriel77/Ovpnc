@@ -31,3 +31,4 @@
 /* Add icons to jQuery.context menu */
 .context-menu-item.icon-block { background-image: url(/static/images/kill_client.png); }
 .context-menu-item.icon-unblock { background-image: url(/static/images/unblock.png); }
+.context-menu-item.icon-download { background-image: url(/static/images/download-icon.png); }

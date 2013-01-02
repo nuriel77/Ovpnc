@@ -4,6 +4,7 @@ use strict;
 use Cwd;
 use Try::Tiny;
 use Archive::Tar;
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use Moose::Role;
 
 
@@ -51,6 +52,10 @@ certificates and keys
             $compression = 'COMPRESS_GZIP';
             $extension .= '.gz';
         }
+        elsif ( $format eq 'zip' ){
+            $compression = 'SEND_TO_ZIP';
+            $extension = 'zip';
+        }
 
         if ( my $error = $self->_run_type_supported_check( $format ) ){
             return $error;
@@ -88,8 +93,14 @@ certificates and keys
 
         # New Archive object
         # ==================
-        my $tar = Archive::Tar->new;
-
+        my ($tar, $zip);
+        unless ( $format eq 'zip' ){
+            $tar = Archive::Tar->new;
+        }
+        else {
+            $zip = Archive::Zip->new;
+        }
+    
         my ( @files, @errors );
         my $client_keys_dir;
 
@@ -110,23 +121,33 @@ certificates and keys
 
                 # Add the files to the archive
                 # ============================
-                $tar->add_files( $cert->name . '.crt', $cert->name . '.key' )
-                    or push @errors, $client . ': Failed to initialize archive class: '
-                                     . $tar->error;
+                if ( $format ne 'zip' ){
+                    $tar->add_files( $cert->name . '.crt', $cert->name . '.key' )
+                        or push @errors, $client . ': Failed to initialize archive class: '
+                                         . $tar->error;
+                    # Write the archive file to disk
+                    # ==============================
+                    try {
+                        $tar->write( $client_keys_dir . '/' . $cert->name . '.' . $extension, $compression )
+                            or push @errors,
+                                     $client . ': Failed to create ' . $extension . ' for '
+                                    . $cert->name . ': ' . $tar->error;
+                    };
 
-                # Write the archive file to disk
-                # ==============================
-                try {
-                    $tar->write( $client_keys_dir . '/' . $cert->name . '.' . $extension, $compression )
-                        or push @errors,
-                                 $client . ': Failed to create ' . $extension . ' for '
-                                . $cert->name . ': ' . $tar->error;
-                };
+                    # Clear the object
+                    # ================
+                    $tar->clear;
+                }
+                else {
+                    $zip->addFile( $cert->name . '.crt' );
+                    $zip->addFile( $cert->name . '.key' );
+                    unless ( $zip->writeToFileNamed( $client_keys_dir . '/' . $cert->name . '.' . $extension ) == AZ_OK ){
+                        push @errors,
+                              $client . ': Failed to create ' . $extension . ' for '
+                              . $cert->name . ': ' . $tar->error;
+                    }
+                }
 
-                # Clear the object
-                # ================
-                $tar->clear;
-                
                 if ( $rs == 1 ){
                      push @files, $client_keys_dir . '/' . $cert->name . '.' . $extension
                          if -f $client_keys_dir . '/' . $cert->name . '.' . $extension;
@@ -143,26 +164,36 @@ certificates and keys
         # we set the name to the client's
         # ===============================
         if ( @files > 1 ) {
-            $tar->clear;
-            $tar = Archive::Tar->new;
-            $tar->add_files( @files );
-            try {
-                $tar->write( $client_keys_dir . '/' . $client . '.' . $extension, $compression )
-                    or push(@errors, $client  . ': Failed to create '
-                                    . $extension . ' for all certificates / keys: ' . $tar->error
-                       );
-                # Remove the temporary archivce files
-                # ===================================
-                unlink(@files);
+            if ( $format ne 'zip' ){
+                $tar->clear;
+                $tar = Archive::Tar->new;
+                $tar->add_files( @files );
+                try {
+                    $tar->write( $client_keys_dir . '/' . $client . '.' . $extension, $compression )
+                        or push(@errors, $client  . ': Failed to create '
+                                        . $extension . ' for all certificates / keys: ' . $tar->error
+                           );
+                };
+            }
+            else {
+                $zip->addFile( $_ ) for @files;
+                unless ( zip->writeToFileNamed('someZip.zip') == AZ_OK ) {
+                    push(@errors, $client  . ': Failed to create '
+                                   . $extension . ' for all certificates / keys')
+                }
+            }
+            
+            # Remove the temporary archivce files
+            # ===================================
+            unlink(@files);
 
-                # Empty the array
-                # ===============
-                $#files = -1;
+            # Empty the array
+            # ===============
+            $#files = -1;
 
-                # Place the new name into the array
-                # =================================
-                push @files, $client_keys_dir . '/' . $client . '.' . $extension;
-            };
+            # Place the new name into the array
+            # =================================
+            push @files, $client_keys_dir . '/' . $client . '.' . $extension;
         }
         unlink('tmp/') if -d 'tmp/session';
         chdir $current_dir;

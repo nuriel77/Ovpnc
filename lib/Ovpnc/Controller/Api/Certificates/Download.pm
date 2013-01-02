@@ -3,7 +3,6 @@ use warnings;
 use strict;
 use HTTP::Date;
 use File::stat;
-use IO::File;
 use Try::Tiny;
 use Moose;
 use utf8;
@@ -165,9 +164,7 @@ archived for download.
                 $c->res->headers->header( 'Pragma' => 'no-cache' );
                 $c->res->headers->header( 'Cache-Control' => 'no-cache' );
                 $c->response->header('Content-Description' => 'Certificate bundle');
-                #my $fh = IO::File->new( $_ret_val->{resultset}->[0], 'r' );
                 $c->serve_static_file($_ret_val->{resultset}->[0]);
-                #$c->res->body($fh);
                 $c->stash->{content_transfer} = 'application/octet-stream';
             }
         }

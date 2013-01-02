@@ -444,6 +444,7 @@ var total_count = 0;
                     "unblock":      { name: "Unrevoke",  icon: "unblock" },
                     "download" :    {
                         "name"  : "Download",
+                        "icon"  : "download",
                         "items" : {
                             "tar"   :       { name: "tar" },
                             "gzip"  :       { name: "gzip" },
