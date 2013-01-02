@@ -52,16 +52,16 @@ sub auto : Private {
     $c->stash->{title} = ucfirst($c->req->path)
         unless $c->stash->{title};
 
-    $c->stash->{server_poll_freq} = $c->config->{server_poll_freq};
+    $c->stash->{server_poll_freq} = $c->config->{server_poll_freq}
+        if $c->req->path !~ /^api.*/;
 
     # Test DB connection
     # ==================
-#    if ( #! $c->session->{_db_tested}
-      #&&
-#        ! $c->model('DB')->storage->connected
-#    ){
- 
-        $c->log->debug('Database not connected. Testing initial connection.')
+    if (
+        # ! $c->session->{_db_tested}
+        ! $c->model('DB')->storage->connected
+    ){
+         $c->log->debug('Database not connected. Testing initial connection.')
             if $ENV{CATALYST_DEBUG};
 
         $c->session->{_db_tested} = 1;
@@ -103,11 +103,11 @@ sub auto : Private {
             }
             $c->detach;
         };
-#    }
-#    else {
-#        $c->log->debug('Already connected to database.')
-#            if $ENV{CATALYST_DEBUG};
-#    }
+    }
+    else {
+        $c->log->debug('Already connected to database.')
+            if $ENV{CATALYST_DEBUG};
+    }
 
 }
 
