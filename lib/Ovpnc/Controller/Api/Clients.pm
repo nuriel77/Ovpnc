@@ -291,6 +291,7 @@ of Ovpnc/OpenVPN
               my $search         = $c->req->params->{search}
           and my $field          = $c->req->params->{field}
         ){
+
             if ( $field ~~ @{$_columns} or $c->req->params->{db} ){
                 my $qdb = $c->req->params->{db} ||= 'user';
                 $qdb =~ s/\/add//g;
@@ -318,27 +319,44 @@ of Ovpnc/OpenVPN
                 if ( $_result and $_result != 0 ){
                     unless ( $c->req->params->{like} ){
                         $self->status_ok($c,
-                            entity => { resultset => ( defined $_result->$field ? $_result->$field : [] ) } );
+                            entity => {
+                                field     => $field,
+                                search    => $search,
+                                resultset => ( defined $_result->$field ? $_result->$field : [] )
+                        } );
                     }
                     else {
                         my @rs;
                         while ( $_ = $_result->next ) { push @rs, $_->$field };
                         $self->status_ok($c,
-                            entity => { resultset => \@rs  } );
+                            entity => {
+                                field     => $field,
+                                search    => $search,
+                                resultset => \@rs,
+                            }
+                        );
                     }
                     $c->detach;
                     return;
                 }
                 else {
                     unless ( $c->req->params->{no_return_all} ){
-                        my $_complete_result = [$c->model('DB::User')->search({},{select=>$field})->all ];
+                        my $_complete_result = [$c->model( $db )->search({},{select=>$field})->all ];
                         $self->status_ok($c,
-                            entity => { resultset => [ map { $_->$field } @{$_complete_result} ] }
+                            entity => {
+                                field     => $field,
+                                search    => $search,
+                                resultset => [ map { $_->$field } @{$_complete_result} ]
+                            }
                         );
                     }
                     else {
                         $self->status_ok($c,
-                            entity => { resultset => [] }
+                            entity => {
+                                field     => $field,
+                                search    => $search,
+                                resultset => []
+                            }
                         );
                     }
                     $c->detach;
@@ -596,7 +614,7 @@ Delete client(s)
                        : Sitemap
     {
         my ( $self, $c, $client_list ) = @_;
-    
+
         my $ccd_dir = $self->cfg->{openvpn_ccd} =~ /^\//
             ? $self->cfg->{openvpn_ccd}
             : $self->cfg->{openvpn_dir} . '/'
@@ -605,7 +623,7 @@ Delete client(s)
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
-          unless defined( $client_list // $c->request->params->{clients} );
+          unless defined ( $client_list // $c->request->params->{clients} );
     
         # Override anything in the path by setting
         # params from post if they exists
@@ -615,12 +633,19 @@ Delete client(s)
 
         # Trait names should match request method
         # =======================================
-        $self->_roles( $self->_get_roles( $c->request->method ) );
+        $self->_roles( $self->_get_roles(
+            $c->request->method
+        ) );
 
         # Run action
         # ==========
         my ( $delete_ok, $not_ok, $errors ) =
-                $self->_roles->remove_clients( $c, $client_list, $ccd_dir );
+                $self->_roles->remove_clients(
+                    $c,
+                    $client_list,
+                    $ccd_dir,
+                    $self->cfg->{openvpn_utils} . '/keys'
+                );
 
         $self->status_ok($c,
             entity => {
@@ -808,7 +833,7 @@ is running
         $self->_roles(
             $self->_get_roles(
                 $c->request->method,
-                '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars'
+                '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars',
             )
         );
     

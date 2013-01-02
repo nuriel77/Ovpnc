@@ -85,18 +85,21 @@ __PACKAGE__->config(
     # needed by old applications
     # ==========================
     disable_component_resolution_regex_fallback => 1,
-    enable_catalyst_header                      => 1,   # Send X-Catalyst header
-                                                        #
-                                                        # ConfigLoader
-                                                        #
+    enable_catalyst_header                      => 1
+
+);
+
+# ConfigLoader
+# ============
+__PACKAGE__->config(
     'Plugin::ConfigLoader' => {
         config_local_suffix => 'local',
         driver => {
             'General' => { -LowerCaseNames => 1 }
         }
-    },
-
+    }
 );
+
 
 # Cache
 # =====

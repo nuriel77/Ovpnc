@@ -16,7 +16,10 @@ if [ -d openvpn/conf/2.0 ] && [ -f openvpn/conf/ipp.txt ];then
 chown openvpn.ovpnc openvpn/conf/2.0 openvpn/conf/ipp.txt -R
 fi
 chown openvpn.ovpnc openvpn/conf/ccd
+[[ ! -d openvpn/conf/2.0/keys ]] && { mkdir openvpn/conf/2.0/keys; }
 if [ -d openvpn/conf/2.0/keys ]; then
+    chown openvpn.ovpnc openvpn/conf/2.0/keys
+    chmod o-rwx openvpn/conf/2.0/keys
     chown ovpnc.ovpnc openvpn/conf/2.0/keys/ca.*
     chown ovpnc.ovpnc openvpn/conf/2.0/keys/*.key
     chmod 400 openvpn/conf/2.0/keys/*.key
@@ -35,7 +38,8 @@ cd openvpn
 if [ ! -d ./lib ]; then
     cp -r /lib .
 fi
-chmod 755 bin -R
+chown openvpn.ovpnc bin bin/* -R
+chmod 755 bin bin/* -R
 chmod 770 tmp
 file /bin/ls|grep 64 >/dev/null
 if [ $? -eq 0 ] && [ ! -L lib64 ];then

@@ -193,14 +193,14 @@ var dump = function (obj){
         // Data return from client action
         //
         returnedClientData: function (r){
+            if ( window.DEBUG ) log( "returnedClientData got: %o" , r);
             // Expect one field
-            if ( r.rest !== undefined ){
-                var keys = [];
-                for (var k in r.rest){ keys.push(k); }
-                if ( r.rest[keys[0]] !== null  ){
-                    $('input#' + keys[0]).parent('div').prepend('<span class="error_message error_constraint_required">' + keys[0] + ' already exists</span>');
-                    $('input#' + keys[0]).parent('div').find('label').css('color','#8B0000');
-                }
+            if ( r.rest.resultset !== undefined
+              && r.rest.field !== undefined
+              && r.rest.resultset.length > 0
+            ){
+                $('input#' + r.rest.field).parent('div').prepend('<span class="error_message error_constraint_required">' + r.rest.field + ' already exists</span>');
+                $('input#' + r.rest.field).parent('div').find('label').css('color','#8B0000');
             }
         },
         //
@@ -355,10 +355,11 @@ var dump = function (obj){
         checkUsername: function(success_func, error_func){
             var _name = $('input#username').attr('value');
             if ( _name === undefined || _name == '' ) return;
+            if ( window.DEBUG ) log( 'Going to check username: ' + _name );
             //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
             $.Ovpnc().ajaxCall({
                 url: '/api/clients',
-                data: { username: _name },
+                data: { field: 'username', search: _name,  no_return_all: 1 },
                 method: 'GET',
                 db: 'user',
                 rows: 12,
@@ -382,8 +383,8 @@ var dump = function (obj){
             if ( _name === undefined || _name == '' ) return;
             $.Ovpnc().ajaxCall({
                 url: '/api/clients',
-                data: { email: _name },
-                method: 'GET',
+                data: { field: 'email', search: _name, no_return_all: 1 },
+                method: 'GET',                
                 success_func: $.Ovpnc().returnedClientData,
                 error_func: $.Ovpnc().errorAjaxReturn
             });

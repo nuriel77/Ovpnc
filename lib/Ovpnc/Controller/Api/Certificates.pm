@@ -522,16 +522,8 @@ sub certificates_DELETE : Local
         # client names as certificates
         # ============================
         else {
-            @{$certs}   = split ",", $req->{certificates};
-            @{$clients} = split ",", $req->{clients}; 
-            if ( scalar @{$certs} != scalar @{$clients} ){
-                $self->status_bad_request($c, message =>
-                    "Certificates number does not match to clients number: "
-                    . "[ " . scalar @{$certs} . ' - ' . scalar @{$clients} . " ]."
-                );
-                delete $c->stash->{assets};
-                $c->detach('View::JSON');
-            }
+            @{$certs}   = map { $_ if $_ ne '' } split ",", $req->{certificates};
+            @{$clients} = map { $_ if $_ ne '' } split ",", $req->{clients}; 
         }
 
         # Make a hash using certnames
@@ -621,7 +613,7 @@ sub certificates_DELETE : Local
         my $_ret_val = $self->_roles->delete_certificates( $rs )
             unless $req->{no_delete};
 
-        if ( $req->{no_delete} ){
+        if ( $req->{no_delete} || $req->{no_detach} ){
             return $_chk_revoke;
         } 
         else {

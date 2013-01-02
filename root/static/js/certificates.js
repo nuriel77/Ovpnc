@@ -402,8 +402,8 @@ var total_count = 0;
                 messages:     $.Ovpnc().alertOk
             };
             if ( r.rest !== undefined ) {
-                $.Ovpnc().processAjaxReturn( r.rest, _data_types );
                 $('.pReload').click();
+                $.Ovpnc().processAjaxReturn( r.rest, _data_types );
             }
             if ( r.error !== undefined ){
                 for ( var i in r.error ){
@@ -471,29 +471,28 @@ var total_count = 0;
         deleteCertificate: function (button, grid){
             // Get total selected certificate(s)
             var total_count = $('.trSelected', grid).length;
-            var _loop = 0;
-            var _certificates = '';
-            var _clients = '';
-            $.each($('.trSelected', grid), function() {
-                // Get the certificates name of this grid
-                var certificate = $('td:nth-child(4) div', this).html();
-                var clients = $('td:nth-child(3) div', this).html();
-                // Get rid of any html tags, extract the name.
-                certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                _certificates += certificate + ',';
-                _clients += clients + ',';
-                _loop++;
-            });
 
             // Return nothing if none selected
-            if ( _loop == 0 ) return;
+            if ( total_count == 0 ) return;
 
-            $.Ovpnc().confirmDiag({
-                message: "<div>" + $.Ovpnc().alertIcon + " Warning!</div><br /></br /><div>" + 'Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) + '</div>',
-                action: function () {
+            var _action = function () {
                     // Execute
                     //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
                     window.certificatesToDelete = total_count;
+                    var _loop = 0;
+                    var _certificates = '';
+                    var _clients = '';
+                    $.each($('.trSelected', grid), function() {
+                        // Get the certificates name of this grid
+                        var certificate = $('td:nth-child(4) div', this).html();
+                        var clients = $('td:nth-child(3) div', this).html();
+                        // Get rid of any html tags, extract the name.
+                        certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                        _certificates += certificate + ',';
+                        _clients += clients + ',';
+                    });
+                    if ( window.DEBUG ) log( "Certificates: " + _certificates + ' clients ' + _clients );
+                    $.ajaxSetup({ cache: false, async: true });
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates/",
                         data: { certificates: _certificates, _ : '1', clients: _clients },
@@ -503,7 +502,11 @@ var total_count = 0;
                         loader: 1,
                         timeout: 15000
                     });
-                },
+                };
+
+            $.Ovpnc().confirmDiag({
+                message: "<div>" + $.Ovpnc().alertIcon + " Warning!</div><br /></br /><div>" + 'Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) + '</div>',
+                action: _action,
                 params: { button: button, grid: grid }, //action: 'delete' }
             });
         }

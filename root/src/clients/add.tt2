@@ -22,7 +22,7 @@
         $.addClient().setClickBind();
         $.addClient().setFormEvents();
         $.Forms().setInputBinds();
-        $.Forms().setUserFormInputBinds();
+        $.Forms().setUserFormInputBinds('not_exists');
         $.Forms().checkCookie( $.addClient().cookieData.cookie_name );
         // Set validation rules
         $.addClient().setFormValidationRules();

@@ -179,22 +179,22 @@ Add a client
             # Create client configuration file
             # ================================
             if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
-                #$self->_error($c,
-                #    "Cannot create ccd file for " . $_client->username
-                #    . ": directory '" . $c->config->{openvpn_ccd}
-                #    . "' does not exists or is not writable!" );
+                $self->_error($c,
+                    "Cannot create ccd file for " . $_client->username
+                    . ": directory '" . $c->config->{openvpn_ccd}
+                    . "' does not exists or is not writable!" );
             }
     
             my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
-            open (my $FILE, '>', $_file);
-                #or $self->_error($c, "Cannot create ccd file for "
-                #    . $_client->username . ': ' . $!);
+            open (my $FILE, '>', $_file)
+                or $self->_error($c, "Cannot create ccd file for "
+                    . $_client->username . ': ' . $! );
             print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
     
             ## For Debug: -- remove
-            print $FILE "\n#Generated from:\n" . $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n";
-    
+            print $FILE "\n#Generated from:\n#" . $c->req->params->{username} . "\n#" . $c->req->params->{password} . "\n";
             close $FILE;
+
             # Set permissions and ownership
             # =============================
             my ( $uid, $gid ) = $self->_get_user_group_id( $c );
@@ -234,7 +234,9 @@ Add a client
                      #push @{$c->stash->{error}}, $_;
                 };
             }
-                 $c->res->headers->header('Content-Type' => 'text/html');
+
+            $c->res->headers->header('Content-Type' => 'text/html');
+
             # Add js / css
             # ============
             $c->controller('Root')->include_default_links;
@@ -283,7 +285,7 @@ Handle General error
 
     sub _error : Private {
         my ( $self, $c, $error ) = @_;
-        push @{$c->stash->{error}}, $error;
+        push @{$c->flash->{errors}}, $error;
     }
 
 
