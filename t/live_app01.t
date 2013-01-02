@@ -175,9 +175,11 @@ sub run_checks {
             $status = 200;
         }
 
-        #if ( $link->{url} =~ /certificates\/download/ ){
-        #    $link->{url} .= '/ovpncadmin/all';
-        #}
+        if ( $link->{url} =~ /api\/server$/
+         and $link->{method} eq 'GET'
+        ){
+            $status = 404;
+        }
 
         _check_methods(
             $link->{url},

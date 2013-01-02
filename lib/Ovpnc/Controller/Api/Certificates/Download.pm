@@ -154,7 +154,9 @@ archived for download.
                     ( $certs ? $certs : undef )
                 );
 
-            if ( $_ret_val and ! $c->stash->{error} ){
+            if (     $_ret_val and !$c->stash->{error}
+              and ( defined $_ret_val->{resultset}->[0] && -f $_ret_val->{resultset}->[0] )
+            ){
                 my ($filename) = $_ret_val->{resultset}->[0] =~ /^.*\/(.*)$/;
                 my $stat = stat($_ret_val->{resultset}->[0]);
                 $c->res->header('Content-Disposition' => qq[attachment; filename="$filename"] );
