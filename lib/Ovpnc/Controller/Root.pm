@@ -103,7 +103,7 @@ sub auto : Private {
         $c->log->debug('Already connected to database.')
             if $ENV{CATALYST_DEBUG};
     }
-
+    return 1;
 }
 
 =head2 Method modifier
