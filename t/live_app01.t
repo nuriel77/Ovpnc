@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use XML::LibXML;
 use lib 'lib';
 use autobox::Core;
 use Test::More;
+use HTTP::Request;
 
 use constant  USERNAME  => 'ovpncadmin';
 use constant  PASSWD    => 'ovpncadmin';
@@ -55,6 +57,12 @@ sub run_checks {
     my $mech = shift;
 
     $mech->{catalyst_debug} = $ENV{CATALYST_DEBUG};
+
+    # Get the sitemap links
+    # =====================
+    $mech->get_ok('http://localhost/sitemap', 'Get sitemap links');
+
+    my $sitemap = _parse_xml( $mech->content );
 
     # Check redirect to login
     # =======================
@@ -112,15 +120,68 @@ sub run_checks {
     # ================================
     $mech->get_ok( 'http://localhost/login', "Test back to '/login' page, expect redirect because already logged in." );
     $mech->content_contains("Ovpnc Navigation Menu");
+    $mech->get_ok( 'http://localhost/logout', "And logout again" );
 
-    # Logout once more
-    # ================
-    $mech->get_ok( 'http://localhost/logout', 'Go to logout link' );
-    $mech->title_is( APP_NAME . " - " . "Login", "Check for redirection to main page when already logged in.");
+    # Check restrictions
+    # while logged out
+    # ==================
+    for my $link ( @{$sitemap} ){
+        my $status = 200;
 
-    for ( qw[ certificates clients clients/add certificates/add server server/status ] ){
-        $mech->get_ok( 'http://localhost/api/' . $_, 'Check Api link: ' . $_ );
-        $mech->title_is( APP_NAME . " - " . "Login", "Check for redirection to main page when already logged in.");
+        if ( $link->{url} =~ /\/api$/
+         and $link->{method} ne 'POST'
+        ){
+            $status = 200;
+        }
+        elsif ( $link->{url} =~ /\/api/ ){
+            $status = 403;
+        }
+
+        if ( $link->{url} =~ /certificates\/download/ ){
+            $link->{url} .= '/ovpncadmin/all';
+        }
+
+        _check_methods(
+            $link->{url},
+            $link->{method},
+            $status
+        );
+    }
+
+    # Login to run another
+    # check as above
+    # ====================
+    $mech->get_ok(
+            'http://localhost/login?username='
+            . USERNAME . '&password=' . PASSWD,
+        "Login 'ovpncadmin'");
+    $mech->get_ok('http://localhost/', 'Getting main page');
+    $mech->content_contains("Ovpnc Navigation Menu");
+    
+    for my $link ( @{$sitemap} ){
+        my $status = 200;
+
+        if ( $link->{url} =~ /\/api/
+         and $link->{method} ne 'GET'
+        ){
+            $status = 400;
+        }
+
+        if ( $link->{url} =~ /\/api\/configuration/
+         and $link->{method} eq 'UPDATE'
+        ){
+            $status = 200;
+        }
+
+        #if ( $link->{url} =~ /certificates\/download/ ){
+        #    $link->{url} .= '/ovpncadmin/all';
+        #}
+
+        _check_methods(
+            $link->{url},
+            $link->{method},
+            $status
+        );
     }
 
 
@@ -129,6 +190,22 @@ sub run_checks {
     ok ( _remove_sessions(), 'Remove temporary sessions' );
 
 }
+
+
+=head2 _check_methods
+
+Check various method requests
+to a specific link
+
+=cut
+
+sub _check_methods{
+    my ( $link, $method, $status ) = @_;
+    my $request = HTTP::Request->new( $method => $link );
+    $mech->request( $request );
+    ok ( $mech->status == $status, 'Check method ' . $method  .' at: '. $link . ', expected status: ' . $status );
+}
+
 
 =head2 _remove_sessions
 
@@ -150,3 +227,28 @@ sub _remove_sessions{
         }
     }
 }
+
+
+=head2 _parse_xml
+
+Prase the sitemap links
+
+=cut
+
+sub _parse_xml {
+
+    my $dom = XML::LibXML->load_xml( string => shift );
+    my @links = $dom->getElementsByTagName('loc');
+    return [ map {
+        my $str = $_->string_value();
+        my ($method) = $str =~ /_([A-Z]*)$/;
+        $str =~ s/_[A-Z]*$//;
+        $method ||= 'GET';
+        {
+            url     => $str,
+            method  => $method
+        }
+    } @links ];
+ 
+}
+

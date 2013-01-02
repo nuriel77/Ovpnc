@@ -110,9 +110,8 @@ archived for download.
                  : Args(2)
                  : Does('ACL')
                      AllowedRole('admin')
-                     AllowedRole('can_edit')
+                     AllowedRole('client')
                      ACLDetachTo('denied')
-                 : Does('NeedsLogin')
                  : Sitemap
     {
 
@@ -120,6 +119,8 @@ archived for download.
 
         my $format = $c->req->params->{format} ||= 'tar';
         my @formats = qw[ tar gzip bzip ];
+
+        $c->detach if !$client or !$certs;
 
         unless ( grep $format ~~ $_, @formats ){
             $self->status_bad_request($c,
@@ -154,23 +155,17 @@ archived for download.
             if ( $_ret_val and ! $c->stash->{error} ){
                 my ($filename) = $_ret_val->{resultset}->[0] =~ /^.*\/(.*)$/;
                 my $stat = stat($_ret_val->{resultset}->[0]);
-                #$c->res->content_type('application/x-tar');
                 $c->res->header('Content-Disposition' => qq[attachment; filename="$filename"] );
                 $c->res->headers->content_length( $stat->size );
                 $c->res->headers->last_modified( $stat->mtime );
-                $c->response->headers->header('Content-disposition' =>
-                    "attachment; filename=$filename" );
                 $c->res->headers->expires( time() );
-                $c->res->headers->header( 'Last-Modified' => HTTP::Date::time2str);
                 $c->res->headers->header( 'Pragma' => 'no-cache' );
                 $c->res->headers->header( 'Cache-Control' => 'no-cache' );
-                $c->response->headers->header( 'Content-Type' => 'application/x-tar' );
-                $c->response->header('Content-Description' => 'A test file.');
-                my $fh = IO::File->new( $_ret_val->{resultset}->[0], 'r' );
+                $c->response->header('Content-Description' => 'Certificate bundle');
+                #my $fh = IO::File->new( $_ret_val->{resultset}->[0], 'r' );
                 $c->serve_static_file($_ret_val->{resultset}->[0]);
-                $c->res->body($fh);
+                #$c->res->body($fh);
                 $c->stash->{content_transfer} = 'application/octet-stream';
-                $c->forward('View::JSON');
             }
         }
         else {

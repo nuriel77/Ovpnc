@@ -44,7 +44,7 @@ around [qw(verb_GET verb_POST)] => sub {
     my $self = shift;
     my $c    = shift;
 
-    $self->cfg( Ovpnc::Controller::Api->assign_params($c) )
+    $self->cfg( $c->controller('Api')->assign_params($c) )
       unless $self->_has_conf;
 
     return $self->$orig( $c, @_ )
@@ -87,11 +87,11 @@ action to run
 
         # Test database connection
         # ========================
-        Ovpnc::Controller::Root->auto( $c );
+        $c->controller('Root')->auto( $c );
 
         # Log user in if login params are provided
         # =======================================
-        Ovpnc::Controller::Api->auth_user( $c )
+        $c->controller('Api')->auth_user( $c )
             unless $c->user_exists();
 
         # Set the expiration time
@@ -122,16 +122,18 @@ For example:
 
 sub verb_POST : Local
               : Args(0)
+              : Does('ACL')
+                    AllowedRole('admin')
+                    AllowedRole('can_edit')
+                    ACLDetachTo('denied')
               : Sitemap
-              : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-              : Does('NeedsLogin')
 {
     my ( $self, $c, $level ) = @_;
 
     # Verify content not empty
     # ========================
     do {
-        $self->status_no_content($c);
+        $self->status_bad_request( $c, message => 'Missing parameters for verb_POST' );
         $self->_disconnect_vpn;
         $c->detach;
     } unless defined( $level // $c->request->params->{level} );
@@ -177,15 +179,17 @@ Gets the verbosity level
 
 sub verb_GET : Local
              : Args(0)
+             : Does('ACL')
+                AllowedRole('admin')
+                AllowedRole('can_edit')
+                ACLDetachTo('denied')
              : Sitemap
-             : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
-             : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Verify can run
     # ==============
-    my $_server = Ovpnc::Controller::Api::Server->new( vpn => $self->vpn );
+    my $_server = $c->controller('Api::Server')->new( vpn => $self->vpn );
     $_server->sanity($c);
     $self->status_ok( $c, entity => { verbosity => $self->get_verbosity } );
 }
@@ -210,6 +214,21 @@ sub verb_GET : Local
         my $verb = $self->vpn->verb($level);
         return $verb;
     }
+
+
+=head2 denied
+
+Unauthorized access
+no match for role
+
+=cut
+
+    sub denied : Private {
+        my ( $self, $c ) = @_;
+        $self->status_forbidden( $c, message => "Access denied" );
+        $c->detach;
+    }
+
 
     sub end : Private {
         my ( $self, $c ) = @_;

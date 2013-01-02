@@ -138,7 +138,6 @@ sub configuration_GET : Local
                             AllowedRole('admin')
                             AllowedRole('can_edit')
                             ACLDetachTo('denied')
-                      : Does('NeedsLogin')
                       : Sitemap
 {
     my ( $self, $c ) = @_;
@@ -160,7 +159,6 @@ sub configuration_POST : Local
                             AllowedRole('admin')
                             AllowedRole('can_edit')
                             ACLDetachTo('denied')
-                       : Does('NeedsLogin')
                        : Sitemap
 {
     my ( $self, $c ) = @_;
@@ -317,15 +315,17 @@ XSD schema from openvpn
 
 sub configuration_UPDATE : Local
                          : Args(0)
+                         : Does('ACL')
+                            AllowedRole('admin')
+                            AllowedRole('can_edit')
+                            ACLDetachTo('denied')
                          : Sitemap
-                         : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
-                         : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
     # Get action's traits
     # ===================
-    $self->_role(
+    $self->_roles(
         $self->new_with_traits(
             traits      => [qw/RenewCiphers/],
             schema_file => $self->cfg->{ovpnc_config_schema},
@@ -336,7 +336,7 @@ sub configuration_UPDATE : Local
     # Update the cipher list
     # in the xsd schema file
     # ======================
-    my $_ret_val = $self->_role->update_cipher_list;
+    my $_ret_val = $self->_roles->update_cipher_list;
     $c->controller('Api')->detach_error($c)
       unless ($_ret_val);
     $c->controller('Api')->detach_error($c, $_ret_val->{error})

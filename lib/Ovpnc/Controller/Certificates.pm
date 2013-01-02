@@ -409,9 +409,12 @@ no match for role
     sub denied : Private {
         my ( $self, $c ) = @_;
 
+        $c->res->status(403);
+        
         # Add js / css
         # ============
         $c->controller('Root')->include_default_links($c);
+
         $c->stash->{this_link}     = $c->req->path;
         $c->stash->{title}         = ucfirst( $c->req->path );
         $c->stash->{error_message} = "Access denied";

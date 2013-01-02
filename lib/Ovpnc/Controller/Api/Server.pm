@@ -162,8 +162,11 @@ or 'all':  ?lines=20
 
 sub logs_GET : Path('server/logs')
              : Args(0)
-             : Sitemap(*)
-		     : Does('ACL') AllowedRole('admin') AllowedRole('can_edit') ACLDetachTo('denied')
+		     : Does('ACL')
+                AllowedRole('admin')
+                AllowedRole('can_edit')
+                ACLDetachTo('denied')
+             : Sitemap
 {
     my ( $self, $c ) = @_;
 
@@ -224,17 +227,16 @@ command=[...]
 
 sub server_POST : Local
                 : Args(0)
-                : Sitemap
 				: Does('ACL')
                   AllowedRole('admin')
                   AllowedRole('can_edit')
                   ACLDetachTo('denied')
-                : Does('NeedsLogin')
+                : Sitemap
 {
     my ( $self, $c, $command ) = @_;
 
     do {
-        $self->status_no_content($c);
+        $self->status_bad_request($c, message => 'Missing command(param: cmd=?)');
         $self->_disconnect_vpn if $self->_has_vpn;
         $c->detach;
     } unless defined( $command // $c->request->params->{command} );
@@ -304,8 +306,11 @@ or return server offline
 
 sub server_GET : Local
                : Args(0)
+               : Does('ACL')
+                    AllowedRole('admin')
+                    AllowedRole('client')
+                    ACLDetachTo('denied')
                : Sitemap
-               : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
 {
     my ( $self, $c ) = @_;
 

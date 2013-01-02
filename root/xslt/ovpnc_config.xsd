@@ -316,6 +316,12 @@
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">
  <xsd:restriction base="xsd:string">
+  <xsd:enumeration value="The" />
+  <xsd:enumeration value="for" />
+  <xsd:enumeration value="used" />
+  <xsd:enumeration value="key" />
+  <xsd:enumeration value="changed" />
+  <xsd:enumeration value="is" />
   <xsd:enumeration value="DES-CFB" />
   <xsd:enumeration value="DES-CBC" />
   <xsd:enumeration value="RC2-CBC" />

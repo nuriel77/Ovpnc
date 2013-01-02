@@ -29,8 +29,12 @@ has cfg => (
     predicate => '_has_cfg',
 );
 
-before 'api' => sub {
+before [qw(api sanity)] => sub {
     my ( $self, $c ) = @_;
+
+    if ( !$self->_has_cfg ){
+        $self->assign_params( $c );
+    }
 
     # Authenticate user if
     # password/username exists
@@ -60,8 +64,6 @@ Api Usage
 sub api_GET : Local
             : Args(0)
             : Sitemap
-            : Does('ACL') AllowedRole('admin') AllowedRole('client') ACLDetachTo('denied')
-            : Does('NeedsLogin')
 {
     my ( $self, $c ) = @_;
 
@@ -86,15 +88,15 @@ sub api_POST : Local
                 AllowedRole('admin')
                 AllowedRole('client')
                 ACLDetachTo('denied')
-             : Does('NeedsLogin')
              : Sitemap
 {
     my ( $self, $c, $cmd ) = @_;
     my $_check = 0;
+    
 
-    $_check++ && $self->status_ok($c, entity => { status => 'Session ended' })
-        if $c->req->params->{end_session} or $cmd eq 'end_session';
-
+    if ( $c->req->params->{end_session} or ( $cmd and $cmd eq 'end_session'  ) ){
+        $_check++ and $self->status_ok($c, entity => { status => 'Session ended' })
+    }
     $self->status_bad_request($c, message => "Unknown command"
         . ( $cmd ? " '" . $cmd . "'" : '' ) )
             if $_check == 0;
@@ -112,6 +114,10 @@ sub api_POST : Local
     
     sub get_password : Path('api/getpasswd')
                      : Args(0)
+                     : Does('ACL')
+                        AllowedRole('admin')
+                        AllowedRole('can_edit')
+                        ACLDetachTo('denied')
                      : Sitemap
     {
         my ( $self, $c ) = @_;
@@ -146,7 +152,10 @@ A sanity check
 
     sub sanity : Path('api/sanity')
                : Args(0)
-               : Does('NeedsLogin')
+               : Does('ACL')
+                  AllowedRole('admin')
+                  AllowedRole('can_edit')
+                  ACLDetachTo('denied')
                : Sitemap
     {
 
@@ -154,10 +163,6 @@ A sanity check
 
         $c->response->headers->header(
             'Content-Type' => 'application/json' );
-
-        if ( !$self->_has_cfg ){
-            $self->assign_params( $c );
-        }
 
         # Sanity plugin action
         # ====================
@@ -179,9 +184,8 @@ A sanity check
             delete $c->stash->{assets} if $c->stash->{assets};
             $c->response->status(200);
             $c->stash->{status} = 'Sanity check successful';
+            $c->forward('View::JSON');
         }
-    
-        $c->forward('View::JSON');
     
     }
 
@@ -406,6 +410,20 @@ Create a random password
                 -minupper   => $params->{minupper}      || 3,
                 -minspecial => $params->{minspecial}    || 0,
         );
+    }
+
+
+=head2 denied
+
+Unauthorized access
+no match for role
+
+=cut
+
+    sub denied : Private {
+        my ( $self, $c ) = @_;
+        $self->status_forbidden( $c, message => "Access denied" );
+        $c->detach('View::JSON');
     }
 
 

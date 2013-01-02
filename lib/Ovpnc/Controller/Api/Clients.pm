@@ -552,10 +552,11 @@ Add new client(s)
                        AllowedRole('admin')
                        AllowedRole('can_edit')
                        ACLDetachTo('denied')
-                     : Does('NeedsLogin')
                      : Sitemap
     {
         my ( $self, $c ) = @_;
+        $c->res->status(400);
+        $c->detach;
     }
 
 
@@ -571,10 +572,11 @@ Update client(s) data
                          AllowedRole('admin')
                          AllowedRole('can_edit')
                          ACLDetachTo('denied')
-                       : Does('NeedsLogin')
                        : Sitemap
     {
-        my ( $self, $c ) = @_;
+        my ( $self, $c, $clients, $params ) = @_;
+        $c->res->status(400);
+        $c->detach;
     }
 
 
@@ -590,7 +592,6 @@ Delete client(s)
                          AllowedRole('admin')
                          AllowedRole('can_edit')
                          ACLDetachTo('denied')
-                       : Does('NeedsLogin')
                        : Sitemap
     {
         my ( $self, $c, $client_list ) = @_;
@@ -638,7 +639,7 @@ Disable a client's ccd file
 (having --exclusive-ccd in server run
 options means client cannot connect
 anymore, this is based on CN)
-Will ppends .disabled to client's
+Will append .disabled to client's
 file in ccd. Expects client's CN name and
 optionally provide ?no_kill=1
 to avoid killing any active
@@ -654,7 +655,6 @@ client.)
                           AllowedRole('admin')
                           AllowedRole('can_edit')
                           ACLDetachTo('denied')
-                        : Does('NeedsLogin')
                         : Sitemap
     {
         my ( $self, $c, $client ) = @_;
@@ -722,7 +722,6 @@ Re-enable a disabled client
                          AllowedRole('admin')
                          AllowedRole('can_edit')
                          ACLDetachTo('denied')
-                       : Does('NeedsLogin')
                        : Sitemap
     {
         my ( $self, $c, $client ) = @_;
@@ -780,7 +779,6 @@ is running
                          AllowedRole('admin')
                          AllowedRole('can_edit')
                          ACLDetachTo('denied')
-                       : Does('NeedsLogin')
                        : Sitemap
     {
 
@@ -912,14 +910,13 @@ in ccd
                            AllowedRole('admin')
                            AllowedRole('can_edit')
                            ACLDetachTo('denied')
-                         : Does('NeedsLogin')
                          : Sitemap
     {
         my ( $self, $c, $client_list, $cert_list ) = @_;
 
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error($c)
+        $self->_client_error($c, 400)
           unless defined ( $client_list // $c->request->params->{clients} );
     
         # Override anything in the path by setting
@@ -1065,7 +1062,6 @@ List recently created clients
                       AllowedRole('admin')
                       AllowedRole('can_edit')
                       ACLDetachTo('denied')
-                    : Does('NeedsLogin')
                     : Sitemap
     {
         my ($self, $c, $mins) = @_;
@@ -1113,7 +1109,6 @@ Get revoked client list
                        AllowedRole('admin')
                        AllowedRole('can_edit')
                        ACLDetachTo('denied')
-                     : Does('NeedsLogin')
                      : Sitemap
     {
         my ( $self, $c ) = @_;
@@ -1277,7 +1272,9 @@ and disconnect the mgmt port
 
     sub _client_error : Private {
         my ( $self, $c, $status, $msg ) = @_;
-        $status ||= 204;
+
+        $status ||= 400;
+
         if ( $status == 204 ){
             $self->status_no_content( $c );
         }

@@ -124,7 +124,6 @@ requires user to provide options
                                 AllowedRole('admin')
                                 AllowedRole('can_edit')
                                 ACLDetachTo('denied')
-                          : Does('NeedsLogin')
                           : Sitemap
     {
         my ( $self, $c, $form ) = @_;
@@ -327,9 +326,8 @@ L<Three>    Get all certificates - sorted results by field
                          : Args(0)
                          : Does('ACL')
                             AllowedRole('admin')
-                            AllowedRole('can_edit')
+                            AllowedRole('client')
                             ACLDetachTo('denied')
-                         : Does('NeedsLogin')
                          : Sitemap
     {
         my ( $self, $c, $cert_name_int, $name_int ) = @_;
@@ -502,7 +500,6 @@ sub certificates_DELETE : Local
                             AllowedRole('admin')
                             AllowedRole('can_edit')
                             ACLDetachTo('denied')
-                        : Does('NeedsLogin')
                         : Sitemap
     {
         my ( $self, $c ) = @_;
@@ -652,7 +649,6 @@ sends to clients_UNREVOKE
                                 AllowedRole('admin')
                                 AllowedRole('can_edit')
                                 ACLDetachTo('denied')
-                             : Does('NeedsLogin')
                              : Sitemap
     {
         my ( $self, $c ) = @_;
@@ -674,14 +670,20 @@ sends to _DELETE with no_delete param
                                AllowedRole('admin')
                                AllowedRole('can_edit')
                                ACLDetachTo('denied')
-                           : Does('NeedsLogin')
                            : Sitemap
     {
         my ( $self, $c ) = @_;
 
-
         $c->req->params->{no_delete} = 1;
 
+        if ( ! $c->req->params->{certificates}
+          || ! $c->req->params->{clients}
+        ){
+            $self->status_bad_request($c, message =>
+                'Both certificate names and client names should be provided (min 1)'
+            );
+            $c->detach;
+        }
         my @certificates = split ',', $c->req->params->{certificates};
         my @clients      = split ',', $c->req->params->{clients};
 
@@ -1219,6 +1221,21 @@ the client names
         }
         return $certificates;
     }
+
+
+=head2 denied
+
+Unauthorized access
+no match for role
+
+=cut
+
+    sub denied : Private {
+        my ( $self, $c ) = @_;
+        $self->status_forbidden( $c, message => "Access denied" );
+        $c->detach;
+    }
+
 
 
 =head2 _send_err
