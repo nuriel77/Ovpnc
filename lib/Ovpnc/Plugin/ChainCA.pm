@@ -5,6 +5,7 @@ use utf8;
 use POSIX;
 use File::Basename;
 use IPC::Cmd qw( can_run run );
+use Convert::PEM;
 use Crypt::OpenSSL::CA;
 use Crypt::OpenSSL::Bignum;
 use Crypt::OpenSSL::Random;

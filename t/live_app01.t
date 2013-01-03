@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use XML::LibXML;
+#use t::DB;
 use lib 'lib';
 use autobox::Core;
 use Test::More;
@@ -15,9 +16,13 @@ BEGIN {
     $ENV{CATALYST_DEBUG}            = 1;
     $ENV{OVPNC_SESSION_DIR}         ||= '/tmp/ovpnc';
     $ENV{OVPNC_NO_ROOT_USER_CHECK}  ||= ( $< == 0 ? 1 : 0 );
+    $ENV{DBIC_TRACE}                ||= 0;
 }
 
 eval "use Test::WWW::Mechanize::Catalyst 'Ovpnc'";
+
+#eval "use Catalyst::Test 'Ovpnc'";
+
 plan $@
     ? ( skip_all => 'Test::WWW::Mechanize::Catalyst required' )
     : 'no_plan';
@@ -41,6 +46,75 @@ ok (
         my $mech = Test::WWW::Mechanize::Catalyst->new( cookie_jar => {} ),
         'Create new test user-agent'
 );
+
+
+=experiment
+
+ok my ($res, $c) = ctx_request('/login'), 'context object';  # make sure we got the context object...
+ok $res->is_success, 'request success';  # ...and that the request was successful
+
+ok $c->model('DB')->schema( t::DB->make_schema() ), "Init in-mem database";
+$c->model('DB')->connect;
+
+ok my $rs = $c->model('DB::User'), 'Get user resultset';
+ok $rs->create({
+    username    => 'testuser',
+    password    => 'abcd_OVPNC_TEST',
+    fullname    => 'Ovpnc Test User',
+    enabled     => 1,
+    revoked     => 0,
+    salt        => "salt_'n_pepper",
+    email       => 'test@email.com',
+    password_expires     => '2019-01-01 00:00:00',
+    phone       => '000',
+    address     => 'Test Planet O'
+}), 'Create a test user in the temporary DB';
+
+ok my $search =
+    $c->model('DB::User')->search(
+        { username => 'testuser' },
+        { select => 'id' }
+    )->single, 'Search the newely created user';
+
+ok $c->model('DB::UserRole')
+    ->create(
+        {
+            user_id => $search->id,
+            role_id => 1,
+        }
+    ), 'Assign user an admin role';
+
+    # Check redirect to login
+    # =======================
+    $mech->get_ok("http://localhost/", "Check redirect of base URL");
+
+    # Login title
+    # ============
+    $mech->title_is(  APP_NAME ." - " ."Login", "Check for 'login' title" );
+
+    # Use content_contains() to
+    # match on test in the html body
+    # ==============================
+    $mech->content_contains( "Password:" );
+
+
+    # Login via form
+    # ==============
+    $mech->submit_form_ok({
+            fields => {
+                username => 'testuser',
+                password => 'abcd_OVPNC_TEST',
+            }}, 'Trying to login...');
+
+    # Check for title and content
+    # to see if we are logged in
+    # ===========================
+    $mech->title_is( APP_NAME, "Check for 'Ovpnc' title" );
+    $mech->content_contains("Ovpnc Navigation Menu");
+
+    die $search->id;
+
+=cut
 
 
 # Fire up
@@ -175,8 +249,16 @@ sub run_checks {
             $status = 200;
         }
 
-        if ( $link->{url} =~ /api\/server$/
-         and $link->{method} eq 'GET'
+        if ( 
+            (
+                  $link->{url} =~ /api\/server$/
+              and $link->{method} eq 'GET' 
+            )
+          or
+            (
+                  $link->{url} =~ /list_revoked$/
+              and $link->{method} eq 'GET'
+            )
         ){
             $status = 404;
         }

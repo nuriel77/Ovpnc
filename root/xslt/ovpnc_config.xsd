@@ -316,6 +316,12 @@
 <!-- Type: Cipher List -->
 <xsd:simpleType name="CipherType">
  <xsd:restriction base="xsd:string">
+  <xsd:enumeration value="The" />
+  <xsd:enumeration value="for" />
+  <xsd:enumeration value="used" />
+  <xsd:enumeration value="key" />
+  <xsd:enumeration value="changed" />
+  <xsd:enumeration value="is" />
   <xsd:enumeration value="DES-CFB" />
   <xsd:enumeration value="DES-CBC" />
   <xsd:enumeration value="RC2-CBC" />
@@ -356,26 +362,6 @@
   <xsd:enumeration value="DES-CFB8" />
   <xsd:enumeration value="DES-EDE3-CFB1" />
   <xsd:enumeration value="DES-EDE3-CFB8" />
-  <xsd:enumeration value="CAMELLIA-128-CBC" />
-  <xsd:enumeration value="CAMELLIA-192-CBC" />
-  <xsd:enumeration value="CAMELLIA-256-CBC" />
-  <xsd:enumeration value="CAMELLIA-128-CFB" />
-  <xsd:enumeration value="CAMELLIA-192-CFB" />
-  <xsd:enumeration value="CAMELLIA-256-CFB" />
-  <xsd:enumeration value="CAMELLIA-128-CFB1" />
-  <xsd:enumeration value="CAMELLIA-192-CFB1" />
-  <xsd:enumeration value="CAMELLIA-256-CFB1" />
-  <xsd:enumeration value="CAMELLIA-128-CFB8" />
-  <xsd:enumeration value="CAMELLIA-192-CFB8" />
-  <xsd:enumeration value="CAMELLIA-256-CFB8" />
-  <xsd:enumeration value="CAMELLIA-128-OFB" />
-  <xsd:enumeration value="CAMELLIA-192-OFB" />
-  <xsd:enumeration value="CAMELLIA-256-OFB" />
-  <xsd:enumeration value="SEED-CBC" />
-  <xsd:enumeration value="SEED-OFB" />
-  <xsd:enumeration value="SEED-CFB" />
-  <xsd:enumeration value="AES-128-CBC-HMAC-SHA1" />
-  <xsd:enumeration value="AES-256-CBC-HMAC-SHA1" />
  </xsd:restriction>
 </xsd:simpleType>
 </xsd:schema>

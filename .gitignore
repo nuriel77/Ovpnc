@@ -32,3 +32,4 @@ openvpn/conf/2.0/*
 *.pid
 DB.pm.new
 dev/
+test/

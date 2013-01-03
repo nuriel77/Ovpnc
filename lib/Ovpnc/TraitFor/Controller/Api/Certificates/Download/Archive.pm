@@ -1,6 +1,7 @@
 package Ovpnc::TraitFor::Controller::Api::Certificates::Download::Archive;
 use warnings;
 use strict;
+use File::Copy;
 use Cwd;
 use Try::Tiny;
 use Archive::Tar;
@@ -119,10 +120,17 @@ certificates and keys
                 chdir $client_keys_dir
                     or push @errors, $client . ': Cannot enter directory of certificates: ' . $_;
 
+                if ( ( -f $keys_dir . '/ca.crt' && -f $keys_dir . '/ta.key' )
+                  and $cert->cert_type !~ /server|ca/
+                ){
+                    copy ( $keys_dir . '/ca.crt', $client_keys_dir . '/ca.crt' );
+                    copy ( $keys_dir . '/ta.key', $client_keys_dir . '/ta.key' );
+                }
+
                 # Add the files to the archive
                 # ============================
                 if ( $format ne 'zip' ){
-                    $tar->add_files( $cert->name . '.crt', $cert->name . '.key' )
+                    $tar->add_files( $cert->name . '.crt', $cert->name . '.key', 'ca.crt', 'ta.key' )
                         or push @errors, $client . ': Failed to initialize archive class: '
                                          . $tar->error;
                     # Write the archive file to disk
@@ -141,6 +149,8 @@ certificates and keys
                 else {
                     $zip->addFile( $cert->name . '.crt' );
                     $zip->addFile( $cert->name . '.key' );
+                    $zip->addFile( 'ca.crt' ) if -f 'ca.crt';
+                    $zip->addFile( 'ta.key' ) if -f 'ta.key'; 
                     unless ( $zip->writeToFileNamed( $client_keys_dir . '/' . $cert->name . '.' . $extension ) == AZ_OK ){
                         push @errors,
                               $client . ': Failed to create ' . $extension . ' for '
@@ -148,8 +158,10 @@ certificates and keys
                     }
                 }
 
+                unlink ( 'ta.key', 'ca.crt' ) unless $cert->cert_type =~ /server|ca/;
+
                 if ( $rs == 1 ){
-                     push @files, $client_keys_dir . '/' . $cert->name . '.' . $extension
+                     push @files, $cert->name . '.' . $extension
                          if -f $client_keys_dir . '/' . $cert->name . '.' . $extension;
                 }
                 else {
@@ -163,7 +175,7 @@ certificates and keys
         # certificate's name. If multiple
         # we set the name to the client's
         # ===============================
-        if ( @files > 1 ) {
+        if ( @files > 0 ) {
             if ( $format ne 'zip' ){
                 $tar->clear;
                 $tar = Archive::Tar->new;

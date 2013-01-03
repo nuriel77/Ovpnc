@@ -5,6 +5,7 @@ if [ -z $1 ]; then
     exit 1
 fi
 
+rm -rf openvpn/conf/2.0
 cp -r $1 openvpn/conf/
 if [ -f openvpn/conf/2.0/openssl-1.0.0.cnf.gz ];then
     gunzip openvpn/conf/2.0/openssl-1.0.0.cnf.gz

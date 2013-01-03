@@ -94,22 +94,22 @@ var total_count = 0;
             * messing up the order
             */
             return [
-                c.id ? c.id : 'unknown',
-                c.username ? c.username : 'unknown',
-                c.virtual_ip ? c.virtual_ip : '-',
-                c.remote_ip ? c.remote_ip : '-',
-                c.remote_port ? c.remote_port : '-',
+                c.id            || 'unknown',
+                c.username      || 'unknown',
+                c.virtual_ip    || '-',
+                c.remote_ip     || '-',
+                c.remote_port   || '-',
                 c.bytes_recv ? ( c.bytes_recv / 1024 ).toFixed(2) + 'KB' : '-',
                 c.bytes_sent ? ( c.bytes_sent / 1024 ).toFixed(2) + 'KB' : '-',
-                c.conn_since ? c.conn_since : '-',
-                c.fullname ? c.fullname : 'unknown',
-                c.email ? c.email : 'unknown',
-                c.phone ? c.phone : 'unknown',
-                c.address ? c.address : 'unknown',
-                c.enabled ? c.enabled : 0,
-                c.revoked ? c.revoked : 0,
-                c.created ? c.created : '0000-00-00 00:00',
-                c.modified ? c.modified : '0000-00-00 00:00'
+                c.conn_since    || '-',
+                c.fullname      || 'unknown',
+                c.email         || 'unknown',
+                c.phone         || 'unknown',
+                c.address       || 'unknown',
+                c.enabled       || 0,
+                c.revoked       || 0,
+                c.created       || '0000-00-00 00:00',
+                c.modified      || '0000-00-00 00:00'
             ]
         },
         //

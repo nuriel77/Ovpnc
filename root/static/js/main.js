@@ -108,8 +108,8 @@ var dump = function (obj){
                  closeText: 'close',
                  closeOnEscape: true,
                  stack: true,
-                 height: "auto",
-                 width: "auto",
+                 height: p.height || "auto",
+                 width: p.width || "auto",
                  zIndex:9010,
                  position: [ getMousePosition().x, getMousePosition().y ],
                  buttons: p.buttons ? p.buttons : [
@@ -617,7 +617,7 @@ var dump = function (obj){
                 beforeSend: function() {
                     $.Ovpnc.ajaxLock = 1;
                     if ( p.loader !== undefined )
-                        $.Ovpnc().setAjaxLoading();
+                        $.Ovpnc().setAjaxLoading(1);
                 },
                 complete: function() {
                     $.Ovpnc.ajaxLock = 0;
@@ -783,29 +783,32 @@ var dump = function (obj){
         serverOnOff: function() {
             // Turn off:
             if ( $('#serverOnOff').attr('ref') == 'on' ) {
-                var _online = $('#online_clients_number').text();
-                var _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's ' : ' ' )
-                            + 'online';
-                // Ask confirmation
-                var cr = confirm(
-                    ( _online > 0 ? _cond + "\r\n" : '' ) + "Are you sure you want to turn the server off?");
+                var _online = $('#online_clients_number').text(),
+                    _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's ' : ' ' ) + 'online',
+                    _action = function (){
+                    $.Ovpnc().serverAjaxControl('stop');
+                    // Wait 5 seconds to refresh the table
+                    // Only on clients table page
+                    if ( $('.flexigrid').is(':visible') ){
+                        var _wait_refresh = setInterval(function() {
+                            $('.pReload').click();
+                            window.clearInterval(_wait_refresh);
+                        }, 5000 );
+                    }
+                    return;
+                };
 
-                // Cancelled?
-                if (cr == false) return;
-
-                // Stop
-                $.Ovpnc().serverAjaxControl('stop');
-
-                // Wait 5 seconds to refresh the table
-                // Only on clients table page
-                if ( $('.flexigrid').is(':visible') ){
-                    var _wait_refresh = setInterval(function() {
-                        $('.pReload').click();
-                        window.clearInterval(_wait_refresh);
-                    }, 5000 );
+                if ( _online == 0 ) {
+                    $.Ovpnc().confirmDiag({
+                        message: '<div>' + $.Ovpnc().alertIcon + ' Warning!</div><br /></br /><div>' + _cond + '</div><div>Are you sure you want to turn the server off?</div>',
+                        action: _action,
+                        params: { button: '', grid: {}  },
+                        width: '300px'
+                    });
                 }
-
-                return;
+                else {
+                    _action();
+                }
             } else {
                 // Turn on:
                 $.Ovpnc().serverAjaxControl('start');

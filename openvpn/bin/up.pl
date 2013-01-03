@@ -18,7 +18,7 @@ in /api/server/control
 
 =cut
 
-my $config_file = '../ovpnc.json';
+my $config_file = $ENV{OVPNC_CONFIG_JSON} || '../ovpnc.json';
 my $cfg = Config::Any->load_files({
             files => [$config_file], use_ext => 1 })
                 ->[0]->{"$config_file"}->{'Model::DB'}->{'connect_info'};
@@ -38,3 +38,5 @@ my $admin = $schema->resultset('Log')->create({
     message     => "Server started" . ( $ENV{daemon_pid} ? " with pid " . $ENV{daemon_pid} : '' ),
     username    => $ENV{OVPNC_USER},
 });
+
+__END__

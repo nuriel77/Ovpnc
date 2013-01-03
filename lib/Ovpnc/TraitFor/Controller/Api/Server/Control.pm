@@ -107,6 +107,7 @@ sub start {
             '--daemon', 'ovpn-server',
             '--setenv',            'PATH', '/bin',
             '--setenv',            'OVPNC_USER', $self->app_user,
+            '--setenv',            'OVPNC_CONFIG_JSON', ( $ENV{OVPNC_CONFIG_JSON} || 'ovpnc.json' ),
             '--script-security',   '2',
             '--client-connect',    'bin/client_connect',
             '--client-disconnect', 'bin/client_disconnect',

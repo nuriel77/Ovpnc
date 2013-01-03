@@ -7,6 +7,7 @@ use File::Touch;
 use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
 use Ovpnc::Plugin::ChainCA;
+use Ovpnc::Plugin::PEM qw(lock_key unlock_key decode64 encode64);
 use Moose::Role;
 use utf8;
 use vars qw/$ca/;
@@ -141,8 +142,17 @@ directory.
                 if ( ! -e $ca_cert_file or ! -e $ca_key_file ){
                     return { error => 'Failed: Missing Root CA. Please first create the Root CA chain.' };
                 }
+
+                if ( $params->{password} ){
+                    return { error => 'Failed to lock key with passphrase!' }                    
+                        unless lock_key( $ca_key_file, $params->{password} );
+                }
+
+                # Get md5 digests
+                # ===============
                 my $_digest->{crt} = file_md5_hex( $ca_cert_file );
                 $_digest->{key} = file_md5_hex( $ca_key_file );
+
                 return [
                     {
                         file   => $ca_cert_file,
