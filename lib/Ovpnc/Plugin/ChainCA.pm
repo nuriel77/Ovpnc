@@ -576,6 +576,11 @@ Generate client certificate via pkitool
     sub _generate_client_certificate {
         my ( $self, $cfg, $params, $_openssl_conf ) = @_;
 
+        if ( $params->{ca_password} ) {
+            # TODO: via 'expect'
+            return { error => 'Still do not support passwords' };
+        }
+
         my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
         my $_args = [
             ( $params->{password} ? '--pass' : '' ),
@@ -650,6 +655,11 @@ Generate server certificate via pkitool
 
     sub _generate_server_certificate {
         my ( $self, $cfg, $params, $_openssl_conf ) = @_;
+
+        if ( $params->{ca_password} ) {
+            # TODO: via 'expect'
+            return { error => 'Still do not support passwords' };
+        }
 
         my @_cmd = (
             $cfg->{openvpn_utils} . '/pkitool',

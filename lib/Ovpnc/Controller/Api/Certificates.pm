@@ -381,30 +381,32 @@ L<Three>    Get all certificates - sorted results by field
             $username .= '/';
             my $username_mem = $username;
             $username = '' if $c->req->params->{cert_type} =~ /ca|server/;
-            if (
+            my $check_cert_db =
+                $self->_check_cert_name_db(
+                    $c,
+                    $cert_name,
+                    ( $username eq '' ? $username_mem : $username )
+                );
+
+            if (     (   $check_cert_db && $check_cert_db->{status} == 1 )
+              or
                 (
                         -d $self->cfg->{openvpn_utils} . '/keys/' . $username
                     and -e $self->cfg->{openvpn_utils} . '/keys/' . $username
                             . $cert_name . '.crt'
                 )
-                 or
-                (
-                    $self->_check_cert_name_db(
-                        $c,
-                        $cert_name,
-                        ( $username eq '' ? $username_mem : $username )
-                    )
-                )
             ){
                 if ( ! $cert_name_int ){ 
-                    $self->status_bad_request($c, message => 'Certificate exists');
+                    $c->res->status(400);
+                    $c->res->body('Certificate exists');
+                    $c->stash->{rest} = { status => 'Certificate exists', locked => $check_cert_db->{locked} };
                     $c->detach('View::JSON');
                 }
                 else {
-                    return { error => 'Certificate exists' };
+                    return { error => 'Certificate exists', locked => $check_cert_db->{locked} };
                 }
             }
-            $self->status_ok($c, entity => { status => 'ok' } );
+            $self->status_ok($c, entity => { status => 'ok', locked => $check_cert_db->{locked} } );
         }
         # Search for a specific field
         # ===========================
@@ -916,6 +918,7 @@ the new certificate/key details
                     name            => $req->{cert_name},
                     created_by      => $req->{ca_username},
                     created         => $start_date,
+                    locked          => $req->{password} ? 1 : 0,
                     key_cn          => $req->{KEY_CN},
                     key_expire      => $req->{KEY_EXPIRE},
                     key_size        => $req->{KEY_SIZE},
@@ -958,7 +961,7 @@ of certificate exists in DB
 
         $username =~ s/\///g;
 
-        my $rs;
+        my ( $rs, $rval );
 
         if ( $cert_name eq 'check_any' ) {
              try {
@@ -988,7 +991,30 @@ of certificate exists in DB
                 return;
             };
         }
-        return $rs ? 1 : undef;
+
+        if ( $c->req->params->{action}
+          && $c->req->params->{action} eq 'usage'
+        ){
+            my $locked;
+            try {
+                $locked = $c->model('DB::Certificate')->search(
+                    { cert_type => 'ca', locked => 1 },
+                    { select => 'locked' }
+                )->count;
+            }
+            catch {
+                $c->log->error('Database error: ' . $_);
+                    push @{$c->{stash}->{error}},
+                        'Database error detected: ' . $_;
+                return;
+            };
+            $rval = 1 if $locked;
+        }
+
+        return {
+            status => ( $rs   ? 1 : 0 ),
+            locked => ( $rval ? 1 : 0 )
+        };
 
     }
 

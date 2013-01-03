@@ -41,6 +41,7 @@ var total_count = 0;
                     { display: 'Created',   name : 'created',       width: 125, sortable : true, align: 'left', },
                     { display: 'Modified',  name : 'modified',      width: 125, sortable : true, align: 'left', hide: true },
                     { display: 'Revoked',   name : 'revoked',       width: 50, sortable : true, align: 'left' },
+                    { display: 'Locked',    name : 'locked',        width: 25, sortable : true, align: 'left' },
                     { display: 'Key Size',  name : 'key_size',      width : 45, sortable : true, align: 'right'},
                     { display: 'Expires',   name : 'key_expire',    width : 40, sortable : true, align: 'right'},
                     { display: 'Country',   name : 'key_country',   width : 40, sortable : true, align: 'center'},
@@ -76,6 +77,7 @@ var total_count = 0;
                     { display: 'Created',       name : 'created' },
                     { display: 'Modified',      name : 'modified' },
                     { display: 'Revoked',       name : 'revoked' },
+                    { display: 'Locked',        name : 'locked' },
                     { display: 'Email',         name : 'email' },
                     { display: 'Key Size',      name : 'key_size' },
                     { display: 'Country',       name : 'key_country' },
@@ -119,6 +121,7 @@ var total_count = 0;
                 c.created     || '0000-00-00 00:00',
                 c.modified    || '0000-00-00 00:00',
                 c.revoked     || '0000-00-00 00:00',
+                c.locked      || 0,
                 c.key_size    || '-',
                 c.key_expire  || 0,
                 c.key_country || '-',
@@ -399,7 +402,7 @@ var total_count = 0;
             var _data_types = {
                 errors:      $.Ovpnc().alertErr,
                 warnings:    $.Ovpnc().alertIcon,
-                messages:     $.Ovpnc().alertOk
+                messages:    $.Ovpnc().alertOk
             };
             if ( r.rest !== undefined ) {
                 $('.pReload').click();

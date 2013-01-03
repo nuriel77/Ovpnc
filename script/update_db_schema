@@ -1,6 +1,6 @@
 #!/bin/bash
-PASSWD=`grep '"password".*:[\s +]".*"' ovpnc.json | sed 's/"password".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
-USER=`grep '"user".*:[\s +]".*"' ovpnc.json | sed 's/"user".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
-DSN=`grep '"dsn".*:[\s +]".*"' ovpnc.json | sed 's/"dsn".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
+PASSWD=`grep '"password".*:[\s +]".*"' ./$OVPNC_CONFIG/ovpnc.json | sed 's/"password".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
+USER=`grep '"user".*:[\s +]".*"' ./$OVPNC_CONFIG/ovpnc.json | sed 's/"user".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
+DSN=`grep '"dsn".*:[\s +]".*"' ./$OVPNC_CONFIG/ovpnc.json | sed 's/"dsn".*:.*"\(.*\)".*$/\1/' | sed 's/\s//g'`
 ./script/ovpnc_create.pl model DB DBIC::Schema Ovpnc::Schema create=static $DSN $USER $PASSWD '{ AutoCommit => 1 }'
 

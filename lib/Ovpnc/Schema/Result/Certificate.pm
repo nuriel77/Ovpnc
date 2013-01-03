@@ -130,6 +130,11 @@ __PACKAGE__->table("certificates");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 locked
+
+  data_type: 'tinyint'
+  is_nullable: 0
+
 =head2 cert_type
 
   data_type: 'varchar'
@@ -210,6 +215,8 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
+  "locked",
+  { data_type => "tinyint", is_nullable => 0 },
   "cert_type",
   { data_type => "varchar", is_nullable => 0, size => 12 },
   "cert_file",
@@ -261,8 +268,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2012-12-29 17:25:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:s3FmA/Ft03S0PI9WMDB3Cw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-01-03 12:45:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2pfm1mo+kDuc5iK//kyt5w
 
 __PACKAGE__->load_components("InflateColumn::DateTime","EncodedColumn","TimeStamp");
 

@@ -145,7 +145,8 @@ jQuery.validator.setDefaults({
                         data: {
                             cert_name: $('#cert_name').attr('value'),
                             name: $('#username').attr('value'),
-                            type: $('#certtype').attr('value')
+                            type: $('#certtype').attr('value'),
+                            action: 'usage'
                         },
                         method: 'GET',
                         success_func: $.addCertificate().ajaxCheckCertSuccess,
@@ -153,17 +154,7 @@ jQuery.validator.setDefaults({
                     });
                 }
             });
-/*
-             $.Ovpnc().chooseUser({
-                element: $('.qsbox'),
-                like: 1,
-                rows: 5,
-                field: function () { return $('.sDiv2').find('select').val().toLowerCase() },
-                no_return_all: 1,
-                min_length: 1,
-                db: window.location.pathname === '/clients' ? 'user' : window.location.pathname
-            });
-*/
+
             $('#username').bind('focusout',function(){
                 if ( $('#username').attr('value') != ''
                   && ! $('#certtype').attr('value').match(/server|ca/)
@@ -237,7 +228,12 @@ jQuery.validator.setDefaults({
         // returned from ajaxcall
         // 
         ajaxCheckCertSuccess: function (d){
-            if ( window.DEBUG ) log("Success: %o",d);
+            if ( window.DEBUG ) log("ajaxCheckCertSuccess: %o",d);
+            if ( d.rest && d.rest.locked && d.rest.locked == 1 ){
+                window.locked_ca = 1;
+                return;
+            }
+            window.locked_ca = undefined;
         },
         //
         // Success - no such cert name
@@ -246,15 +242,23 @@ jQuery.validator.setDefaults({
         ajaxCheckCertError: function (e){
             if ( e.responseText ){
                 var _msg = jQuery.parseJSON(e.responseText);
-                if ( window.DEBUG ) log ('Certificate name exists');
-                $('#cert_name').parent('div').find('label')
-                              .css('color','#8B0000');
-                var elem   = document.createElement('span');
-                $( elem ).addClass('passwd_err error_message error_constraint_required')
-                         .css('margin','4px 0 0 305px')
-                         .text('Certificate name exists!');
-                $('#cert_name').parent('div').children('.passwd_err').remove();
-                $('#cert_name').parent('div').append( elem );
+                if ( _msg.rest && _msg.rest.status === 'Certificate exists' ){
+                    if ( window.DEBUG ) log ("Certificate name exists: %o", _msg);
+                    $('#cert_name').parent('div').find('label')
+                                  .css('color','#8B0000');
+                    var elem   = document.createElement('span');
+                    $( elem ).addClass('passwd_err error_message error_constraint_required')
+                             .css('margin','4px 0 0 305px')
+                             .text('Certificate name exists!');
+                    $('#cert_name').parent('div').children('.passwd_err').remove();
+                    $('#cert_name').parent('div').append( elem );
+                }
+                if ( _msg.rest && _msg.rest.locked === 1 ){
+                    if ( window.DEBUG ) log ('CA is locked');
+                    window.locked_ca = 1;
+                    return;
+                }
+                window.locked_ca = undefined;
             }
         },        
         //
@@ -325,7 +329,8 @@ jQuery.validator.setDefaults({
                     data: {
                         cert_name: 'ca',
                         type: 'ca',
-                        name: 'anyuser'
+                        name: 'anyuser',
+                        action: 'usage'
                     },
                     method: 'GET',
                     success_func: $.addCertificate().ajaxCheckCASuccess,
@@ -355,7 +360,8 @@ jQuery.validator.setDefaults({
                     data: {
                         cert_name: 'ca',
                         type: 'ca',
-                        name: 'anyuser'
+                        name: 'anyuser',
+                        action: 'usage'
                     },
                     method: 'GET',
                     success_func: $.addCertificate().ajaxCheckCASuccess,
@@ -417,6 +423,7 @@ jQuery.validator.setDefaults({
         // Handle error return from checking Root CA
         //
         ajaxCheckCAError: function (e){
+
             if ( window._first_move !== undefined ){
                 var _wait_remove =  setInterval(function() {
                     $('#cert_name').parent('div').find('label').css('color','#333333');
@@ -433,6 +440,12 @@ jQuery.validator.setDefaults({
             // he can now create them because
             // he has a Root CA.
             if ( window.DEBUG ) log( "ajaxCheckCASuccess got back: %o", e);
+            var action = jQuery.parseJSON(e.responseText);
+            if (action.rest && action.rest.locked == 1 ){
+                window.locked_ca = 1;
+                return;
+            }
+            window.locked_ca = undefined;
             return;
         },
         //
@@ -610,14 +623,94 @@ jQuery.validator.setDefaults({
         	});
         },
         //
+        // Ask user for passwd to unlock Root CA
+        //
+        processUnlockDialog: function (){
+            var cDiv = document.createElement('div');
+            $( cDiv ).css({
+                'display':'none',
+                'color'  :'#555555'
+            });
+            $( 'body' ).prepend( cDiv );
+            $( cDiv ).attr('id','confirmDialog')
+                    .dialog({
+                 autoOpen: false,
+                 title: 'Password required',
+                 hide: "explode",
+                 modal:true,
+                 closeText: 'close',
+                 closeOnEscape: true,
+                 stack: true,
+                 height: "auto",
+                 width: "auto",
+                 zIndex:9010,
+                 position: [ 300, 200 ],
+                 buttons: [
+                    {
+                         text: "cancel", click: function () { $(this).dialog("close").remove(); return false; }
+                    },
+                    {
+                         id: "dialog_submit",
+                         text: "ok",     click: function () {
+                            $(this).dialog("close");
+                            var iDiv = document.createElement('input');
+                            $( iDiv ).attr({
+                                type: 'password',
+                                value: $("#ca_password").attr('value'),
+                                name: 'ca_password'
+                            }).css('display','none');
+                            $('#add_certificate_form').prepend( iDiv );
+                            window.locked_ca = undefined;
+                            $('#submit_add_certificate_form').click();
+                            return true;
+                         }
+                    }
+                 ],
+            });
+    
+            var aDiv = document.createElement('div'),
+                bDiv = document.createElement('div'),
+                cDiv = document.createElement('div'),
+                fDiv = document.createElement('form'),
+                lDiv = document.createElement('label'),
+                iDiv = document.createElement('input');
+
+            $( iDiv ).attr({
+               id: "ca_password",
+               type: "password",
+               name: "ca_password",
+               autofocus: "autofocus"
+            });
+            $( lDiv ).attr('for','ca_password').text('Password: ');
+            $( fDiv ).append( lDiv ).append( iDiv ).attr({
+                action: 'javascript:void(0)',
+                onsubmit: "if ( $(this).attr('value') == '' ) return false; $('#dialog_submit').click();"
+            });
+            $( bDiv ).append( fDiv );
+            $( aDiv ).html($.Ovpnc().alertInfo + ' A password is required in order to use the Root CA for signing').append('<div class="clear"></div>');
+            $( cDiv ).append( aDiv ).append( bDiv );
+
+            $('#confirmDialog').dialog('open')
+                               .append( cDiv ).show(200);
+            $( aDiv ).css('padding-bottom','8px'); //xxx
+            return false;
+        },
+        //
         // Set event handlers for the form 
         //
         setFormEvents: function(){
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
 
+
                 $('#cert_name').focusout();
                 $('#username').focusout();
+
+                if ( window.locked_ca == 1 ){
+                    $.addCertificate().processUnlockDialog();
+                    return false;
+                }
+
 
                 if ( ! $('#username').attr('value').match(/\w+/) ) return false;
 
