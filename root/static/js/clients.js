@@ -481,6 +481,7 @@ var total_count = 0;
         // 
         deleteClient: function (button, grid){
             var total_count = $('.trSelected', grid).length;
+            if ( total_count == 0 ) return false;
             // Confirm delete
             $.Ovpnc().confirmDiag({
                 message: 'Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ),
