@@ -42,6 +42,10 @@ methods execute
 around [qw(index add)] => sub {
     my ( $orig, $self, $c ) = @_;
 
+    # Get geo username
+    # ================
+    $c->stash->{geo_username} = $c->config->{geo_username};
+
     $c->stash->{token} = $c->get_session_id;
 
     $c->config->{ovpnc_conf} = $c->config->{ovpnc_conf} =~ /^\//
@@ -145,7 +149,10 @@ Add a new certificate
         # server certificate exist
         # Add to stash to display
         # ========================
-        if ( $c->req->params->{cert_type} eq 'server' ){
+
+        if ( $c->req->params->{cert_type}
+          && $c->req->params->{cert_type} eq 'server'
+        ){
             if ( my $_chk_certs = $self->_chk_main_certs( $c ) ){ 
                 push @{$c->flash->{error}}, $_chk_certs;
             }
@@ -233,10 +240,6 @@ Add a new certificate
             : $c->config->{home} . '/' . $c->config->{country_list};
 
         my @clist = @{ $self->get_country_list( $c->config->{country_list} ) };
-
-        # Get geo username
-        # ================
-        $c->stash->{geo_username} = $c->config->{geo_username};
 
         # stash country list
         # ==================

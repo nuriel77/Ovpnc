@@ -538,7 +538,7 @@ sub certificates_DELETE : Local
         my @rs = $c->model('DB::Certificate')->search(
                 {
                     name => { in => $certs },
-                    user => { in => $clients }
+                    user => { in => $clients },
                 }
             )->all;
 
@@ -556,11 +556,11 @@ sub certificates_DELETE : Local
         # still exists. Remove from array if so.
         # ======================================
         my ( $rs, $path_certs );
-        ($certs, $clients, $rs)              = $self->_check_not_ca( $c, $certs, $clients, \@rs );
-        ($certs, $clients, $rs, $path_certs) = $self->_check_not_server( $c, $certs, $clients, $rs );
+        ($certs, $clients, $rs)         = $self->_check_not_ca( $c, $certs, $clients, \@rs );
+        ($certs, $clients, $path_certs) = $self->_set_paths( $c, $certs, $clients );
 
         # [- debug - ]
-        #$c->controller('Api')->detach_error( $c,
+        #die(
         #   "     Paths:     " . ( join ", ", @{$path_certs} )
         #  .".    Certs:     " . ( join ", ", @{$certs} )
         #  .".    Clients:   " . ( join ", ", @{$clients} )
@@ -602,7 +602,7 @@ sub certificates_DELETE : Local
         # Revoke certificates
         # ===================
         my $_chk_revoke = $self->_roles->revoke_certificate(
-            $clients, $path_certs ); 
+            $clients, $path_certs, $c->req->params->{ca_password} ); 
 
         unless ( $_chk_revoke ){
             $c->controller('Api')->detach_error( $c,
@@ -612,6 +612,9 @@ sub certificates_DELETE : Local
 
         # Delete from DB and files
         # ========================
+        $c->req->params->{clients}      = join ",", @{$clients};
+        $c->req->params->{certificates} = join ",", @{$certs};
+
         my $_ret_val = $self->_roles->delete_certificates( $rs )
             unless $req->{no_delete};
 
@@ -1126,99 +1129,24 @@ other certificates exists
      }
 
 
-=head2 _check_not_server
+=head2 _set_paths
 
-Make sure user is not trying
-to delete server certificate
-other client certificates exists
-Here we also determine the path
-for each certificate, since 'ca'
-and 'server' remain in main keys
-directory and client's get own
-directory, so we need to append.
+Set the correct path to the certificates
 
 =cut
 
-    sub _check_not_server : Private {
+    sub _set_paths : Private {
         my $self = shift;
         my $c = shift;
         my @certs = @{(shift)};
         my @clients = @{(shift)};
-        my @rs = @{(shift)};
         
         my @path_certs;
-        my $non_server_count;
-
-        # Count non-CA or non server
-        # ==========================
-        try {
-            $non_server_count =
-                $c->model('DB::Certificate')->search({
-                    cert_type => { 'not in' => [ 'server', 'ca' ] }
-                })->count;
-        }
-        catch {
-            $self->status_bad_request($c, message =>
-                    'Database query error: '
-                    . (split(/\n/, $_))[0]
-            );
-            delete $c->stash->{assets};
-            $c->detach('View::JSON');        
-        };
-
-        # Check this is not a 'server'
-        # being deleted. First check
-        # how many non-CA and 'server'
-        # types there are, only if none
-        # allow to delete the 'server' cert
-        # =================================
-        my $rs_index = 0;
-        CERTS:
-        for my $cert ( @rs ){
-            if ( $cert->cert_type eq 'server' ){
-                # Loop cert names
-                # ===============
-                for my $i ( 0 .. @certs ){
-                    # Find the "offending" one
-                    # ========================
-                    if ( $certs[$i] eq $cert->name ){
-                        if ( $non_server_count and $non_server_count > 0 ){
-                            $c->log->debug('Ignoring server certificate ' . $cert->name );
-
-                            # remove from arrays
-                            # ==================
-                            splice ( @certs, $i, 1 );
-                            splice ( @clients, $i, 1 );
-                            splice ( @rs, $rs_index, 1 );
-
-                            # Compensate for the missing element
-                            # ==================================
-                            $i--;
-                            push @{$c->{stash}->{error}},
-                                 $cert->name .
-                                 ': Denied. Cannot delete type server while other certificates exists.';
-                            next CERTS;
-                        }
-                        else {
-                            # Define server cert-dir path
-                            # ===========================
-                            push @path_certs, $certs[$i];
-                        }
-                    }
-                }
-            }
-            elsif ( $cert->cert_type eq 'client' ) {
-                # Define client cert-dir path
-                # ===========================
-                push @path_certs, $clients[$rs_index] . '/' . $certs[$rs_index];
-            }
-            else {
-                push @path_certs, $certs[$rs_index];
-            }
-            $rs_index++;
+        for my $i ( 0 .. $#clients ){
+            push @path_certs, $clients[$i] . '/' . $certs[$i];
         }
 
-        return (\@certs, \@clients, \@rs, \@path_certs);
+        return (\@certs, \@clients, \@path_certs);
      }
 
 

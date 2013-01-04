@@ -28,7 +28,7 @@ Delete Certificates
     sub delete_certificates {
         my $self = shift;
         my @certificates = @{(shift)};
-    
+
         my $_ret_val;
 
         # Set openvpn utils dir
@@ -101,7 +101,7 @@ Delete Certificates
             try {
                 if ( $cert->delete ) {
                     push @{$collector->{$cert->name}->{messages}},
-                         'Certificate removed';
+                         'Certificate removed ok';
                 }
             }
             catch {

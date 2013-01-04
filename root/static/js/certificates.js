@@ -280,52 +280,69 @@ var total_count = 0;
             // Return nothing if none selected
             if ( _loop == 0 ) return;
 
-            // Revoke Certificate(s)
-            $.Ovpnc().setAjaxLoading();
-            $.ajax({
-                url: '/api/certificates',
-                type: action,
-                cache: false,
-                timeout: 5000,
-                data: { _ : '1', certificates: _certificates, clients: _clients },
-                dataType: 'json',
-                success: function (msg) {
-                    if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
-                    var _data_types = {
-                        errors:      $.Ovpnc().alertErr,
-                        warnings:    $.Ovpnc().alertIcon,
-                        status:      $.Ovpnc().alertOk
-                    };
-                    $('.pReload').click();
-                    if ( msg.rest !== undefined ) {
-                        $.Ovpnc().processAjaxReturn(
-                            msg.rest,
-                            _data_types
-                        );
-                    }
-                    if ( msg.error !== undefined ){
-                        for ( var e in msg.error ){
-                            alert( $.Ovpnc().alertErr + ' ' + e + '</div><div class="clear"></div>' );
-                        }
-                    }
-                },
-                error: function ( xhr, textStatus, errorThrown ) {
-                    if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
-                    alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
-                },
-                complete : function(){
-                    $.Ovpnc().removeAjaxLoading();
-                    /*
-                    var _wait_update_blockUnblock =
-                        setInterval(function() {
-                            if ( ! $('.loading').is(':visible') ){
-                                $('.pReload').click();
-                                window.clearInterval(_wait_update_blockUnblock);
-                            }
-                    }, 250 );
-                    */
+            var _action = function (passwd) {
+                if ( passwd === undefined || passwd == '' ){
+                    alert( $.Ovpnc().alertErr + ' No passwd?' );
+                    return false;
                 }
-            });
+                // Revoke Certificate(s)
+                $.Ovpnc().setAjaxLoading();
+                $.ajaxSetup({ cache: false, async: true });
+                $.ajax({
+                    url: '/api/certificates',
+                    type: action,
+                    cache: false,
+                    timeout: 5000,
+                    data: { _ : '1', certificates: _certificates, clients: _clients, ca_password: passwd },
+                    dataType: 'json',
+                    success: function (msg) {
+                        if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
+                        var _data_types = {
+                            errors:      $.Ovpnc().alertErr,
+                            warnings:    $.Ovpnc().alertIcon,
+                            status:      $.Ovpnc().alertOk
+                        };
+                        $('.pReload').click();
+                        if ( msg.rest !== undefined ) {
+                            $.Ovpnc().processAjaxReturn(
+                                msg.rest,
+                                _data_types
+                            );
+                        }
+                        if ( msg.error !== undefined ){
+                            for ( var e in msg.error ){
+                                alert( $.Ovpnc().alertErr + ' ' + e + '</div><div class="clear"></div>' );
+                            }
+                        }
+                    },
+                    error: function ( xhr, textStatus, errorThrown ) {
+                        if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
+                        alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
+                    },
+                    complete : function(){
+                        window.lock_checked = undefined;
+                        $.Ovpnc().removeAjaxLoading();
+                        /*
+                        var _wait_update_blockUnblock =
+                            setInterval(function() {
+                                if ( ! $('.loading').is(':visible') ){
+                                    $('.pReload').click();
+                                    window.clearInterval(_wait_update_blockUnblock);
+                                }
+                        }, 250 );
+                        */
+                    }
+                });
+            };
+
+            var locked_ca = $('#locked_ca');
+            if ( locked_ca !== undefined
+              && window.lock_checked === undefined
+            ){
+                $.Certificate().processUnlockDialog( _action, 'blockUnblock' );
+                return false;
+            }
+
         },
         //
         // Check if certificate names match
@@ -469,6 +486,76 @@ var total_count = 0;
             window.location = '/certificates/add';
         },
         //
+        // Ask user for passwd to unlock Root CA
+        //
+        processUnlockDialog: function ( _action, confirmDiagName ){
+        
+            var dDiv = document.createElement('div');
+            $( dDiv ).css({
+                'display':'none',
+                'color'  :'#555555'
+            }).attr('id', confirmDiagName );
+
+            $( 'body' ).prepend( dDiv );
+
+            $('#' + confirmDiagName ).dialog({
+                 autoOpen: false,
+                 title: 'Password required',
+                 hide: "explode",
+                 modal:true,
+                 closeText: 'close',
+                 closeOnEscape: true,
+                 stack: true,
+                 height: "auto",
+                 width: "auto",
+                 zIndex:9010,
+                 position: [ 300, 200 ],
+                 buttons: [
+                    {
+                        text: "cancel",
+                        click: function () { $(this).dialog("close").remove(); return false; }
+                    },
+                    {
+                        id: "dialog_submit",
+                        text: "ok",
+                        click: function () {
+                            //window.lock_checked = 1;
+                            $(this).dialog('close').remove();
+                            _action( $("#ca_password").attr('value') );
+                            return false;
+                        }
+                    }
+                 ],
+            });
+
+            var aDiv = document.createElement('div'),
+                bDiv = document.createElement('div'),
+                cDiv = document.createElement('div'),
+                fDiv = document.createElement('form'),
+                lDiv = document.createElement('label'),
+                iDiv = document.createElement('input');
+
+            $( iDiv ).attr({
+               id: "ca_password",
+               type: "password",
+               name: "ca_password",
+               autofocus: "autofocus"
+            });
+            $( lDiv ).attr('for','ca_password').text('Password: ');
+            $( fDiv ).append( lDiv ).append( iDiv ).attr({
+                action: 'javascript:void(0)',
+                onsubmit: "if ( $(this).attr('value') == '' ) return false; $('#dialog_submit').click();"
+            });
+            $( bDiv ).append( fDiv );
+            $( aDiv ).html($.Ovpnc().alertInfo + ' A password is required in order to use the Root CA.').append('<div class="clear"></div>');
+            $( cDiv ).append( aDiv ).append( bDiv );
+
+            $('#'+confirmDiagName).dialog('open')
+                                  .append( cDiv ).show(200);
+            $( aDiv ).css('padding-bottom','8px'); //xxx
+            return false;
+        },
+        //
         // Delete a certificate
         // 
         deleteCertificate: function (button, grid){
@@ -479,26 +566,26 @@ var total_count = 0;
             if ( total_count == 0 ) return;
 
             var _action = function () {
-                    // Execute
-                    //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-                    window.certificatesToDelete = total_count;
-                    var _loop = 0;
-                    var _certificates = '';
-                    var _clients = '';
-                    $.each($('.trSelected', grid), function() {
-                        // Get the certificates name of this grid
-                        var certificate = $('td:nth-child(4) div', this).html();
-                        var clients = $('td:nth-child(3) div', this).html();
-                        // Get rid of any html tags, extract the name.
-                        certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                        _certificates += certificate + ',';
-                        _clients += clients + ',';
-                    });
-                    if ( window.DEBUG ) log( "Certificates: " + _certificates + ' clients ' + _clients );
-                    $.ajaxSetup({ cache: false, async: true });
+                window.certificatesToDelete = total_count;
+                var _loop = 0;
+                var _certificates = '';
+                var _clients = '';
+                $.each($('.trSelected', grid), function() {
+                    // Get the certificates name of this grid
+                    var certificate = $('td:nth-child(4) div', this).html();
+                    var clients = $('td:nth-child(3) div', this).html();
+                    // Get rid of any html tags, extract the name.
+                    certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                    _certificates += certificate + ',';
+                    _clients += clients + ',';
+                });
+
+                if ( window.DEBUG ) log( "Certificates: " + _certificates + ' clients ' + _clients );
+
+                var deleteCertAction = function ( passwd ) {
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates/",
-                        data: { certificates: _certificates, _ : '1', clients: _clients },
+                        data: { certificates: _certificates, _ : '1', clients: _clients, ca_password: passwd },
                         method: 'DELETE',
                         success_func: $.Certificate().certificateDeleteReturn,
                         error_func: $.Certificate().certificateDeleteError,
@@ -506,6 +593,16 @@ var total_count = 0;
                         timeout: 15000
                     });
                 };
+
+                var locked_ca = $('#locked_ca');
+                if ( locked_ca !== undefined
+                  && window.lock_checked === undefined
+                ){
+                    $.Certificate().processUnlockDialog(deleteCertAction, 'deleteCertificate');
+                    return false;
+                }
+                $.ajaxSetup({ cache: false, async: true });
+            };
 
             $.Ovpnc().confirmDiag({
                 message: "<div>" + $.Ovpnc().alertIcon + " Warning!</div><br /></br /><div>" + 'Are you sure you want to delete ' + total_count + ' certificate' + ( total_count > 1 ? 's?' : '?' ) + '</div>',

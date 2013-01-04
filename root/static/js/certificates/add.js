@@ -146,7 +146,6 @@ jQuery.validator.setDefaults({
                             cert_name: $('#cert_name').attr('value'),
                             name: $('#username').attr('value'),
                             type: $('#certtype').attr('value'),
-                            action: 'usage'
                         },
                         method: 'GET',
                         success_func: $.addCertificate().ajaxCheckCertSuccess,
@@ -229,11 +228,13 @@ jQuery.validator.setDefaults({
         // 
         ajaxCheckCertSuccess: function (d){
             if ( window.DEBUG ) log("ajaxCheckCertSuccess: %o",d);
+            /*
             if ( d.rest && d.rest.locked && d.rest.locked == 1 ){
                 window.locked_ca = 1;
                 return;
             }
             window.locked_ca = undefined;
+            */
         },
         //
         // Success - no such cert name
@@ -660,7 +661,7 @@ jQuery.validator.setDefaults({
                                 name: 'ca_password'
                             }).css('display','none');
                             $('#add_certificate_form').prepend( iDiv );
-                            window.locked_ca = undefined;
+                            window.lock_checked = 1;
                             $('#submit_add_certificate_form').click();
                             return true;
                          }
@@ -702,15 +703,15 @@ jQuery.validator.setDefaults({
             // On form submission
             $('#submit_add_certificate_form').click(function(e){
 
-
                 $('#cert_name').focusout();
                 $('#username').focusout();
-
-                if ( window.locked_ca == 1 ){
+                var locked_ca = $('#locked_ca');
+                if ( locked_ca !== undefined
+                  && window.lock_checked === undefined
+                ){
                     $.addCertificate().processUnlockDialog();
                     return false;
                 }
-
 
                 if ( ! $('#username').attr('value').match(/\w+/) ) return false;
 

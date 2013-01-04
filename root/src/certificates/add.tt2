@@ -56,6 +56,7 @@
     });
 
     [% IF resultset %]
+        log("Result: [% resultset %]");
         // Errors? Display on message div
         if ( "[% resultset %]".match(/ok|successfully/)){
             alert(
@@ -67,16 +68,6 @@
 '<div class="err_text" style="margin:-1px 1.5px 0 1.5px;"><img width="16" height="16" src="[% c.uri_for('/static/images/info_icon.png') %]" /></div><div class="err_text"> [% resultset %]</div><div class="clear"></div>'
             );
         }
-        if ( window.DEBUG) log("Result: [% resultset %]");
-    [% END %]
-    [% IF error %]
-        [% FOR err IN error %]
-            [% FOR e IN err %]
-                 alert(
-                 '<div class="err_text" style="margin:-1px 2px 0 1.5px;"><img width="16" height="16" src="[% c.uri_for('/static/images/error_icon.png') %]" /></div><div class="err_text">'+ decodeURIComponent( "[% e %]" )+ '</div><div class="clear"></div>'
-                 );
-            [% END %]
-        [% END %]
     [% END %]
     [% IF warning %]
         [% FOR wrn IN warning %]

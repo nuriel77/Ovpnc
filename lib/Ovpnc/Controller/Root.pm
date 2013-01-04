@@ -45,11 +45,16 @@ is valid and okay
 
 sub auto : Private {
     my ( $self, $c ) = @_;
+
     # Set title
     # =========
     $c->stash->{title} = ucfirst($c->req->path)
         unless $c->stash->{title};
 
+    # Set poll freq
+    # for server status
+    # requests via ajax
+    # =================
     $c->stash->{server_poll_freq} = $c->config->{server_poll_freq}
         if $c->req->path !~ /^api.*/;
 
@@ -62,8 +67,15 @@ sub auto : Private {
         # Verify that the database is accessible
         # ======================================
         try { 
-            if ( my $count = $c->model('DB::User')->count ){
+            if ( my $count = $c->model('DB::Certificate')
+                               ->search({ cert_type => 'ca', locked => 1  })
+                               ->count
+            ) {
                 $c->stash->{_db_tested} = 1;
+
+                # Check locked CA
+                # ===============
+                $c->stash->{locked_ca} = 1;
             }
         }
         catch {
@@ -103,7 +115,9 @@ sub auto : Private {
         $c->log->debug('Already connected to database.')
             if $ENV{CATALYST_DEBUG};
     }
+
     return 1;
+
 }
 
 =head2 Method modifier

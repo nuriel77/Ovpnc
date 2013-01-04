@@ -2,6 +2,7 @@ package Ovpnc::TraitFor::Controller::Api::Clients::Revoke;
 use warnings;
 use strict;
 use File::Basename;
+use Expect;
 use IPC::Cmd qw( can_run run );
 use Moose::Role;
 use namespace::autoclean;
@@ -53,7 +54,7 @@ Revoke certificate(s)
 =cut
 
     sub revoke_certificate {
-        my ( $self, $clients, $cert_names ) = @_;
+        my ( $self, $clients, $cert_names, $passwd ) = @_;
 
         $openvpn_dir = $self->_set_openvpn_dir;
         $tools = $self->_set_openvpn_utils;
@@ -97,7 +98,7 @@ Revoke certificate(s)
                 for my $cert ( glob $self->_set_openvpn_utils . '/keys/' . $clients->[$i] . '/*.crt' ){
                     $_chk++;
                     $cert =~ s{\.[^.]+$}{};
-                    $self->_revoke_certificate( $tools, $cert, $clients->[$i] );
+                    $self->_revoke_certificate( $tools, $cert, $clients->[$i], $passwd );
                 }
 
                 push (@{$self->rval->{$clients->[$i]}->{warnings}}, 'Has no certificates')
@@ -110,11 +111,10 @@ Revoke certificate(s)
                         warnings => [],
                         status => []
                     };
-                $self->_revoke_certificate( $tools, $cert_names->[$i], $clients->[$i] );
+                $self->_revoke_certificate( $tools, $cert_names->[$i], $clients->[$i], $passwd );
             }
     
         }
-
         return $self->rval;
     }
 
@@ -126,19 +126,118 @@ Revoke a certificate - private
 =cut
 
     sub _revoke_certificate {
-        my ( $self, $revoke_tool, $cert, $client ) = @_;
+        my ( $self, $revoke_tool, $cert, $client, $passwd ) = @_;
+
+        die "No cert?" unless $cert;
 
         # Build command
         # =============
-        my @_cmd = ( $revoke_tool, $cert );
+        my $_cmd = $revoke_tool;
+        my $_args = [ $cert ];
+        my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf, $_check_ret_val );
 
-        # Run command
-        # ===========
-        my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
-            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
+        if ( $passwd ){
 
-        my $_check_ret_val = join( "\n", @{$full_buf} );
-        $_check_ret_val =~ s/\n/;/g;
+            my $agg = {
+                status => [],
+                error  => []
+            };
+
+            $Expect::Debug = 0;
+            $Expect::Log_Stdout = 0;
+            my ($error, $buf);
+            my $exp = Expect->new;
+            #$exp->log_file('/tmp/exp.txt', 'w');
+            $exp->exp_internal( 0 );
+            $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
+            $exp->expect(
+                1,
+                [
+                    qr/Enter pass phrase for.*/,
+                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
+                ],
+                [
+                    qr/ERROR:Already revoked.*/,
+                    sub {
+                            push @{$self->rval->{$client}->{errors}},
+                                 'Certificate ' . basename($cert) . ' is already revoked';
+                            exp_continue;
+                        },
+                ],
+                [
+                    qr/error 23 at 0 depth lookup:certificate revoked/,
+                    sub {
+                        $exp->send( "\n" );
+                        exp_continue;
+                    },
+                ]
+
+            );
+
+            $exp->expect(
+                1,
+                [
+                    qr/Enter pass phrase for.*/,
+                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
+                ]
+            );
+
+            if ( $error = $exp->exp_error() ){
+                warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
+                push @{$self->rval->{$client}->{errors}},
+                     'Command 2 failed to execute: ' . $error . ', ' . $exp->before();
+                $exp->soft_close();
+                return;
+            }
+
+            if ( $self->rval->{$client}->{errors}
+              && ref $self->rval->{$client}->{errors} eq 'ARRAY'
+              && $self->rval->{$client}->{errors}->[0] =~ /already revoked/
+            ){
+                $exp->soft_close();
+                return;
+            }
+
+            $exp->expect(
+                1,
+                [
+                    qr/error 23 at 0 depth lookup:certificate revoked/,
+                    sub { $exp->send( "\n" ); exp_continue; },
+                ]
+            );
+            if ( $error = $exp->exp_error() ){
+                warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
+                push @{$self->rval->{$client}->{errors}},
+                     'Command 3 failed to execute: ' . $error;
+                $exp->soft_close();
+                return;
+            }
+
+            if ( $self->rval->{$client}->{errors}
+              && ref $self->rval->{$client}->{errors} eq 'ARRAY'
+              && @{$self->rval->{$client}->{errors}} > 0
+            ){
+                return;
+            }
+            push @{$self->rval->{$client}->{status}},
+                 'Certificate ' . basename($cert) . ' revoked ok';
+
+            $exp->soft_close();
+            return 1;
+        }
+        else {
+            # Run command
+            # ===========
+            ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf) =
+                run(
+                    command => [ $_cmd, @{$_args} ],
+                    verbose => 0,
+                    timeout => TIMEOUT
+                );
+
+            $_check_ret_val = join( "\n", @{$full_buf} );
+            $_check_ret_val =~ s/\n/;/g;
+        }
 
         if ( $success ){
             # Already in revoke list

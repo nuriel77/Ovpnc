@@ -105,8 +105,15 @@
 			</div><!-- outer_centered -->
             <div id="pop-up" class="box_shadow"></div>
     	</div><!-- outer -->
-		<input id="login_username" type="hidden" name="[% username %]" />
-		<input id="geoUsername" type="hidden" name="[% geo_username %]" />
+	    [% IF username %]
+        	<input id="login_username" type="hidden" name="[% username %]" />
+        [% END %]
+        [% IF geo_username %]
+            <input id="geoUsername" type="hidden" name="[% geo_username %]" />
+        [% END %]
+        [% IF locked_ca %]
+    		<input id="locked_ca" type="hidden" name="locked_ca" />
+        [% END %]
 	</body>
 </html>
 [% END %]

@@ -2,6 +2,7 @@ package Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke;
 use warnings;
 use strict;
 use IPC::Cmd qw( can_run run );
+use Expect;
 use Tie::File;
 use Fcntl 'O_RDWR';
 use Moose::Role;
@@ -59,7 +60,7 @@ V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Pr
 
 
 sub unrevoke_certificate {
-    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name ) = @_;
+    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name, $passwd ) = @_;
 
     my $_ret_val;
 
@@ -111,39 +112,53 @@ sub unrevoke_certificate {
 
         # Regenerate the crl.pem
         # ======================
-        my @_cmd = (
-            $ssl_bin,
-            'ca',
-            '-gencrl',
-            '-config',
-            $ssl_config,
-            '-out',
-            $tools . '/keys/crl.pem'
-        );
+        my $_cmd = $ssl_bin;
+        my $_args = [ 'ca', '-gencrl', '-config', $ssl_config, '-out', $tools . '/keys/crl.pem' ];
 
         unless ( can_run($ssl_bin) ){
             return { errors => [ 'Cannot run ' . $ssl_bin ] };
         }
 
-        # Run command
-        # ===========
-        my ( $success, $error_code, $full_buf ) =
-            run( command => [ @_cmd ], verbose => 0, timeout => TIMEOUT );
+        if ( $passwd ){
+            $Expect::Debug = 0;
+            $Expect::Log_Stdout = 0;
+            my ($error, $buf);
+            my $exp = Expect->new;
+            #$exp->log_file('/tmp/exp.txt', 'w');
+            $exp->exp_internal( 0 );
+            $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
+            $exp->expect(
+                2,
+                [
+                    qr/Enter pass phrase for.*/,
+                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
+                ],
+            );
 
-        $_ret_val = join( "\n", @{$full_buf} );
-        $_ret_val =~ s/\n/;/g;
-
-        if ( $success ){
+            $exp->soft_close();
             return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
         }
         else {
-            return {
-                errors => [
-                    'Un-revocation failure: '
-                    . ( $error_code ? ': ' . $error_code : '' )
-                    . ( $_ret_val ? ', ' . $_ret_val : '' )
-                ]
-            };
+            # Run command
+            # ===========
+            my ( $success, $error_code, $full_buf ) =
+                run( command => [ $_cmd, @{$_args} ], verbose => 0, timeout => TIMEOUT );
+
+            $_ret_val = join( "\n", @{$full_buf} );
+            $_ret_val =~ s/\n/;/g;
+    
+            if ( $success ){
+                return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
+            }
+            else {
+                return {
+                    errors => [
+                        'Un-revocation failure: '
+                        . ( $error_code ? ': ' . $error_code : '' )
+                        . ( $_ret_val ? ', ' . $_ret_val : '' )
+                    ]
+                };
+            }
         }
     }
     else {

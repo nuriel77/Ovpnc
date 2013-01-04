@@ -221,7 +221,7 @@ var dump = function (obj){
                     else if ( e.which == 85 ){
                         $('.bDiv').find('tr').removeClass('trSelected');
                     }
-                    return false;
+                    return true;
                 }
             });
 

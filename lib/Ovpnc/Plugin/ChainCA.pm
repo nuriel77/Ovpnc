@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use POSIX;
+use Tie::File;
 use File::Basename;
 use IPC::Cmd qw( can_run run );
 use Convert::PEM;
@@ -329,9 +330,21 @@ Example:
             return $_chk_created;
         }
         else {
-            return { error => 'Something went wrong while processing created certificates' };
+            if ( -f $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.key' ){
+                warn "[debug] Removing temp files " .  $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.*';
+                unlink $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.key';
+                unlink $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.csr';
+            }
+            elsif ( -f $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.key' ){
+                warn "[debug] Removing temp files " .  $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.*';
+                unlink $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.key';
+                unlink $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.csr';
+            }
+            return { error => 'Process returns: Something went wrong.'
+                            . ( $params->{ca_password}
+                                ? ' Did you enter the correct password?'
+                                : '' ) };
         }
-
     }
 
 
@@ -343,7 +356,8 @@ Generate CRL - Certificate Revocation List
 
     sub gen_crl {
         my ( $self, $params, $cfg ) = @_;
-        my ( $ca_privkey, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg );
+
+        my ( $ca_privkey, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg, $params->{ca_password} );
 
         # Prepare CRL file
         # ================
@@ -378,7 +392,7 @@ configured names
 =cut
 
     sub _get_ca_key_and_cert {
-        my ( $self, $cfg ) = @_;
+        my ( $self, $cfg, $password ) = @_;
 
         # Get the filename of the CA cert
         # ===============================
@@ -409,8 +423,9 @@ configured names
         my $_ca_key = read_file ( $cfg->{home} . '/' . $ca_key_file, chomp => 1 )
             or return { error =>
                 "Cannot read CA key, make sure it has been created." };
-        my $ca_privkey = Crypt::OpenSSL::CA::PrivateKey->
-            parse( $_ca_key );
+        my $ca_privkey = $password
+                ? Crypt::OpenSSL::CA::PrivateKey->parse( $_ca_key, -password => $password )
+                : Crypt::OpenSSL::CA::PrivateKey->parse( $_ca_key );
 
         # Get the Root CA certificate
         # ===========================
@@ -544,8 +559,8 @@ to check if any errors
 =cut
 
     sub _check_cert_errors{
-        my ( $self, $_buf ) = @_;
-
+        my ( $self, $_buf, $files ) = @_;
+        
         if ($_buf =~ /TXT_DB error number 2/g){
             return
                     'Failed to create certificate,' 
@@ -556,9 +571,10 @@ to check if any errors
             my $fnd = $1;
             $fnd =~ s/'/\\\\\\'/g if $fnd;
             warn "[error] OpenSSL ERROR: " . $_buf;
+            unlink (@{$files}) if $files;
             return
                     'Failed to create certificate.' 
-                    . ' Index file might be corrupt.'
+                    . ' Index file might be corrupt or a certificate name matches one which exists and is revoked'
                     . ( $fnd ? ' Got error: ' . $fnd : '' );
         }
         elsif ( $_buf =~ /.*(Write out database with . new entries.*)[\r\n]*(Data Base Updated.*)/gi ){
@@ -576,11 +592,6 @@ Generate client certificate via pkitool
     sub _generate_client_certificate {
         my ( $self, $cfg, $params, $_openssl_conf ) = @_;
 
-        if ( $params->{ca_password} ) {
-            # TODO: via 'expect'
-            return { error => 'Still do not support passwords' };
-        }
-
         my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
         my $_args = [
             ( $params->{password} ? '--pass' : '' ),
@@ -591,57 +602,109 @@ Generate client certificate via pkitool
         # we use Expect to enter it
         # ==========================
         if ( $params->{password} ) {
-            my $exp = Expect->spawn( $_cmd, @{$_args} )
-                or die "Cannot spawn command: " . $!;
             $Expect::Debug = 0;
             $Expect::Log_Stdout = 0;
+            my $exp = Expect->spawn( $_cmd, @{$_args} )
+                or die "Cannot spawn command: " . $!;
             $exp->expect(2, "Enter PEM pass phrase:");
             $exp->send( $params->{password} . "\n" );
             $exp->expect(2, "","Verifying - Enter PEM pass phrase:");
             $exp->send( $params->{password} . "\n" );
+            if ( $params->{ca_password} ) {
+                $exp->expect(2, "","Enter pass phrase for");
+                $exp->send( $params->{ca_password} . "\n" );
+            }
+            my $chk = $exp->expect(2, "","Data Base Updated");
+            return { error => 'Command has timed-out while creating certificate' }
+                unless $chk;
             $exp->soft_close();
-        }
-        # No password? Run without pass arg
-        # =================================
-        else {
-            my ( $success, $error_code, $full_buf ) =
-                run(
-                    command => [ $_cmd, @{$_args} ],
-                    verbose => 0,
-                    timeout => $TIMEOUT
-                );
- 
+            
             # Remove temporary
             # openssl.conf
             # ================
             unlink $_openssl_conf;
+            return undef;
+        }
+        # No password? Run without pass arg
+        # =================================
+        else {
+            if ( $params->{ca_password} ){
+                $Expect::Debug = 0;
+                $Expect::Log_Stdout = 0;
+                my $exp = Expect->spawn( $_cmd, @{$_args} )
+                    or die "Cannot spawn command: " . $!;
+                my $chk = $exp->expect(2, "","Enter pass phrase for");
+                return { error => 'Command has timed-out while creating certificate' }
+                    unless $chk;
+                $exp->send( $params->{ca_password} . "\n" );
+                undef $chk;
+                $chk = $exp->expect(2, "","Data Base Updated");
+                return { error => 'Command has timed-out while creating certificate' }
+                    unless $chk;
+                $exp->soft_close();
 
-            # Format output buffer
-            # ====================
-            my $_buf = $self->_format_output( $full_buf );
+                if ( -f $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.crt'
+                  && -f $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.key'
+                  && -f $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.csr'
+                  && $params->{cert_type} !~ /server|ca/
+                ){
+                    move ( $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.crt',
+                           $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.crt'
+                    );
+                    move ( $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.key',
+                           $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.key'
+                    );
+                    move ( $cfg->{openvpn_utils} . '/keys/' . $params->{KEY_CN} . '.csr',
+                           $cfg->{openvpn_utils} . '/keys/' . $params->{cert_name} . '.csr'
+                    );
+                }
+               
+                # Remove temporary
+                # openssl.conf
+                # ================
+                unlink $_openssl_conf;
+                return undef;
+            }
+            else {
+                my ( $success, $error_code, $full_buf ) =
+                    run(
+                        command => [ $_cmd, @{$_args} ],
+                        verbose => 0,
+                        timeout => $TIMEOUT
+                    );
+ 
+                # Remove temporary
+                # openssl.conf
+                # ================
+                unlink $_openssl_conf;
 
-
-            # Glob created certificates
-            # used to delete in case of
-            # need to rollback
-            # =========================
-            my @_cert_files =
-                glob $cfg->{openvpn_utils}
+                # Format output buffer
+                # ====================
+                my $_buf = $self->_format_output( $full_buf );
+    
+                # Glob created certificates
+                # used to delete in case of
+                # need to rollback
+                # =========================
+                my @_cert_files =
+                    glob $cfg->{openvpn_utils}
                     . '/keys/' . $params->{cert_name}
                     . '.*';
 
-            # Check for errors
-            # ================
-            if ( my $_chk_cert = $self->_check_cert_errors($_buf) ){
-                warn "[error] $_chk_cert";
-                unlink (@_cert_files);
-                return { error => $_chk_cert . '; '
-                        . ( split /\n/, $_buf )[0] };
-            }
-
-            if ( ! $success ) {
-                unlink (@_cert_files);
-                return { error => ( split /\n/, $_buf )[0] };
+                # Check for errors
+                # ================
+                if ( my $_chk_cert = $self->_check_cert_errors($_buf, \@_cert_files) ){
+                    warn "[error] $_chk_cert";
+                    #unlink (@_cert_files);
+                    return { error => $_chk_cert . '; '
+                            . ( split /\n/, $_buf )[0] };
+                }
+    
+                if ( ! $success ) {
+                    #unlink (@_cert_files);
+                    return { error => ( split /\n/, $_buf )[0] };
+                }
+                return undef;
             }
         }
     }
@@ -656,16 +719,11 @@ Generate server certificate via pkitool
     sub _generate_server_certificate {
         my ( $self, $cfg, $params, $_openssl_conf ) = @_;
 
-        if ( $params->{ca_password} ) {
-            # TODO: via 'expect'
-            return { error => 'Still do not support passwords' };
-        }
-
-        my @_cmd = (
-            $cfg->{openvpn_utils} . '/pkitool',
+        my $_cmd = $cfg->{openvpn_utils} . '/pkitool';
+        my $_args = [
             '--server',
-            $params->{cert_name}
-        );
+            $params->{cert_name},
+        ];
 
         # Check can run
         # =============
@@ -673,42 +731,78 @@ Generate server certificate via pkitool
             unlink $_openssl_conf;
             return { error => 'Cannot run openssl! ' . $! };
         }
-        # Run command
-        # ===========
-        my ( $success, $error_code, $full_buf ) =
-            run( command => [ @_cmd ], verbose => 0, timeout => $TIMEOUT );
 
-        # Remove temporary
-        # openssl.conf
-        # ================
-        unlink $_openssl_conf;
+        if ( $params->{ca_password} ){
+            $Expect::Debug = 0;
+            $Expect::Log_Stdout = 0;
+            my $exp = Expect->spawn( $_cmd, @{$_args} )
+                or die "Cannot spawn command: " . $!;
+            #$exp->log_file('/tmp/exp.txt','w');
+            my $chk = $exp->expect(2, "","Enter pass phrase for");
+            return { error => 'Command has timed-out while creating certificate' }
+                unless $chk;
+            $exp->send( $params->{ca_password} . "\n" );
+            undef $chk;
+            $chk = $exp->expect(2, "","Data Base Updated");
+            return { error => 'Command has timed-out while creating certificate' }
+                unless $chk;
+            $exp->soft_close();
 
-        # Rearrange output data
-        # =====================
-        my $_buf = $self->_format_output( $full_buf );
+            # Remove temporary
+            # openssl.conf
+            # ================
+            unlink $_openssl_conf;
+        }
+        else {
 
-        if ( !$success
-             or $_buf =~ /(wrong.*)/ig
-             or $_buf =~ /(error.*)/ig
-        ){
-            my $fnd = $1;
-            warn "[error] OpenSSL ERROR: " . $_buf;
-            $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
+            # Run command
+            # ===========
+            my ( $success, $error_code, $full_buf ) =
+                run(
+                    command => [ $_cmd,  @{$_args} ],
+                    verbose => 0,
+                    timeout => $TIMEOUT
+                );
 
-            if ( $fnd and $fnd =~ /error|wrong/gi ){
-                return {
-                    error =>
-                        'Failed to create certificate.' 
-                        . ' Index file might be corrupt.'
-                        . ' Got error: ' . $fnd
+            my @_cert_files =
+                glob $cfg->{openvpn_utils}
+                    . '/keys/' . $params->{cert_name}
+                    . '.*';
+
+            # Remove temporary
+            # openssl.conf
+            # ================
+            unlink $_openssl_conf;
+
+            # Rearrange output data
+            # =====================
+            my $_buf = $self->_format_output( $full_buf );
+
+            if ( !$success
+                 or $_buf =~ /(wrong.*)/ig
+                 or $_buf =~ /(error.*)/ig
+            ){
+                my $fnd = $1;
+                unlink(@_cert_files);
+                warn "[error] OpenSSL ERROR: " . $_buf;
+                $fnd =~ s/'/\\\\\\\\'/g if $fnd; 
+    
+                if ( $fnd and $fnd =~ /error|wrong/gi ){
+                    return {
+                        error =>
+                            'Failed to create certificate.' 
+                            . ' Index file might be corrupt or a certificate name matches one which exists and is revoked.'
+                            . ' Got error: ' . $fnd
+                    };
+                }
+    
+                return { error => 'Failed to create csr and key for server: '
+                    . ( $fnd ? $fnd : $_buf )
+                    . ( $error_code ? ", " . $error_code : '' )
                 };
             }
-
-            return { error => 'Failed to create csr and key for server: '
-                . ( $fnd ? $fnd : $_buf )
-                . ( $error_code ? ", " . $error_code : '' )
-            };
         }
+    
         return undef;
     }
 
@@ -735,15 +829,22 @@ and return the details or errors
                  . '/keys/'
                  . $params->{cert_name}
                  . '.*';
-        
+
         # Get the new serial
         # ==================
-
-        my $_serial_cmd = "tail -1 " . $cfg->{openvpn_utils}
-                        . "/keys/index.txt | awk {'print \$3'}";
-        my $serial = `$_serial_cmd`;
+        #my $_serial_cmd = "tail -1 " . $cfg->{openvpn_utils}
+        #                . "/keys/index.txt | awk {'print \$3'}";
+        #my $serial = `$_serial_cmd`;
+        my $o = tie my @array, 'Tie::File', $cfg->{openvpn_utils} . '/keys/index.txt';
+        $o->flock;
+        my $last_line = $array[-1];
+        my ($serial) = (split(/\t/, $last_line))[3];
+        undef $o;
+        untie @array;
+                
         return { error => 'Could not read serial number from index.txt!' }
-            if ( $? >> 8 != 0 );
+            unless $serial;
+
         chomp($serial);
 
         # Check if the serial matches
@@ -768,7 +869,7 @@ and return the details or errors
         # Process new certificates
         # ========================
         if ( @_cert_files ){
-            
+
             # Only create a client dir
             # if cert_type is not server
             # ==========================

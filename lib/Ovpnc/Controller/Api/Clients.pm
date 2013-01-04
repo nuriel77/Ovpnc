@@ -850,7 +850,10 @@ is running
         # ===========================
         unless ( $c->request->params->{no_revoke} ) {
             $_ret_val = $self->_roles->revoke_certificate(
-                \@clients, ( @cert_names ? \@cert_names : undef ) );
+                \@clients,
+                ( @cert_names ? \@cert_names : undef ),
+                $c->req->params->{ca_password}
+            );
         }
 
         unless ( $_ret_val ){
@@ -1050,7 +1053,8 @@ in ccd
                     $clients[$i],
                     $self->cfg->{ssl_config},
                     $c->config->{openssl_bin},
-                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} )
+                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
+                    $c->req->params->{ca_password}
                 );
     
             if (@certificates){
