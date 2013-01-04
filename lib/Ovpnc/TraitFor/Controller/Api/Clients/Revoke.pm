@@ -54,7 +54,7 @@ Revoke certificate(s)
 =cut
 
     sub revoke_certificate {
-        my ( $self, $clients, $cert_names, $passwd ) = @_;
+        my ( $self, $clients, $cert_names, $serials, $passwd ) = @_;
 
         $openvpn_dir = $self->_set_openvpn_dir;
         $tools = $self->_set_openvpn_utils;
@@ -91,14 +91,14 @@ Revoke certificate(s)
                 for my $cert ( glob $self->_set_openvpn_utils . '/keys/' . $clients->[$i] . '/*.crt' ){
                     $_chk++;
                     $cert =~ s{\.[^.]+$}{};
-                    $self->_revoke_certificate( 'all', $tools, $cert, $clients->[$i], $passwd );
+                    $self->_revoke_certificate( 'all', $tools, $cert, $clients->[$i], $serials->[$i], $passwd );
                 }
 
                 push (@{$self->rval->{$clients->[$i]}->{warnings}}, 'Has no certificates')
                     unless ($_chk);
             }
             else {
-                $self->_revoke_certificate( 'single', $tools, $cert_names->[$i], $clients->[$i], $passwd );
+                $self->_revoke_certificate( 'single', $tools, $cert_names->[$i], $clients->[$i], $serials->[$i], $passwd );
             }
     
         }
@@ -113,7 +113,7 @@ Revoke a certificate - private
 =cut
 
     sub _revoke_certificate {
-        my ( $self, $action, $revoke_tool, $cert, $client, $passwd ) = @_;
+        my ( $self, $action, $revoke_tool, $cert, $client, $serial, $passwd ) = @_;
 
         die "No cert?" unless $cert;
 
@@ -156,6 +156,15 @@ Revoke a certificate - private
 
             );
 
+            if ( $error = $exp->exp_error() ){
+                $buf = $exp->before();
+                warn "Error: " .  $error . " and OUTPUT: ", $buf;
+                push @{$self->rval->{$client}->{errors}},
+                     'Command 1 failed to execute: ' . $error . ', ' . $exp->before()
+                    unless $error =~ /exited with status 0/;
+            }
+
+
             $exp->expect(
                 2,
                 [
@@ -165,9 +174,11 @@ Revoke a certificate - private
             );
 
             if ( $error = $exp->exp_error() ){
-                warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
+                $buf = $exp->before();
+                warn "Error: " .  $error . " and OUTPUT: ", $buf;
                 push @{$self->rval->{$client}->{errors}},
-                     'Command 2 failed to execute: ' . $error . ', ' . $exp->before();
+                     'Command 2 failed to execute: ' . $error . ', ' . $buf
+                  unless $error =~ /exited with status 0/;
             }
 
             $exp->expect(

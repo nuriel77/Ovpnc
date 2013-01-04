@@ -60,28 +60,29 @@ Delete Certificates
 
             # Remove the certificate serial pem
             # =================================
-            if ( $cert->cert_type ne 'ca' ){
-                my $serial_cert_file = $keys_dir . $cert->key_serial . '.pem';
-                if ( -f $serial_cert_file ){
-                    unlink $serial_cert_file
-                        or push @{$collector->{$cert->name}->{warnings}},
-                                'Cannot remove serial certificate file '
-                                . $serial_cert_file . ': ' . $!;
-                }
-                else {
-                    push @{$collector->{$cert->name}->{warnings}},
-                         'Cannot remove serial certificate file '
-                         . $serial_cert_file . ': does not exists';
-                         
-                }
-            }
+            #if ( $cert->cert_type ne 'ca' ){
+            #    my $serial_cert_file = $keys_dir . $cert->key_serial . '.pem';
+            #    if ( -f $serial_cert_file ){
+            #        unlink $serial_cert_file
+            #            or push @{$collector->{$cert->name}->{warnings}},
+            #                    'Cannot remove serial certificate file '
+            #                    . $serial_cert_file . ': ' . $!;
+            #    }
+            #    else {
+            #        push @{$collector->{$cert->name}->{warnings}},
+            #             'Cannot remove serial certificate file '
+            #             . $serial_cert_file . ': does not exists';
+            #             
+            #    }
+            #}
             # If CA is being remove, remove
             # all files which are not needed
             # ==============================
-            elsif ( $cert->cert_type eq 'ca' ){
+            if ( $cert->cert_type eq 'ca' ){
                 for (
                     glob ($keys_dir . 'index.txt*'),
                     glob ($keys_dir . 'crl*'),
+                    glob ($keys_dir . '*pem'),
                     glob ($keys_dir . 'serial*'),
                     glob ($keys_dir . '*old'),
                 ){

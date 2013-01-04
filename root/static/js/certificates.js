@@ -262,18 +262,23 @@ var total_count = 0;
                 action = button.match(/unblock/i) ? 'unrevoke' : 'revoke';
             }
             // Get total selected certificate(s)
-            var total_count = $('.trSelected', grid).length;
-            var _loop = 0;
-            var _certificates = '';
-            var _clients = '';
+
+            var total_count = $('.trSelected', grid).length,
+                _loop         = 0,
+                _certificates = '',
+                _serials      = '',
+                _clients      = '';
+
             $.each($('.trSelected', grid), function() {
                 // Get the certificates name of this grid
-                var certificate = $('td:nth-child(4) div', this).html();
-                var clients = $('td:nth-child(3) div', this).html();
+                var certificate = $('td:nth-child(4) div', this).html(),
+                    clients     = $('td:nth-child(3) div', this).html(),
+                    serials     = $('td:nth-child(20) div', this).html();
                 // Get rid of any html tags, extract the name.
                 certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                 _certificates += certificate + ',';
                 _clients += clients + ',';
+                _serials += serials + ',';
                 _loop++;
             });
 
@@ -293,7 +298,13 @@ var total_count = 0;
                     type: action,
                     cache: false,
                     timeout: 15000,
-                    data: { _ : '1', certificates: _certificates, clients: _clients, ca_password: passwd },
+                    data: {
+                        _ : '1',
+                        certificates: _certificates,
+                        clients: _clients,
+                        serials: _serials,
+                        ca_password: passwd,
+                    },
                     dataType: 'json',
                     success: function (msg) {
                         if ( window.DEBUG ) log("revoke/unrevoke returned: %o", msg);
@@ -568,25 +579,34 @@ var total_count = 0;
 
             var _action = function () {
                 window.certificatesToDelete = total_count;
-                var _loop = 0;
-                var _certificates = '';
-                var _clients = '';
+                var _loop         = 0,
+                    _certificates = '',
+                    _clients      = '',
+                    _serials      = '';
                 $.each($('.trSelected', grid), function() {
                     // Get the certificates name of this grid
-                    var certificate = $('td:nth-child(4) div', this).html();
-                    var clients = $('td:nth-child(3) div', this).html();
+                    var certificate = $('td:nth-child(4) div', this).html(),
+                        clients     = $('td:nth-child(3) div', this).html(),
+                        serials     = $('td:nth-child(20) div', this).html();
                     // Get rid of any html tags, extract the name.
                     certificate = certificate.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
                     _certificates += certificate + ',';
+                    _serials += serials + ',';
                     _clients += clients + ',';
                 });
 
-                if ( window.DEBUG ) log( "Certificates: " + _certificates + ' clients ' + _clients );
+                if ( window.DEBUG ) log( "Certificates: " + _certificates + ' clients: ' + _clients + ' serials: ' + _serials );
 
                 var deleteCertAction = function ( passwd ) {
                     $.Ovpnc().ajaxCall({
                         url: "/api/certificates/",
-                        data: { certificates: _certificates, _ : '1', clients: _clients, ca_password: passwd },
+                        data: {
+                            _ : '1',
+                            certificates: _certificates,
+                            clients: _clients,
+                            ca_password: passwd,
+                            serials: _serials
+                        },
                         method: 'DELETE',
                         success_func: $.Certificate().certificateDeleteReturn,
                         error_func: $.Certificate().certificateDeleteError,

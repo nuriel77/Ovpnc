@@ -68,7 +68,7 @@ $REGEX = {
     client => {
         list =>
           'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
-        crl => 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=(.*)\/.*',
+        crl => '\/CN=(.*)\/name=(.*)\/',
     }
 };
 
@@ -941,12 +941,12 @@ in ccd
                            ACLDetachTo('denied')
                          : Sitemap
     {
-        my ( $self, $c, $client_list, $cert_list ) = @_;
+        my ( $self, $c, $client_list, $cert_list, $serials ) = @_;
 
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c, 400)
-          if ( ! $client_list and !$c->request->params->{clients} );
+          if ( ! $client_list and !$c->request->params->{clients} and !$c->request->params->{serials} );
     
         # Override anything in the path by setting
         # params from post if they exists
@@ -958,6 +958,10 @@ in ccd
             if $c->request->params->{certificates};
         my @certificates = map { $_ if $_ ne '' } split ',', $cert_list
             if $c->request->params->{certificates};
+        $serials = $c->req->params->{serials}
+            if $c->req->params->{serials};
+        my @serials = map { $_ if $_ ne '' } split ',', $serials
+            if $c->request->params->{serials};
 
         # Trait names should match request method
         # =======================================
@@ -996,7 +1000,8 @@ in ccd
                 $self->_match_revoked(
                     $revoked,
                     $clients[$i],
-                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} )
+                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
+                    $serials[$i]
                 )
             ) {
                 push ( @{$_ret_val->{$clients[$i]}->{errors}},
@@ -1012,7 +1017,7 @@ in ccd
             unless ( @certificates ){
                 try {
                     $c->model('DB::Certificate')->search({
-                        user => $clients[$i],
+                        user        => $clients[$i]
                     })->update({ revoked => '0000-00-00 00:00:00' });
                 }
                 catch {
@@ -1023,8 +1028,9 @@ in ccd
             else {
                 try {
                     $c->model('DB::Certificate')->search({
-                        user => $clients[$i],
-                        name => $certificates[$i],
+                        user       => $clients[$i],
+                        name       => $certificates[$i],
+                        key_serial => $serials[$i],
                     })->update({ revoked => '0000-00-00 00:00:00' });
                 }
                 catch {
@@ -1054,9 +1060,10 @@ in ccd
                     $self->cfg->{ssl_config},
                     $c->config->{openssl_bin},
                     ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
+                    $serials[$i],
                     $c->req->params->{ca_password}
                 );
-    
+
             if (@certificates){
                 for ( keys %{$_unrevoke_status} ){
                     push @{ $_ret_val->{$certificates[$i]}->{$_} },
@@ -1217,24 +1224,32 @@ who is revoked
 
     sub _read_crl_index_file : Private {
         my ( $self, $crl_index ) = @_;
+
         my ( $Y, $M, $D, $h, $m, $s );
         my $obj = [];
-        tie my @array, "Tie::File", $crl_index;
+
+        my $o = tie my @array, "Tie::File", $crl_index;
+        $o->flock;
+
         for my $line ( @array ){
-            # 'R\s*\w+\s*(\w+).*\/C.*\/CN=(.*)\/name=(.*)\/.*'
-            my ( $revoke_time, $CN, $name ) = $line =~ /$REGEX->{client}->{crl}/g;
-            if ( $revoke_time and $CN and $name ) {
+            my ( $Y, $M, $D, $h, $m, $s );
+            if ( $line =~ /^R.*$/ ){
+                my (undef, $created, $revoke_time, $serial, undef, $subject )
+                    = split /\t/, $line;
+                my ( $CN, $name ) = $subject =~ /$REGEX->{client}->{crl}/;
                 ( $Y, $M, $D, $h, $m, $s ) = $revoke_time =~ /(..)/g;
                 my $kill_time =
-                    $D . '-'
-                  . $M . '-'
-                  . ( $Y + 2000 ) . ' '
-                  . $h . ':'
-                  . $m . ':'
-                  . $s;
-                push( @{$obj}, { CN => $CN, cert_name => $name, kill_time => $kill_time } );
+                        $D . '-'
+                      . $M . '-'
+                      . ( $Y + 2000 ) . ' '
+                      . $h . ':'
+                      . $m . ':'
+                      . $s;
+                push( @{$obj}, { serial => $serial, CN => $CN, cert_name => $name, kill_time => $kill_time } );
             }
         }
+
+        undef $o;
         untie @array;
         return $obj;
     }
@@ -1249,17 +1264,22 @@ to see if he is there
 =cut
 
     sub _match_revoked : Private {
-        my ( $self, $revoked, $client, $cert_name ) = @_;
+        my ( $self, $revoked, $client, $cert_name, $serial ) = @_;
 
         if ( $revoked and ref $revoked eq 'ARRAY' ) {
             for ( @{$revoked} ) {
-                if ( $cert_name ){
+                if (
+                       $cert_name
+                    && $_->{CN} eq $client
+                    && $_->{cert_name} eq $cert_name
+                    && $_->{serial} eq $serial
+                ){
                     return 1
-                        if $_->{CN} eq $client and $_->{cert_name} eq $cert_name;
                 }
                 else {
                     return 1
-                        if $_->{CN} eq $client;
+                        if $_->{CN} eq $client
+                        and $_->{serial} eq $serial;
                 }
             }
         }

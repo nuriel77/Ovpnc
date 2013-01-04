@@ -60,7 +60,7 @@ V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Pr
 
 
 sub unrevoke_certificate {
-    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name, $passwd ) = @_;
+    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name, $serial, $passwd ) = @_;
 
     my $_ret_val;
 
@@ -80,9 +80,8 @@ sub unrevoke_certificate {
     # =================================
 
     if ( -e $index_file and -w $index_file ) {
-
         my $regex = $cert_name
-            ? qr[^R\t\w+.*\/CN=$client\/name=$cert_name\/.*$]
+            ? qr[^R.*$serial.*\/C.*\/CN=$client\/name=$cert_name\/.*$]
             : qr[^R\t\w+.*\/CN=$client\/name=.*$];
 
         my $_qchk = 0;
@@ -107,7 +106,7 @@ sub unrevoke_certificate {
 
         # Check exit status
         # =================
-        return { errors => ['Un-revocation failure for ' . $client . ': ' . $_ret_val ]}
+        return { errors => ['Un-revocation failure for ' . $client ]}
             if $_qchk == 0;
 
         # Regenerate the crl.pem

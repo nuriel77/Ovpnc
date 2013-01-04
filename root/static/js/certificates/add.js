@@ -709,6 +709,7 @@ jQuery.validator.setDefaults({
                 var locked_ca = $('#locked_ca');
                 if ( locked_ca !== undefined
                   && window.lock_checked === undefined
+                  && $('#certtype').attr('value') !== 'ca'
                 ){
                     $.addCertificate().processUnlockDialog();
                     return false;

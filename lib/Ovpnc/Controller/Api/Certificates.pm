@@ -512,9 +512,9 @@ sub certificates_DELETE : Local
         # must be provided (min 1)
         # ===========================
         my $certificates;
-        my ($certs, $clients);
+        my ($certs, $clients, $serials);
 
-        if ( ! $req->{clients} or ! $req->{certificates} ){
+        if ( ! $req->{clients} and ! $req->{certificates} and ! $req->{serials} ){
             $self->status_bad_request($c, message =>
                 "Missing params. Both clients and certificates must be provided (min 1)."
             );
@@ -527,6 +527,7 @@ sub certificates_DELETE : Local
         else {
             @{$certs}   = map { $_ if $_ ne '' } split ",", $req->{certificates};
             @{$clients} = map { $_ if $_ ne '' } split ",", $req->{clients}; 
+            @{$serials} = map { $_ if $_ ne '' } split ",", $req->{serials}; 
         }
 
         # Make a hash using certnames
@@ -538,8 +539,9 @@ sub certificates_DELETE : Local
         # =========================
         my @rs = $c->model('DB::Certificate')->search(
                 {
-                    name => { in => $certs },
-                    user => { in => $clients },
+                    name        => { in => $certs   },
+                    user        => { in => $clients },
+                    key_serial  => { in => $serials },
                 }
             )->all;
 
@@ -557,7 +559,7 @@ sub certificates_DELETE : Local
         # still exists. Remove from array if so.
         # ======================================
         my ( $rs, $path_certs );
-        ($certs, $clients, $rs)         = $self->_check_not_ca( $c, $certs, $clients, \@rs );
+        ($certs, $clients, $serials, $rs)         = $self->_check_not_ca( $c, $certs, $clients, $serials, \@rs );
         ($certs, $clients, $path_certs) = $self->_set_paths( $c, $certs, $clients );
 
         # [- debug - ]
@@ -565,6 +567,7 @@ sub certificates_DELETE : Local
         #   "     Paths:     " . ( join ", ", @{$path_certs} )
         #  .".    Certs:     " . ( join ", ", @{$certs} )
         #  .".    Clients:   " . ( join ", ", @{$clients} )
+        #  .".    Serials:   " . ( join ", ", @{$serials} )
         #);
 
         unless ( @{$certs} ){
@@ -603,8 +606,11 @@ sub certificates_DELETE : Local
         # Revoke certificates
         # ===================
         my $_chk_revoke = $self->_roles->revoke_certificate(
-            $clients, $path_certs, $c->req->params->{ca_password} ); 
-
+            $clients,
+            $path_certs,
+            $serials,
+            $c->req->params->{ca_password}
+        ); 
 
         unless ( $_chk_revoke ){
             $c->controller('Api')->detach_error( $c,
@@ -675,23 +681,29 @@ sends to _DELETE with no_delete param
 
         $c->req->params->{no_delete} = 1;
 
-        if ( ! $c->req->params->{certificates}
-          || ! $c->req->params->{clients}
+        if (  ! $c->req->params->{certificates}
+          and ! $c->req->params->{clients}
+          and ! $c->req->params->{serials}
         ){
             $self->status_bad_request($c, message =>
-                'Both certificate names and client names should be provided (min 1)'
+                'Certificate name(s), serial(s) and client name(s) should be provided (min 1)'
             );
             $c->detach;
         }
         my @certificates = split ',', $c->req->params->{certificates};
         my @clients      = split ',', $c->req->params->{clients};
+        my @serials      = split ',', $c->req->params->{serials};
 
         # Check if such a certificate exists
         # ==================================
         # just to make sure:
         $c->req->params->{no_delete} ||= 1;
         my $chk_revoke = $self->certificates_DELETE(
-            $c, $c->req->params->{clients}, $c->req->params->{certificates} );
+            $c,
+            $c->req->params->{clients},
+            $c->req->params->{certificates},
+            $c->req->params->{serials}
+        );
 
 		# Check the return values to find
 		# successful ones and update the
@@ -1071,6 +1083,7 @@ other certificates exists
         my $c = shift;
         my @certs = @{(shift)};
         my @clients = @{(shift)};
+        my @serials = @{(shift)};
         my @rs = @{(shift)};
 
         # Count non-CA certificates
@@ -1106,14 +1119,15 @@ other certificates exists
                 for my $i ( 0 .. @certs ){
                     # Find the "offending" one
                     # ========================
-                    if ( $certs[$i] eq $cert->name ){
+                    if ( $certs[$i] eq $cert->name && $serials[$i] eq $cert->key_serial ){
                         if ( $non_ca_count and $non_ca_count > 0 ){
                             $c->log->debug('Ignoring CA certificate ' . $cert->name );
                             # Remove from arrays
                             # ==================
-                            splice ( @certs, $i ,1 );
-                            splice ( @clients, $i ,1 );
-                            splice ( @rs, $rs_index, 1);
+                            splice ( @certs, $i, 1 );
+                            splice ( @clients, $i, 1 );
+                            splice ( @serials, $i, 1 );
+                            splice ( @rs, $rs_index, 1 );
                             # Compensate on removal
                             # =====================
                             $i--;
@@ -1129,7 +1143,7 @@ other certificates exists
             }
             $rs_index++;
         }
-        return (\@certs, \@clients, \@rs);
+        return (\@certs, \@clients, \@serials, \@rs);
      }
 
 

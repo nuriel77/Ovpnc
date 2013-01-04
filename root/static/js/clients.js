@@ -337,9 +337,7 @@ var total_count = 0;
 
             if ( action === 'unrevoke' ){
                 $.Ovpnc().confirmDiag({
-                    message: "<div>" + $.Ovpnc().alertIcon + "<b>Warning!</b></div><br /></br /><div>"
-                           + "'Unblock' will un-revoke all the certificates belonging to the"
-                           + " client" + (total_count>1?'s':'') + ".</div><div>Are you sure you want to proceed?</div>",
+                    message: "<div>" + $.Ovpnc().alertIcon + "<b>Warning!</b></div><br /></br /><div>'Unblock' will un-revoke all the certificates belonging to the client" + (total_count>1?'s':'') + ".</div><div>Are you sure you want to proceed?</div>",
                     action: $.Client().proceedBlockUnblock,
                     params: { button: button, grid: grid, action: action }
                 });
