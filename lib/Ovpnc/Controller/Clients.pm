@@ -192,7 +192,14 @@ Add a client
             print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
     
             ## For Debug: -- remove
-            print $FILE "\n#Generated from:\n#" . $c->req->params->{username} . "\n#" . $c->req->params->{password} . "\n";
+            print $FILE "\n"
+                        . 'Generated from:'
+                        . "\n"
+                        .'#'. $c->req->params->{username}
+                        . "\n"
+                        . '#'
+                        . $c->req->params->{password}
+                        . "\n";
             close $FILE;
 
             # Set permissions and ownership

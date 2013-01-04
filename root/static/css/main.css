@@ -284,6 +284,18 @@ fieldset .constraint_required label:after {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
 
 }
+.justShadow{
+    box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -o-box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -webkit-box-shadow: 6px 8px 8px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    -moz-box-shadow: 8px 10px 10px rgba(0,0,0,0.5),
+        inset 6px 8px 8px rgba(255,255,255,0.75);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
+}
+
 #loaderText{
     display:none;
     margin:45px 6px 6px 7px;

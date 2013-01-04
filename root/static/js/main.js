@@ -120,6 +120,7 @@ var dump = function (obj){
             $('#confirmDialog').dialog('open')
                                .html('<span>' + p.message + '</span>')
                                .show(200);
+            $('.ui-dialog').addClass('justShadow');
             if ( p.run_after ) p.run_after();
             return false;
         },
@@ -172,8 +173,8 @@ var dump = function (obj){
         ajaxCheckCAError: function (e) {
             if ( window.DEBUG ) log("ajaxCheckCAError got: %o",e);
             var msg = jQuery.parseJSON(e.responseText);
-            if ( msg.rest.error !== undefined
-              && msg.rest.error === 'Certificate exists'
+            if ( msg.rest.status !== undefined
+              && msg.rest.status === 'Certificate exists'
             ){
                 var cmd = 'start';
                 if ( window.DEBUG ) log("Root CA status:" + msg.rest.error);
@@ -184,7 +185,7 @@ var dump = function (obj){
                     success_func: function successAjaxServerControl(r,cmd){ return $.Ovpnc().successAjaxServerControl( r, cmd ) },
                     error_func: function errorAjaxServerControl(r,cmd){ return $.Ovpnc().errorAjaxServerControl( r, cmd ) },
                     loader: 1,
-                    timeout: 10000
+                    timeout: 15000
                 });
                 return true;
             }
@@ -217,9 +218,11 @@ var dump = function (obj){
                 if ( isCtrl == true ){
                     if ( e.which == 65 ){
                         $('.bDiv').find('tr').addClass('trSelected');
+                        return false;
                     }
                     else if ( e.which == 85 ){
                         $('.bDiv').find('tr').removeClass('trSelected');
+                        return false;
                     }
                     return true;
                 }
@@ -786,19 +789,19 @@ var dump = function (obj){
                 var _online = $('#online_clients_number').text(),
                     _cond   = "There " + (_online == 1 ? 'is ' : 'are ' ) + _online + ' client' +  ( _online > 1 ? 's ' : ' ' ) + 'online',
                     _action = function (){
-                    $.Ovpnc().serverAjaxControl('stop');
-                    // Wait 5 seconds to refresh the table
-                    // Only on clients table page
-                    if ( $('.flexigrid').is(':visible') ){
-                        var _wait_refresh = setInterval(function() {
-                            $('.pReload').click();
-                            window.clearInterval(_wait_refresh);
-                        }, 5000 );
-                    }
-                    return;
-                };
+                        $.Ovpnc().serverAjaxControl('stop');
+                        // Wait 5 seconds to refresh the table
+                        // Only on clients table page
+                        if ( $('.flexigrid').is(':visible') ){
+                            var _wait_refresh = setInterval(function() {
+                                $('.pReload').click();
+                                window.clearInterval(_wait_refresh);
+                            }, 5000 );
+                        }
+                        return;
+                    };
 
-                if ( _online == 0 ) {
+                if ( _online != 0 ) {
                     $.Ovpnc().confirmDiag({
                         message: '<div>' + $.Ovpnc().alertIcon + ' Warning!</div><br /></br /><div>' + _cond + '</div><div>Are you sure you want to turn the server off?</div>',
                         action: _action,

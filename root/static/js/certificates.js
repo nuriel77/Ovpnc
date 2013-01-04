@@ -552,6 +552,7 @@ var total_count = 0;
 
             $('#'+confirmDiagName).dialog('open')
                                   .append( cDiv ).show(200);
+            $('.ui-dialog').addClass('justShadow');
             $( aDiv ).css('padding-bottom','8px'); //xxx
             return false;
         },

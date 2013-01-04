@@ -693,7 +693,8 @@ jQuery.validator.setDefaults({
 
             $('#confirmDialog').dialog('open')
                                .append( cDiv ).show(200);
-            $( aDiv ).css('padding-bottom','8px'); //xxx
+            $('.ui-dialog').addClass('justShadow');
+            $( aDiv ).css('padding-bottom','8px');
             return false;
         },
         //

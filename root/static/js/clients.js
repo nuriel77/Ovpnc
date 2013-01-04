@@ -275,7 +275,7 @@ var total_count = 0;
                  height: "auto",
                  width: "auto",
                  zIndex:9010,
-                 position: [ 300, 200 ],
+                 position: [ 330, 250 ],
                  buttons: [
                     {
                         text: "cancel",
@@ -318,7 +318,8 @@ var total_count = 0;
 
             $('#'+confirmDiagName).dialog('open')
                                   .append( cDiv ).show(200);
-            $( aDiv ).css('padding-bottom','8px'); //xxx
+            $('.ui-dialog').addClass('justShadow');
+            $( aDiv ).css('padding-bottom','8px');
             return false;
         },
         //
@@ -352,7 +353,7 @@ var total_count = 0;
         // Proceed with revoke/unrevoke after optional confirm dialog
         //
         proceedBlockUnblock: function ( button, grid, action, passwd ) {
-            if ( window.DEBUG ) log ( "B: %o",button );
+            if ( window.DEBUG ) log ( "processBlockUnblock button: %o",button );
             if ( typeof button === 'object'
               && grid === undefined
             ){
