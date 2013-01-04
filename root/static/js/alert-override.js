@@ -1,3 +1,8 @@
+/*
+ * Override the default alert
+ * Used to display messages
+ * to user on the message div
+ */
 window.alert = function(message) {
     var msgContent         = document.createElement('div'),
         msgContentTime     = document.createElement('div'),
@@ -63,24 +68,64 @@ window.alert = function(message) {
         });
         $('#message').draggable();
     }
+
+    if ( window.applied_message_context === undefined ) {
+        applyMessageContext();
+        $('#message_container').addClass('context-menu-two box menu-1');
+    }
+
     // Show the message container
     if ( $('#message_container').is(':hidden') ) {
         $('#message_container').slideDown(300);
     }
 
-    // Append a close button
-    /*
-    if ( ! $('#message_close').is(':visible') ){
-        // Create img element
-        $( msgImage ).addClass('hand_pointer')
-                     .attr('id','message_close')
-                     .attr('src','/static/images/close-gray.png');
-        // Get message container offset
-        // Contain image in div
-        $( iDiv ).css('margin', '-31px 95px 0px 0px').html( msgImage );
-        $('#message_container').append( iDiv );
-    }
-    */
-
     return false;
 };
+
+/*
+ * Add a context menu to the message div
+ */
+function applyMessageContext (){
+    window.applied_message_context = 1;
+
+    $.contextMenu({
+        selector: '.context-menu-two',
+        trigger: 'right',
+        delay: 500,
+	    autoHide: true,
+	    callback: function(key, options) {
+	        var elem = options.$trigger;
+	        if ( window.DEBUG ) log(key);
+	        
+	        switch(key.toLowerCase()){
+            	case "remember":
+	        		if ( window.DEBUG ) log('Got remember');
+                    rememberLogLines();
+	        		break;
+	        	case "clear":
+	        		if ( window.DEBUG ) log('Got erase');
+                    $('#message_container').slideUp(350);
+                    $('#message').empty();
+	        		break;
+	        	case "search":
+	        		if ( window.DEBUG ) log('Got search');
+	        		break;
+	        	case "close":
+	        		if ( window.DEBUG ) log('Got close');
+                    $('#message_container').slideUp(350);
+	        		break;
+	        } 		
+	    },		
+	    items: {
+	        "Remember":     { name: "Remember",     icon: "remember"    },
+	        "clear":        { name: "Clear All",    icon: "clear"       },
+	        "find":         { name: "Find",         icon: "search"      },
+	        "sep1":         "---------",
+	        "Close":        { name: "Close",        icon: "close"       },
+	    }
+    });
+}
+
+function rememberLogLines(){
+    
+}

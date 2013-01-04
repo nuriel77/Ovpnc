@@ -994,26 +994,26 @@ in ccd
                 status => []
             };
 
-            # Check if in CRL
-            # ===============
-            unless (
-                $self->_match_revoked(
-                    $revoked,
-                    $clients[$i],
-                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
-                    $serials[$i]
-                )
-            ) {
-                push ( @{$_ret_val->{$clients[$i]}->{errors}},
-                        ( ( $c->req->params->{cert_name} || @certificates )
-                            ? "Unrevoke failed: certificate is not revoked"
-                            : "Unrevoke failed: not in the Revoked list" ));
-                        
-                next CLIENT;
-            }
-    
-            # Update database
-            # ===============
+            # Unrevoke client certificate(s)
+            # ==============================
+            # TODO: move ssl_[config|bin] to the trait's instantiation.
+            my $_unrevoke_status = 
+                $self->_roles->unrevoke_certificate({
+                    client       => $clients[$i],
+                    ssl_config   => $self->cfg->{ssl_config},
+                    ssl_bin      => $c->config->{openssl_bin},
+                    certificate  =>( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
+                    serial       => $serials[$i],
+                    ca_password  => $c->req->params->{ca_password}
+                });
+
+            # Update database, two possibilities:
+            # a. No certificates provided: this means
+            #    that all the client's certificates
+            #    will be processed (unrevoked)
+            # b. Certificate names are provided, we
+            #    therefore make a specific query
+            # =======================================
             unless ( @certificates ){
                 try {
                     $c->model('DB::Certificate')->search({
@@ -1051,18 +1051,6 @@ in ccd
                 push @{$_ret_val->{$clients[$i]}->{errors}},
                     "DB query failed: " . $_;
             };
-
-            # Unrevoke a revoked client's certificate
-            # =======================================
-            my $_unrevoke_status = 
-                $self->_roles->unrevoke_certificate(
-                    $clients[$i],
-                    $self->cfg->{ssl_config},
-                    $c->config->{openssl_bin},
-                    ( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
-                    $serials[$i],
-                    $c->req->params->{ca_password}
-                );
 
             if (@certificates){
                 for ( keys %{$_unrevoke_status} ){

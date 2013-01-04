@@ -59,116 +59,129 @@ V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Pr
 =cut
 
 
-sub unrevoke_certificate {
-    my ( $self, $client, $ssl_config, $ssl_bin, $cert_name, $serial, $passwd ) = @_;
+    sub unrevoke_certificate {
+        my ( $self, $args ) = @_;
 
-    my $_ret_val;
-
-    $openvpn_dir = $self->openvpn_dir;
-    $tools       = $self->openvpn_utils;
-
-    # vars script location
-    # ====================
-    my $vars = $tools . '/vars';
-
-    # OpenVPN index file for crl
-    # ==========================
-    my $index_file = $tools . '/keys/index.txt';
-
-    # If single certificate is provided
-    # only unrevoke this certificate
-    # =================================
-
-    if ( -e $index_file and -w $index_file ) {
-        my $regex = $cert_name
-            ? qr[^R.*$serial.*\/C.*\/CN=$client\/name=$cert_name\/.*$]
-            : qr[^R\t\w+.*\/CN=$client\/name=.*$];
-
-        my $_qchk = 0;
-
-        my $o = tie my @array, 'Tie::File', $index_file, mode => O_RDWR;
-        $o->flock;
-
-        # Remove revoked fields
-        # =====================
-        for (@array){
-            if ( /$regex/ ) {
-                my @line = split /\t/;
-                $line[0] = 'V';
-                $line[2] = '';
-                $_ = join "\t", @line;
-                undef(@line);
-                $_qchk++;
-            }
-        }
-        undef $o;
-        untie @array;
-
-        # Check exit status
-        # =================
-        return { errors => ['Un-revocation failure for ' . $client ]}
-            if $_qchk == 0;
-
-        # Regenerate the crl.pem
-        # ======================
-        my $_cmd = $ssl_bin;
-        my $_args = [ 'ca', '-gencrl', '-config', $ssl_config, '-out', $tools . '/keys/crl.pem' ];
-
-        unless ( can_run($ssl_bin) ){
-            return { errors => [ 'Cannot run ' . $ssl_bin ] };
-        }
-
-        if ( $passwd ){
-            $Expect::Debug = 0;
-            $Expect::Log_Stdout = 0;
-            my ($error, $buf);
-            my $exp = Expect->new;
-            #$exp->log_file('/tmp/exp.txt', 'w');
-            $exp->exp_internal( 0 );
-            $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
-            $exp->expect(
-                2,
-                [
-                    qr/Enter pass phrase for.*/,
-                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
-                ],
-            );
-
-            $exp->soft_close();
-            return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
-        }
-        else {
-            # Run command
-            # ===========
-            my ( $success, $error_code, $full_buf ) =
-                run( command => [ $_cmd, @{$_args} ], verbose => 0, timeout => TIMEOUT );
-
-            $_ret_val = join( "\n", @{$full_buf} );
-            $_ret_val =~ s/\n/;/g;
+        my $client      = $args->{client}       || die "No client?";
+        my $ssl_config  = $args->{ssl_config}   || die "No ssl_config?";
+        my $ssl_bin     = $args->{ssl_bin}      || die "No ssl_bin?";
+        my $cert_name   = $args->{certificate}  if $args->{certificate};
+        my $serial      = $args->{serial}       if $args->{serial};
+        my $passwd      = $args->{ca_password}  if $args->{ca_password};
     
-            if ( $success ){
+        my $_ret_val;
+    
+        $openvpn_dir = $self->openvpn_dir;
+        $tools       = $self->openvpn_utils;
+    
+        # vars script location
+        # ====================
+        my $vars = $tools . '/vars';
+    
+        # OpenVPN index file for crl
+        # ==========================
+        my $index_file = $tools . '/keys/index.txt';
+    
+        # If single certificate is provided
+        # only unrevoke this certificate
+        # =================================
+    
+        if ( -e $index_file and -w $index_file ) {
+            my $regex = $cert_name
+                ? qr[^R.*$serial.*\/C.*\/CN=$client\/name=$cert_name\/.*$]
+                : qr[^R\t\w+.*\/CN=$client\/name=.*$];
+    
+            my $_qchk = 0;
+    
+            my $o = tie my @array, 'Tie::File', $index_file, mode => O_RDWR;
+            $o->flock;
+    
+            # Remove revoked fields
+            # =====================
+            for (@array){
+                if ( /$regex/ ) {
+                    my @line = split /\t/;
+                    $line[0] = 'V';
+                    $line[2] = '';
+                    $_ = join "\t", @line;
+                    undef(@line);
+                    $_qchk++;
+                }
+            }
+            undef $o;
+            untie @array;
+    
+            # Check exit status
+            # =================
+            return { warnings => [ 'Could not find a revoked entry in the index file' ]}
+                if $_qchk == 0;
+    
+            # Regenerate the crl.pem
+            # ======================
+            my $_cmd = $ssl_bin;
+            my $_args = [ 'ca', '-gencrl', '-config', $ssl_config, '-out', $tools . '/keys/crl.pem' ];
+    
+            unless ( can_run($ssl_bin) ){
+                return { errors => [ 'Cannot run ' . $ssl_bin ] };
+            }
+    
+            if ( $passwd ){
+                $Expect::Debug = 0;
+                $Expect::Log_Stdout = 0;
+                my ($error, $buf);
+                my $exp = Expect->new;
+                #$exp->log_file('/tmp/exp.txt', 'w');
+                $exp->exp_internal( 0 );
+                $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
+                $exp->expect(
+                    2,
+                    [
+                        qr/Enter pass phrase for.*/,
+                        sub { $exp->send( $passwd . "\n" ); exp_continue; },
+                    ],
+                );
+    
+                $exp->soft_close();
                 return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
             }
             else {
-                return {
-                    errors => [
-                        'Un-revocation failure: '
-                        . ( $error_code ? ': ' . $error_code : '' )
-                        . ( $_ret_val ? ', ' . $_ret_val : '' )
-                    ]
-                };
+                # Run command
+                # ===========
+                my ( $success, $error_code, $full_buf ) =
+                    run( command => [ $_cmd, @{$_args} ], verbose => 0, timeout => TIMEOUT );
+    
+                $_ret_val = join( "\n", @{$full_buf} );
+                $_ret_val =~ s/\n/;/g;
+        
+                if ( $success ){
+                    return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
+                }
+                else {
+                    return {
+                        errors => [
+                            'Un-revocation failure: '
+                            . ( $error_code ? ': ' . $error_code : '' )
+                            . ( $_ret_val ? ', ' . $_ret_val : '' )
+                        ]
+                    };
+                }
             }
         }
+        else {
+            return {
+                errors => [
+                    'Un-revocation failure: '
+                    . ' OpenVPN index file does not exists or is not accessible: '
+                    . $index_file
+                ]
+            };
+        }
     }
-    else {
-        return {
-            errors => [
-                'Un-revocation failure: '
-                . ' OpenVPN index file does not exists or is not accessible: '
-                . $index_file
-            ]
-        };
-    }
-}
 
+=head1 AUTHOR
+
+Nuriel Shem-Tov
+
+=cut
+    
 1;

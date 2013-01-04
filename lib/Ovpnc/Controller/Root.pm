@@ -235,10 +235,13 @@ Include static files, dynamically
         my @_page_assets = qw(
           css/normalize.css
           css/slider.css
+          js/jQuery-contextMenu/src/jquery.contextMenu.css
           css/main.css
           js/jquery-ui/css/smoothness/jquery-ui-1.9.1.custom.min.css
           js/jquery-latest.js
           js/jquery-ui/js/jquery-ui-1.9.1.custom.min.js
+          js/jQuery-contextMenu/src/jquery.ui.position.js
+          js/jQuery-contextMenu/src/jquery.contextMenu.js
           js/jquery-cookie/jquery.cookie.js
           js/jquery-validation/jquery.validate.js
           js/functions.js
@@ -255,9 +258,6 @@ Include static files, dynamically
             # Default links for clients controller
             # ====================================
             push @_page_assets, qw(
-                    js/jQuery-contextMenu/src/jquery.contextMenu.css
-                    js/jQuery-contextMenu/src/jquery.ui.position.js
-                    js/jQuery-contextMenu/src/jquery.contextMenu.js
                     js/Flexigrid/css/flexigrid.pack.css
                     js/Flexigrid/js/flexigrid.pack.js
                 ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;

@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 use POSIX;
 use Tie::File;
+use Fcntl 'O_RDWR';
 use File::Basename;
 use IPC::Cmd qw( can_run run );
 use Convert::PEM;

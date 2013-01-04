@@ -709,8 +709,9 @@ var dump = function (obj){
                     // This applies only to path /clients
 
                     if (
-                        r.rest.clients !== undefined
-                        && $.Ovpnc().pathname === '/clients'
+                        //r.rest.clients !== undefined
+                        //&&
+                             $.Ovpnc().pathname === '/clients'
                         && $('#flexme').is(':visible')
                     ) {
                         if ( $.Ovpnc().pathname === '/clients' ){

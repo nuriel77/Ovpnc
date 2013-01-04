@@ -291,7 +291,7 @@ var total_count = 0;
                     return false;
                 }
                 // Revoke Certificate(s)
-                $.Ovpnc().setAjaxLoading();
+                $.Ovpnc().setAjaxLoading(1);
                 $.ajaxSetup({ cache: false, async: true });
                 $.ajax({
                     url: '/api/certificates',

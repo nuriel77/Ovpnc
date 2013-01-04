@@ -157,6 +157,7 @@ var total_count = 0;
         // Update / modify data in the client's table
         //
         updateFlexgrid : function(r){
+
             // If no results, flexigrid applies
             // a blocking div, remove it.
             if ( $('.gBlock').is(':visible') ){
@@ -247,7 +248,10 @@ var total_count = 0;
                     }
                 }
             });
-            if ( _checker === 0 && r.rest.clients.length > 0 ){
+            if ( _checker === 0
+              && r.rest.clients !== undefined
+              && r.rest.clients.length > 0
+            ){
                 // Update the table
                 $('.pReload').click();
             }

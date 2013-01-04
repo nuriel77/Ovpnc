@@ -333,3 +333,9 @@ fieldset .constraint_required label:after {
     content: '*';
     color: #ff0000;
 }
+
+/* Context menu on message div */
+.context-menu-item.icon-close  { background-image: url(/static/images/close-red.png);       }
+.context-menu-item.icon-search { background-image: url(/static/images/search-icon.png);     }
+.context-menu-item.icon-clear  { background-image: url(/static/images/clear-icon.png);      }
+.context-menu-item.icon-remember { background-image: url(/static/images/log-icon.png);      }
