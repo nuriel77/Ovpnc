@@ -292,7 +292,7 @@ var total_count = 0;
                     url: '/api/certificates',
                     type: action,
                     cache: false,
-                    timeout: 5000,
+                    timeout: 15000,
                     data: { _ : '1', certificates: _certificates, clients: _clients, ca_password: passwd },
                     dataType: 'json',
                     success: function (msg) {

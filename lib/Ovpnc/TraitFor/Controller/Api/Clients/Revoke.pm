@@ -88,30 +88,17 @@ Revoke certificate(s)
                 # Prepare a return object
                 # for client status/errors
                 # ========================
-                $self->rval->{$clients->[$i]} =
-                    {
-                        errors => [],
-                        warnings => [],
-                        status => []
-                    };
-
                 for my $cert ( glob $self->_set_openvpn_utils . '/keys/' . $clients->[$i] . '/*.crt' ){
                     $_chk++;
                     $cert =~ s{\.[^.]+$}{};
-                    $self->_revoke_certificate( $tools, $cert, $clients->[$i], $passwd );
+                    $self->_revoke_certificate( 'all', $tools, $cert, $clients->[$i], $passwd );
                 }
 
                 push (@{$self->rval->{$clients->[$i]}->{warnings}}, 'Has no certificates')
                     unless ($_chk);
             }
             else {
-                $self->rval->{$cert_names->[$i]} =
-                    {
-                        errors => [],
-                        warnings => [],
-                        status => []
-                    };
-                $self->_revoke_certificate( $tools, $cert_names->[$i], $clients->[$i], $passwd );
+                $self->_revoke_certificate( 'single', $tools, $cert_names->[$i], $clients->[$i], $passwd );
             }
     
         }
@@ -126,7 +113,7 @@ Revoke a certificate - private
 =cut
 
     sub _revoke_certificate {
-        my ( $self, $revoke_tool, $cert, $client, $passwd ) = @_;
+        my ( $self, $action, $revoke_tool, $cert, $client, $passwd ) = @_;
 
         die "No cert?" unless $cert;
 
@@ -135,14 +122,9 @@ Revoke a certificate - private
         my $_cmd = $revoke_tool;
         my $_args = [ $cert ];
         my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf, $_check_ret_val );
+		my $e_obj = $action eq 'all' ? $client : basename($cert);
 
         if ( $passwd ){
-
-            my $agg = {
-                status => [],
-                error  => []
-            };
-
             $Expect::Debug = 0;
             $Expect::Log_Stdout = 0;
             my ($error, $buf);
@@ -151,7 +133,7 @@ Revoke a certificate - private
             $exp->exp_internal( 0 );
             $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
             $exp->expect(
-                1,
+                2,
                 [
                     qr/Enter pass phrase for.*/,
                     sub { $exp->send( $passwd . "\n" ); exp_continue; },
@@ -159,7 +141,7 @@ Revoke a certificate - private
                 [
                     qr/ERROR:Already revoked.*/,
                     sub {
-                            push @{$self->rval->{$client}->{errors}},
+                            push @{$self->rval->{$e_obj}->{errors}},
                                  'Certificate ' . basename($cert) . ' is already revoked';
                             exp_continue;
                         },
@@ -175,7 +157,7 @@ Revoke a certificate - private
             );
 
             $exp->expect(
-                1,
+                2,
                 [
                     qr/Enter pass phrase for.*/,
                     sub { $exp->send( $passwd . "\n" ); exp_continue; },
@@ -186,16 +168,6 @@ Revoke a certificate - private
                 warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
                 push @{$self->rval->{$client}->{errors}},
                      'Command 2 failed to execute: ' . $error . ', ' . $exp->before();
-                $exp->soft_close();
-                return;
-            }
-
-            if ( $self->rval->{$client}->{errors}
-              && ref $self->rval->{$client}->{errors} eq 'ARRAY'
-              && $self->rval->{$client}->{errors}->[0] =~ /already revoked/
-            ){
-                $exp->soft_close();
-                return;
             }
 
             $exp->expect(
@@ -207,20 +179,20 @@ Revoke a certificate - private
             );
             if ( $error = $exp->exp_error() ){
                 warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
-                push @{$self->rval->{$client}->{errors}},
+                push @{$self->rval->{$e_obj}->{errors}},
                      'Command 3 failed to execute: ' . $error;
-                $exp->soft_close();
-                return;
             }
 
-            if ( $self->rval->{$client}->{errors}
-              && ref $self->rval->{$client}->{errors} eq 'ARRAY'
-              && @{$self->rval->{$client}->{errors}} > 0
+            if ( $self->rval->{$e_obj}->{errors}
+              && ref $self->rval->{$e_obj}->{errors} eq 'ARRAY'
+              && @{$self->rval->{$e_obj}->{errors}} > 0
             ){
                 return;
             }
-            push @{$self->rval->{$client}->{status}},
-                 'Certificate ' . basename($cert) . ' revoked ok';
+            else {
+                push @{$self->rval->{$e_obj}->{status}},
+                     'Certificate ' . basename($cert) . ' revoked ok';
+            }
 
             $exp->soft_close();
             return 1;
@@ -243,21 +215,21 @@ Revoke a certificate - private
             # Already in revoke list
             # ======================
             if ( $_check_ret_val =~ /already revoked/gi ){
-                push @{$self->rval->{$client}->{warnings}},
+                push @{$self->rval->{$e_obj}->{warnings}},
                         "Revocation failure, certificate "
                        . basename($cert) . ": Already revoked";
             }
             # Didn't find certificate
             # =======================
             elsif ( $_check_ret_val =~ /No such file or directory/gi ){
-                push @{$self->rval->{$client}->{errors}},
+                push @{$self->rval->{$e_obj}->{errors}},
                     "Revocation failure, certificate ". basename($cert) . ": "
                       . "No such certificates";
             }
             # ERROR in output
             # ===============
             elsif ( $_check_ret_val =~ /ERROR:(.*)/gi ) {
-                push @{$self->rval->{$client}->{errors}},
+                push @{$self->rval->{$e_obj}->{errors}},
                        "Revocation failure, certificate " . basename($cert) . ": "
                       . ( $1 ? '\': ' . $1 : '\'' ) .';';
             }
@@ -265,13 +237,13 @@ Revoke a certificate - private
             # has been revoked successfully
             # =============================
             elsif ( $_check_ret_val =~ /error 23.*certificate revoked/g ) {
-                push @{$self->rval->{$client}->{status}},
+                push @{$self->rval->{$e_obj}->{status}},
                     'Certificate ' . basename($cert) . ' revoked ok';
             }
             # Anything else is unknown
             # ========================
             else {
-                push @{$self->rval->{$client}->{warnings}},
+                push @{$self->rval->{$e_obj}->{warnings}},
                     'Certificate ' . basename($cert) . ' unknown status: '
                     . ( $_check_ret_val ? ': ' . $_check_ret_val : '' ).';';
             }
@@ -281,7 +253,7 @@ Revoke a certificate - private
         # appear in the error_code)
         # ===================================
         else {
-            push @{$self->rval->{$client}->{errors}},
+            push @{$self->rval->{$e_obj}->{errors}},
                 basename($cert) . ' got timeout out error(?): ' . $_check_ret_val . ';'
                 . ( $error_code ? $error_code : '' ).';';
         }

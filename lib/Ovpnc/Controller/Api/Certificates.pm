@@ -513,6 +513,7 @@ sub certificates_DELETE : Local
         # ===========================
         my $certificates;
         my ($certs, $clients);
+
         if ( ! $req->{clients} or ! $req->{certificates} ){
             $self->status_bad_request($c, message =>
                 "Missing params. Both clients and certificates must be provided (min 1)."
@@ -604,6 +605,7 @@ sub certificates_DELETE : Local
         my $_chk_revoke = $self->_roles->revoke_certificate(
             $clients, $path_certs, $c->req->params->{ca_password} ); 
 
+
         unless ( $_chk_revoke ){
             $c->controller('Api')->detach_error( $c,
                 'No reply from backend!');
@@ -691,14 +693,22 @@ sends to _DELETE with no_delete param
         my $chk_revoke = $self->certificates_DELETE(
             $c, $c->req->params->{clients}, $c->req->params->{certificates} );
 
-        if ( $chk_revoke ){
+		# Check the return values to find
+		# successful ones and update the
+		# database with the revoke time
+		# ===============================
+        if ( $chk_revoke and ref $chk_revoke ){
             for my $i ( 0 .. $#certificates ){
-                if (     $chk_revoke->{$clients[$i]}
-                     and $chk_revoke->{$clients[$i]}->{status}
-                     and my @status = @{$chk_revoke->{$clients[$i]}->{status}}
-                ) {
-
-                    for my $cert_status ( @status ){
+				my $e_obj;
+                if ( $chk_revoke->{$clients[$i]}->{status} ){
+                	$e_obj = $clients[$i];
+                }
+                elsif ( $chk_revoke->{$certificates[$i]}->{status} ){  
+                	$e_obj = $certificates[$i];    
+                }
+               
+                if ( ref $chk_revoke->{$e_obj}->{status} eq 'ARRAY' ){
+                    for my $cert_status ( @{$chk_revoke->{$e_obj}->{status}} ){
                         my ($cert_name) = $cert_status =~ /Certificate.(.*).revoked ok/;
                         if ( $cert_name and $cert_name eq $certificates[$i] ){
                             try {
@@ -709,7 +719,7 @@ sends to _DELETE with no_delete param
                             }
                             catch {
                                 $c->log->error('DB Error: ' . $_);
-                                push @{$c->stash->{$cert_name}->{errors}},
+                                push @{$c->stash->{$e_obj}->{errors}},
                                     "Failed to update database for '$cert_name': " . $_
                                     . " user: '$clients[$i]'";
                             };
@@ -728,29 +738,23 @@ sends to _DELETE with no_delete param
                             }
                             catch {
                                 $c->log->error('DB Error: ' . $_);
-                                push @{$c->stash->{$cert_name}->{errors}},
+                                push @{$c->stash->{$e_obj}->{errors}},
                                     "Failed to update database for user status: " . $_
                                     . " user: '$clients[$i]'";
                             };
                         }
                     }
                 }
-                elsif (
-                    $chk_revoke->{$clients[$i]}
-                    and $chk_revoke->{$clients[$i]}->{warnings}
-                ){
-                    $c->stash->{rest}->{$certificates[$i]}->{errors} =
-                        $chk_revoke->{$clients[$i]}->{warnings};
+                elsif ( $chk_revoke->{$e_obj}->{warnings} ){
+                    $c->stash->{rest}->{$e_obj}->{errors} =
+                        $chk_revoke->{$e_obj}->{warnings};
                 }
-                elsif (
-                    $chk_revoke->{$clients[$i]}
-                    and $chk_revoke->{$clients[$i]}->{errors}
-                ){
-                    $c->stash->{$certificates[$i]}->{errors} =
-                        $chk_revoke->{$clients[$i]}->{errors};
+                elsif ( $chk_revoke->{$e_obj}->{errors} ){
+                    $c->stash->{$e_obj}->{errors} =
+                        $chk_revoke->{$e_obj}->{errors};
                 }
                 else {
-                    push @{$c->stash->{$certificates[$i]}->{errors}},
+                    push @{$c->stash->{$e_obj}->{errors}},
                         "Failed to get status for '$certificates[$i]', user: '$clients[$i]'";
                 }
                 #$chk_revoke->{$certificates[$i]} = $chk_revoke->{$clients[$i]};

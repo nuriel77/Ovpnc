@@ -83,6 +83,7 @@ Delete Certificates
                     glob ($keys_dir . 'index.txt*'),
                     glob ($keys_dir . 'crl*'),
                     glob ($keys_dir . 'serial*'),
+                    glob ($keys_dir . '*old'),
                 ){
                     unlink ($_)
                         or push @{$collector->{$cert->name}->{errors}},

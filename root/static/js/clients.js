@@ -253,15 +253,85 @@ var total_count = 0;
             }
         },
         //
+        // Process to the passwd request dialog
+        //
+        processUnlockDialog: function ( _action, confirmDiagName ){
+            var dDiv = document.createElement('div');
+            $( dDiv ).css({
+                'display':'none',
+                'color'  :'#555555'
+            }).attr('id', confirmDiagName );
+
+            $( 'body' ).prepend( dDiv );
+
+            $('#' + confirmDiagName ).dialog({
+                 autoOpen: false,
+                 title: 'Password required',
+                 hide: "explode",
+                 modal:true,
+                 closeText: 'close',
+                 closeOnEscape: true,
+                 stack: true,
+                 height: "auto",
+                 width: "auto",
+                 zIndex:9010,
+                 position: [ 300, 200 ],
+                 buttons: [
+                    {
+                        text: "cancel",
+                        click: function () { $(this).dialog("close").remove(); return false; }
+                    },
+                    {
+                        id: "dialog_submit",
+                        text: "ok",
+                        click: function () {
+                            //window.lock_checked = 1;
+                            $(this).dialog('close').remove();
+                            _action( $("#ca_password").attr('value') );
+                            return false;
+                        }
+                    }
+                 ],
+            });
+
+            var aDiv = document.createElement('div'),
+                bDiv = document.createElement('div'),
+                cDiv = document.createElement('div'),
+                fDiv = document.createElement('form'),
+                lDiv = document.createElement('label'),
+                iDiv = document.createElement('input');
+
+            $( iDiv ).attr({
+               id: "ca_password",
+               type: "password",
+               name: "ca_password",
+               autofocus: "autofocus"
+            });
+            $( lDiv ).attr('for','ca_password').text('Password: ');
+            $( fDiv ).append( lDiv ).append( iDiv ).attr({
+                action: 'javascript:void(0)',
+                onsubmit: "if ( $(this).attr('value') == '' ) return false; $('#dialog_submit').click();"
+            });
+            $( bDiv ).append( fDiv );
+            $( aDiv ).html($.Ovpnc().alertInfo + ' A password is required in order to use the Root CA.').append('<div class="clear"></div>');
+            $( cDiv ).append( aDiv ).append( bDiv );
+
+            $('#'+confirmDiagName).dialog('open')
+                                  .append( cDiv ).show(200);
+            $( aDiv ).css('padding-bottom','8px'); //xxx
+            return false;
+        },
+        //
         // Block / Unblock client(s)
         //
-        blockUnblockClients: function (button, grid, action){
+        blockUnblockClients: function (button, grid, action ){
             if ( action === undefined ){
                 action = button.match(/unblock/i) ? 'unrevoke' : 'revoke'; 
             }
 
             // Get total selected clients
             var total_count = $('.trSelected', grid).length;
+            if ( total_count == 0 ) return false;
             if ( window.DEBUG ) log ("Total selected clients: " + total_count);
 
             if ( action === 'unrevoke' ){
@@ -274,13 +344,14 @@ var total_count = 0;
                 });
             }
             else {
-                $.Client().proceedBlockUnblock( button, grid, action);
+                $.Client().proceedBlockUnblock( button, grid, action );
             }
+
         },
         //
         // Proceed with revoke/unrevoke after optional confirm dialog
         //
-        proceedBlockUnblock: function ( button, grid, action ) {
+        proceedBlockUnblock: function ( button, grid, action, passwd ) {
             if ( window.DEBUG ) log ( "B: %o",button );
             if ( typeof button === 'object'
               && grid === undefined
@@ -290,57 +361,67 @@ var total_count = 0;
                 button = button.button;
             }
 
-            var total_count = $('.trSelected', grid).length;
-                        var processed = 0;
-                        var loop = 0;
-                        var _clients = '';
-                        $.each($('.trSelected', grid), function() {
-                            // Get the client's name of this grid
-                            var client = $('td:nth-child(2) div', this).html();
-                            var _tr = this;
-                            // Get rid of any html
-                            client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                            _clients += client + ',';
-                            loop++;
-                        });
+            var _action = function (passwd) {
+                var total_count = $('.trSelected', grid).length;
+                var processed = 0;
+                var loop = 0;
+                var _clients = '';
+                $.each($('.trSelected', grid), function() {
+                    // Get the client's name of this grid
+                    var client = $('td:nth-child(2) div', this).html();
+                    var _tr = this;
+                    // Get rid of any html
+                    client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                    _clients += client + ',';
+                    loop++;
+                });
 
-                        // return if no selected clients
-                        if ( loop == 0 ) return;
+                // return if no selected clients
+                if ( loop == 0 ) return;
 
-                        // Revoke client/disconnect
-                        $.Ovpnc().setAjaxLoading();
+                // Revoke client/disconnect
+                $.Ovpnc().setAjaxLoading();
             
-                        $.ajax({
-                            url: '/api/clients',
-                            type: action,
-                            cache: false,
-                            timeout: 5000,
-                            data: { _ : '1', clients: _clients },
-                            dataType: 'json',
-                            success: function (msg) {
-                                if ( window.DEBUG ) log("block/unblock returned: %o",msg);
-                                var _data_types = {
-                                    errors:      $.Ovpnc().alertErr,
-                                    warnings:    $.Ovpnc().alertIcon,
-                                    status:      $.Ovpnc().alertOk
-                                };
-                                if ( msg.rest !== undefined ) {
-                                    $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
-                                    $('.pReload').click();
-                                    return;
-                                }
-                                alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
-                                $('.pReload').click();
+                $.ajax({
+                    url: '/api/clients',
+                    type: action,
+                    cache: false,
+                    timeout: 20000,
+                    data: { _ : '1', clients: _clients, ca_password: passwd },
+                    dataType: 'json',
+                    success: function (msg) {
+                        if ( window.DEBUG ) log("block/unblock returned: %o",msg);
+                        var _data_types = {
+                           errors:      $.Ovpnc().alertErr,
+                           warnings:    $.Ovpnc().alertIcon,
+                           status:      $.Ovpnc().alertOk
+                        };
+                        if ( msg.rest !== undefined ) {
+                            $.Ovpnc().processAjaxReturn( msg.rest, _data_types );
+                            $('.pReload').click();
+                            return;
+                        }
+                        alert( _data_types.errors + ' ' + msg + '</div><div class="clear"></div>' );
+                        $('.pReload').click();
             
-                            },
-                            error: function ( xhr, textStatus, errorThrown ) {
-                                if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
-                                alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
-                            },
-                            complete : function(){
-                                $.Ovpnc().removeAjaxLoading();
-                            }
-                        });
+                    },
+                    error: function ( xhr, textStatus, errorThrown ) {
+                        if ( window.DEBUG ) log("block/unblock returned error: %o", xhr);
+                        alert( $.Ovpnc().alertErr + ' Backend returned error: ' + xhr.statusText + '</div><div class="clear"></div>' );
+                    },
+                    complete : function(){
+                         $.Ovpnc().removeAjaxLoading();
+                    }
+                });
+            };
+
+            var locked_ca = $('#locked_ca');
+            if ( locked_ca !== undefined
+              && window.lock_checked === undefined
+            ){
+                $.Client().processUnlockDialog( _action, 'blockUnblock' );
+                return false;
+            }
 
         },
         //

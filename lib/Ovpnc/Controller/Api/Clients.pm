@@ -688,7 +688,7 @@ client.)
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c)
-          unless defined( $client // $c->req->params->{clients} );
+          if ( ! $client and  ! $c->req->params->{clients} );
     
         # Assign from post params if exists
         # This will override params in the path
@@ -813,7 +813,7 @@ is running
         # Verify that a client name was provided
         # ======================================
         $self->_client_error( $c )
-          unless defined ( $client_list // $c->request->params->{clients} );
+          if ( ! $client_list and ! $c->request->params->{clients} );
 
         # Override anything in the path by setting
         # params from post if they exists
@@ -946,7 +946,7 @@ in ccd
         # Verify that a client name was provided
         # ======================================
         $self->_client_error($c, 400)
-          unless defined ( $client_list // $c->request->params->{clients} );
+          if ( ! $client_list and !$c->request->params->{clients} );
     
         # Override anything in the path by setting
         # params from post if they exists
