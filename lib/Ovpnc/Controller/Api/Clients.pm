@@ -1072,18 +1072,18 @@ in ccd
                     "DB query failed: " . $_;
             };
 
-            if (@certificates){
-                for ( keys %{$_unrevoke_status} ){
-                    push @{ $_ret_val->{$certificates[$i]}->{$_} },
-                        $_unrevoke_status->{$_};          
-                }
-            }
-            else {
+            #if (@certificates){
+            #    for ( keys %{$_unrevoke_status} ){
+            #       push @{ $_ret_val->{$certificates[$i]}->{$_} },
+            #           $_unrevoke_status->{$_};          
+            #   }
+            #}
+            #else {
                 for ( keys %{$_unrevoke_status} ){
                     push @{ $_ret_val->{$clients[$i]}->{$_} },
                         $_unrevoke_status->{$_};          
                 }
-            }
+           # }
         }
 
 

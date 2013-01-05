@@ -297,7 +297,7 @@ var total_count = 0;
                     url: '/api/certificates',
                     type: action,
                     cache: false,
-                    timeout: 15000,
+                    timeout: 30000,
                     data: {
                         _ : '1',
                         certificates: _certificates,

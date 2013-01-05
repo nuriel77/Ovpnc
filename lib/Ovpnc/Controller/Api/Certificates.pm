@@ -718,6 +718,9 @@ sends to _DELETE with no_delete param
                 elsif ( $chk_revoke->{$certificates[$i]}->{status} ){  
                 	$e_obj = $certificates[$i];    
                 }
+                else {
+                	$e_obj = $certificates[$i];
+                }
                
                 if ( ref $chk_revoke->{$e_obj}->{status} eq 'ARRAY' ){
                     for my $cert_status ( @{$chk_revoke->{$e_obj}->{status}} ){

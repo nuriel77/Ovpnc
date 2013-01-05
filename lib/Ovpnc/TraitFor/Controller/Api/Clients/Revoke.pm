@@ -122,7 +122,8 @@ Revoke a certificate - private
         my $_cmd = $revoke_tool;
         my $_args = [ $cert ];
         my ($success, $error_code, $full_buf, $stdout_buf, $stderr_buf, $_check_ret_val );
-		my $e_obj = $action eq 'all' ? $client : basename($cert);
+		#my $e_obj = $action eq 'all' ? $client : basename($cert);
+		my $e_obj = $client;
 
         if ( $passwd ){
             $Expect::Debug = 0;
@@ -132,8 +133,64 @@ Revoke a certificate - private
             #$exp->log_file('/tmp/exp.txt', 'w');
             $exp->exp_internal( 0 );
             $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
-            $exp->expect(
-                2,
+#            $exp->expect(
+#                2,
+#                [
+#                    qr/Enter pass phrase for.*/,
+#                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
+#                ],
+#                [
+#                    qr/ERROR:Already revoked.*/,
+#                    sub {
+#                            push @{$self->rval->{$e_obj}->{errors}},
+#                                 'Certificate ' . basename($cert) . ' is already revoked';
+#                            exp_continue;
+#                        },
+#                ],
+#                [
+#                    qr/error 23 at 0 depth lookup:certificate revoked/,
+#                    sub {
+#                        $exp->send( "\n" );
+#                        exp_continue;
+#                    },
+#                ]
+#            );
+#			$buf = $exp->before();
+#            if ( $buf =~ /(unable to load CA private key)/ ){
+#              	push @{$self->rval->{$client}->{errors}},
+#                   		'Error! Wrong password for CA private key: ' . $1;
+#                $exp->soft_close;
+#                die $buf;
+#                return;
+#            }
+#            
+#            if ( $error = $exp->exp_error() ){              
+#            	die "ERR: "  . $error;  
+#                push @{$self->rval->{$client}->{errors}},
+#                     'Command 1 failed to execute: ' . $error . ', ' . $exp->before()
+#                    unless $error =~ /exited with status 0/;
+#            }
+#
+#
+#            $exp->expect(
+#                2,
+#                [
+#                    qr/Enter pass phrase for.*/,
+#                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
+#                ]
+#            );
+#			$buf = $exp->before();
+#			 
+#            if ( $buf =~ /(unable to load CA private key)/ ){
+#              	push @{$self->rval->{$client}->{errors}},
+#                   		'Error! Wrong password for CA private key: ' . $1;
+#                $exp->soft_close;
+#                die $buf;
+#                return;
+#            }
+#            
+  			$exp->expect(
+            	2,
                 [
                     qr/Enter pass phrase for.*/,
                     sub { $exp->send( $passwd . "\n" ); exp_continue; },
@@ -146,61 +203,21 @@ Revoke a certificate - private
                             exp_continue;
                         },
                 ],
-                [
-                    qr/error 23 at 0 depth lookup:certificate revoked/,
-                    sub {
-                        $exp->send( "\n" );
-                        exp_continue;
-                    },
-                ]
             );
 
-            if ( $error = $exp->exp_error() ){
-                $buf = $exp->before();
-                if ( $buf =~ /(unable to load CA private key)/ ){
-                	push @{$self->rval->{$client}->{errors}},
-                     		'Error! Wrong password for CA private key: ' . $1;
-                     	$exp->soft_close;
-                    return;
-                }
-                push @{$self->rval->{$client}->{errors}},
-                     'Command 1 failed to execute: ' . $error . ', ' . $exp->before()
-                    unless $error =~ /exited with status 0/;
-            }
-
-
-            $exp->expect(
-                2,
-                [
-                    qr/Enter pass phrase for.*/,
-                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
-                ]
-            );
-
-            if ( $error = $exp->exp_error() ){
-                $buf = $exp->before();
-                if ( $buf =~ /(unable to load CA private key)/ ){
-                	push @{$self->rval->{$client}->{errors}},
-                     		'Error! Wrong password for CA private key: ' . $1;
-                     	$exp->soft_close;
-                    return;
-                }
-                push @{$self->rval->{$client}->{errors}},
-                     'Command 2 failed to execute: ' . $error . ', ' . $buf
-                  unless $error =~ /exited with status 0/;
-            }
-
-            $exp->expect(
-                1,
-                [
-                    qr/error 23 at 0 depth lookup:certificate revoked/,
-                    sub { $exp->send( "\n" ); exp_continue; },
-                ]
-            );
-            if ( $error = $exp->exp_error() ){
-                push @{$self->rval->{$e_obj}->{errors}},
-                     'Command 3 failed to execute: ' . $error;
-            }
+            $buf = $exp->before();
+    		if  ( $buf =~ /(unable to load CA private key)/gi ){
+				push @{$self->rval->{$e_obj}->{errors}},
+                   		'Error! Wrong password for CA private key: ' . $1;
+                $exp->soft_close;
+                return;
+    		}
+    		elsif ( $buf =~ /ERROR:Already revoked.*/gi ){
+				push @{$self->rval->{$e_obj}->{errors}},
+	               		'Certificate ' . basename($cert) . ' is already revoked';  			
+    		}
+    		
+            $exp->soft_close();
 
             if ( $self->rval->{$e_obj}->{errors}
               && ref $self->rval->{$e_obj}->{errors} eq 'ARRAY'
@@ -209,11 +226,9 @@ Revoke a certificate - private
                 return;
             }
             else {
-                push @{$self->rval->{$client}->{status}},
+                push @{$self->rval->{$e_obj}->{status}},
                      'Certificate ' . basename($cert) . ' revoked ok';
             }
-
-            $exp->soft_close();
             return 1;
         }
         else {
