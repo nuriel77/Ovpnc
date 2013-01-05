@@ -1,4 +1,6 @@
-/* jquery validator settings */
+/* 
+ * jQuery Validator Settings 
+ */
 jQuery.validator.setDefaults({
     debug: true,
     success: "valid",
@@ -308,7 +310,8 @@ jQuery.validator.setDefaults({
             });
         },
         //
-        // Check the chosen certificat type, act accordingly
+        // Check the chosen certificat type when
+        // chose by user on the radio buttons
         //
         checkCertType: function (cType){
             if ( window.DEBUG ) log ( 'got cert_type: ' + cType );
@@ -320,9 +323,9 @@ jQuery.validator.setDefaults({
 
             $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
-                $('#password2').parents('tr:first').slideUp(300);
-                $('#password').parents('tr:first').slideUp(400);
-                $('#generatePassword').parents('tr:first').hide(100);
+                //$('#password2').parents('tr:first').slideUp(300);
+                //$('#password').parents('tr:first').slideUp(400);
+                //$('#generatePassword').parents('tr:first').hide(100);
                 // Check if Root CA exists,
                 // if not, display a warning
                 $.Ovpnc().ajaxCall({

@@ -232,10 +232,19 @@ necessary for functionality.
 
             if ( $_new_csr->{resultset} ) {
                 for ( @{$_new_csr->{resultset}} ){
-                    push @_digests, {
-                        file    => $_,
-                        digest  => file_md5_hex( $_ ) || 'null',
-                    } unless ref $_;
+					unless ( ref $_ ){
+                    	push @_digests, {
+                       		file    => $_,
+                        	digest  => file_md5_hex( $_ ) || 'null',
+                    	};
+                    	if ( 	 $params->{password}
+                    		 and $params->{cert_type} eq 'server'
+                    		 and $_ =~ /\.key$/
+                    	){
+                    		return { error => 'Failed to lock key with passphrase!' }                    
+                        		unless lock_key( $_, $params->{password} );
+                		}
+					}
                 }
             }
             push @_digests, @{$_new_csr->{resultset}}[-1];
