@@ -288,7 +288,7 @@ Add a client
 
             # Add js / css
             # ============
-            $c->controller('Root')->include_default_links;
+            $c->controller('Root')->include_default_links($c);
             $c->forward('View::HTML');    
             return;
         }
