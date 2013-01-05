@@ -153,12 +153,16 @@ Revoke a certificate - private
                         exp_continue;
                     },
                 ]
-
             );
 
             if ( $error = $exp->exp_error() ){
                 $buf = $exp->before();
-                warn "Error: " .  $error . " and OUTPUT: ", $buf;
+                if ( $buf =~ /(unable to load CA private key)/ ){
+                	push @{$self->rval->{$client}->{errors}},
+                     		'Error! Wrong password for CA private key: ' . $1;
+                     	$exp->soft_close;
+                    return;
+                }
                 push @{$self->rval->{$client}->{errors}},
                      'Command 1 failed to execute: ' . $error . ', ' . $exp->before()
                     unless $error =~ /exited with status 0/;
@@ -175,7 +179,12 @@ Revoke a certificate - private
 
             if ( $error = $exp->exp_error() ){
                 $buf = $exp->before();
-                warn "Error: " .  $error . " and OUTPUT: ", $buf;
+                if ( $buf =~ /(unable to load CA private key)/ ){
+                	push @{$self->rval->{$client}->{errors}},
+                     		'Error! Wrong password for CA private key: ' . $1;
+                     	$exp->soft_close;
+                    return;
+                }
                 push @{$self->rval->{$client}->{errors}},
                      'Command 2 failed to execute: ' . $error . ', ' . $buf
                   unless $error =~ /exited with status 0/;
@@ -189,7 +198,6 @@ Revoke a certificate - private
                 ]
             );
             if ( $error = $exp->exp_error() ){
-                warn "Error: " .  $error . " and OUTPUT: ", $exp->before();
                 push @{$self->rval->{$e_obj}->{errors}},
                      'Command 3 failed to execute: ' . $error;
             }

@@ -187,17 +187,20 @@ sub logs_GET : Path('server/logs')
     # (should be array_ref)
     # ============================
     if ( ref $_log eq 'ARRAY' ) {
-
+	LOGLINE:
         for my $line ( @{$_log} ) {
 
+			next LOGLINE if $line =~ /,MANAGEMENT/ && !$c->req->params->{show_management};
+			
             # Get time and data
             # =================
             my ( $_time, $_data ) = $line =~ /$REGEX->{log_line}/;
-
+			$_data =~ s/^,//;
+			
             # Convert epoc time to
             # readable if requested
             # ====================
-            $_time = scalar localtime($_time)
+            $_time = DateTime->from_epoch( epoch => $_time )
               if ( $c->request->params->{time} );
 
             # Add log data

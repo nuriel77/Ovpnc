@@ -98,10 +98,12 @@ V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Pr
     
             # Remove revoked fields
             # =====================
+			my $rb_revoke = [];
             for (@array){
                 if ( /$regex/ ) {
                     my @line = split /\t/;
                     $line[0] = 'V';
+                   	$rb_revoke->[$_qchk] = $line[2];
                     $line[2] = '';
                     $_ = join "\t", @line;
                     undef(@line);
@@ -140,7 +142,32 @@ V       131230162907Z           14      unknown /C=BF/ST=Centre-Sud/L=Nahouri Pr
                         sub { $exp->send( $passwd . "\n" ); exp_continue; },
                     ],
                 );
-    
+                $buf = $exp->before();
+    			if ( $buf =~ /(unable to load CA private key)/ ){
+    				$regex = $cert_name
+                		? qr[^V.*$serial.*\/C.*\/CN=$client\/name=$cert_name\/.*$]
+                		: qr[^V\t\w+.*\/CN=$client\/name=.*$];
+    				my $err = $1;
+					my $rb_o = tie my @rb_array, 'Tie::File', $index_file, mode => O_RDWR;
+	           		$rb_o->flock;
+	           		my $_chk = 0;
+            		for (@rb_array){
+		                if ( /$regex/ ) {
+		                    my @line = split /\t/;
+		                    $line[0] = 'R';
+		                    $line[2] = shift @{$rb_revoke};
+		                    $_ = join "\t", @line;
+		                    undef(@line);
+		                    $_chk++;
+		                }
+            		}
+            		undef $rb_o;
+            		untie @rb_array;
+					$err .= $regex . '... index.txt did not roll-back.' if $_chk == 0;
+                	$exp->soft_close;
+                	return { errors => [ 'Error! Wrong password for CA private key: ' . $err ] };
+                }
+               
                 $exp->soft_close();
                 return { status => [ ( $cert_name ? 'Certificate ' . $cert_name : $client ) . ' unrevoked ok' ] }
             }

@@ -20,11 +20,10 @@ A predefined search for recently added clients
         my $date_str = $self->result_source->schema->storage
                               ->datetime_parser->format_datetime($datetime);
 
-        my $res = $self->search({
+        return $self->search({
              created => { '>' => $date_str }
         });
 
-        return $res;
     }
 
 

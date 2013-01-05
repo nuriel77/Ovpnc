@@ -1134,7 +1134,7 @@ other certificates exists
 
                             push @{$c->{stash}->{error}},
                                  $cert->name . 
-                                 ': Denied. Cannot delete Root CA while other certificates exists.';
+                                 ': Denied. Cannot delete Root CA while other certificates exist.';
 
                             next CERTS;
                         }

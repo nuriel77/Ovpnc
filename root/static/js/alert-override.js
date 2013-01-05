@@ -34,9 +34,9 @@ window.alert = function(message) {
     $('#message').prepend( msgContent );
     // Calculate the max height
     // which the message div can be
-    var outerCenteredOffset = $('#outer_centered').offset();
-    var messageContainerOffset = $('#message_container').offset();
-    var limitOffset = ( outerCenteredOffset.top - 10 ) - messageContainerOffset.top;
+    var outerCenteredOffset     = $('#outer_centered').offset(),
+        messageContainerOffset  = $('#message_container').offset(),
+        limitOffset             = ( outerCenteredOffset.top - 10 ) - messageContainerOffset.top;
 
     // If the message div becomes too high
     // we limit its height and make
@@ -117,10 +117,10 @@ function applyMessageContext (){
 	        } 		
 	    },		
 	    items: {
-	        "Remember":     { name: "Remember",     icon: "remember"    },
+	        //"Remember":     { name: "Remember",     icon: "remember"    },
 	        "clear":        { name: "Clear All",    icon: "clear"       },
-	        "find":         { name: "Find",         icon: "search"      },
-	        "sep1":         "---------",
+	        //"find":         { name: "Find",         icon: "search"      },
+	        //"sep1":         "---------",
 	        "Close":        { name: "Close",        icon: "close"       },
 	    }
     });

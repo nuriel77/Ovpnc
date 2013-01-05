@@ -42,6 +42,7 @@ $(document).ready(function(){
             [% END %]
         [% END %]
     [% END %]
+
     [% IF warning %]
         [% FOR wrn IN warning %]
             [% FOR w IN wrn %]

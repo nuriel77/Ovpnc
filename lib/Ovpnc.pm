@@ -101,14 +101,6 @@ __PACKAGE__->config(
     }
 );
 
-# Scheduler
-# =========
-__PACKAGE__->config(
-    'Plugin::Scheduler' => {
-        at    => '*/1 * * * *',
-        event => \&cleanup_sessions,
-    }
-);
 
 # Cache
 # =====
@@ -325,6 +317,13 @@ __PACKAGE__->config(
 # =====================
 __PACKAGE__->setup();
 
+# Scheduler
+# =========
+__PACKAGE__->schedule(
+	at    => '*/1 * * * *',
+    event => '/cron/remove_sessions',
+);
+
 
 =head2 get_version
 
@@ -332,12 +331,9 @@ Make version accessible
 
 =cut
 
-sub get_version{ return $VERSION; }
+	sub get_version{ return $VERSION; }
 
-sub cleanup_sessions {
-    `echo TEST >> /tmp/sch.txt`;
-}
-
+    
 =head1 AUTHOR
 
 Nuriel Shem-Tov 2012

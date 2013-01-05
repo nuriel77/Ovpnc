@@ -991,14 +991,6 @@ in ccd
 
       CLIENT:
         for my $i ( 0 .. $#clients ){
-            # Prepare a return object
-            # for client status/errors
-            # ========================
-            $_ret_val->{$clients[$i]} = {
-                errors => [],
-                warnings => [],
-                status => []
-            };
 
             # Unrevoke client certificate(s)
             # ==============================
@@ -1013,6 +1005,28 @@ in ccd
                     ca_password  => $c->req->params->{ca_password}
                 });
 
+			if ( grep { /errors/ } keys %{$_unrevoke_status} ){	
+	            if (@certificates){
+	                for ( keys %{$_unrevoke_status} ){
+	                    push @{ $_ret_val->{$certificates[$i]}->{$_} },
+	                        $_unrevoke_status->{$_};          
+	                }
+	            }
+	            else {
+	                for ( keys %{$_unrevoke_status} ){
+	                    push @{ $_ret_val->{$clients[$i]}->{$_} },
+	                        $_unrevoke_status->{$_};          
+	                }
+	            }
+	            
+	            # Done processing client(s)
+        		# =========================
+        		$self->_disconnect_vpn if $self->_has_vpn;
+        		$self->status_ok( $c, entity => { resultset => $_ret_val } );
+        		delete $c->stash->{status} if $c->stash->{status};
+				$c->detach('View::JSON');
+			}
+			
             # Update database, two possibilities:
             # a. No certificates provided: this means
             #    that all the client's certificates

@@ -74,19 +74,19 @@ Main action
 
 =cut
 
-sub index : Path
-          : Args(0)
-          : Does('NeedsLogin')
-          : Does('ACL')
-            AllowedRole('admin')
-            AllowedRole('client')
-            ACLDetachTo('denied')
-          : Sitemap
-{
-    my ( $self, $c ) = @_;
-    $c->stash->{title}     = ucfirst($c->action);
-    $c->stash->{this_link} = $c->action;
-}
+	sub index : Path
+	          : Args(0)
+	          : Does('NeedsLogin')
+	          : Does('ACL')
+	            AllowedRole('admin')
+	            AllowedRole('client')
+	            ACLDetachTo('denied')
+	          : Sitemap
+	{
+	    my ( $self, $c ) = @_;
+	    $c->stash->{title}     = ucfirst($c->action);
+	    $c->stash->{this_link} = $c->action;
+	}
 
 
 =head2 add

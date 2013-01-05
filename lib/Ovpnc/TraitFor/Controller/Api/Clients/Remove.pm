@@ -6,7 +6,6 @@ use Moose::Role;
 use namespace::autoclean;
 
 
-
 =head1 NAME
 
 Ovpnc::TraitFor::Controller::Api::Clients::Remove - Ovpnc Controller Trait
@@ -77,13 +76,14 @@ Remove a list of clients
                     try {
                         my $rs = $c->model('DB::Certificate')->search(
                             { user   => $client },
-                            { select => 'name' }
+                            { select => [ 'name', 'key_serial' ] }
                         );
                         if ( $rs && $rs != 0 ){
                             $c->req->params->{clients} = '';
                             while ( $_ = $rs->next ){
                                 $c->req->params->{certificates} .= $_->name.',';
                                 $c->req->params->{clients} .= $client.',';
+                                $c->req->params->{serials} .= $_->key_serial.',';
                             }
                             $c->req->params->{no_detach} = 1;
                             my $chk_revoke = $c->forward('certificates_DELETE');
