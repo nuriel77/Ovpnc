@@ -201,7 +201,7 @@ Revoke a certificate - private
                 return;
             }
             else {
-                push @{$self->rval->{$e_obj}->{status}},
+                push @{$self->rval->{$client}->{status}},
                      'Certificate ' . basename($cert) . ' revoked ok';
             }
 

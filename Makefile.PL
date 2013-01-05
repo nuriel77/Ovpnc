@@ -136,7 +136,7 @@ requires 'Test::WWW::Mechanize::Catalyst';
 #
 requires 'Cache::Memcached';
 requires 'Cache::Memcached::libmemcached';
-
+requires 'Catalyst::Plugin::Scheduler';
 
 test_requires 'Test::More' => '0.88';
 

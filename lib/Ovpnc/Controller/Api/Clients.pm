@@ -622,7 +622,7 @@ Delete client(s)
 
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error($c)
+        $self->client_error($c)
           unless defined ( $client_list // $c->request->params->{clients} );
     
         # Override anything in the path by setting
@@ -687,7 +687,7 @@ client.)
     
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error($c)
+        $self->client_error($c)
           if ( ! $client and  ! $c->req->params->{clients} );
     
         # Assign from post params if exists
@@ -756,7 +756,7 @@ Re-enable a disabled client
         # either a single via clients/[client_name]
         # or via params '?client=client_name&...'
         # ========================================
-        $self->_client_error($c)
+        $self->client_error($c)
           unless $client
               or $c->req->params->{clients};
     
@@ -808,11 +808,11 @@ is running
                        : Sitemap
     {
 
-        my ( $self, $c, $client_list, $cert_list ) = @_;
+        my ( $self, $c, $client_list, $cert_list, $serial_list ) = @_;
 
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error( $c )
+        $self->client_error( $c )
           if ( ! $client_list and ! $c->request->params->{clients} );
 
         # Override anything in the path by setting
@@ -824,9 +824,14 @@ is running
         $cert_list = $c->request->params->{certificates}
             if $c->request->params->{certificates};
 
+
+        $serial_list = $c->request->params->{serials}
+            if $c->request->params->{serials};
+
         my @cert_names = map { $_ if $_ ne '' } split ',', $cert_list
             if $cert_list;
         my @clients    = map { $_ if $_ ne '' } split ',', $client_list;
+        my @serials    = map { $_ if $_ ne '' } split ',', $serial_list;
 
         # Trait names should match request method
         # =======================================
@@ -852,6 +857,7 @@ is running
             $_ret_val = $self->_roles->revoke_certificate(
                 \@clients,
                 ( @cert_names ? \@cert_names : undef ),
+                \@serials,
                 $c->req->params->{ca_password}
             );
         }
@@ -945,7 +951,7 @@ in ccd
 
         # Verify that a client name was provided
         # ======================================
-        $self->_client_error($c, 400)
+        $self->client_error($c, 400)
           if ( ! $client_list and !$c->request->params->{clients} and !$c->request->params->{serials} );
     
         # Override anything in the path by setting
@@ -1095,9 +1101,9 @@ List recently created clients
     
         # Verify the minutes provided
         # ===========================
-        $self->_client_error($c,'204')                      unless defined $mins;
-        $self->_client_error($c,'400', 'Not a number')      unless looks_like_number($mins);
-        $self->_client_error($c,'400', 'Invalid range')     if $mins > 5259487;
+        $self->client_error($c,'204')                      unless defined $mins;
+        $self->client_error($c,'400', 'Not a number')      unless looks_like_number($mins);
+        $self->client_error($c,'400', 'Invalid range')     if $mins > 5259487;
 
         my $res;
         try {
@@ -1300,7 +1306,7 @@ and also sent extra params
     }
 
     
-=head2 _client_error
+=head2 client_error
 
 Detach not before stashing
 the error message
@@ -1308,9 +1314,9 @@ and disconnect the mgmt port
 
 =cut
 
-    sub _client_error : Private {
+    sub client_error : Private {
         my ( $self, $c, $status, $msg ) = @_;
-
+        
         $status ||= 400;
 
         if ( $status == 204 ){
@@ -1323,7 +1329,7 @@ and disconnect the mgmt port
             );
         }
         $self->_disconnect_vpn if $self->_has_vpn;
-        $c->detach;
+        $c->detach('View::JSON');
     }
 
 

@@ -33,3 +33,4 @@ openvpn/conf/2.0/*
 DB.pm.new
 dev/
 test/
+scheduler.state

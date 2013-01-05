@@ -44,6 +44,7 @@ use Catalyst qw/
   Authentication
   Authentication::Store::Minimal
   Authorization::Roles
+  Scheduler
   Redirect
   Sitemap
   +CatalystX::SimpleLogin
@@ -100,6 +101,14 @@ __PACKAGE__->config(
     }
 );
 
+# Scheduler
+# =========
+__PACKAGE__->config(
+    'Plugin::Scheduler' => {
+        at    => '*/1 * * * *',
+        event => \&cleanup_sessions,
+    }
+);
 
 # Cache
 # =====
@@ -324,6 +333,10 @@ Make version accessible
 =cut
 
 sub get_version{ return $VERSION; }
+
+sub cleanup_sessions {
+    `echo TEST >> /tmp/sch.txt`;
+}
 
 =head1 AUTHOR
 
