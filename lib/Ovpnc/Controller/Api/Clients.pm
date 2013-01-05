@@ -150,7 +150,7 @@ or after, or around...
     
         # Instantiate connector
         # =====================
-        $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
+        $self->vpn( $c->model('VpnConnector')->new( $self->cfg->{mgmt_params} ) );
     
         # Check connection to mgmt port
         # =============================

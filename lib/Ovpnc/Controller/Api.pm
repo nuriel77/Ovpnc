@@ -166,7 +166,7 @@ A sanity check
 
         # Sanity plugin action
         # ====================
-        my $_ret_val = Ovpnc::Plugin::Sanity->action( $c->config );
+        my $_ret_val = Ovpnc::Model::Sanity->action( $c->config );
 
         # Not ok?
         # =======

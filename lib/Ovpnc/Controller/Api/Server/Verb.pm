@@ -52,7 +52,7 @@ around [qw(verb_GET verb_POST)] => sub {
 
     # Instantiate connector
     # =====================
-    $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
+    $self->vpn( $c->model('VpnConnector')->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
 };

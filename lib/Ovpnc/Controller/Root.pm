@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use Try::Tiny;
 use Cwd;
-use Ovpnc::Plugin::Sanity;
+use Ovpnc::Model::Sanity;
 use Moose;
 use namespace::autoclean;
 
@@ -149,7 +149,7 @@ around [qw(ovpnc_config index)] => sub {
 
     # Sanity check
     # ============
-    my $_err = Ovpnc::Plugin::Sanity->action( $c->config );
+    my $_err = Ovpnc::Model::Sanity->action( $c->config );
 
     if ( $_err and ref $_err eq 'ARRAY' ) {
         if ( $c->namespace eq 'api' ){

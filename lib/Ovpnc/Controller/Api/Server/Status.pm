@@ -2,7 +2,6 @@ package Ovpnc::Controller::Api::Server::Status;
 use strict;
 use warnings;
 use Moose;
-use Ovpnc::Plugin::Connector;
 use namespace::autoclean;
 use vars qw/ $REGEX /;
 
@@ -113,7 +112,7 @@ around [
 
     # Establish connection to management port
     # =======================================
-    $self->vpn( Ovpnc::Plugin::Connector->new( $self->cfg->{mgmt_params} ) );
+    $self->vpn( $c->model('VpnConnector')->new( $self->cfg->{mgmt_params} ) );
 
     return $self->$orig( $c, @_ );
 };

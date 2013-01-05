@@ -6,7 +6,7 @@ use File::Copy;
 use File::Touch;
 use File::Slurp;
 use Digest::MD5::File 'file_md5_hex';
-use Ovpnc::Plugin::ChainCA;
+use Ovpnc::Model::ChainCA;
 use Ovpnc::Plugin::PEM qw(lock_key unlock_key decode64 encode64);
 use Moose::Role;
 use utf8;
@@ -40,9 +40,10 @@ has serial => (
 );
 
 has _ca => (
-    is => 'rw',
+    is => 'ro',
     isa => 'Object',
-    default => sub { return Ovpnc::Plugin::ChainCA->new; }
+    required => 1,
+    default => sub { return Ovpnc::Model::ChainCA->new; }
 );
 
 has _keys_dir => (
@@ -73,7 +74,8 @@ directory.
 
         # Get the filename of the CA cert
         # ===============================
-        my $ca_cert_file = get_openvpn_param( $self, 'Ca', $ovpnc_conf );
+         my $ca_cert_file = Ovpnc::Controller::Api::Configuration
+            ->get_openvpn_param( 'Ca', $ovpnc_conf );
     
         $ca_cert_file = $ca_cert_file =~ /^\//
     	? $ca_cert_file

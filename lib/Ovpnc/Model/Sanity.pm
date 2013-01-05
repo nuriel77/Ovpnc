@@ -1,4 +1,4 @@
-package Ovpnc::Plugin::Sanity;
+package Ovpnc::Model::Sanity;
 use warnings;
 use strict;
 use Fcntl ':mode';
@@ -11,7 +11,7 @@ use namespace::autoclean;
 
 =head1 NAME
 
-Ovpnc::Plugin::Sanity - Sanity check plugin
+Ovpnc::Model::Sanity - Sanity check plugin
 
 =head1 DESCRIPTION
 

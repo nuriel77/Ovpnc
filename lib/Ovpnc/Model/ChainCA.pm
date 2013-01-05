@@ -1,4 +1,4 @@
-package Ovpnc::Plugin::ChainCA;
+package Ovpnc::Model::ChainCA;
 use strict;
 use warnings;
 use utf8;
@@ -63,7 +63,7 @@ has serial => (
 
 =head1 NAME
 
-Ovpnc::Plugin::ChainCA - Chain CA Creator
+Ovpnc::Model::ChainCA - Chain CA Creator
 
 =head1 DESCRIPTION
 

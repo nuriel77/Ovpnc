@@ -1,6 +1,6 @@
 package Ovpnc::Controller::Clients;
-use Ovpnc::Plugin::ChainCA 'read_random_entropy';
-use Ovpnc::Plugin::Sanity;
+use Ovpnc::Model::ChainCA 'read_random_entropy';
+use Ovpnc::Model::Sanity;
 use Try::Tiny;
 use Digest::MD5 'md5_hex';
 use utf8;
@@ -56,7 +56,7 @@ around [qw(index add)] => sub {
 
     # Sanity check
     # ============
-    my $err = Ovpnc::Plugin::Sanity->action( $c->config );
+    my $err = Ovpnc::Model::Sanity->action( $c->config );
     if ( $err and ref $err eq 'ARRAY' ) {
         $c->response->status(500);
         $c->response->body( join "<br>", @{$err} );
