@@ -140,85 +140,127 @@ Add a client
         # Form submitted and valid
         # ========================
         if ( $form->submitted_and_valid ) {
-    
-            # New resultset
-            # =============
-            my $_client;
-            try     { $_client = $c->model('DB::User')->new_result({}); }
-            catch   { push @{$c->stash->{error}}, $_; };
-    
-            # update dbic row with
-            # submitted values from form
-            # ==========================
-            try   { $form->model->update( $_client ) }
-            catch { $self->_db_error($c, $_, $_, $form) }; 
-        
-            my ( $_client_role_id, $error_clean, $error );
-            try {
-               $_client_role_id = $c->model('DB::Role')
-                    ->search(
-                        { name => 'client' },
-                        { select   => 'id' },   
-                    );
+            my ($username, $email);
+            try     {
+                        $username = 
+                            $c->model('DB::User')->search(
+                                { username  => $c->req->params->{username}  },
+                            )->count;
+                        $email    =
+                            $c->model('DB::User')->search(
+                                { email     => $c->req->params->{email}     }
+                            )->count;
             }
-            catch { push @{$c->stash->{error}}, $_; };
-    
-            try {
-                $c->model('DB::UserRole')
-                    ->create(
-                        {
-                            user_id => $_client->id,
-                            role_id => $_client_role_id->next->id,
-                        }
-                    );
-            } catch {
-                $error_clean = $_;
-                $error = $_;
-            };
-    
-            # Create client configuration file
-            # ================================
-            if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
-                $self->_error($c,
-                    "Cannot create ccd file for " . $_client->username
-                    . ": directory '" . $c->config->{openvpn_ccd}
-                    . "' does not exists or is not writable!" );
-            }
-    
-            my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
-            open (my $FILE, '>', $_file)
-                or $self->_error($c, "Cannot create ccd file for "
-                    . $_client->username . ': ' . $! );
-            print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
-    
-            ## For Debug: -- remove
-            print $FILE "\n"
-                        . 'Generated from:'
-                        . "\n"
-                        .'#'. $c->req->params->{username}
-                        . "\n"
-                        . '#'
-                        . $c->req->params->{password}
-                        . "\n";
-            close $FILE;
+            catch   { push @{$c->stash->{error}}, (split(/\n/,$_))[0]; };
+            if ( $username and $username > 0 ) {
+                #$form->get_field('username')
+                #     ->get_constraint({ type => 'Callback' })
+                #     ->force_errors(1);        
+                push @{$c->stash->{error}}, 'Failed to create new user. Username already exists.';
+                $form->process;
 
-            # Set permissions and ownership
-            # =============================
-            my ( $uid, $gid ) = $self->_get_user_group_id( $c );
-            chown $uid, $gid, $_file
-                or $self->_error($c, " chmod error '" . $_file . "': " . $!);
+                $c->res->headers->header('Content-Type' => 'text/html');
+
+                # Add js / css
+                # ============
+                $c->controller('Root')->include_default_links($c);
+                $c->forward('View::HTML');
+                return;
+            }
+            if ( $email and $email > 0 ){
+                #$form->get_field('email')
+                #     ->get_constraint({ type => 'Callback' })
+                #     ->force_errors(1);        
+                push @{$c->stash->{error}}, 'Failed to create new user. Email already exists.';
+                $form->process;
+                $c->res->headers->header('Content-Type' => 'text/html');
+                # Add js / css
+                # ============
+                $c->controller('Root')->include_default_links($c);
+                $c->forward('View::HTML');
+                return;
+            }
+
+            if ( !$email and !$username ) {
+                # New resultset
+                # =============
+                my $_client;
+                try     { $_client = $c->model('DB::User')->new_result({}); }
+                catch   { push @{$c->stash->{error}}, $_; };
+        
+                # update dbic row with
+                # submitted values from form
+                # ==========================
+                try   { $form->model->update( $_client ) }
+                catch { $self->_db_error($c, $_, $_, $form) }; 
+            
+                my ( $_client_role_id, $error_clean, $error );
+                try {
+                   $_client_role_id = $c->model('DB::Role')
+                        ->search(
+                            { name => 'client' },
+                            { select   => 'id' },   
+                        );
+                }
+                catch { push @{$c->stash->{error}}, $_; };
+        
+                try {
+                    $c->model('DB::UserRole')
+                        ->create(
+                            {
+                                user_id => $_client->id,
+                                role_id => $_client_role_id->next->id,
+                            }
+                        );
+                } catch {
+                    $error_clean = $_;
+                    $error = $_;
+                };
+        
+                # Create client configuration file
+                # ================================
+                if ( ! -e $c->config->{openvpn_ccd} || ! -w $c->config->{openvpn_ccd} ){
+                    $self->_error($c,
+                        "Cannot create ccd file for " . $_client->username
+                        . ": directory '" . $c->config->{openvpn_ccd}
+                        . "' does not exists or is not writable!" );
+                }
+        
+                my $_file = $c->config->{openvpn_ccd} . '/' . $_client->username;
+                open (my $FILE, '>', $_file)
+                    or $self->_error($c, "Cannot create ccd file for "
+                        . $_client->username . ': ' . $! );
+                print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
+        
+                ## For Debug: -- remove
+                print $FILE "\n"
+                            . 'Generated from:'
+                            . "\n"
+                            .'#'. $c->req->params->{username}
+                            . "\n"
+                            . '#'
+                            . $c->req->params->{password}
+                            . "\n";
+                close $FILE;
     
-            chmod 0640, $c->config->{openvpn_ccd} . '/' . $_client->username
-                or $self->_error($c, " chown error '" . $_file . "': " . $!);
-                    
-            # Rollback on errors
-            # ==================
-            $_client->delete  if $c->stash->{error};
+                # Set permissions and ownership
+                # =============================
+                my ( $uid, $gid ) = $self->_get_user_group_id( $c );
+                chown $uid, $gid, $_file
+                    or $self->_error($c, " chmod error '" . $_file . "': " . $!);
+        
+                chmod 0640, $c->config->{openvpn_ccd} . '/' . $_client->username
+                    or $self->_error($c, " chown error '" . $_file . "': " . $!);
+                        
+                # Rollback on errors
+                # ==================
+                $_client->delete  if $c->stash->{error};
     
-            push (@{$c->flash->{success_messages}},
-                "Client \\'" . $_client->username . "\\' added successfully.");
-            $c->response->redirect( $c->uri_for('add') );
-            return;
+                push (@{$c->flash->{success_messages}},
+                    "Client \\'" . $_client->username . "\\' added successfully.");
+                $c->response->redirect( $c->uri_for('add') );
+                return;
+            }
         }
 
         # Check if any errors in form

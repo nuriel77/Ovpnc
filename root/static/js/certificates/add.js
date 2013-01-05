@@ -323,9 +323,9 @@ jQuery.validator.setDefaults({
 
             $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
-                //$('#password2').parents('tr:first').slideUp(300);
-                //$('#password').parents('tr:first').slideUp(400);
-                //$('#generatePassword').parents('tr:first').hide(100);
+                $('#password2').parents('tr:first').slideUp(300);
+                $('#password').parents('tr:first').slideUp(400);
+                $('#generatePassword').parents('tr:first').hide(100);
                 // Check if Root CA exists,
                 // if not, display a warning
                 $.Ovpnc().ajaxCall({
