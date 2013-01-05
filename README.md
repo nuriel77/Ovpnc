@@ -13,7 +13,8 @@ This application will provide an administrator and user interface to the OpenVPN
  
 [OpenVPN](http://openvpn.net/index.php/download/community-downloads.html) -- Download page.
 
-
+Update: To give a better impression a screenshot has been added:
+http://x-vps.com/ovpnc_1.jpg
 
 
 Motivation
