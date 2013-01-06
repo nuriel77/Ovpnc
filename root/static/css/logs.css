@@ -1,0 +1,21 @@
+.logs_container {}
+table.logs_table {
+    margin: 10px 20px 0 20px;
+    font-size: 0.85em;
+    white-space:nowrap;
+}
+
+table.logs_table th {
+    padding:5px 0 5px 0;
+    border-bottom:1px solid gray;
+}
+
+table.logs_table tr {
+    margin: 3px 0 3px 0;
+}
+
+table.logs_table td.left {
+    padding:3px;
+    text-align:center;
+    min-width:160px;
+}

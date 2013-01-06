@@ -1,0 +1,15 @@
+<div class="logs_container" style="display:none">
+    <table id="logs" class="logs_table">
+        <thead>
+            <th id="logs_time" style="cursor:pointer">Time</th>
+            <th id="logs_message">Message</th>
+        </thead>
+        <tbody id="logs_table_body">
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.Logs().getServerLogs();
+    });
+</script>
