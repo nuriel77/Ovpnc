@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 use POSIX;
 use Tie::File;
+use Try::Tiny;
 use Fcntl 'O_RDWR';
 use File::Basename;
 use IPC::Cmd qw( can_run run );
@@ -358,8 +359,16 @@ Generate CRL - Certificate Revocation List
     sub gen_crl {
         my ( $self, $params, $cfg ) = @_;
 
-        my ( $ca_privkey, $ca_cert ) = $self->_get_ca_key_and_cert( $cfg, $params->{ca_password} );
+        my ( $ca_privkey, $ca_cert ) = 
+        	$self->_get_ca_key_and_cert( $cfg, $params->{ca_password} );
 
+		if ( ! $ca_privkey and ! $ca_cert ){
+			return { error => 'Missing CA private key or CA certificate' };
+		}
+		elsif ( ref $ca_privkey eq 'HASH' && $ca_privkey->{error} ){
+			return $ca_privkey;
+		}
+		
         # Prepare CRL file
         # ================
         if ( $params->{cert_type} eq 'server' ){
@@ -424,9 +433,27 @@ configured names
         my $_ca_key = read_file ( $cfg->{home} . '/' . $ca_key_file, chomp => 1 )
             or return { error =>
                 "Cannot read CA key, make sure it has been created." };
-        my $ca_privkey = $password
+ 
+        my $ca_privkey;
+		try {
+        	$ca_privkey = $password
                 ? Crypt::OpenSSL::CA::PrivateKey->parse( $_ca_key, -password => $password )
                 : Crypt::OpenSSL::CA::PrivateKey->parse( $_ca_key );
+		}
+		catch {
+			return { error => (
+				$password && $_ =~ /bad decrypt/g
+					? 'Cannot read CA key, did you enter the correct password?'
+					: 'Cannot read CA key data'
+			)}
+		};
+		unless ( $ca_privkey ){	 
+			return { error => (
+				$password
+					? 'Cannot read CA key, did you enter the correct password?'
+					: 'Cannot read CA key data'
+			)}
+		}
 
         # Get the Root CA certificate
         # ===========================
@@ -935,6 +962,17 @@ and return the details or errors
         }
     }
 
+=head2 verify_ca_passwd
+
+Verify the private CA key password
+
+=cut
+
+	sub	verify_ca_passwd {
+		my ( $self, $cfg, $params ) = @_;
+		return $self->_get_ca_key_and_cert( $cfg, $params->{ca_password} );
+	}
+
 
 =head2 _format_output
 
@@ -942,9 +980,7 @@ Format output buffer
 
 =cut
 
-    sub _format_output{
-        return join( "\n", @{$_[1]} );
-    }
+    sub _format_output{ return join( "\n", @{$_[1]} ) }
 
 
 =head1 AUTHOR

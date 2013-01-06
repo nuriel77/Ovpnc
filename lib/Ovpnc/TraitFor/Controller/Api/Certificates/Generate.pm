@@ -226,6 +226,7 @@ necessary for functionality.
         my $_new_csr = $self->_ca->gen_certificate( $params, $self->_cfg );
 
         if ( $_new_csr and ref $_new_csr ){
+            
             return $_new_csr if ( $_new_csr->{error} );
 
             # Get file digests
@@ -254,11 +255,12 @@ necessary for functionality.
             # Sign the new CSR
             # ================
             if ( my $_ret_val = $self->_ca->gen_crl( $params, $self->_cfg ) ) { 
+				return $_ret_val if ref $_ret_val and $_ret_val->{error};
                 if ( ! -e $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN}
                   and $params->{cert_type} !~ /server|ca/
                 ){
                     touch $self->_cfg->{openvpn_ccd} . '/' . $params->{KEY_CN}
-                        or warn "Did not create client ccd file: " . $!;
+                        or return { error => "Did not create client ccd file: " . $! };
                 }
                 return { status => 'ok', resultset => \@_digests };
             }
@@ -383,6 +385,19 @@ Write certificate/key data to file
         );
 
     }
+
+
+=head2 verify_ca_passwd
+
+Verify the provided passwd
+is correct for the private CA key
+
+=cut
+
+	sub verify_ca_passwd{
+		my $self = shift;
+		$self->_ca->verify_ca_passwd( $self->_cfg, shift );
+	}
 
 
 =head1 AUTHOR

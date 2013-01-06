@@ -1,4 +1,4 @@
-package Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke;
+package Ovpnc::TraitFor::Controller::Api::Certificates::Unrevoke;
 use warnings;
 use strict;
 use IPC::Cmd qw( can_run run );
@@ -13,7 +13,7 @@ use constant TIMEOUT   => 5;
 
 =head1 NAME
 
-Ovpnc::TraitFor::Controller::Api::Clients::Unrevoke - Ovpnc Controller Trait
+Ovpnc::TraitFor::Controller::Api::Certificates::Unrevoke - Ovpnc Controller Trait
 
 =head1 DESCRIPTION
 

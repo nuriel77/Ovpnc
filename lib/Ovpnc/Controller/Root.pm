@@ -225,7 +225,7 @@ Include static files, dynamically
         if ( $c->user_exists ){
             $c->stash->{expires} = scalar(localtime($c->_session_expires));
             if ( $ENV{CATALYST_DEBUG} ){
-                $c->log->info( " -------- Current time : " . scalar(localtime(time())) );
+                #$c->log->info( " -------- Current time : " . scalar(localtime(time())) );
                 $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
             }
         }
@@ -266,10 +266,10 @@ Include static files, dynamically
         return 1 if $c->stash->{no_self};
     
         # Include according to pathname
-            # not incase of 'main' ( path is undef )
+        # not incase of 'main' ( path is undef )
         # ======================================
         my $root_dir = join '/', @{$c->config->{static}->{include_path}->[0]->{dirs}};
-    
+
         if ( my $c_name = lc($c->req->path) ) {
             $c_name =~ s/\/$//;
             for my $type (qw/ css js /) {

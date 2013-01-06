@@ -1,4 +1,4 @@
-package Ovpnc::TraitFor::Controller::Api::Clients::Revoke;
+package Ovpnc::TraitFor::Controller::Api::Certificates::Revoke;
 use warnings;
 use strict;
 use File::Basename;
@@ -13,7 +13,7 @@ use constant TIMEOUT    => 5;
 
 =head1 NAME
 
-Ovpnc::TraitFor::Controller::Api::Clients::Revoke - Ovpnc Controller Trait
+Ovpnc::TraitFor::Controller::Api::Certificates::Revoke - Ovpnc Controller Trait
 
 =head1 DESCRIPTION
 
@@ -133,62 +133,6 @@ Revoke a certificate - private
             #$exp->log_file('/tmp/exp.txt', 'w');
             $exp->exp_internal( 0 );
             $exp->spawn( $_cmd, @{$_args} ) or die "Cannot spawn command: " . $!;
-#            $exp->expect(
-#                2,
-#                [
-#                    qr/Enter pass phrase for.*/,
-#                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
-#                ],
-#                [
-#                    qr/ERROR:Already revoked.*/,
-#                    sub {
-#                            push @{$self->rval->{$e_obj}->{errors}},
-#                                 'Certificate ' . basename($cert) . ' is already revoked';
-#                            exp_continue;
-#                        },
-#                ],
-#                [
-#                    qr/error 23 at 0 depth lookup:certificate revoked/,
-#                    sub {
-#                        $exp->send( "\n" );
-#                        exp_continue;
-#                    },
-#                ]
-#            );
-#			$buf = $exp->before();
-#            if ( $buf =~ /(unable to load CA private key)/ ){
-#              	push @{$self->rval->{$client}->{errors}},
-#                   		'Error! Wrong password for CA private key: ' . $1;
-#                $exp->soft_close;
-#                die $buf;
-#                return;
-#            }
-#            
-#            if ( $error = $exp->exp_error() ){              
-#            	die "ERR: "  . $error;  
-#                push @{$self->rval->{$client}->{errors}},
-#                     'Command 1 failed to execute: ' . $error . ', ' . $exp->before()
-#                    unless $error =~ /exited with status 0/;
-#            }
-#
-#
-#            $exp->expect(
-#                2,
-#                [
-#                    qr/Enter pass phrase for.*/,
-#                    sub { $exp->send( $passwd . "\n" ); exp_continue; },
-#                ]
-#            );
-#			$buf = $exp->before();
-#			 
-#            if ( $buf =~ /(unable to load CA private key)/ ){
-#              	push @{$self->rval->{$client}->{errors}},
-#                   		'Error! Wrong password for CA private key: ' . $1;
-#                $exp->soft_close;
-#                die $buf;
-#                return;
-#            }
-#            
   			$exp->expect(
             	2,
                 [
@@ -203,12 +147,24 @@ Revoke a certificate - private
                             exp_continue;
                         },
                 ],
+                [
+                	qr/No such file or directory|Error opening certificate file.*/,
+                	sub {
+                            push @{$self->rval->{$e_obj}->{errors}},
+                                 'Certificate ' . basename($cert) . ' is not found or corrupt'
+                                 unless grep 'Certificate ' . basename($cert) . ' is not found or corrupt', 
+                                 			@{$self->rval->{$e_obj}->{errors}};
+                            exp_continue;
+                        },
+                ],
             );
 
             $buf = $exp->before();
     		if  ( $buf =~ /(unable to load CA private key)/gi ){
 				push @{$self->rval->{$e_obj}->{errors}},
-                   		'Error! Wrong password for CA private key: ' . $1;
+                   		'Error! Wrong password for CA private key: ' . $1
+                   unless grep 'Error! Wrong password for CA private key: ' . $1,
+                                 			@{$self->rval->{$e_obj}->{errors}};
                 $exp->soft_close;
                 return;
     		}

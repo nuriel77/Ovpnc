@@ -99,10 +99,7 @@ Main certificates page
                 ACLDetachTo('denied')
               : Does('NeedsLogin')
               : Sitemap
-    {
-        my ( $self, $c ) = @_;
-        $c->stash->{content} = 'This will be certificates management main index page';
-    }
+    { }
 
 
 =head2 add
@@ -129,6 +126,10 @@ Add a new certificate
         # Get the form object
         # ===================
         my $form = $c->stash->{form};
+
+		# Adds a class near field labels
+		# to style and add '*' on required
+		# ================================
         $form->auto_constraint_class( 'constraint_%t' );
 
         # Get the username for current
@@ -149,7 +150,6 @@ Add a new certificate
         # server certificate exist
         # Add to stash to display
         # ========================
-
         if ( $c->req->params->{cert_type}
           && $c->req->params->{cert_type} eq 'server'
         ){
@@ -213,7 +213,7 @@ Add a new certificate
                         $c->flash->{resultset} =
                             "Root certificate, key, DH permissions, and TA key file created successfully."
                     }
-                }
+                }  
             }
             elsif ( $result and $result->{error} ){
                 my ($_escp) = ( split /\n/, $result->{error} )[0];

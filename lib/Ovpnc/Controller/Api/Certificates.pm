@@ -188,10 +188,11 @@ requires user to provide options
         # Possible options
         # ================
         my $_options = {
-            build_dh        => sub { return $self->_build_dh( @_ ) },
-            build_ta        => sub { return $self->_build_ta( @_ ) },
-            init_ca         => sub { return $self->_gen_ca( @_ ) },
-            gen_cert        => sub { return $self->_gen_cert( @_ ) },
+        	verify_ca_passwd	=> sub { return $self->_verify_ca_passwd( @_ ) },
+            build_dh        	=> sub { return $self->_build_dh( @_ ) },
+            build_ta        	=> sub { return $self->_build_ta( @_ ) },
+            init_ca         	=> sub { return $self->_gen_ca( @_ ) },
+            gen_cert        	=> sub { return $self->_gen_cert( @_ ) },
         };
 
         # Same as source ./vars
@@ -251,6 +252,7 @@ requires user to provide options
                             $req,
                             ( $form ? $form : undef )
                         );
+ 
                     # If errors, "rollback"
                     # =====================
                     if ( $_chk->{error} ){
@@ -266,11 +268,14 @@ requires user to provide options
                     my $files;
                     push @{$files}, @{$_ret_val->{status}}[0,1];
 
-                    my $_chk = $self->_update_db_certificate(
-                                    $c,
-                                    [@{$files}],
-                                    $req,
-                                    ( $form ? $form : undef ) );
+                    my $_chk =
+                    	$self->_update_db_certificate(
+                            $c,
+                            [@{$files}],
+                            $req,
+                            ( $form ? $form : undef )
+                        );
+
                     # If errors, "rollback"
                     # =====================
                     if ( $_chk->{error} ){
@@ -369,15 +374,14 @@ L<Three>    Get all certificates - sorted results by field
         # ==================================
 
 
-        $c->req->params->{cert_name}     = $cert_name_int if $cert_name_int;
+        $c->req->params->{cert_name}    = $cert_name_int if $cert_name_int;
         $c->req->params->{name}         = $name_int     if $name_int;
         $c->req->params->{cert_type}    = $c->req->params->{type} if $c->req->params->{type};
 
         if (
                 my $cert_name    = $c->req->params->{cert_name}
-            and my $username    = $c->req->params->{name}
+            and my $username     = $c->req->params->{name}
         ){
-
             $username .= '/';
             my $username_mem = $username;
             $username = '' if $c->req->params->{cert_type} =~ /ca|server/;
@@ -427,7 +431,7 @@ L<Three>    Get all certificates - sorted results by field
                     order_by => ( $sort_by && $sort_order )
                         ? "$sort_by $sort_order"
                         : "name ASC",
-                    select => $columns
+                    select   => $columns,
                 }
             );
 
@@ -435,7 +439,7 @@ L<Three>    Get all certificates - sorted results by field
                 $self->status_not_found($c, message => 'No certifictes');
                 $c->detach('View::JSON');
             }
-        
+          
             $rs = $rs->search_literal("lower($search_by) LIKE ?", lc($search_text) .'%' )
                 if $search_by && $search_text;
 
@@ -586,7 +590,7 @@ sub certificates_DELETE : Local
                   qw/
                      Vars
                      Delete
-                     +Ovpnc::TraitFor::Controller::Api::Clients::Revoke
+                     Revoke
                   /
                 ],
                 openvpn_dir    => $c->config->{openvpn_dir},
@@ -641,146 +645,6 @@ sub certificates_DELETE : Local
 
 
 
-=head2 certificates_UNREVOKE
-
-Un-Revoke certificate(s)
-sends to clients_UNREVOKE
-
-=cut
-
-   sub certificates_UNREVOKE : Local
-                             : Args(0)
-                             : Does('ACL')
-                                AllowedRole('admin')
-                                AllowedRole('can_edit')
-                                ACLDetachTo('denied')
-                             : Sitemap
-    {
-        my ( $self, $c ) = @_;
-        $c->detach('/api/clients_UNREVOKE');
-    }
-
-
-
-=head2 certificates_REVOKE
-
-Revoke certificate(s)
-sends to _DELETE with no_delete param
-
-=cut
-
-   sub certificates_REVOKE : Local
-                           : Args(0)
-                           : Does('ACL')
-                               AllowedRole('admin')
-                               AllowedRole('can_edit')
-                               ACLDetachTo('denied')
-                           : Sitemap
-    {
-        my ( $self, $c ) = @_;
-
-        $c->req->params->{no_delete} = 1;
-
-        if (  ! $c->req->params->{certificates}
-          and ! $c->req->params->{clients}
-          and ! $c->req->params->{serials}
-        ){
-            $self->status_bad_request($c, message =>
-                'Certificate name(s), serial(s) and client name(s) should be provided (min 1)'
-            );
-            $c->detach;
-        }
-        my @certificates = split ',', $c->req->params->{certificates};
-        my @clients      = split ',', $c->req->params->{clients};
-        my @serials      = split ',', $c->req->params->{serials};
-
-        # Check if such a certificate exists
-        # ==================================
-        # just to make sure:
-        $c->req->params->{no_delete} ||= 1;
-        my $chk_revoke = $self->certificates_DELETE(
-            $c,
-            $c->req->params->{clients},
-            $c->req->params->{certificates},
-            $c->req->params->{serials}
-        );
-
-		# Check the return values to find
-		# successful ones and update the
-		# database with the revoke time
-		# ===============================
-        if ( $chk_revoke and ref $chk_revoke ){
-            for my $i ( 0 .. $#certificates ){
-				my $e_obj;
-                if ( $chk_revoke->{$clients[$i]}->{status} ){
-                	$e_obj = $clients[$i];
-                }
-                elsif ( $chk_revoke->{$certificates[$i]}->{status} ){  
-                	$e_obj = $certificates[$i];    
-                }
-                else {
-                	$e_obj = $certificates[$i];
-                }
-               
-                if ( ref $chk_revoke->{$e_obj}->{status} eq 'ARRAY' ){
-                    for my $cert_status ( @{$chk_revoke->{$e_obj}->{status}} ){
-                        my ($cert_name) = $cert_status =~ /Certificate.(.*).revoked ok/;
-                        if ( $cert_name and $cert_name eq $certificates[$i] ){
-                            try {
-                                $c->model('DB::Certificate')->search({
-                                    name => $cert_name,
-                                    user => $clients[$i]
-                                })->update({ revoked => DateTime->now });
-                            }
-                            catch {
-                                $c->log->error('DB Error: ' . $_);
-                                push @{$c->stash->{$e_obj}->{errors}},
-                                    "Failed to update database for '$cert_name': " . $_
-                                    . " user: '$clients[$i]'";
-                            };
-                            try {
-                                my $check_total_revoked =
-                                    $c->model('DB::Certificate')->search({
-                                        user    => $clients[$i],
-                                        revoked => { in => [ '0000-00-00 00:00:00' ] }                                
-                                    })->count;
-                                if ( $check_total_revoked == 0 ){
-                                    $c->log->debug('Updating user, setting to revoked because all certificates are revoked.');
-                                    $c->model('DB::User')->search({
-                                        username => $clients[$i]
-                                    })->update({ revoked => 1 });
-                                }
-                            }
-                            catch {
-                                $c->log->error('DB Error: ' . $_);
-                                push @{$c->stash->{$e_obj}->{errors}},
-                                    "Failed to update database for user status: " . $_
-                                    . " user: '$clients[$i]'";
-                            };
-                        }
-                    }
-                }
-                elsif ( $chk_revoke->{$e_obj}->{warnings} ){
-                    $c->stash->{rest}->{$e_obj}->{errors} =
-                        $chk_revoke->{$e_obj}->{warnings};
-                }
-                elsif ( $chk_revoke->{$e_obj}->{errors} ){
-                    $c->stash->{$e_obj}->{errors} =
-                        $chk_revoke->{$e_obj}->{errors};
-                }
-                else {
-                    push @{$c->stash->{$e_obj}->{errors}},
-                        "Failed to get status for '$certificates[$i]', user: '$clients[$i]'";
-                }
-                #$chk_revoke->{$certificates[$i]} = $chk_revoke->{$clients[$i]};
-                #delete $chk_revoke->{$clients[$i]};
-            }
-            $self->status_ok($c, entity => { resultset => $chk_revoke } );
-        }
-    }
-
-
-
 =head2 _build_dh
 
 Generate DH secret
@@ -827,6 +691,27 @@ Generate ta.key secret
         return { error =>  "Build ta.key failed!" };
     }
 
+
+=head2 _verify_ca_passwd
+
+Sends a password to the ca privatekey
+to check if the passwd is correct
+
+=cut
+
+    sub _verify_ca_passwd : Private {
+        my $self = shift;
+
+ 		my $_ret_val = $self->_roles->verify_ca_passwd( @_ );
+
+        if ( defined $_ret_val && ref $_ret_val ){
+            return { status => 'ok' } if ref $_ret_val eq 'Crypt::OpenSSL::CA::X509';
+            return $_ret_val if $_ret_val->{error};
+        }
+
+        return undef;
+     }
+     
 
 =head2 _gen_ca
 
@@ -1169,6 +1054,7 @@ Set the correct path to the certificates
 
         return (\@certs, \@clients, \@path_certs);
      }
+
 
 
 =head2 _map_certs_clients

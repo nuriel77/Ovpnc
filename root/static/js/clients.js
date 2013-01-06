@@ -1,4 +1,6 @@
-/* Clients */
+/*
+ * Clients
+ */
 
 $.Ovpnc().count = 0;
 var total_count = 0;
@@ -386,8 +388,8 @@ var total_count = 0;
                 $.Ovpnc().setAjaxLoading();
             
                 $.ajax({
-                    url: '/api/clients',
-                    type: action,
+                    url: '/api/clients/' + action,
+                    type: 'POST',
                     cache: false,
                     timeout: 20000,
                     data: { _ : '1', clients: _clients, ca_password: passwd },
@@ -428,6 +430,49 @@ var total_count = 0;
 
         },
         //
+        // Proceed deleteClient
+        //
+        proceedDeleteClient: function (p) {
+        	
+        	var _action = function(passwd){
+                 // Get total selected clients
+                 //var total_count = $('.trSelected', grid).length;
+                 var _loop = 0;
+                 var _clients = '';
+                 $.each($('.trSelected', p.grid), function() {
+                     // Get the client's name of this grid
+                     var client = $('td:nth-child(2) div', this).html();
+                     // Get rid of any html tags, extract the name.
+                     client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
+                     _clients += client + ',';
+                     _loop++;
+                 });
+                 // Return nothing if none selected
+                 if ( _loop == 0 ) return;
+     
+                 // Execute
+                 //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
+                 window.clientsToDelete = total_count;
+                 $.Ovpnc().ajaxCall({
+                     url: "/api/clients/",
+                     data: { clients: _clients, _ : '1', ca_password: passwd },
+                     method: 'DELETE',
+                     success_func: $.Client().clientDeleteReturn,
+                     error_func: $.Client().clientDeleteError,
+                     loader: 1,
+                     timeout: 15000
+                 });
+             };
+            
+             var locked_ca = $('#locked_ca');
+             if ( locked_ca !== undefined
+               && window.lock_checked === undefined
+             ){
+            	 $.Client().processUnlockDialog( _action, 'deleteCaPasswdDialog' );
+                 return false;
+             }
+        },
+        //
         // Check if client names match
         //
         checkClientsMatch: function(clients, current_client) {
@@ -466,9 +511,13 @@ var total_count = 0;
         clientDeleteError: function (e){
             if ( e.responseText !== undefined ){
                 var msg = jQuery.parseJSON( e.responseText );
+                if ( window.DEBUG ) log("clientDeleteError: %o", msg);
                 var _msg;
                 if ( msg.rest && msg.rest.error ) {
                     _msg = msg.rest.error;
+                }
+                else if ( msg.rest && msg.rest.failed ){
+                	_msg = msg.rest.failed;
                 }
                 else if ( msg.rest && msg.rest.status ){
                     _msg = msg.rest.status;
@@ -492,12 +541,13 @@ var total_count = 0;
         // Process success returned from client delete
         //
         clientDeleteReturn: function (r){
+        	if ( window.DEBUG ) log( "clientDeleteReturn: %o", r );
             if ( r.rest.resultset !== undefined ) {
                 var rs = r.rest.resultset;
                 if ( rs.errors !== undefined && rs.errors.length > 0 ){
                     var _errors = rs.errors;
                     for ( var e in _errors ){
-                        log(e);
+                        if ( window.DEBUG) log("Errors: " + e);
                         alert( $.Ovpnc().alertErr + ' ' + _errors[e] + '</div><div class="clear"></div>' );
                     }
                 }
@@ -566,38 +616,12 @@ var total_count = 0;
         deleteClient: function (button, grid){
             var total_count = $('.trSelected', grid).length;
             if ( total_count == 0 ) return false;
+
             // Confirm delete
             $.Ovpnc().confirmDiag({
                 message: 'Are you sure you want to delete ' + total_count + ' client' + ( total_count > 1 ? 's?' : '?' ),
-                action: function () {
-                    // Get total selected clients
-                    //var total_count = $('.trSelected', grid).length;
-                    var _loop = 0;
-                    var _clients = '';
-                    $.each($('.trSelected', grid), function() {
-                        // Get the client's name of this grid
-                        var client = $('td:nth-child(2) div', this).html();
-                        // Get rid of any html tags, extract the name.
-                        client = client.replace(/^([0-9a-z_\-\.]+)<.*?>.*$/gi, "$1");
-                        _clients += client + ',';
-                        _loop++;
-                    });
-                    // Return nothing if none selected
-                    if ( _loop == 0 ) return;
-        
-                    // Execute
-                    //( url, data, method, success_func, error_func, loader, timeout, retries, cache )
-                    window.clientsToDelete = total_count;
-                    $.Ovpnc().ajaxCall({
-                        url: "/api/clients/",
-                        data: { clients: _clients, _ : '1' },
-                        method: 'REMOVE',
-                        success_func: $.Client().clientDeleteReturn,
-                        error_func: $.Client().clientDeleteError,
-                        loader: 1,
-                        timeout: 15000
-                    });
-                }
+                action: $.Client().proceedDeleteClient,
+                params: { button: button, grid: grid, action: 'delete' }
             });
         }
     };

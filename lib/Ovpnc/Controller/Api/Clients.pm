@@ -93,12 +93,10 @@ or after, or around...
 
     around [
         qw(
-          clients_UNREVOKE
           clients_DISABLE
           clients_ENABLE
           clients_GET
           clients_POST
-          list_revoked
           )
       ] => sub {
         my ( $orig, $self, $c, $params ) = @_;
@@ -119,8 +117,7 @@ or after, or around...
 
     around [
         qw(
-          clients_REVOKE
-          clients_REMOVE
+          clients_DELETE
           kill_connection
           )
       ] => sub {
@@ -172,8 +169,7 @@ and release the mgmt port
 
     after [
         qw/
-          clients_REVOKE
-          clients_REMOVE
+          clients_DELETE
           kill_connection
           /
     ] => sub {
@@ -300,10 +296,14 @@ of Ovpnc/OpenVPN
                 my $db = 'DB::'.ucfirst($qdb);
                 my $_result;
                 if ( $c->req->params->{like} ){
-                    $_result = $c->model( $db )->search(
+					my $search_ref = [];
+					push @{$search_ref}, $field;
+					push @{$search_ref}, 'user_id'
+						if $field eq 'user' and $c->req->params->{db} =~ /certificate/i;
+                	$_result = $c->model( $db )->search(
                         { $field => { -like => $search . "%" } },
                         {
-                            select => $field,
+                            select => $search_ref,
                             rows   => $c->req->params->{rows} || 12,
                         }
                     );
@@ -327,7 +327,9 @@ of Ovpnc/OpenVPN
                     }
                     else {
                         my @rs;
-                        while ( $_ = $_result->next ) { push @rs, $_->$field };
+                        while ( $_ = $_result->next ) {
+							push @rs, $field eq 'user' ? $_->user->username : $_->$field;	
+                        };
                         $self->status_ok($c,
                             entity => {
                                 field     => $field,
@@ -599,13 +601,13 @@ Update client(s) data
     }
 
 
-=head2 clients_REMOVE
+=head2 clients_DELETE
 
 Delete client(s)
 
 =cut
 
-    sub clients_REMOVE : Local
+    sub clients_DELETE : Local
                        : Args(0)
                        : Does('ACL')
                          AllowedRole('admin')
@@ -623,7 +625,7 @@ Delete client(s)
         # Verify that a client name was provided
         # ======================================
         $self->client_error($c)
-          unless defined ( $client_list // $c->request->params->{clients} );
+          if ( ! $client_list and ! $c->request->params->{clients} );
     
         # Override anything in the path by setting
         # params from post if they exists
@@ -790,311 +792,6 @@ Re-enable a disabled client
     }
     
 
-=head2 clients_REVOKE
-
-Revoke client(s) certificates
-using crl.pem. Try to disconnect
-if client is online and server
-is running
-
-=cut
-
-    sub clients_REVOKE : Local
-                       : Args(0)
-                       : Does('ACL')
-                         AllowedRole('admin')
-                         AllowedRole('can_edit')
-                         ACLDetachTo('denied')
-                       : Sitemap
-    {
-
-        my ( $self, $c, $client_list, $cert_list, $serial_list ) = @_;
-
-        # Verify that a client name was provided
-        # ======================================
-        $self->client_error( $c )
-          if ( ! $client_list and ! $c->request->params->{clients} );
-
-        # Override anything in the path by setting
-        # params from post if they exists
-        # ========================================
-        $client_list = $c->request->params->{clients}
-            if $c->request->params->{clients};
-
-        $cert_list = $c->request->params->{certificates}
-            if $c->request->params->{certificates};
-
-
-        $serial_list = $c->request->params->{serials}
-            if $c->request->params->{serials};
-
-        my @cert_names = map { $_ if $_ ne '' } split ',', $cert_list
-            if $cert_list;
-        my @clients    = map { $_ if $_ ne '' } split ',', $client_list;
-        my @serials    = map { $_ if $_ ne '' } split ',', $serial_list;
-
-        # Trait names should match request method
-        # =======================================
-        $self->_roles(
-            $self->_get_roles(
-                $c->request->method,
-                '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars',
-            )
-        );
-    
-        # Same as source ./vars
-        # =====================
-        $self->_roles->set_environment_vars;
-    
-        # HashRef Will contain after return:
-        # {warnings}, {errors}, {status}
-        # ==================================
-        my $_ret_val;
-    
-        # Revoke client's certificate
-        # ===========================
-        unless ( $c->request->params->{no_revoke} ) {
-            $_ret_val = $self->_roles->revoke_certificate(
-                \@clients,
-                ( @cert_names ? \@cert_names : undef ),
-                \@serials,
-                $c->req->params->{ca_password}
-            );
-        }
-
-        unless ( $_ret_val ){
-            $self->_disconnect_vpn if $self->_has_vpn;
-            $c->controller('Api')->detach_error( $c,
-                { errors => [ 'No reply from backend!' ] } );
-            return;
-        }
-       
-        # Proceed with disconnecting
-        # the client if online and
-        # update the status in DB
-        # ==========================
-        my $_disconnect_client_ok;
-        $_disconnect_client_ok = 1 if $self->_has_vpn;
-        for my $i ( 0 .. $#clients ){
-
-            # See if vpn is currently on,
-            # if yes, try to diconnect the
-            # client (might not be online)
-            # ============================
-            if ( $_disconnect_client_ok ){
-                if ( my $str = $self->kill_connection( $clients[$i] ) ) {
-                    push @{$_ret_val->{$clients[$i]}->{status}},
-                        'Disconnect from VPN status: ' . $str;
-                }
-                else {
-                    push @{$_ret_val->{$clients[$i]}->{info}},
-                        'Disconnect from VPN status: not found online';
-                }
-            }
-            # Update database
-            # ===============
-            try {
-                $c->model('DB::User')->find({ username => $clients[$i] })
-                    ->update({ revoked => 1 });
-            }
-            catch {
-                push @{$c->stash->{$clients[$i]}->{errors}},
-                    "Failed to update database for user '$clients[$i]': " . $_;
-            };
-            if ( @cert_names ){
-                try {
-                    $c->model('DB::Certificate')->search({ user => $clients[$i], name => $cert_names[$i] })
-                        ->update({ revoked => DateTime->now });
-                }
-                catch {
-                    push @{$c->stash->{$clients[$i]}->{errors}},
-                        "Failed to update database for '$clients[$i]': " . $_;
-                };
-            }
-            else {
-                try {
-                    $c->model('DB::Certificate')->search({ user => $clients[$i] })
-                        ->update({ revoked => DateTime->now });
-                }
-                catch {
-                    push @{$c->stash->{$clients[$i]}->{errors}},
-                        "Failed to update database for '$clients[$i]': " . $_;
-                };
-            }
-        }
-
-        # Done processing client(s)
-        # =========================
-        $self->status_ok( $c, entity => { resultset => $_ret_val } );
-        $self->_disconnect_vpn if $self->_has_vpn;
-    }
-    
-
-=head2 clients_UNREVOKE
-
-Unrevoke a client's certificate
-and remove the appended
-.disabled from the file
-in ccd
-
-=cut
-
-    sub clients_UNREVOKE : Local
-                         : Args(0)
-                         : Does('ACL')
-                           AllowedRole('admin')
-                           AllowedRole('can_edit')
-                           ACLDetachTo('denied')
-                         : Sitemap
-    {
-        my ( $self, $c, $client_list, $cert_list, $serials ) = @_;
-
-        # Verify that a client name was provided
-        # ======================================
-        $self->client_error($c, 400)
-          if ( ! $client_list and !$c->request->params->{clients} and !$c->request->params->{serials} );
-    
-        # Override anything in the path by setting
-        # params from post if they exists
-        # ========================================
-        $client_list = $c->request->params->{clients}
-            if $c->request->params->{clients};
-        my @clients = map { $_ if $_ ne '' } split ',', $client_list;
-        $cert_list = $c->request->params->{certificates}
-            if $c->request->params->{certificates};
-        my @certificates = map { $_ if $_ ne '' } split ',', $cert_list
-            if $c->request->params->{certificates};
-        $serials = $c->req->params->{serials}
-            if $c->req->params->{serials};
-        my @serials = map { $_ if $_ ne '' } split ',', $serials
-            if $c->request->params->{serials};
-
-        # Trait names should match request method
-        # =======================================
-        $self->_roles (
-            $self->_get_roles(
-                $c->request->method,
-                '+Ovpnc::TraitFor::Controller::Api::Certificates::Vars'
-            )
-        );
-    
-        # Same as source ./vars
-        # =====================
-        $self->_roles->set_environment_vars;
-    
-        # Check if client's certificate is revoked
-        # ========================================
-        $c->req->params->{no_detach} = 1; 
-        my $revoked = $c->forward('list_revoked');
-
-        my $_ret_val;
-
-      CLIENT:
-        for my $i ( 0 .. $#clients ){
-
-            # Unrevoke client certificate(s)
-            # ==============================
-            # TODO: move ssl_[config|bin] to the trait's instantiation.
-            my $_unrevoke_status = 
-                $self->_roles->unrevoke_certificate({
-                    client       => $clients[$i],
-                    ssl_config   => $self->cfg->{ssl_config},
-                    ssl_bin      => $c->config->{openssl_bin},
-                    certificate  =>( @certificates ? $certificates[$i] : $c->req->params->{cert_name} ),
-                    serial       => $serials[$i],
-                    ca_password  => $c->req->params->{ca_password}
-                });
-
-			if ( grep { /errors/ } keys %{$_unrevoke_status} ){	
-	            if (@certificates){
-	                for ( keys %{$_unrevoke_status} ){
-	                    push @{ $_ret_val->{$certificates[$i]}->{$_} },
-	                        $_unrevoke_status->{$_};          
-	                }
-	            }
-	            else {
-	                for ( keys %{$_unrevoke_status} ){
-	                    push @{ $_ret_val->{$clients[$i]}->{$_} },
-	                        $_unrevoke_status->{$_};          
-	                }
-	            }
-	            
-	            # Done processing client(s)
-        		# =========================
-        		$self->_disconnect_vpn if $self->_has_vpn;
-        		$self->status_ok( $c, entity => { resultset => $_ret_val } );
-        		delete $c->stash->{status} if $c->stash->{status};
-				$c->detach('View::JSON');
-			}
-			
-            # Update database, two possibilities:
-            # a. No certificates provided: this means
-            #    that all the client's certificates
-            #    will be processed (unrevoked)
-            # b. Certificate names are provided, we
-            #    therefore make a specific query
-            # =======================================
-            unless ( @certificates ){
-                try {
-                    $c->model('DB::Certificate')->search({
-                        user        => $clients[$i]
-                    })->update({ revoked => '0000-00-00 00:00:00' });
-                }
-                catch {
-                    push @{$c->stash->{$clients[$i]}->{errors}},
-                        "Failed to update database for '$clients[$i]': " . $_;
-                };
-            }
-            else {
-                try {
-                    $c->model('DB::Certificate')->search({
-                        user       => $clients[$i],
-                        name       => $certificates[$i],
-                        key_serial => $serials[$i],
-                    })->update({ revoked => '0000-00-00 00:00:00' });
-                }
-                catch {
-                    push @{$c->stash->{$clients[$i]}->{errors}},
-                        "Failed to update database for '$clients[$i]': " . $_;
-                }; 
-            }
-            
-            # Since we unrevoked all or one
-            # certificate we do not consider
-            # the user to be revoked anymore
-            # ==============================
-            try {
-                $c->model('DB::User')->find({ username => $clients[$i] })
-                    ->update({ revoked => 0 });
-            }
-            catch {
-                push @{$_ret_val->{$clients[$i]}->{errors}},
-                    "DB query failed: " . $_;
-            };
-
-            #if (@certificates){
-            #    for ( keys %{$_unrevoke_status} ){
-            #       push @{ $_ret_val->{$certificates[$i]}->{$_} },
-            #           $_unrevoke_status->{$_};          
-            #   }
-            #}
-            #else {
-                for ( keys %{$_unrevoke_status} ){
-                    push @{ $_ret_val->{$clients[$i]}->{$_} },
-                        $_unrevoke_status->{$_};          
-                }
-           # }
-        }
-
-
-        # Done processing client(s)
-        # =========================
-        $self->_disconnect_vpn if $self->_has_vpn;
-        $self->status_ok( $c, entity => { resultset => $_ret_val } );
-        delete $c->stash->{status} if $c->stash->{status};
-    }
-
-
 =head2 list_recent
 
 List recently created clients
@@ -1142,66 +839,7 @@ List recently created clients
     }
     
     
-=head2 list_revoked
 
-Get revoked client list
-
-=cut
-
-    sub list_revoked : Path('clients/list_revoked')
-                     : Args(0)
-                     : Does('ACL')
-                       AllowedRole('admin')
-                       AllowedRole('can_edit')
-                       ACLDetachTo('denied')
-                     : Sitemap
-    {
-        my ( $self, $c ) = @_;
-    
-        my $_ret_val;
-
-        my $openvpn_dir = $self->cfg->{openvpn_dir} =~ /^\//
-            ? $self->cfg->{openvpn_dir}
-            :  $self->cfg->{home} . '/' . $self->cfg->{openvpn_dir};
-    
-        # The crl index file from OpenVPN
-        # ===============================
-        my $crl_index = $self->cfg->{openvpn_utils} =~ /^\//
-            ? $self->cfg->{openvpn_utils} . '/keys/index.txt'
-            : $openvpn_dir . '/'
-                . $self->cfg->{openvpn_utils}
-                . '/keys/index.txt';
-    
-        # Check readable
-        # ==============
-        unless ( -r $crl_index ) {
-            push @{$_ret_val->{'General Fault'}->{errors}},
-                'Cannot read ' . $crl_index . ', file does not exists or is not readable';
-            $self->status_ok($c, entity => { resultset => $_ret_val });
-            $self->_disconnect_vpn if $self->_has_vpn;
-            $c->detach;
-        }
-    
-        my $revoked_clients = $self->_read_crl_index_file($crl_index);
-
-        if (    $revoked_clients
-            and ref $revoked_clients eq 'ARRAY'
-            and @{$revoked_clients} > 0 )
-        {
-            # Keep data also in stash->{status}
-            # It is being used by other controllers
-            # =====================================
-            return $revoked_clients
-                if $c->req->params->{no_detach};
-            $self->status_ok( $c, entity => $revoked_clients );
-        }
-        else {
-            return { status => 'No revoked clients' }
-                if $c->req->params->{no_detach};
-            $self->status_not_found( $c, message => 'No revoked clients' );
-        }
-    }
-    
 # Private methods
 # ===============
 
@@ -1220,79 +858,6 @@ given client/ip:port
         return $ret_val;
     }
 
-
-=head2 _read_crl_index_file
-
-This file generated by
-OpenVPN lists the certificates
-and provides us information
-who is revoked
-
-=cut
-
-    sub _read_crl_index_file : Private {
-        my ( $self, $crl_index ) = @_;
-
-        my ( $Y, $M, $D, $h, $m, $s );
-        my $obj = [];
-
-        my $o = tie my @array, "Tie::File", $crl_index;
-        $o->flock;
-
-        for my $line ( @array ){
-            my ( $Y, $M, $D, $h, $m, $s );
-            if ( $line =~ /^R.*$/ ){
-                my (undef, $created, $revoke_time, $serial, undef, $subject )
-                    = split /\t/, $line;
-                my ( $CN, $name ) = $subject =~ /$REGEX->{client}->{crl}/;
-                ( $Y, $M, $D, $h, $m, $s ) = $revoke_time =~ /(..)/g;
-                my $kill_time =
-                        $D . '-'
-                      . $M . '-'
-                      . ( $Y + 2000 ) . ' '
-                      . $h . ':'
-                      . $m . ':'
-                      . $s;
-                push( @{$obj}, { serial => $serial, CN => $CN, cert_name => $name, kill_time => $kill_time } );
-            }
-        }
-
-        undef $o;
-        untie @array;
-        return $obj;
-    }
-
-
-=head2 _match_revoked
-
-Will compare the current
-client to the list of revoked
-to see if he is there
-
-=cut
-
-    sub _match_revoked : Private {
-        my ( $self, $revoked, $client, $cert_name, $serial ) = @_;
-
-        if ( $revoked and ref $revoked eq 'ARRAY' ) {
-            for ( @{$revoked} ) {
-                if (
-                       $cert_name
-                    && $_->{CN} eq $client
-                    && $_->{cert_name} eq $cert_name
-                    && $_->{serial} eq $serial
-                ){
-                    return 1
-                }
-                else {
-                    return 1
-                        if $_->{CN} eq $client
-                        and $_->{serial} eq $serial;
-                }
-            }
-        }
-        return 0;
-    }
 
 
 =head2 _get_roles

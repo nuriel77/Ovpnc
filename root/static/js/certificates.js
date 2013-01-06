@@ -68,9 +68,9 @@ var total_count = 0;
                     { name: 'Select All',   bclass: 'selectAll',   onpress: function (){ $('.bDiv').find('tr').addClass('trSelected'); } }
                 ],
                 searchitems : [
-                    { display: 'Name',          name : 'name', isdefault: true },
+                    { display: 'User',          name : 'user', isdefault: true },
                     { display: 'Created By',    name : 'created_by' },
-                    { display: 'Username',      name : 'user' },
+                    { display: 'Name',      	name : 'name' },
                     { display: 'Type',          name : 'cert_type' },
                     { display: 'Common name',   name : 'key_cn' },
                     { display: 'Expires',       name : 'key_expire' },
@@ -294,8 +294,8 @@ var total_count = 0;
                 $.Ovpnc().setAjaxLoading(1);
                 $.ajaxSetup({ cache: false, async: true });
                 $.ajax({
-                    url: '/api/certificates',
-                    type: action,
+                    url: '/api/certificates/' + action,
+                    type: 'POST',
                     cache: false,
                     timeout: 30000,
                     data: {
