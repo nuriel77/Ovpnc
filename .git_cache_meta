@@ -1,10 +1,10 @@
-chown 1011 .git_cache_meta
-chgrp 1012 .git_cache_meta
-touch -c -d "2012-12-26 21:46:21.0000000000" .git_cache_meta
+chown 0 .git_cache_meta
+chgrp 0 .git_cache_meta
+touch -c -d "2013-01-04 17:46:01.0000000000" .git_cache_meta
 chmod 0644 .git_cache_meta
 chown 0 .gitignore
 chgrp 0 .gitignore
-touch -c -d "2013-01-03 00:36:11.0000000000" .gitignore
+touch -c -d "2013-01-05 16:17:44.0000000000" .gitignore
 chmod 0644 .gitignore
 chown 1011 .gitmodules
 chgrp 1012 .gitmodules
@@ -12,12 +12,12 @@ touch -c -d "2012-12-26 00:11:12.0000000000" .gitmodules
 chmod 0664 .gitmodules
 chown 1011 Makefile.PL
 chgrp 1012 Makefile.PL
-touch -c -d "2013-01-01 06:01:49.0000000000" Makefile.PL
-chmod 0640 Makefile.PL
+touch -c -d "2013-01-05 16:17:44.0000000000" Makefile.PL
+chmod 0644 Makefile.PL
 chown 1011 README.md
 chgrp 1012 README.md
-touch -c -d "2012-12-15 01:14:59.0000000000" README.md
-chmod 0640 README.md
+touch -c -d "2013-01-05 16:41:24.0000000000" README.md
+chmod 0644 README.md
 chown 1011 config/.htpasswd
 chgrp 1012 config/.htpasswd
 touch -c -d "2012-12-15 01:14:59.0000000000" config/.htpasswd
@@ -44,83 +44,103 @@ touch -c -d "2013-01-02 19:40:58.0000000000" install.sh
 chmod 0700 install.sh
 chown 1011 lib/Ovpnc.pm
 chgrp 1012 lib/Ovpnc.pm
-touch -c -d "2013-01-03 00:36:11.0000000000" lib/Ovpnc.pm
+touch -c -d "2013-01-05 16:17:44.0000000000" lib/Ovpnc.pm
 chmod 0600 lib/Ovpnc.pm
 chown 1011 lib/Ovpnc/Controller/Api.pm
 chgrp 1012 lib/Ovpnc/Controller/Api.pm
-touch -c -d "2012-12-26 21:46:21.0000000000" lib/Ovpnc/Controller/Api.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api.pm
 chmod 0600 lib/Ovpnc/Controller/Api.pm
 chown 1011 lib/Ovpnc/Controller/Api/Certificates.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Certificates.pm
-touch -c -d "2013-01-03 00:36:11.0000000000" lib/Ovpnc/Controller/Api/Certificates.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Certificates.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Certificates.pm
 chown 1011 lib/Ovpnc/Controller/Api/Certificates/Download.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Certificates/Download.pm
 touch -c -d "2013-01-02 04:50:35.0000000000" lib/Ovpnc/Controller/Api/Certificates/Download.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Certificates/Download.pm
+chown 1011 lib/Ovpnc/Controller/Api/Certificates/Revoke.pm
+chgrp 1012 lib/Ovpnc/Controller/Api/Certificates/Revoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Certificates/Revoke.pm
+chmod 0600 lib/Ovpnc/Controller/Api/Certificates/Revoke.pm
+chown 1011 lib/Ovpnc/Controller/Api/Certificates/Unrevoke.pm
+chgrp 1012 lib/Ovpnc/Controller/Api/Certificates/Unrevoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Certificates/Unrevoke.pm
+chmod 0600 lib/Ovpnc/Controller/Api/Certificates/Unrevoke.pm
 chown 1011 lib/Ovpnc/Controller/Api/Clients.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Clients.pm
-touch -c -d "2013-01-03 00:36:11.0000000000" lib/Ovpnc/Controller/Api/Clients.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Clients.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Clients.pm
+chown 1011 lib/Ovpnc/Controller/Api/Clients/Revoke.pm
+chgrp 1012 lib/Ovpnc/Controller/Api/Clients/Revoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Clients/Revoke.pm
+chmod 0600 lib/Ovpnc/Controller/Api/Clients/Revoke.pm
+chown 1011 lib/Ovpnc/Controller/Api/Clients/Unrevoke.pm
+chgrp 1012 lib/Ovpnc/Controller/Api/Clients/Unrevoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Clients/Unrevoke.pm
+chmod 0600 lib/Ovpnc/Controller/Api/Clients/Unrevoke.pm
 chown 1011 lib/Ovpnc/Controller/Api/Configuration.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Configuration.pm
 touch -c -d "2012-12-27 03:38:13.0000000000" lib/Ovpnc/Controller/Api/Configuration.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Configuration.pm
 chown 1011 lib/Ovpnc/Controller/Api/Server.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Server.pm
-touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Controller/Api/Server.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Server.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Server.pm
 chown 1011 lib/Ovpnc/Controller/Api/Server/Status.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Server/Status.pm
-touch -c -d "2012-12-26 21:46:21.0000000000" lib/Ovpnc/Controller/Api/Server/Status.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Server/Status.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Server/Status.pm
 chown 1011 lib/Ovpnc/Controller/Api/Server/Verb.pm
 chgrp 1012 lib/Ovpnc/Controller/Api/Server/Verb.pm
-touch -c -d "2012-12-26 21:46:21.0000000000" lib/Ovpnc/Controller/Api/Server/Verb.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Api/Server/Verb.pm
 chmod 0600 lib/Ovpnc/Controller/Api/Server/Verb.pm
 chown 1011 lib/Ovpnc/Controller/Certificates.pm
 chgrp 1012 lib/Ovpnc/Controller/Certificates.pm
-touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Controller/Certificates.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Certificates.pm
 chmod 0600 lib/Ovpnc/Controller/Certificates.pm
 chown 1011 lib/Ovpnc/Controller/Clients.pm
 chgrp 1012 lib/Ovpnc/Controller/Clients.pm
-touch -c -d "2013-01-03 00:36:11.0000000000" lib/Ovpnc/Controller/Clients.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Clients.pm
 chmod 0600 lib/Ovpnc/Controller/Clients.pm
+chown 1011 lib/Ovpnc/Controller/Cron.pm
+chgrp 1012 lib/Ovpnc/Controller/Cron.pm
+touch -c -d "2013-01-05 16:17:44.0000000000" lib/Ovpnc/Controller/Cron.pm
+chmod 0600 lib/Ovpnc/Controller/Cron.pm
 chown 1011 lib/Ovpnc/Controller/Login.pm
 chgrp 1012 lib/Ovpnc/Controller/Login.pm
 touch -c -d "2012-12-26 21:46:21.0000000000" lib/Ovpnc/Controller/Login.pm
 chmod 0600 lib/Ovpnc/Controller/Login.pm
 chown 1011 lib/Ovpnc/Controller/Root.pm
 chgrp 1012 lib/Ovpnc/Controller/Root.pm
-touch -c -d "2012-12-31 18:53:26.0000000000" lib/Ovpnc/Controller/Root.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Controller/Root.pm
 chmod 0600 lib/Ovpnc/Controller/Root.pm
+chown 1011 lib/Ovpnc/Model/ChainCA.pm
+chgrp 1012 lib/Ovpnc/Model/ChainCA.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Model/ChainCA.pm
+chmod 0600 lib/Ovpnc/Model/ChainCA.pm
 chown 1011 lib/Ovpnc/Model/DB.pm
 chgrp 1012 lib/Ovpnc/Model/DB.pm
 touch -c -d "2012-12-22 05:07:25.0000000000" lib/Ovpnc/Model/DB.pm
 chmod 0600 lib/Ovpnc/Model/DB.pm
-chown 1011 lib/Ovpnc/Plugin/ChainCA.pm
-chgrp 1012 lib/Ovpnc/Plugin/ChainCA.pm
-touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Plugin/ChainCA.pm
-chmod 0600 lib/Ovpnc/Plugin/ChainCA.pm
-chown 1011 lib/Ovpnc/Plugin/Connector.pm
-chgrp 1012 lib/Ovpnc/Plugin/Connector.pm
-touch -c -d "2012-12-26 21:46:21.0000000000" lib/Ovpnc/Plugin/Connector.pm
-chmod 0600 lib/Ovpnc/Plugin/Connector.pm
+chown 1011 lib/Ovpnc/Model/Sanity.pm
+chgrp 1012 lib/Ovpnc/Model/Sanity.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Model/Sanity.pm
+chmod 0600 lib/Ovpnc/Model/Sanity.pm
+chown 1011 lib/Ovpnc/Model/VpnConnector.pm
+chgrp 1012 lib/Ovpnc/Model/VpnConnector.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/Model/VpnConnector.pm
+chmod 0600 lib/Ovpnc/Model/VpnConnector.pm
 chown 1011 lib/Ovpnc/Plugin/PEM.pm
 chgrp 1012 lib/Ovpnc/Plugin/PEM.pm
-touch -c -d "2013-01-03 05:39:19.0000000000" lib/Ovpnc/Plugin/PEM.pm
+touch -c -d "2013-01-04 17:46:01.0000000000" lib/Ovpnc/Plugin/PEM.pm
 chmod 0600 lib/Ovpnc/Plugin/PEM.pm
-chown 1011 lib/Ovpnc/Plugin/Sanity.pm
-chgrp 1012 lib/Ovpnc/Plugin/Sanity.pm
-touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Plugin/Sanity.pm
-chmod 0600 lib/Ovpnc/Plugin/Sanity.pm
 chown 1011 lib/Ovpnc/Schema.pm
 chgrp 1012 lib/Ovpnc/Schema.pm
 touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema.pm
 chmod 0600 lib/Ovpnc/Schema.pm
 chown 1011 lib/Ovpnc/Schema/Result/Certificate.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/Certificate.pm
-touch -c -d "2012-12-29 22:13:57.0000000000" lib/Ovpnc/Schema/Result/Certificate.pm
+touch -c -d "2013-01-04 17:46:01.0000000000" lib/Ovpnc/Schema/Result/Certificate.pm
 chmod 0600 lib/Ovpnc/Schema/Result/Certificate.pm
 chown 1011 lib/Ovpnc/Schema/Result/Log.pm
 chgrp 1012 lib/Ovpnc/Schema/Result/Log.pm
@@ -144,7 +164,7 @@ touch -c -d "2012-12-15 01:14:59.0000000000" lib/Ovpnc/Schema/Result/UserRole.pm
 chmod 0600 lib/Ovpnc/Schema/Result/UserRole.pm
 chown 1011 lib/Ovpnc/Schema/ResultSet/User.pm
 chgrp 1012 lib/Ovpnc/Schema/ResultSet/User.pm
-touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/Schema/ResultSet/User.pm
+touch -c -d "2013-01-05 16:17:44.0000000000" lib/Ovpnc/Schema/ResultSet/User.pm
 chmod 0600 lib/Ovpnc/Schema/ResultSet/User.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildDH.pm
@@ -156,39 +176,39 @@ touch -c -d "2012-12-28 03:21:05.0000000000" lib/Ovpnc/TraitFor/Controller/Api/C
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/BuildTA.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
-touch -c -d "2012-12-29 22:13:57.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
+touch -c -d "2013-01-05 00:51:16.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Delete.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
-touch -c -d "2013-01-03 01:27:37.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
+touch -c -d "2013-01-04 17:46:01.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Download/Archive.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
-touch -c -d "2012-12-29 22:13:57.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Generate.pm
+chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Revoke.pm
+chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Revoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Revoke.pm
+chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Revoke.pm
+chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Unrevoke.pm
+chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Unrevoke.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Unrevoke.pm
+chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Unrevoke.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Certificates/Vars.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Remove.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Remove.pm
-touch -c -d "2013-01-03 00:36:11.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Remove.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Clients/Remove.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-touch -c -d "2012-12-31 04:32:36.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Clients/Revoke.pm
-chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-touch -c -d "2012-12-31 18:53:26.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
-chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Clients/Unrevoke.pm
+chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Clients/Delete.pm
+chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Clients/Delete.pm
+touch -c -d "2013-01-06 05:33:55.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Clients/Delete.pm
+chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Clients/Delete.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 touch -c -d "2012-12-30 20:24:45.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Configuration/RenewCiphers.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
-touch -c -d "2012-12-27 02:43:40.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
+touch -c -d "2013-01-05 16:17:44.0000000000" lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
 chmod 0600 lib/Ovpnc/TraitFor/Controller/Api/Server/Control.pm
 chown 1011 lib/Ovpnc/TraitFor/Controller/Api/Server/Status.pm
 chgrp 1012 lib/Ovpnc/TraitFor/Controller/Api/Server/Status.pm
@@ -234,9 +254,9 @@ chown 1008 openvpn/bin/client_disconnect
 chgrp 1012 openvpn/bin/client_disconnect
 touch -c -d "2012-12-15 16:56:17.0000000000" openvpn/bin/client_disconnect
 chmod 0755 openvpn/bin/client_disconnect
-chown 1008 openvpn/bin/up.pl
-chgrp 1012 openvpn/bin/up.pl
-touch -c -d "2012-12-24 18:58:21.0000000000" openvpn/bin/up.pl
+chown 0 openvpn/bin/up.pl
+chgrp 0 openvpn/bin/up.pl
+touch -c -d "2013-01-04 17:46:02.0000000000" openvpn/bin/up.pl
 chmod 0755 openvpn/bin/up.pl
 chown 1008 openvpn/conf/.INF
 chgrp 1012 openvpn/conf/.INF
@@ -281,7 +301,7 @@ chmod 0600 ovpnc.psgi
 chown 1011 root/favicon.ico
 chgrp 1012 root/favicon.ico
 touch -c -d "2012-12-14 23:32:21.0000000000" root/favicon.ico
-chmod 0200 root/favicon.ico
+chmod 0600 root/favicon.ico
 chown 1011 root/forms/certificates/add.yml
 chgrp 1012 root/forms/certificates/add.yml
 touch -c -d "2012-12-29 22:13:57.0000000000" root/forms/certificates/add.yml
@@ -296,11 +316,11 @@ touch -c -d "2012-12-27 00:26:55.0000000000" root/src/built/.INF
 chmod 0600 root/src/built/.INF
 chown 1011 root/src/certificates/add.tt2
 chgrp 1012 root/src/certificates/add.tt2
-touch -c -d "2012-12-29 22:13:57.0000000000" root/src/certificates/add.tt2
+touch -c -d "2013-01-04 17:46:02.0000000000" root/src/certificates/add.tt2
 chmod 0600 root/src/certificates/add.tt2
 chown 1011 root/src/certificates/index.tt2
 chgrp 1012 root/src/certificates/index.tt2
-touch -c -d "2012-12-29 22:13:57.0000000000" root/src/certificates/index.tt2
+touch -c -d "2013-01-05 16:17:44.0000000000" root/src/certificates/index.tt2
 chmod 0600 root/src/certificates/index.tt2
 chown 1011 root/src/clients/add.tt2
 chgrp 1012 root/src/clients/add.tt2
@@ -328,7 +348,7 @@ touch -c -d "2012-12-23 15:36:45.0000000000" root/src/login/logout.tt2
 chmod 0600 root/src/login/logout.tt2
 chown 1011 root/src/menu.tt2
 chgrp 1012 root/src/menu.tt2
-touch -c -d "2012-12-15 01:14:59.0000000000" root/src/menu.tt2
+touch -c -d "2013-01-05 00:51:16.0000000000" root/src/menu.tt2
 chmod 0600 root/src/menu.tt2
 chown 1011 root/src/ovpnc_config.tt2
 chgrp 1012 root/src/ovpnc_config.tt2
@@ -336,7 +356,7 @@ touch -c -d "2012-12-14 23:32:21.0000000000" root/src/ovpnc_config.tt2
 chmod 0600 root/src/ovpnc_config.tt2
 chown 1011 root/src/wrapper.tt2
 chgrp 1012 root/src/wrapper.tt2
-touch -c -d "2012-12-29 22:13:57.0000000000" root/src/wrapper.tt2
+touch -c -d "2013-01-05 15:14:36.0000000000" root/src/wrapper.tt2
 chmod 0600 root/src/wrapper.tt2
 chown 1011 root/static/built/.INF
 chgrp 1012 root/static/built/.INF
@@ -372,7 +392,7 @@ touch -c -d "2012-12-22 15:26:32.0000000000" root/static/css/login.css
 chmod 0600 root/static/css/login.css
 chown 1011 root/static/css/main.css
 chgrp 1012 root/static/css/main.css
-touch -c -d "2012-12-30 20:24:45.0000000000" root/static/css/main.css
+touch -c -d "2013-01-05 16:17:44.0000000000" root/static/css/main.css
 chmod 0600 root/static/css/main.css
 chown 1011 root/static/css/normalize.css
 chgrp 1012 root/static/css/normalize.css
@@ -458,10 +478,18 @@ chown 1011 root/static/images/catalyst_logo.png
 chgrp 1012 root/static/images/catalyst_logo.png
 touch -c -d "2012-12-14 23:32:21.0000000000" root/static/images/catalyst_logo.png
 chmod 0600 root/static/images/catalyst_logo.png
+chown 1011 root/static/images/clear-icon.png
+chgrp 1012 root/static/images/clear-icon.png
+touch -c -d "2013-01-05 00:51:16.0000000000" root/static/images/clear-icon.png
+chmod 0600 root/static/images/clear-icon.png
 chown 1011 root/static/images/close-gray.png
 chgrp 1012 root/static/images/close-gray.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/close-gray.png
 chmod 0600 root/static/images/close-gray.png
+chown 1011 root/static/images/close-red.png
+chgrp 1012 root/static/images/close-red.png
+touch -c -d "2013-01-05 00:51:16.0000000000" root/static/images/close-red.png
+chmod 0600 root/static/images/close-red.png
 chown 1011 root/static/images/download-icon.png
 chgrp 1012 root/static/images/download-icon.png
 touch -c -d "2013-01-02 04:50:35.0000000000" root/static/images/download-icon.png
@@ -486,6 +514,10 @@ chown 1011 root/static/images/info_icon.png
 chgrp 1012 root/static/images/info_icon.png
 touch -c -d "2012-12-20 21:25:41.0000000000" root/static/images/info_icon.png
 chmod 0600 root/static/images/info_icon.png
+chown 1011 root/static/images/intranet.png
+chgrp 1012 root/static/images/intranet.png
+touch -c -d "2013-01-05 00:51:16.0000000000" root/static/images/intranet.png
+chmod 0600 root/static/images/intranet.png
 chown 1011 root/static/images/kill_client.gif
 chgrp 1012 root/static/images/kill_client.gif
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/kill_client.gif
@@ -494,6 +526,10 @@ chown 1011 root/static/images/kill_client.png
 chgrp 1012 root/static/images/kill_client.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/kill_client.png
 chmod 0600 root/static/images/kill_client.png
+chown 1011 root/static/images/log-icon.png
+chgrp 1012 root/static/images/log-icon.png
+touch -c -d "2013-01-05 00:51:16.0000000000" root/static/images/log-icon.png
+chmod 0600 root/static/images/log-icon.png
 chown 1011 root/static/images/minus.png
 chgrp 1012 root/static/images/minus.png
 touch -c -d "2012-12-31 04:16:39.0000000000" root/static/images/minus.png
@@ -526,6 +562,10 @@ chown 1011 root/static/images/red_down.png
 chgrp 1012 root/static/images/red_down.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/red_down.png
 chmod 0600 root/static/images/red_down.png
+chown 1011 root/static/images/search-icon.png
+chgrp 1012 root/static/images/search-icon.png
+touch -c -d "2013-01-05 00:51:16.0000000000" root/static/images/search-icon.png
+chmod 0600 root/static/images/search-icon.png
 chown 1011 root/static/images/unblock.png
 chgrp 1012 root/static/images/unblock.png
 touch -c -d "2012-12-15 01:14:59.0000000000" root/static/images/unblock.png
@@ -784,7 +824,7 @@ touch -c -d "2012-12-15 02:06:37.0000000000" root/static/js/Flexigrid/.git/info/
 chmod 0600 root/static/js/Flexigrid/.git/info/exclude
 chown 1011 root/static/js/Flexigrid/.git/index
 chgrp 1012 root/static/js/Flexigrid/.git/index
-touch -c -d "2013-01-03 00:12:46.0000000000" root/static/js/Flexigrid/.git/index
+touch -c -d "2013-01-06 05:32:28.0000000000" root/static/js/Flexigrid/.git/index
 chmod 0600 root/static/js/Flexigrid/.git/index
 chown 1011 root/static/js/Flexigrid/.git/hooks
 chgrp 1012 root/static/js/Flexigrid/.git/hooks
@@ -852,19 +892,19 @@ touch -c -d "2012-12-15 02:06:39.0000000000" root/static/js/Flexigrid/.git/HEAD
 chmod 0600 root/static/js/Flexigrid/.git/HEAD
 chown 1011 root/static/js/alert-override.js
 chgrp 1012 root/static/js/alert-override.js
-touch -c -d "2012-12-31 18:53:26.0000000000" root/static/js/alert-override.js
+touch -c -d "2013-01-05 16:17:44.0000000000" root/static/js/alert-override.js
 chmod 0600 root/static/js/alert-override.js
 chown 1011 root/static/js/certificates.js
 chgrp 1012 root/static/js/certificates.js
-touch -c -d "2013-01-03 00:36:11.0000000000" root/static/js/certificates.js
+touch -c -d "2013-01-06 05:33:55.0000000000" root/static/js/certificates.js
 chmod 0600 root/static/js/certificates.js
 chown 1011 root/static/js/certificates/add.js
 chgrp 1012 root/static/js/certificates/add.js
-touch -c -d "2012-12-31 18:53:26.0000000000" root/static/js/certificates/add.js
+touch -c -d "2013-01-05 16:17:44.0000000000" root/static/js/certificates/add.js
 chmod 0600 root/static/js/certificates/add.js
 chown 1011 root/static/js/clients.js
 chgrp 1012 root/static/js/clients.js
-touch -c -d "2012-12-31 18:53:26.0000000000" root/static/js/clients.js
+touch -c -d "2013-01-06 05:33:55.0000000000" root/static/js/clients.js
 chmod 0600 root/static/js/clients.js
 chown 1011 root/static/js/clients/add.js
 chgrp 1012 root/static/js/clients/add.js
@@ -1248,7 +1288,7 @@ touch -c -d "2012-12-20 13:42:31.0000000000" root/static/js/jQuery-contextMenu/.
 chmod 0600 root/static/js/jQuery-contextMenu/.git/info/exclude
 chown 1011 root/static/js/jQuery-contextMenu/.git/index
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/index
-touch -c -d "2013-01-03 00:12:46.0000000000" root/static/js/jQuery-contextMenu/.git/index
+touch -c -d "2013-01-06 05:32:28.0000000000" root/static/js/jQuery-contextMenu/.git/index
 chmod 0600 root/static/js/jQuery-contextMenu/.git/index
 chown 1011 root/static/js/jQuery-contextMenu/.git/hooks
 chgrp 1012 root/static/js/jQuery-contextMenu/.git/hooks
@@ -1432,7 +1472,7 @@ touch -c -d "2012-12-20 14:03:22.0000000000" root/static/js/jquery-cookie/.git/i
 chmod 0600 root/static/js/jquery-cookie/.git/info/exclude
 chown 1011 root/static/js/jquery-cookie/.git/index
 chgrp 1012 root/static/js/jquery-cookie/.git/index
-touch -c -d "2013-01-03 00:12:46.0000000000" root/static/js/jquery-cookie/.git/index
+touch -c -d "2013-01-06 05:32:28.0000000000" root/static/js/jquery-cookie/.git/index
 chmod 0600 root/static/js/jquery-cookie/.git/index
 chown 1011 root/static/js/jquery-cookie/.git/hooks
 chgrp 1012 root/static/js/jquery-cookie/.git/hooks
@@ -4864,7 +4904,7 @@ touch -c -d "2012-12-20 14:03:56.0000000000" root/static/js/jquery-validation/.g
 chmod 0600 root/static/js/jquery-validation/.git/info/exclude
 chown 1011 root/static/js/jquery-validation/.git/index
 chgrp 1012 root/static/js/jquery-validation/.git/index
-touch -c -d "2013-01-03 00:12:46.0000000000" root/static/js/jquery-validation/.git/index
+touch -c -d "2013-01-06 05:32:28.0000000000" root/static/js/jquery-validation/.git/index
 chmod 0600 root/static/js/jquery-validation/.git/index
 chown 1011 root/static/js/jquery-validation/.git/hooks
 chgrp 1012 root/static/js/jquery-validation/.git/hooks
@@ -4932,7 +4972,7 @@ touch -c -d "2012-12-26 03:05:42.0000000000" root/static/js/login.js
 chmod 0600 root/static/js/login.js
 chown 1011 root/static/js/main.js
 chgrp 1012 root/static/js/main.js
-touch -c -d "2013-01-03 00:36:11.0000000000" root/static/js/main.js
+touch -c -d "2013-01-05 15:14:45.0000000000" root/static/js/main.js
 chmod 0600 root/static/js/main.js
 chown 1011 root/static/js/mersenne-twister.js
 chgrp 1012 root/static/js/mersenne-twister.js
@@ -4944,7 +4984,7 @@ touch -c -d "2012-12-23 16:26:50.0000000000" root/static/js/password_strength_pl
 chmod 0600 root/static/js/password_strength_plugin.js
 chown 1011 root/xslt/ovpnc_config.xsd
 chgrp 1012 root/xslt/ovpnc_config.xsd
-touch -c -d "2012-12-15 01:15:00.0000000000" root/xslt/ovpnc_config.xsd
+touch -c -d "2013-01-04 17:46:02.0000000000" root/xslt/ovpnc_config.xsd
 chmod 0600 root/xslt/ovpnc_config.xsd
 chown 1011 root/xslt/ovpnc_config.xsl
 chgrp 1012 root/xslt/ovpnc_config.xsl
@@ -4954,10 +4994,10 @@ chown 1011 script/conf_mysql_db
 chgrp 1012 script/conf_mysql_db
 touch -c -d "2012-12-18 18:36:56.0000000000" script/conf_mysql_db
 chmod 0700 script/conf_mysql_db
-chown 1011 script/conf_openvpn_utils
-chgrp 1012 script/conf_openvpn_utils
-touch -c -d "2012-12-27 01:52:53.0000000000" script/conf_openvpn_utils
-chmod 0700 script/conf_openvpn_utils
+chown 0 script/conf_openvpn_utils
+chgrp 0 script/conf_openvpn_utils
+touch -c -d "2013-01-04 17:46:02.0000000000" script/conf_openvpn_utils
+chmod 0755 script/conf_openvpn_utils
 chown 1011 script/create_new_user.pl
 chgrp 1012 script/create_new_user.pl
 touch -c -d "2012-12-15 01:15:00.0000000000" script/create_new_user.pl
@@ -5006,10 +5046,10 @@ chown 0 script/set_permissions.sh
 chgrp 0 script/set_permissions.sh
 touch -c -d "2013-01-03 00:36:11.0000000000" script/set_permissions.sh
 chmod 0755 script/set_permissions.sh
-chown 1011 script/update_db_schema
-chgrp 1012 script/update_db_schema
-touch -c -d "2012-12-18 18:36:56.0000000000" script/update_db_schema
-chmod 0700 script/update_db_schema
+chown 0 script/update_db_schema
+chgrp 0 script/update_db_schema
+touch -c -d "2013-01-04 17:46:02.0000000000" script/update_db_schema
+chmod 0755 script/update_db_schema
 chown 1011 t/01app.t
 chgrp 1012 t/01app.t
 touch -c -d "2012-12-15 01:15:00.0000000000" t/01app.t
@@ -5028,7 +5068,7 @@ touch -c -d "2012-12-30 20:24:45.0000000000" t/04sanity.t
 chmod 0640 t/04sanity.t
 chown 0 t/DB.pm
 chgrp 0 t/DB.pm
-touch -c -d "2013-01-03 03:06:42.0000000000" t/DB.pm
+touch -c -d "2013-01-04 17:46:02.0000000000" t/DB.pm
 chmod 0644 t/DB.pm
 chown 1011 t/controller_Api-Certificates.t
 chgrp 1012 t/controller_Api-Certificates.t
@@ -5066,10 +5106,10 @@ chown 1011 t/controller_Login.t
 chgrp 1012 t/controller_Login.t
 touch -c -d "2012-12-15 01:15:00.0000000000" t/controller_Login.t
 chmod 0640 t/controller_Login.t
-chown 1011 t/live_app01.t
-chgrp 1012 t/live_app01.t
-touch -c -d "2012-12-30 20:24:45.0000000000" t/live_app01.t
-chmod 0640 t/live_app01.t
+chown 0 t/live_app01.t
+chgrp 0 t/live_app01.t
+touch -c -d "2013-01-04 17:46:02.0000000000" t/live_app01.t
+chmod 0644 t/live_app01.t
 chown 1011 t/model_DB.t
 chgrp 1012 t/model_DB.t
 touch -c -d "2012-12-15 01:15:00.0000000000" t/model_DB.t
