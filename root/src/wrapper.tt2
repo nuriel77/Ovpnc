@@ -24,8 +24,14 @@
 		<div id="top_header">
 			<div id="top_header_centered">
 				<div id="top_header_content">
-					<div style="float:left">OvpnController</div>
-					<div class="version">v[% c.get_version %]</div>
+					<div class="application_name">OvpnController</div>
+   					<div class="version">v[% c.get_version %]</div>
+                    [% IF c.user_exists %]
+                        <div class="logout">
+                            <div>Logged in as [% username %]</div>
+                            <div onClick="window.location.href='/logout'" class="logout_text">Logout</div>
+                        </div>
+                    [% END %]
 	    		    <div class="clear"></div>
 				</div>
 				<div id="message_container">
@@ -37,10 +43,10 @@
 			<div id="outer_centered">
 				[% IF c.user_exists %]
 					<!-- left frame -->
-					<div id="left_frame">
+					<!-- <div id="left_frame"> -->
 						<!-- navigation slider menu -->
-						[% INCLUDE menu.tt2 %]
-					</div>
+						[%# INCLUDE menu.tt2 %]
+					<!-- </div> -->
 				[% END %]
 
 				<!-- middle frame -->
@@ -92,14 +98,14 @@
 				</div>
 				[% IF c.user_exists %]
 					<!-- right frame -->
-					<div id="right_frame">
+				<!--	<div id="right_frame"> -->
 						[% IF this_link == 'root' %]
-							[% content %]
+							[%# content %]
 						[% ELSE %]
-							[% INCLUDE 'index.tt2' %]
+							[%# INCLUDE 'index.tt2' %]
 						[% END %]
-					</div>
-					<div class="clear"></div>
+				<!--	</div> 
+					<div class="clear"></div> -->
 				[% END %]
 
 			</div><!-- outer_centered -->
@@ -114,6 +120,23 @@
         [% IF locked_ca %]
     		<input id="locked_ca" type="hidden" name="locked_ca" />
         [% END %]
+		<div id="on_off_click_area" style="display:none"
+			[% IF c.check_any_user_role('admin') %]
+				class="hand_pointer"
+				title="Powerup OpenVPN server"
+            [% ELSE %]
+                style="cursor:not-allowed"
+			[% END %]
+        >
+			<div id="server_status_content" >
+				<span id="server_status">offline</span>
+			</div>
+			<div id="serverOnOff" ref="off">
+				<img id="off_icon" src="[% c.uri_for('/static/images/off.png') %]"></img>
+				<img id="on_icon" src="[% c.uri_for('/static/images/on.png') %]"></img>
+			</div>
+			<div class="clear"></div>
+		</div>
 	</body>
 </html>
 [% END %]

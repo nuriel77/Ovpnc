@@ -3,8 +3,13 @@
 	<!-- server info -->
 	<fieldset id="title" class="box_shadow">
         <legend>Server Status</legend>
-		<div id="on_off_click_area"
-
+        <!-- <div id="serverOnOff" ref="off">
+			<img id="off_icon" src="[% c.uri_for('/static/images/off.png') %]"></img>
+			<img id="on_icon" src="[% c.uri_for('/static/images/on.png') %]"></img>
+		</div> -->
+		
+	<!--	<div id="on_off_click_area"
+			
 			[% IF c.check_any_user_role('admin') %]
 				class="hand_pointer"
 				title="Powerup OpenVPN server"
@@ -15,12 +20,8 @@
 			<div id="server_status_content" >
 				<span id="server_status">offline</span>
 			</div>
-			<div id="serverOnOff" ref="off">
-				<img id="off_icon" src="[% c.uri_for('/static/images/off.png') %]"></img>
-				<img id="on_icon" src="[% c.uri_for('/static/images/on.png') %]"></img>
-			</div>
 			<div class="clear"></div>
-		</div>
+		</div> -->
 	</fieldset><!-- server info -->
 
 	<!-- online clients -->

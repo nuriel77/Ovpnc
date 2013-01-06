@@ -36,6 +36,8 @@ use Catalyst qw/
   Compress::Gzip
   Compress::Deflate
   Cache
+  Cache::FileCache
+  PageCache
   Cache::Memcached
   SecureCookies
   Session
@@ -101,6 +103,14 @@ __PACKAGE__->config(
     }
 );
 
+__PACKAGE__->config(
+    'Plugin::PageCache' => {
+        expires => 300,
+        set_http_headers => 1,
+        debug => 1,
+		disable_index => 1,
+    }
+);
 
 # Cache
 # =====

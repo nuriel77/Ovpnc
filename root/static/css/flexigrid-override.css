@@ -15,10 +15,9 @@
         -moz-border-bottom-right-radius: 5px;
 }
 .flexigrid {
-    display: none;
     z-index:3001;
     font-family: Verdana, helvetica, arial, sans-serif;
-    font-size:0.85em;
+    font-size:0.9em;
 }
 .flexigrid div.fbutton .add {
     background: url(../js/Flexigrid/demo/images/add.png) no-repeat center left;

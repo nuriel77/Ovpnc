@@ -254,8 +254,8 @@ Include static files, dynamically
             # ====================================
             push @_page_assets, qw(
                     js/Flexigrid/css/flexigrid.pack.css
-                    js/Flexigrid/js/flexigrid.js
-                ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;
+                    js/Flexigrid/js/flexigrid.pack.js
+                );# if $c->req->path =~ /certificates\/*$|clients\/*$/i;
         }
 
         return 1 if $c->stash->{no_self};

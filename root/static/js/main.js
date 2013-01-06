@@ -255,6 +255,82 @@ var dump = function (obj){
             $('.flexigrid').find('.fbutton').find('.selectAll, .unSelectAll')
                            .parent('div').parent('.fbutton').css('float','right');
             $('.flexigrid').find('.fbutton').find('.selectAll, .unSelectAll').css('padding-left','15px');
+
+            var menuElements = [ 'Clients', 'Certificates', 'Logs', 'Configuration', 'Settings', 'Control' ];
+
+            $('.ftitle').addClass('top_menu_titles')
+                        .attr('id','certificates')
+                        .css('text-shadow','1px 1px #CCCCCC');
+            var currentMenu         = $('.ftitle').text(),
+                currentMenuElement  = $('.ftitle');
+
+            $('.ftitle').remove();
+            for ( var i in menuElements ){
+                if ( menuElements[i] !== currentMenu ){
+                    var fDiv = document.createElement('div');
+                    $( fDiv ).addClass('ftitle top_menu_titles')
+                             .attr('id', menuElements[i].toLowerCase())
+                             .text(menuElements[i])
+                             .css('font-weight','normal');
+                    if ( menuElements[i].toLowerCase() === 'control' ){
+                        $( fDiv ).css({
+                            'float':'right',
+                            'margin':'9px 10px 0 0',
+                            'padding': '0',
+                            'border': '0'
+                        });
+                    }
+                    $('.mDiv').append( fDiv );
+                }
+                else {
+                    $( currentMenuElement ).css({
+                        'text-shadow':'1px 1px #CCCCCC',
+                        'font-weight':'bold'
+                    }).attr('id', menuElements[i].toLowerCase());
+                    $('.mDiv').append( currentMenuElement );
+                }
+            }                    
+            $('.mDiv').css({
+                'display': '-moz-box',
+                '-moz-box-align': 'center',
+                'height': '40px',
+                'text-align': 'center'
+            });
+            
+            var on_off = $('#on_off_click_area');
+            $('#on_off_click_area').remove();
+            $('#control').html(on_off);
+            if ($('#on_off_click_area').hasClass('hand_pointer')) {
+                $('#on_off_click_area').click(function() {
+                    $.Ovpnc().serverOnOff();
+                });
+            }
+            $(on_off).css('padding','4px').show();
+            $('.top_menu_titles')
+            .hover(function(){
+                if ( $(this).attr('id') !== currentMenu.toLowerCase()
+                  && $(this).attr('id') !== 'control'
+                ){
+                    $(this).css({
+                        'text-shadow':'1px 1px #CCCCCC',
+                        'border':'1px solid #BBBBBB'
+                    });
+                }
+            }, function(){
+                if ( $(this).attr('id') !== currentMenu.toLowerCase()
+                  && $(this).attr('id') !== 'control'
+                ){
+                    $(this).css({
+                        'text-shadow':'none',
+                        'border':'1px dotted #DDDDDD'
+                    });
+                }
+            })
+            .click(function(){
+            	if ( $(this).attr('id') !== 'control' ) {
+            		window.location.href=$(this).attr('id');
+            	}
+            });
         },
         //
         // Confirm leaving page
@@ -853,8 +929,8 @@ var dump = function (obj){
             o = w < 1000 ? 0.5 : 3;
             var m = 3;
             $('#outer_centered').css('margin-left', o + '%');
-            if ( f > 601 )
-                $('#middle_frame').css('min-width', f + 'px');
+            //if ( f > 601 )
+                //$('#middle_frame').css('min-width', f + 'px');
             //if ( $('.flexigrid').is(':visible') ){
             //   $('.flexigrid').css('max-width', ( $('#middle_frame').width() - 40 ) + 'px' );
             //}
@@ -872,15 +948,15 @@ $(document).ready(function() {
     $.Ovpnc().setDebug();
 
     // Set width of middle frame
-    $.Ovpnc().setMiddleFrameWidth();
-    $(window).resize(function() {
-        $.Ovpnc().setMiddleFrameWidth();
-    });
+    //$.Ovpnc().setMiddleFrameWidth();
+    //$(window).resize(function() {
+    //    $.Ovpnc().setMiddleFrameWidth();
+    //});
 
     // Exit on login page
     if ( window.location.pathname === '/login' )
         return false;
-
+    
     // Set last visited page
     // Catalyst root controller
     // will do the redirecting
@@ -918,6 +994,7 @@ $(document).ready(function() {
 
     // Get status (loop)
     $.Ovpnc().pollStatus();
+
 
 });
 

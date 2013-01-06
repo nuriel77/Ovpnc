@@ -113,6 +113,8 @@ requires 'Catalyst::Plugin::Session::Store::Delegate';
 requires 'Catalyst::Plugin::Session::Store::FastMmap';
 requires 'Catalyst::Plugin::Unicode::Encoding';
 requires 'Catalyst::Plugin::Params::Nested';
+requires 'Catalyst::Plugin::PageCache';
+requires 'Catalyst::Plugin::Cache::FileCache';
 requires 'Catalyst::Authentication::Store::Htpasswd';
 requires 'Catalyst::Authentication::Store::Minimal';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
