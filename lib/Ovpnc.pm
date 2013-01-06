@@ -320,7 +320,7 @@ __PACKAGE__->setup();
 # Scheduler
 # =========
 __PACKAGE__->schedule(
-	at    => '*/1 * * * *',
+	at    => '0 * * * *',
     event => '/cron/remove_sessions',
 );
 

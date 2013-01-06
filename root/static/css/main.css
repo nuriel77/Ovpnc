@@ -342,3 +342,10 @@ fieldset .constraint_required label:after {
 .context-menu-item.icon-search { background-image: url(/static/images/search-icon.png);     }
 .context-menu-item.icon-clear  { background-image: url(/static/images/clear-icon.png);      }
 .context-menu-item.icon-remember { background-image: url(/static/images/log-icon.png);      }
+.message_icon{
+    border:1px solid #555555;
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+    background-color:#444444;
+    cursor:pointer;
+}

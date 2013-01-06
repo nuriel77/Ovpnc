@@ -75,12 +75,7 @@ Main action
 =cut
 
 	sub index : Path
-	          : Args(0)
 	          : Does('NeedsLogin')
-	          : Does('ACL')
-	            AllowedRole('admin')
-	            AllowedRole('client')
-	            ACLDetachTo('denied')
 	          : Sitemap
 	{
 	    my ( $self, $c ) = @_;

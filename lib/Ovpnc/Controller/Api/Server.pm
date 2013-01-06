@@ -170,7 +170,7 @@ sub logs_GET : Path('server/logs')
 {
     my ( $self, $c ) = @_;
 
-    use constant MAX_LINES => 1000;
+    use constant MAX_LINES => 4000;
 
     # Verify can run
     # ==============
@@ -210,11 +210,8 @@ sub logs_GET : Path('server/logs')
         }
     }
 
-    if ( $_log_object && ref $_log_object eq 'ARRAY' && @{$_log_object} > 0 ) {
-        $self->status_ok( $c, entity => $_log_object );
-    }
-    else {
-        $self->status_not_found( $c, message => 'No log data found' );
+    if ( $_log_object && ref $_log_object eq 'ARRAY' ){
+        $self->status_ok( $c, entity => { resultset => $_log_object } );
     }
 }
 

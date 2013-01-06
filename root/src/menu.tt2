@@ -4,7 +4,7 @@
         <li class="sliding-element"><a href="[% c.uri_for('/') %]">Main</a></li>
         <li class="sliding-element"><a href="[% c.uri_for('/certificates') %]">Certificates</a></li>
         <li class="sliding-element"><a href="[% c.uri_for('/clients') %]">Clients</a></li>
-        <li class="sliding-element"><a href="#">Logs</a></li>
+        <li class="sliding-element"><a href="[% c.uri_for('/logs') %]">Logs</a></li>
         <li class="sliding-element"><a href="#">Configuration</a></li>
         <li class="sliding-element"><a href="[% c.uri_for('/logout') %]">Logout</a></li>
     </ul>

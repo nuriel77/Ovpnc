@@ -60,7 +60,7 @@ sub auto : Private {
 
     # Test DB connection
     # ==================
-    if ( not defined $c->stash->{_db_tested} ){
+    unless ( $c->flash->{_db_tested} ){
          $c->log->debug('Database not connected. Testing initial connection.')
             if $ENV{CATALYST_DEBUG};
 
@@ -71,7 +71,7 @@ sub auto : Private {
                                ->search({ cert_type => 'ca', locked => 1  })
                                ->count
             ) {
-                $c->stash->{_db_tested} = 1;
+                $c->flash->{_db_tested} = 1;
 
                 # Check locked CA
                 # ===============
@@ -182,11 +182,6 @@ sub index : Chained('/base')
           : Path
           : Args(0)
           : Does('NeedsLogin')
-          : Does('ACL')
-            AllowedRole('admin')
-            AllowedRole('client')
-            AllowedRole('can_edit')
-            ACLDetachTo('denied')
           : Sitemap
 {
     my ( $self, $c ) = @_;
@@ -259,7 +254,7 @@ Include static files, dynamically
             # ====================================
             push @_page_assets, qw(
                     js/Flexigrid/css/flexigrid.pack.css
-                    js/Flexigrid/js/flexigrid.pack.js
+                    js/Flexigrid/js/flexigrid.js
                 ) if $c->req->path =~ /certificates\/*$|clients\/*$/i;
         }
 
@@ -338,9 +333,6 @@ Attempt to render a view, if needed.
 
         $self->_apply_username_to_stash($c)
             unless $c->stash->{username};
-
-        #$c->res->status(200);
-        #$c->forward('View::HTML');
     }
 
 

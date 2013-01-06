@@ -92,11 +92,6 @@ Main certificates page
 =cut
 
     sub index : Path
-              : Args(0)
-              : Does('ACL')
-                AllowedRole('admin')
-                AllowedRole('can_edit')
-                ACLDetachTo('denied')
               : Does('NeedsLogin')
               : Sitemap
     { }

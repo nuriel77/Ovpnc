@@ -163,7 +163,7 @@ in ccd
 
         # Verify that a client name was provided
         # ======================================
-        $c->controller('Api::Clients')->client_error(400)
+        $self->client_error($c, 400)
           if ( ! $client_list and !$c->request->params->{clients} and !$c->request->params->{serials} );
     
         # Override anything in the path by setting
@@ -427,7 +427,7 @@ and disconnect the mgmt port
                 message => 'Invalid request: ' . ( $msg ? $msg : '' )
             );
         }
-        $c->detach('View::JSON');
+        $c->detach;
     }
 
 

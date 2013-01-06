@@ -251,11 +251,6 @@ sub run_checks {
 
         if ( 
             (
-                  $link->{url} =~ /api\/server$/
-              and $link->{method} eq 'GET' 
-            )
-          or
-            (
                   $link->{url} =~ /list_revoked$/
               and $link->{method} eq 'GET'
             )
