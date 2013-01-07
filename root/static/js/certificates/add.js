@@ -829,9 +829,18 @@ jQuery.validator.setDefaults({
                     		var field = err.error.replace(/^.*: (.*)$/, "$1");
                     		alert( $.Ovpnc().alertErr + ' ' + err.error + '</div><div class="clear"></div>' );
                     		$("#add_certificate_form").find('input[name="' + field + '"]')
-                    								  .parent('div')
+                    								  .parent('div').effect("shake", { times:3, distance: 1 }, 500)
                     								  .append('<span class="error_message err_text">Field error</span>');
                     									
+                    	}
+                    	if ( err.errors ){
+                    		for ( i in err.errors ){
+	                    		var field = err.errors[i].replace(/^.*: (.*)$/, "$1");
+	                    		alert( $.Ovpnc().alertErr + ' ' + err.errors[i] + '</div><div class="clear"></div>' );
+	                    		$("#add_certificate_form").find('input[name="' + field + '"]')
+	                    								  .parent('div').effect("shake", { times:3, distance: 1 }, 500)
+	                    								  .append('<span class="error_message err_text">Field error</span>');
+                    		}								
                     	}
                 		$('#oDiv').fadeOut('slow').remove();
                     },
@@ -1126,14 +1135,17 @@ $(document).ready(function(){
 	$('#next_form_page_button').click(function(){
 		if ( $('#cert_name').attr('value') == '' ){
 			$('#cert_name').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			$('#cert_name').focus();
 			return false;
 		}
 		if ($('#username').attr('value') == ''){
 			$('#username').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			$('#username').focus();
 			return false;
 		}
 		if ( $('.error_message').is(':visible')	){
 			$('.error_message').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			$('.error_message').parent('div').find('input').focus();
 			return false;
 		} 
 		if ( $('#back_form_page').is(':visible') ) $('#back_form_page').remove();

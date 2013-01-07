@@ -40,6 +40,7 @@ elements:
                 tag: fieldset
                 attributes_xml:
                   class: "fieldSetForm"
+                  style: "margin-right:24px;"
                   id: "certDetails"
                 elements:
                       # Legend

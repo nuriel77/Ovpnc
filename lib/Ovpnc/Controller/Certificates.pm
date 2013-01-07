@@ -198,14 +198,19 @@ Add a new certificate
 		if ( @keys ~~ @fields ){
 			
 			$c->res->headers->header('Content-Type' => 'application/json');
-			my $_missing_required;
 			for (@keys){
 				if (! $c->req->params->{$_} or $c->req->params->{$_} eq '' ){
-					push @{$c->stash->{errors}}, "Missing parameter: " . $_;
-					$c->res->status(400);
-					$c->detach('View::JSON');
-					return;
+					push @{$c->stash->{errors}}, "Missing parameter: " . $_;	
 				}
+			}
+			if (
+				$c->stash->{errors}
+			 && ref $c->stash->{errors} eq 'ARRAY'
+			 && @{$c->stash->{errors}} > 0
+			){
+				$c->res->status(400);
+				$c->detach('View::JSON');
+				return;
 			}
 			$c->req->params->{password} = $cert_passwd || undef;
 			$c->req->params->{ca_password} = $ca_passwd || undef;
@@ -250,6 +255,7 @@ Add a new certificate
             # Handle results
             # ==============
             if ( $result and $result->{status} ){
+            	$c->res->status(201);
                 if ( ref $result->{status} eq 'HASH' or ! ref $result->{status} ) {
                     $c->stash->{resultset} =
                         "Certificate add process returned: " . $result->{status};
@@ -263,14 +269,13 @@ Add a new certificate
             }
             elsif ( $result and $result->{error} ){
                 my ($_escp) = ( split /\n/, $result->{error} )[0];
-                $c->stash->{error} = "Error: " . uri_escape( $_escp );
+                push @{$c->stash->{errors}}, "Error: " . uri_escape( $_escp );
             }
             else {
-                $c->stash->{error} = "Error: Status unknown";
+                push @{$c->stash->{errors}}, "Error: Status unknown";
             }
             
 			$c->detach('View::JSON');
-            #$c->response->redirect( $c->uri_for('/certificates', $c->stash), 201 );
             return;       
         }
    

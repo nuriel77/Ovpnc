@@ -494,30 +494,7 @@ var total_count = 0;
         // Redirect to certificates/add
         // 
         addCertificate: function () {
-            //window.location = '/certificates/add';
-        	var dDiv = document.createElement('div');
-            $( dDiv ).addClass('addDialog').attr('id', 'addCertificate' );
-
-            $( 'body' ).prepend( dDiv );
-            
-            $('#addCertificate').draggable().html(
-            '<div class="closeAddDialog"></div>'
-			+'<div id="addContent"><span style="font-size:1em"> Loading... ' + $.Ovpnc().ajaxLoader + '</span></div>'
-            );
-            $('#addCertificate').on( "drag", function( event, ui ) {
-            	var p = $('#username').offset();
-                jQuery(".ui-autocomplete").css({
-                	"top": ( p.top + 24 ) + 'px',
-                	"left": ( p.left ) + 'px'
-                })
-            });
-
-            $('.closeAddDialog').click(function(){
-            	$('#addCertificate').slideUp(300).remove();
-            	$('#oDiv').fadeOut('slow').remove();
-            });
-            $.Ovpnc().applyOverlay();
-            $('#addContent').load('/certificates/add');          
+        	$.Forms().addForm('/certificates/add');          
         },
         //
         // Ask user for passwd to unlock Root CA

@@ -68,6 +68,7 @@ around [qw(index add)] => sub {
     }
 };
 
+
 =head2 index
 
 Main action
@@ -105,6 +106,11 @@ Add a client
         $c->stash->{title}     = 'Clients: Add a new client';
         my $form = $c->stash->{form};
 
+		# Adds a class near field labels
+		# to style and add '*' on required
+		# ================================
+        $form->auto_constraint_class( 'constraint_%t' );
+        
         # Prepand a random salt to the password
         # =====================================
         my $form_elem_password = $form->get_field( 'password' );
@@ -132,9 +138,20 @@ Add a client
         # =============
         $form->process;
     
+    	my @fields = qw (
+    		email
+    		fullname
+    		password
+    		password2
+    		salt
+    		username	
+    	);
+    
+    	
         # Form submitted and valid
         # ========================
-        if ( $form->submitted_and_valid ) {
+        #if ( $form->submitted_and_valid ) {
+        
             my ($username, $email);
             try     {
                         $username = 
@@ -146,33 +163,20 @@ Add a client
                                 { email     => $c->req->params->{email}     }
                             )->count;
             }
-            catch   { push @{$c->stash->{error}}, (split(/\n/,$_))[0]; };
+            catch   { push @{$c->stash->{errors}}, (split(/\n/,$_))[0]; };
             if ( $username and $username > 0 ) {
-                #$form->get_field('username')
-                #     ->get_constraint({ type => 'Callback' })
-                #     ->force_errors(1);        
-                push @{$c->stash->{error}}, 'Failed to create new user. Username already exists.';
+                push @{$c->stash->{errors}}, 'Failed to create new user. Username already exists.';
                 $form->process;
 
-                $c->res->headers->header('Content-Type' => 'text/html');
-
-                # Add js / css
-                # ============
-                $c->controller('Root')->include_default_links($c);
-                $c->forward('View::HTML');
+                $c->res->headers->header('Content-Type' => 'application/json');
+                $c->detach('View::JSON');
                 return;
             }
-            if ( $email and $email > 0 ){
-                #$form->get_field('email')
-                #     ->get_constraint({ type => 'Callback' })
-                #     ->force_errors(1);        
-                push @{$c->stash->{error}}, 'Failed to create new user. Email already exists.';
+            if ( $email and $email > 0 ){       
+                push @{$c->stash->{errors}}, 'Failed to create new user. Email already exists.';
                 $form->process;
-                $c->res->headers->header('Content-Type' => 'text/html');
-                # Add js / css
-                # ============
-                $c->controller('Root')->include_default_links($c);
-                $c->forward('View::HTML');
+                $c->res->headers->header('Content-Type' => 'application/json');
+                $c->detach('View::JSON');
                 return;
             }
 
@@ -181,7 +185,7 @@ Add a client
                 # =============
                 my $_client;
                 try     { $_client = $c->model('DB::User')->new_result({}); }
-                catch   { push @{$c->stash->{error}}, $_; };
+                catch   { push @{$c->stash->{errors}}, $_; };
         
                 # update dbic row with
                 # submitted values from form
@@ -197,7 +201,7 @@ Add a client
                             { select   => 'id' },   
                         );
                 }
-                catch { push @{$c->stash->{error}}, $_; };
+                catch { push @{$c->stash->{errors}}, $_; };
         
                 try {
                     $c->model('DB::UserRole')
@@ -249,11 +253,15 @@ Add a client
                         
                 # Rollback on errors
                 # ==================
-                $_client->delete  if $c->stash->{error};
-    
-                push (@{$c->flash->{success_messages}},
-                    "Client \\'" . $_client->username . "\\' added successfully.");
-                $c->response->redirect( $c->uri_for('add') );
+                if ($c->stash->{errors}){
+                	$_client->delete;
+                }
+    			else {
+    				$c->res->status(201);
+                	$c->stash->{resultset} =
+                    	"Client \\'" . $_client->username . "\\' added successfully.";
+    			}
+				$c->detach('View::JSON');
                 return;
             }
         }
@@ -267,24 +275,20 @@ Add a client
         if ( $form->has_errors ) {
             for ( @{$form->get_errors} ){
                 try  { 
-                    #push @{$c->stash->{fields_error}} , $_->name;
-                    #push @{$c->stash->{error}},
-                    #    "Error in field: '" . $_->name . "': " . $_->message
-                    #    . " - " . $_->type
-                    #    . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
-                    #    . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
+                    push @{$c->stash->{fields_error}} , $_->name;
+                    push @{$c->stash->{errors}},
+                        "Error in field: '" . $_->name . "' - " . $_->message
+                        . " - " . $_->type
+                        . ( $_->constraint->message ? ' - ' . $_->constraint->message : '' )
+                        . ( $_->constraint->regex ? ", '" . $_->constraint->regex . "'" : '' );
                 }
                 catch {
-                     #push @{$c->stash->{error}}, $_;
+                     push @{$c->stash->{errors}}, $_;
                 };
             }
 
-            $c->res->headers->header('Content-Type' => 'text/html');
-
-            # Add js / css
-            # ============
-            $c->controller('Root')->include_default_links($c);
-            $c->forward('View::HTML');    
+            $c->res->headers->header('Content-Type' => 'application/json');
+            $c->detach('View::JSON');    
             return;
         }
     }
@@ -299,25 +303,23 @@ Handle Database error
     sub _db_error : Private {
         my ( $self, $c, $error_clean, $error, $form ) = @_;
 
-        #$c->response->status(500);    
-
         if ( $error_clean =~ /duplicate entry '(.*)' for key '(.*)' /i ){
-            push @{$c->stash->{error}}, $2 if $2;
+            push @{$c->stash->{errors}}, $2 if $2;
             $form->get_field( $2 )
                 ->get_constraint({ type => 'Callback' })
                 ->force_errors(1);
             $form->process;
         }
         elsif ( $_ =~ /(execute failed: Column) '(.*)' (.*) \[/g ) {
-            push @{$c->stash->{error}}, $2 if $2;
+            push @{$c->stash->{errors}}, $2 if $2;
             my ($_err) = $error =~ /(execute failed: .*) \[/g;
-            push @{$c->stash->{error}}, "MySQL error: " . $_err if $_err;
+            push @{$c->stash->{errors}}, "MySQL error: " . $_err if $_err;
         }
         elsif ( $_ =~ /(execute failed:.*) \[/g ) {
-            push @{$c->stash->{error}}, "Error: " . $1;
+            push @{$c->stash->{errors}}, "Error: " . $1;
         }
         else { 
-            push @{$c->stash->{error}}, "Error: " . $error_clean;
+            push @{$c->stash->{errors}}, "Error: " . $error_clean;
         }
     }
     
@@ -329,7 +331,7 @@ Handle General error
 
     sub _error : Private {
         my ( $self, $c, $error ) = @_;
-        push @{$c->flash->{errors}}, $error;
+        push @{$c->stash->{errors}}, $error;
     }
 
 

@@ -150,7 +150,7 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
              *
              */
             $('#submit_add_client_form').click(function(e){
-                // Set the ajax loader
+            	// Set the ajax loader
                 $.Ovpnc().setAjaxLoading(1);
                 // Check password length and strength
                 var _pw_length = $('input#password').attr('value');
@@ -190,7 +190,77 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 // Save the current values - [ debug ]
                 // (data, cookie_name, path_name, modified, expires)
                 $.addClient().confirmExit();
-                return true;
+                
+                $.Ovpnc.ajaxLock = 1;
+                window.lock_checked = undefined;
+                var doDiv = document.createElement('div');
+                $(doDiv).attr('id','addClientOverlay')
+                		.css({
+                			'position': 'fixed',
+                			'z-index': '9008',
+                			'border': '1px solid lightgray',
+                		    '-moz-border-radius': '5px',
+                			'background': '#CCCCCC',
+                			'opacity': '0.4',
+                			'width': ( $('#addClient').width() ) - 3 + 'px',
+                			'height': ( $('#addClient').height() - 3 ) + 'px',
+                		});
+                $('#addClient').prepend(doDiv);
+                $.Ovpnc().ajaxCall({
+                    url: "/clients/add",
+                    data: $('#add_client_form').serialize(),
+                    method: 'POST',
+                    success_func: function (r){
+                    	if ( window.DEBUG ) log("Got add client success: %o", r);
+                    	if ( r.rest !== undefined ){
+                    		              	    	
+                    		if ( r.error !== undefined ){
+                    			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
+                    			return;
+                    		}
+                    		
+                    		if ( r.rest.status !== undefined
+                    	      && r.rest.status === 'ok'
+                    	    ){
+                    			$('#oDiv').fadeOut('slow').remove();
+                    			$('#addClient').slideUp('slow').remove();
+                    			$('.pReload').click();
+                    	    	alert( $.Ovpnc().alertOk + ' ' + r.cert_name + ' added successfully</div><div class="clear"></div>' );
+                    	    }
+                    	
+                    	}
+
+                    },
+                    error_func: function (e){
+                    	if ( window.DEBUG ) log("Got add client error: %o", e);
+                    	var err = jQuery.parseJSON(e.responseText);
+                    	if ( err.error ){
+                    		var field = err.error.replace(/^.*: (.*)$/, "$1");
+                    		alert( $.Ovpnc().alertErr + ' ' + err.error + '</div><div class="clear"></div>' );
+                    		$("#add_client_form").find('input[name="' + field + '"]')
+                    								  .parent('div').effect("shake", { times:3, distance: 1 }, 500)
+                    								  .append('<span class="error_message err_text">Field error</span>');
+                    									
+                    	}
+                    	if ( err.errors ){
+                    		for ( i in err.errors ){
+	                    		var field = err.errors[i].replace(/^.*: (.*)$/, "$1");
+	                    		alert( $.Ovpnc().alertErr + ' ' + err.errors[i] + '</div><div class="clear"></div>' );
+	                    		$("#add_client_form").find('input[name="' + field + '"]')
+	                    								  .parent('div').effect("shake", { times:3, distance: 1 }, 500)
+	                    								  .append('<span class="error_message err_text">Field error</span>');
+                    		}								
+                    	}
+                		$('#oDiv').fadeOut('slow').remove();
+                    },
+                    complete_func: function(r){
+                    	$.Ovpnc().removeAjaxLoading();
+                    	$.Ovpnc.ajaxLock = 0;
+                    	$('#addClientOverlay').remove();
+                    }
+                });
+                
+                return false;
             });
             /* End submit form override */
 

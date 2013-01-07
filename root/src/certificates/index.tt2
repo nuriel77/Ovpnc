@@ -1,3 +1,4 @@
+[% CALL assets.include("js/forms.js") %]
 <div id="certificate_wrapper">
     <!-- certificate_table -->
     <div id="certificate_table">

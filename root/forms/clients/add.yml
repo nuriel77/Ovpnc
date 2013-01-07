@@ -6,8 +6,8 @@ elements:
       - type: Block
         tag: fieldset
         attributes_xml:
-          class: "box_shadow"
           id: "middle_div"
+          style: "margin:12px 0 18px 18px ;"
         elements:
               - type: Block
                 tag: legend
@@ -184,11 +184,14 @@ elements:
                       - type: Reset
                         name: reset
                         attributes_xml:
+                          style: "min-width:85px;"
                           onclick: "$.Forms().resetForm( $('#add_client_form') );"
                         value: "Reset"
               # Submit
               - type: Block
                 tag: div
+                attributes_xml:
+                  style: "margin-right:10px"
                 elements:
                       - type: Submit
                         name: submit

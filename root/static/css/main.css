@@ -207,7 +207,7 @@ fieldset .constraint_required label:after {
 }
 .generated_password_text { max-width:100px;min-width:100px;border:0 }
 .label { min-width: 360px; max-width: 360px; margin:0 0 30px 15px; overflow:hidden; } 
-#middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
+#middle_div { padding:10px 0 10px 10px; margin-left:5px; }
 .submit_form { float:right; }
 .resetForm{ float:left; }
 .reset{ float:left; }

@@ -66,6 +66,34 @@
             });
         },
         //
+        // Add form
+        //
+        addForm: function (formNameSpace){
+        	var dDiv = document.createElement('div');
+            $( dDiv ).addClass('addDialog').attr('id', 'addFormDialog' );
+
+            $( 'body' ).prepend( dDiv );
+            
+            $('#addFormDialog').draggable().html(
+            '<div class="closeAddDialog"></div>'
+			+'<div id="addContent"><span style="font-size:1em"> Loading... ' + $.Ovpnc().ajaxLoader + '</span></div>'
+            );
+            $('#addFormDialog').on( "drag", function( event, ui ) {
+            	var p = $('#username').offset();
+                jQuery(".ui-autocomplete").css({
+                	"top": ( p.top + 24 ) + 'px',
+                	"left": ( p.left ) + 'px'
+                })
+            });
+
+            $('.closeAddDialog').click(function(){
+            	$('#addFormDialog').slideUp(300).remove();
+            	$('#oDiv').fadeOut('slow').remove();
+            });
+            $.Ovpnc().applyOverlay();
+            $('#addContent').load( formNameSpace );
+        },
+        //
         // Enable form input binds - for user forms
         //
         setUserFormInputBinds: function(rules){

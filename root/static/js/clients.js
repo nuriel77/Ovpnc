@@ -76,7 +76,7 @@ var total_count = 0;
                 usepager: true,
                 title: 'Clients',
                 useRp: true,
-                rp: 15,
+                rp: 25,
                 showTableToggleBtn: false,
                 height: $(document).height() - 220
             });
@@ -607,7 +607,8 @@ var total_count = 0;
         // Redirect to clients/add
         // 
         addClient: function () {
-            window.location = '/clients/add';
+            //window.location = '/clients/add';
+        	$.Forms().addForm('/clients/add'); 
         },
         //
         // Delete a client
