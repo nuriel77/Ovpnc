@@ -66,7 +66,11 @@ window.alert = function(message) {
             $('#message_container').hide(300);
             $('#message_content').remove();
         });
-        $('#message').draggable();
+        $('#message').draggable().mousedown(function(){
+        	$(this).css('cursor','move');
+        }).mouseup(function(){
+        	$(this).css('cursor','cell');
+        });
     }
 
     if ( window.applied_message_context === undefined ) {

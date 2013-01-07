@@ -497,7 +497,7 @@ jQuery.validator.setDefaults({
         	$.addCertificate().setClickBind();
             $.Ovpnc().chooseUser({
                 element: $('#username'),
-                rows: 12,
+                rows: 20,
                 db: 'user',
                 like: 1,
             });
@@ -630,6 +630,9 @@ jQuery.validator.setDefaults({
         // Ask user for passwd to unlock Root CA
         //
         processUnlockDialog: function (){
+        	var pDiv = $("#ca_password");
+        	if (pDiv !== undefined ) $("#ca_password").remove();
+        	$('#add_certificate_form').find('input[name="ca_password"]').remove();
             var cDiv = document.createElement('div');
             $( cDiv ).css({
                 'display':'none',
@@ -666,6 +669,8 @@ jQuery.validator.setDefaults({
                             $('#add_certificate_form').prepend( iDiv );
                             window.lock_checked = 1;
                             $('#submit_add_certificate_form').click();
+                            $(this).remove();
+                            $('#ca_password').remove();
                             return true;
                          }
                     }
@@ -718,7 +723,7 @@ jQuery.validator.setDefaults({
                     return false;
                 }
 
-                if ( ! $('#username').attr('value').match(/\w+/) ) return false;
+                if ( $('#username').attr('value') == '' ) return false;
 
                 // Check password length and strength
                 if ( $('input#password').attr('value') != '' ) {
@@ -775,12 +780,68 @@ jQuery.validator.setDefaults({
                     modified: $.addCertificate.form_modified,
                     expires: 14
                 });
-    
+                
                 $.addCertificate().convertLocationIDs();
-    
-                return true;
+                $.Ovpnc.ajaxLock = 1;
+                window.lock_checked = undefined;
+                var doDiv = document.createElement('div');
+                $(doDiv).attr('id','addCertificateOverlay')
+                		.css({
+                			'position': 'fixed',
+                			'z-index': '9008',
+                			'border': '1px solid lightgray',
+                		    '-moz-border-radius': '5px',
+                			'background': '#CCCCCC',
+                			'opacity': '0.4',
+                			'width': ( $('#addCertificate').width() ) - 3 + 'px',
+                			'height': ( $('#addCertificate').height() - 3 ) + 'px',
+                		});
+                $('#addCertificate').prepend(doDiv);
+                $.Ovpnc().ajaxCall({
+                    url: "/certificates/add",
+                    data: $('#add_certificate_form').serialize(),
+                    method: 'POST',
+                    success_func: function (r){
+                    	if ( window.DEBUG ) log("Got add certificate success: %o", r);
+                    	if ( r.rest !== undefined ){
+                    		              	    	
+                    		if ( r.error !== undefined ){
+                    			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
+                    			return;
+                    		}
+                    		
+                    		if ( r.rest.status !== undefined
+                    	      && r.rest.status === 'ok'
+                    	    ){
+                    			$('#oDiv').fadeOut('slow').remove();
+                    			$('#addCertificate').slideUp('slow').remove();
+                    			$('.pReload').click();
+                    	    	alert( $.Ovpnc().alertOk + ' ' + r.cert_name + ' added successfully</div><div class="clear"></div>' );
+                    	    }
+                    	
+                    	}
 
-
+                    },
+                    error_func: function (e){
+                    	if ( window.DEBUG ) log("Got add Certificate error: %o", e);
+                    	var err = jQuery.parseJSON(e.responseText);
+                    	if ( err.error ){
+                    		var field = err.error.replace(/^.*: (.*)$/, "$1");
+                    		alert( $.Ovpnc().alertErr + ' ' + err.error + '</div><div class="clear"></div>' );
+                    		$("#add_certificate_form").find('input[name="' + field + '"]')
+                    								  .parent('div')
+                    								  .append('<span class="error_message err_text">Field error</span>');
+                    									
+                    	}
+                		$('#oDiv').fadeOut('slow').remove();
+                    },
+                    complete_func: function(r){
+                    	$.Ovpnc().removeAjaxLoading();
+                    	$.Ovpnc.ajaxLock = 0;
+                    	$('#addCertificateOverlay').remove();
+                    }
+                });
+                return false;
 
             });
         },
@@ -1060,7 +1121,47 @@ jQuery.validator.setDefaults({
 
 // Document ready
 $(document).ready(function(){
-	$('#form_container').slideDown(600);
+	$('#form_container').show();
 	$.addCertificate().certExecActions();
+	$('#next_form_page_button').click(function(){
+		if ( $('#cert_name').attr('value') == '' ){
+			$('#cert_name').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			return false;
+		}
+		if ($('#username').attr('value') == ''){
+			$('#username').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			return false;
+		}
+		if ( $('.error_message').is(':visible')	){
+			$('.error_message').parent('div').effect("shake", { times:3, distance: 1 }, 500);
+			return false;
+		} 
+		if ( $('#back_form_page').is(':visible') ) $('#back_form_page').remove();
+		$('#certDetails').hide(250);
+		$('#CADetails').show(250);
+		$('#submitCertificateDiv').show(250);
+		$('#next_form_page_button').hide(250);
+		var elem = document.createElement('input');
+		$( elem ).text('Back')
+				 .css('min-width','85px')
+				 .attr({
+					 id:'back_form_page',
+					 value:'Back',
+					 type: 'button',
+					 name: 'back_button'
+				 });
+		$('.button').append(elem);
+		$('#back_form_page').click(function(){    	 
+	    	 $('#CADetails').hide(250);
+	    	 $('#submitCertificateDiv').hide(250);
+	    	 $('#certDetails').show(250);
+	    	 $(this).remove();
+	    	 $('#next_form_page_button').show(250);
+	    	 $('.radioGroupOverlay').hide();
+	    	 $('.radiogroup').find('input').removeAttr('readonly');
+	    });
+		$('.radiogroup').find('input').attr('readonly','on');
+		$('.radioGroupOverlay').show();
+	});
 });
 

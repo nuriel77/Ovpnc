@@ -203,7 +203,7 @@ Standard 404 error page
         my ( $self, $c ) = @_;
         $c->response->body('Page not found');
         $c->response->status(404);
-        $c->forward('View::HTML');
+        $c->detach;
     }
 
 
@@ -224,6 +224,11 @@ Include static files, dynamically
                 $c->log->info( 'Session will expire at : ' . $c->stash->{expires} );
             }
         }
+        
+		if ( $c->req->path =~ /add/ ){
+			$c->stash->{no_wrapper} = 1;
+			return;
+		}
 
         # Include defaults
         # ================

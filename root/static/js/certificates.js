@@ -31,14 +31,14 @@ var total_count = 0;
                 preProcess: $.Certificate().formatCertificateResults,
                 colModel: [
                 // TODO: Save table proportions in cookie
-                    { display: 'ID',        name : 'id',            width : 20, sortable : false, align: 'right', hide: true },
+                    { display: 'ID',        name : 'id',            width : 20, sortable : false, align: 'center', hide: true },
                     { display: 'UserID',    name : 'user_id',       width : 20, sortable : true, align: 'right', hide: true },
                     { display: 'User',      name : 'user',          width : 90, sortable : true, align: 'left'},
                     { display: 'Name',      name : 'name',          width : 90, sortable : true, align: 'left'},
                     { display: 'Created By',name : 'created_by',    width : 90, sortable : true, align: 'left'},
                     { display: 'Type',      name : 'cert_type',     width : 50, sortable : true, align: 'left'},
                     { display: 'CN',        name : 'key_cn',        width : 85, sortable : true, align: 'left'},
-                    { display: 'Created',   name : 'created',       width: 125, sortable : true, align: 'left' },
+                    { display: 'Created',   name : 'created',       width: 70, sortable : true, align: 'left' },
                     { display: 'Modified',  name : 'modified',      width: 125, sortable : true, align: 'left' },
                     { display: 'Revoked',   name : 'revoked',       width: 125, sortable : true, align: 'left' },
                     { display: 'Locked',    name : 'locked',        width: 30, sortable : true, align: 'right' },
@@ -90,7 +90,7 @@ var total_count = 0;
                 usepager: true,
                 title: 'Certificates',
                 useRp: true,
-                rp: 15,
+                rp: 25,
                 errormsg: 'No results',
                 showTableToggleBtn: false,
                 //width: $(document).width() - 30,
@@ -118,7 +118,7 @@ var total_count = 0;
                 c.created_by  || 'unknown',
                 c.cert_type   || 'unknown',
                 c.key_cn      || 'unknown',
-                c.created     || '0000-00-00 00:00',
+                c.created  	  ?  c.created.replace(/^(.*)T.*$/, "$1") : '0000-00-00 00:00',
                 c.modified    || '0000-00-00 00:00',
                 c.revoked     || '0000-00-00 00:00',
                 c.locked      || 0,
@@ -494,7 +494,30 @@ var total_count = 0;
         // Redirect to certificates/add
         // 
         addCertificate: function () {
-            window.location = '/certificates/add';
+            //window.location = '/certificates/add';
+        	var dDiv = document.createElement('div');
+            $( dDiv ).addClass('addDialog').attr('id', 'addCertificate' );
+
+            $( 'body' ).prepend( dDiv );
+            
+            $('#addCertificate').draggable().html(
+            '<div class="closeAddDialog"></div>'
+			+'<div id="addContent"><span style="font-size:1em"> Loading... ' + $.Ovpnc().ajaxLoader + '</span></div>'
+            );
+            $('#addCertificate').on( "drag", function( event, ui ) {
+            	var p = $('#username').offset();
+                jQuery(".ui-autocomplete").css({
+                	"top": ( p.top + 24 ) + 'px',
+                	"left": ( p.left ) + 'px'
+                })
+            });
+
+            $('.closeAddDialog').click(function(){
+            	$('#addCertificate').slideUp(300).remove();
+            	$('#oDiv').fadeOut('slow').remove();
+            });
+            $.Ovpnc().applyOverlay();
+            $('#addContent').load('/certificates/add');          
         },
         //
         // Ask user for passwd to unlock Root CA
@@ -564,7 +587,7 @@ var total_count = 0;
             $('#'+confirmDiagName).dialog('open')
                                   .append( cDiv ).show(200);
             $('.ui-dialog').addClass('justShadow');
-            $( aDiv ).css('padding-bottom','8px'); //xxx
+            $( aDiv ).css('padding-bottom','8px');
             return false;
         },
         //

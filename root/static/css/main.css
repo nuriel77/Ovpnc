@@ -7,7 +7,7 @@ body, html {
 
 /* Main Devision Divs */
 div#top_header{
-	padding:10px;
+	padding:10px 10px 14px 10px;
 	background-color:#CCCCCC;
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
 	background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#aaa)); /* for webkit browsers */
@@ -62,14 +62,13 @@ legend {
 
 #message_container {
  /*   max-height:72px; */
-    z-index:9005;
-    left:20%;
-    top:5px;
+    z-index:9015;
+    left:22%;
+    top:2px;
     position:fixed;
-    min-width:64%;
-    width:64%;
+    min-width:550px;
     display:none;
-    cursor:pointer;
+    cursor:cell;
 }
 .message {
     padding:8px 10px 3px 0;
@@ -99,8 +98,6 @@ legend {
 input:-webkit-autofill { color: #ffffff !important; }
 input:focus { outline: none; }
 input {
-	-moz-border-radius: 5px;
-	border-radius: 5px;
 	padding:2px;
 }
 input:focus { 
@@ -113,11 +110,6 @@ img{
 	-webkit-transition: margin 0.5s ease-out;
     -moz-transition: margin 0.5s ease-out;
     -o-transition: margin 0.5s ease-out;
-}
-
-.login_box {
-	max-width:320px;
-	margin:90px 0px 0px 150px; 
 }
 
 .error{
@@ -214,15 +206,16 @@ fieldset .constraint_required label:after {
     border-right:2px solid #999999;
 }
 .generated_password_text { max-width:100px;min-width:100px;border:0 }
-.label { min-width: 360px; max-width: 360px; margin:0 0 30px 15px; */ } 
+.label { min-width: 360px; max-width: 360px; margin:0 0 30px 15px; overflow:hidden; } 
 #middle_div { padding:10px 0 10px 10px; margin-left:5px; width:95.0%; }
-.submit_form { float:right;margin:5px 30px 0 0;padding:4px 6px 4px 4px; }
-.resetForm{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
-.reset{ float:left; margin:5px 30px 0 0;padding:4px 10px 4px 10px; }
+.submit_form { float:right; }
+.resetForm{ float:left; }
+.reset{ float:left; }
 .form_row { min-width:225px;max-width:225px;float:right; }
-.form_row_select { min-width:233px;max-width:233px;float:right; }
+.form_row_select { min-width:232px;max-width:232px;float:right; }
 #add_form { font-size: 0.9em; }
 .ajaxLoader{
+	z-index:9099;
     width:16px;
     height:16px;
     background-image: url(/static/images/ajax-loader.gif);
@@ -230,6 +223,7 @@ fieldset .constraint_required label:after {
     background-position: center center;
 }
 #ajaxLoaderFlexgridLoading{
+	z-index:9099;
     margin:10px 0 0 10px;
 }
 #ajaxLoaderFloating{
@@ -237,7 +231,7 @@ fieldset .constraint_required label:after {
     background-repeat: no-repeat;
     background-position: center center; 
     position:fixed;
-    z-index:9005;
+    z-index:9099;
     left:50%;
     top:50%;
     min-width:40px;
@@ -350,4 +344,44 @@ fieldset .constraint_required label:after {
 }
 .logout_text:hover{
     text-shadow:1px 1px #777777;
+}
+
+.addDialog{
+	cursor:move;
+	position:fixed;
+    color:#555555;
+    top:100px;
+    left: 17%;
+    z-index: 9009;
+    background: #EEEEEE;
+    width: 700px;
+    padding: 10px;
+    -moz-border-radius: 5px;
+	border-radius: 5px;
+	box-shadow: 0px 0px 15px rgba(0,0,0,0.3),
+        inset 0px 0px 8px rgba(255,255,255,0.75);
+    -o-box-shadow: 0px 0px 15px rgba(0,0,0,0.3),
+        inset 0px 0px 8px rgba(255,255,255,0.75);
+    -webkit-box-shadow: 0px 0px 15px rgba(0,0,0,0.3),
+        inset 0px 0px 8px rgba(255,255,255,0.75);
+    -moz-box-shadow: 0px 0px 15px rgba(0,0,0,0.3),
+        inset 0px 0px 8px rgba(255,255,255,0.75);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#aaaaaa'); /* for IE */
+	background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#aaa)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #ddd,  #aaa); /* for firefox 3.6+ */
+}
+.next_form_page{
+	float:right;
+	margin-right:15px;
+}
+.submit_form{
+	min-width:85px;
+}
+.closeAddDialog{
+	z-index:9012;
+	float:right;
+	width:24px;
+	height:24px;
+	cursor:pointer;
+	background:url(/static/images/close-gray.png) no-repeat 0 0;
 }

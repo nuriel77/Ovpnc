@@ -1,6 +1,8 @@
 [% CALL assets.include("js/password_strength_plugin.js") %]
 [% CALL assets.include("js/mersenne-twister.js") %]
 [% CALL assets.include("js/forms.js") %]
+[% CALL assets.include("css/clients/add.css") %]
+[% CALL assets.include("js/clients/add.js") %]
 <div id="add_form">
     [% form %]
 </div>

@@ -343,12 +343,20 @@ of Ovpnc/OpenVPN
                 }
                 else {
                     unless ( $c->req->params->{no_return_all} ){
-                        my $_complete_result = [$c->model( $db )->search({},{select=>$field})->all ];
+                        my $_complete_result = [$c->model( $db )->search({},{select => 
+                        		$field eq 'user' ? [ 'user_id', 'user' ] : [ $field ]
+                        	},
+                        	{ group_by => [ $field ] },
+                        )->all];
                         $self->status_ok($c,
                             entity => {
                                 field     => $field,
                                 search    => $search,
-                                resultset => [ map { $_->$field } @{$_complete_result} ]
+                                resultset => [ map {
+                                	$field eq 'user'
+                                		? $_->user->username
+                                		: $_->$field
+                                } @{$_complete_result} ]
                             }
                         );
                     }

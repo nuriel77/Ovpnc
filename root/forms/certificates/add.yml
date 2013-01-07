@@ -13,15 +13,15 @@ elements:
               - type: Block
                 tag: fieldset
                 attributes_xml:
-                  class: "box_shadow fieldSetForm"
-                  style: "max-height:40px;padding:20px"
+                  class: "fieldSetForm"
+                  style: "padding:15px 0 10px 20px"
                 elements:
                       # Legend
                       - type: Block
                         tag: legend
                         content_xml: "Add Certificate - Type"
                         attributes_xml:
-                          style: "margin-left:5px;"
+                          style: "margin-left:5px"
                       - type: Radiogroup
                         name: cert_type
                         attributes_xml:
@@ -30,12 +30,17 @@ elements:
                         options:
                           - [ 'client', 'Client' ]
                           - [ 'server', 'Server' ]
-                          - [ 'ca',     'Root' ] 
+                          - [ 'ca',     'Root' ]
+                      - type: Block
+                        tag: div
+                        attributes_xml:
+                          class: "radioGroupOverlay"
               # Fieldset main
               - type: Block
                 tag: fieldset
                 attributes_xml:
-                  class: "box_shadow fieldSetForm"
+                  class: "fieldSetForm"
+                  id: "certDetails"
                 elements:
                       # Legend
                       - type: Block
@@ -166,7 +171,9 @@ elements:
               - type: Block
                 tag: fieldset
                 attributes_xml:
-                  class: "box_shadow fieldSetForm"
+                  class: "fieldSetForm"
+                  style: "display:none"
+                  id: "CADetails"
                 elements:
                       # Legend
                       - type: Block
@@ -376,30 +383,47 @@ elements:
                                             min: 6
                                           - type: MaxLength
                                             max: 72
-                      # Reset / submit
+              
+              # Reset button
+              - type: Block
+                tag: div
+                attributes_xml:
+                  style: "float:left;margin:0 0 10px 20px"
+                elements:
                       - type: Block
                         tag: div
                         attributes_xml:
-                          style: "float:left;margin-left:180px"
+                          class: "resetForm"
                         elements:
-                              - type: Block
-                                tag: div
+                              - type: Reset
+                                name: reset
                                 attributes_xml:
-                                  class: "resetForm"
-                                elements:
-                                      - type: Reset
-                                        name: reset
-                                        attributes_xml:
-                                          onclick: "$.Forms().resetForm( $('#add_certificate_form') );"
-                                          value: "Reset"
-                              - type: Block
-                                tag: div
-                                attributes_xml:
-                                  class: "submit_form"
-                                elements:
-                                      - type: Submit
-                                        name: submit
-                                        attributes_xml:
-                                          id: "submit_add_certificate_form"
-                                          class: "submit_form"
-                                          value: Submit
+                                  onclick: "$.Forms().resetForm( $('#add_certificate_form') );"
+                                  value: "Reset"
+                                  style: "min-width:85px;"
+              # Submit button                    
+              - type: Block
+                tag: div
+                attributes_xml:
+                  class: "submit_form"
+                  style: "display:none;"
+                  id: "submitCertificateDiv"
+                elements:
+                      - type: Submit
+                        name: submit
+                        attributes_xml:
+                          id: "submit_add_certificate_form"
+                          class: "submit_form"
+                          value: Submit
+              # Next form page
+              - type: Block
+                tag: div
+                attributes_xml:
+                  id: "next_form_page"
+                  class: "next_form_page"
+                elements:
+                      - type: Button
+                        attributes_xml:
+                          style: "min-width:85px;"
+                          value: Next
+                          id: "next_form_page_button"

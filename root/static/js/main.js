@@ -231,9 +231,10 @@ var dump = function (obj){
             $.Ovpnc().chooseUser({
                 element: $('.qsbox'),
                 like: 1,
-                rows: 5,
+                rows: 18,
+                suggestionsUpwards: 1,
                 field: function () { return $('.sDiv2').find('select').val().toLowerCase() },
-                no_return_all: 1,
+                //no_return_all: 1,
                 min_length: 1,
                 db: window.location.pathname === '/clients' ? 'user' : window.location.pathname  
             });
@@ -242,12 +243,12 @@ var dump = function (obj){
             // loads up from ajax call
             $('.bDiv').append('<div id="ajaxLoaderFlexgridLoading">Loading table data... <img src="/static/images/ajax-loader.gif" /></div>');
             // Style the select boxes of flexigrid
-            $('.sDiv2, .pGroup').find('select').css({
-                '-moz-border-radius': '5px',
-                'border-radius': '5px',
-                'padding': '2px',
-                'border': '1px inset #CCCCCC'
-            });
+            //$('.sDiv2, .pGroup').find('select').css({
+            //    '-moz-border-radius': '5px',
+            //    'border-radius': '5px',
+            //    'padding': '2px',
+            //    'border': '1px inset #CCCCCC'
+            //});
             // Force show the hGrip
             $('.hGrip').css('height', $('.flexigrid').height() +'px');
             // Move the selectAll and unSelectAll to the right
@@ -313,7 +314,7 @@ var dump = function (obj){
                 ){
                     $(this).css({
                         'text-shadow':'1px 1px #CCCCCC',
-                        'border':'1px solid #BBBBBB'
+                        'border':'1px solid #CCCCCC'
                     });
                 }
             }, function(){
@@ -384,9 +385,26 @@ var dump = function (obj){
                         $.ajaxSetup({ async: true, cache: false });
                         $(p.element).removeClass('ui-autocomplete-loading');
                     });
-                },
+                },  
+                //position: { my : "top top", at: "top top" },
                 minLength: p.min_length ? p.min_length : 0,
             });
+          
+            $( p.element ).on("autocompleteopen", function(event, ui){
+            	jQuery(".ui-autocomplete").css('font-size','0.75em');
+            	if ( p.suggestionsUpwards !== undefined ){
+            		$.Ovpnc().positionSuggestionsList(p.element);
+            	}
+            });
+            
+        },
+        //
+        // position suggestions of autocomplete
+        //
+        positionSuggestionsList: function (element){
+            var oldTop = jQuery(".ui-autocomplete").offset().top;
+            var newTop = oldTop - jQuery(".ui-autocomplete").height() - jQuery('.ui-autocomplete-input').height() - 14;
+            jQuery(".ui-autocomplete").css("top", newTop);
         },
         //
         // Process a resultset returned from the api
@@ -624,9 +642,9 @@ var dump = function (obj){
                 position:       'absolute',
                 top:            '0px',
                 opacity:        '0.4',
-                'min-width':    '99%',
+                'min-width':    '100%',
                 'height':       '100%',
-                'background-color': '#ffffff'
+                'background-color': '#777777'
             }).attr('id', 'oDiv');
             $('#outer').prepend( oDiv );
             $( oDiv ).fadeIn(500);
@@ -698,7 +716,7 @@ var dump = function (obj){
                     if ( p.loader !== undefined )
                         $.Ovpnc().setAjaxLoading(1);
                 },
-                complete: function() {
+                complete: p.complete_func ? function(rest) { return p.complete_func(rest); } : function(rest) {
                     $.Ovpnc.ajaxLock = 0;
                     if ( p.loader !== undefined )
                         $.Ovpnc().removeAjaxLoading();
@@ -994,7 +1012,6 @@ $(document).ready(function() {
 
     // Get status (loop)
     $.Ovpnc().pollStatus();
-
 
 });
 

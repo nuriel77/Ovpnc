@@ -4,9 +4,9 @@
 		<!-- login form -->
 	    <form id="login_form" method="post" action="[% c.req.uri %]" autocomplete="on">
 	        <fieldset style="border: 0;">
-	            <table id="login_table">
+	            <table class="loginTable" id="login_table">
 	                <tr>
-	                    <td style="min-width:80px"><label class="label" for="username">Username:</label></td>
+	                    <td style="min-width:90px"><label class="label" for="username">Username:</label></td>
 	                    <td><input id="username" style="min-width:200px;" type="text" name="username" value="" autofocus="autofocus" /></td>
 	                </tr>
 	                <tr>

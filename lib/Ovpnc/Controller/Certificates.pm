@@ -5,9 +5,8 @@ use Try::Tiny;
 use URI::Escape;
 use Date::Calc qw(Delta_Days);
 use DateTime::Format::Strptime;
-use Module::Locate qw(locate);
-scalar locate('File::Slurp') ? 0 : do { use File::Slurp; };
-scalar locate('JSON::XS')    ? 0 : do { use JSON::XS; };
+use File::Slurp;
+use JSON::XS;
 use Moose;
 use namespace::autoclean;
 
@@ -157,10 +156,62 @@ Add a new certificate
         # ==============    
         $form->process;
 
-        # Form submitted okay
-        # ===================
-        if ( $form->submitted_and_valid ) {    
+		my @fields = qw(
+			KEY_CITY
+			KEY_CITY_TEXT
+			KEY_CN
+			KEY_COUNTRY
+			KEY_COUNTRY_TEXT
+			KEY_EMAIL
+			KEY_EXPIRE
+			KEY_ORG
+			KEY_OU
+			KEY_PROVINCE
+			KEY_SIZE
+			KEY_STATE_TEXT
+			ca_username
+			cert_type
+			name
+			start_date
+		);
 
+		my $params = $c->req->params;
+
+	 	my $ca_passwd = $c->req->params->{ca_password}
+	 		if $c->req->params->{ca_password} && $c->req->params->{ca_password} ne '';
+	 	my $cert_passwd = $c->req->params->{password}
+	 		if $c->req->params->{password} && $c->req->params->{password} ne '';
+	 	delete $c->req->params->{password} if $c->req->params->{password} || $c->req->params->{password} eq '';
+	 	delete $c->req->params->{password2} if $c->req->params->{password2} || $c->req->params->{password2} eq '';
+	 	delete $c->req->params->{ca_password} if $c->req->params->{ca_password} || $c->req->params->{ca_password} eq '';
+	 	
+	 	delete $c->req->params->{back_button} if $c->req->params->{back_button} || $c->req->params->{back_button} eq '';
+	 	delete $c->req->params->{salt} if $c->req->params->{salt} || $c->req->params->{salt} eq '';
+	 	delete $c->req->params->{_} if $c->req->params->{_};
+		my @keys = sort keys %{$c->req->params};
+		warn ' keys:  '  . join "\n", @keys;
+		warn ' fields: ' . join "\n", @fields;
+		#die
+		#if ($c->req->params->{KEY_SIZE}); 
+	    # Form submitted okay
+        # ===================
+		if ( @keys ~~ @fields ){
+			
+			$c->res->headers->header('Content-Type' => 'application/json');
+			my $_missing_required;
+			for (@keys){
+				if (! $c->req->params->{$_} or $c->req->params->{$_} eq '' ){
+					push @{$c->stash->{errors}}, "Missing parameter: " . $_;
+					$c->res->status(400);
+					$c->detach('View::JSON');
+					return;
+				}
+			}
+			$c->req->params->{password} = $cert_passwd || undef;
+			$c->req->params->{ca_password} = $ca_passwd || undef;
+			undef ($cert_passwd);
+			undef ($ca_passwd);
+			
             # Calculate the days between
             # the two given dates for expiration
             # ==================================
@@ -190,7 +241,7 @@ Add a new certificate
             elsif ( $c->req->params->{cert_type} eq 'ca' ){
                 $c->req->params->{cmd} = 'init_ca';                
             }
-    
+
             # Run action on api controller
             # ============================
             my $result = $c->controller('Api::Certificates')
@@ -200,25 +251,26 @@ Add a new certificate
             # ==============
             if ( $result and $result->{status} ){
                 if ( ref $result->{status} eq 'HASH' or ! ref $result->{status} ) {
-                    $c->flash->{resultset} =
+                    $c->stash->{resultset} =
                         "Certificate add process returned: " . $result->{status};
                 }
                 elsif ( ref $result->{status} eq 'ARRAY' ) {
                     if ( scalar @{$result->{status}} == 4 ){
-                        $c->flash->{resultset} =
+                        $c->stash->{resultset} =
                             "Root certificate, key, DH permissions, and TA key file created successfully."
                     }
                 }  
             }
             elsif ( $result and $result->{error} ){
                 my ($_escp) = ( split /\n/, $result->{error} )[0];
-                $c->flash->{error} = "Error: " . uri_escape( $_escp );
+                $c->stash->{error} = "Error: " . uri_escape( $_escp );
             }
             else {
-                $c->flash->{error} = "Error: Status unknown";
+                $c->stash->{error} = "Error: Status unknown";
             }
-
-            $c->response->redirect( $c->uri_for('add') );
+            
+			$c->detach('View::JSON');
+            #$c->response->redirect( $c->uri_for('/certificates', $c->stash), 201 );
             return;       
         }
    

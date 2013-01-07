@@ -33,22 +33,22 @@ var total_count = 0;
                 preProcess: $.Client().formatClientResults,
                 colModel: [
                 // TODO: Save table proportions in cookie
-                    { display: 'ID', name : 'id', width: 20, sortable : true, align: 'right' },
-                    { display: 'Username', name : 'username', width : 120, sortable : true, align: 'left'},
+                    { display: 'ID', name : 'id', width: 20, sortable : true, align: 'center' },
+                    { display: 'Username', name : 'username', width : 110, sortable : true, align: 'left'},
                     { display: 'Virtual IP', name : 'virtual_ip', width : 85, sortable : true, align: 'left'},
                     { display: 'Remote IP', name : 'remote_ip', width : 85, sortable : true, align: 'left'},
-                    { display: 'Remote Port', name : 'remote_port', width : 40, sortable : true, align: 'left' },
+                    { display: 'Remote Port', name : 'remote_port', width : 70, sortable : true, align: 'left' },
                     { display: 'Bytes in', name : 'bytes_recv', width : 60, sortable : true, align: 'center'},
                     { display: 'Bytes out', name : 'bytes_sent', width : 60, sortable : true, align: 'center'},
-                    { display: 'Connected Since', name : 'conn_since', width : 150, sortable : true, align: 'left' },
+                    { display: 'Connected Since', name : 'conn_since', width : 140, sortable : true, align: 'left' },
                     { display: 'Fullname', name : 'fullname', width : 140, sortable : true, align: 'left' },
-                    { display: 'Email', name : 'email', width : 100, sortable : true, align: 'left' },
-                    { display: 'Phone', name : 'phone', width: 80, sortable : true, align: 'right' },
-                    { display: 'Address', name : 'address', width: 100, sortable : true, align: 'right' },
+                    { display: 'Email', name : 'email', width : 120, sortable : true, align: 'left' },
+                    { display: 'Phone', name : 'phone', width: 100, sortable : true, align: 'right' },
+                    { display: 'Address', name : 'address', width: 110, sortable : true, align: 'right' },
                     { display: 'Enabled', name : 'enabled', width: 40, sortable : true, align: 'right' },
                     { display: 'Blocked', name : 'revoked', width: 40, sortable : true, align: 'right' },
-                    { display: 'Created', name : 'created', width: 105, sortable : true, align: 'right' },
-                    { display: 'Modified', name : 'modified', width: 105, sortable : true, align: 'right' }
+                    { display: 'Created', name : 'created', width: 125, sortable : true, align: 'right' },
+                    { display: 'Modified', name : 'modified', width: 125, sortable : true, align: 'right' }
                 ],
                 buttons : [
                     { name: 'Add', bclass: 'add', onpress : $.Client().addClient },
@@ -78,7 +78,7 @@ var total_count = 0;
                 useRp: true,
                 rp: 15,
                 showTableToggleBtn: false,
-                height: $(document).height() * 0.55
+                height: $(document).height() - 220
             });
             $.Ovpnc().styleFlexigrid();
         },
