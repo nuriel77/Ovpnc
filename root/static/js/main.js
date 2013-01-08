@@ -262,12 +262,12 @@ var dump = function (obj){
             $('.ftitle').addClass('top_menu_titles')
                         .attr('id','certificates')
                         .css('text-shadow','1px 1px #CCCCCC');
-            var currentMenu         = $('.ftitle').text(),
+            var currentMenu         = $.Ovpnc().pathname.replace('/',''),
                 currentMenuElement  = $('.ftitle');
-
+            	
             $('.ftitle').remove();
             for ( var i in menuElements ){
-                if ( menuElements[i] !== currentMenu ){
+                if ( menuElements[i].toLowerCase() !== currentMenu ){
                     var fDiv = document.createElement('div');
                     $( fDiv ).addClass('ftitle top_menu_titles')
                              .attr('id', menuElements[i].toLowerCase())

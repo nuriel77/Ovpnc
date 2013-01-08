@@ -1,6 +1,10 @@
 package Ovpnc::Controller::Api::Server;
 use warnings;
 use strict;
+use Tie::File;
+use Fcntl 'O_RDONLY';
+use POSIX;
+use List::MoreUtils 'part';
 use File::Slurp;
 use Moose;
 use namespace::autoclean;
@@ -34,7 +38,8 @@ has 'cfg' => (
 $REGEX = {
     client_list =>
       'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
-    log_line => '^([0-9]+),(.*)\n',
+    vpn_log_line => '^([0-9]+),(.*)\n',
+    file_log_line => '^(.*) us=[0-9]+ (.*)$'
 };
 
 =head1 NAME
@@ -160,60 +165,119 @@ or 'all':  ?lines=20
 
 =cut
 
-sub logs_GET : Path('server/logs')
-             : Args(0)
-		     : Does('ACL')
-                AllowedRole('admin')
-                AllowedRole('can_edit')
-                ACLDetachTo('denied')
-             : Sitemap
-{
-    my ( $self, $c ) = @_;
-
-    use constant MAX_LINES => 4000;
-
-    # Verify can run
-    # ==============
-    $self->sanity($c);
-
-    my $lines = $c->request->params->{lines} if $c->request->params->{lines};
-
-    # Get all or (n) lines of log
-    # ===========================
-    my $_log = $self->vpn->log( $lines ? $lines : MAX_LINES );
-    my $_log_object;
-
-    # Check if any log is returned
-    # (should be array_ref)
-    # ============================
-    if ( ref $_log eq 'ARRAY' ) {
-	LOGLINE:
-        for my $line ( @{$_log} ) {
-
-			next LOGLINE if $line =~ /,MANAGEMENT/ && !$c->req->params->{show_management};
+	sub logs_GET : Path('server/logs')
+	             : Args(0)
+			     : Does('ACL')
+	                AllowedRole('admin')
+	                AllowedRole('can_edit')
+	                ACLDetachTo('denied')
+	             : Sitemap
+	{
+	    my ( $self, $c ) = @_;
+	
+	    my $MAX_LINES = 2000;
+	
+	    # Verify can run
+	    # Also binds to vpn
+	    # management port
+	    # =================
+		if ( $c->req->params->{via_vpn} ){
+	    	$self->sanity($c);
+	    	$MAX_LINES = 4000
+		}
+		
+	    # Assign the flexgrid request params
+        # ==================================
+        my ( $page, $search_by, $search_text, $rows, $sort_by, $sort_order ) =
+          @{ $c->req->params }{qw/page qtype query rp sortname sortorder/};
+	  
+	    my $lines = $c->request->params->{lines} || $MAX_LINES;
+		$lines = $MAX_LINES if $lines > $MAX_LINES;
+		
+	    # Get all or (n) lines of log
+	    # ===========================
+	    my $_log = $c->req->params->{via_vpn}
+	    	? $self->vpn->log( $lines )
+	    	: $self->_read_openvpn_logfile( $c, $lines );
+	
+	    my $_log_object;
+	
+	    # Check if any log is returned
+	    # (should be array_ref)
+	    # ============================
+	    my $i = 0;
+	    if ( ref $_log eq 'ARRAY' ) {
+	    	
+		LOGLINE:
+	        for my $line ( @{$_log} ) {
 			
-            # Get time and data
-            # =================
-            my ( $_time, $_data ) = $line =~ /$REGEX->{log_line}/;
-			$_data =~ s/^,//;
-			
-            # Convert epoc time to
-            # readable if requested
-            # ====================
-            $_time = DateTime->from_epoch( epoch => $_time )
-              if ( $c->request->params->{time} );
+				next LOGLINE if $line =~ /MANAGEMENT/ && !$c->req->params->{show_management};
+				
+	            # Get time and data
+	            # =================
+	            my ( $_time, $_data ) = $c->req->params->{via_vpn}
+	            	? $line =~ /$REGEX->{vpn_log_line}/
+	            	: $line =~ /$REGEX->{file_log_line}/;
+	            	
+	            if ( $search_text && $search_by ){
+	            	if ( $search_by eq 'time' ){
+	            		next LOGLINE unless $_time =~ /$search_text/i;
+	            	}
+	            	else {
+	            		next LOGLINE unless $_data =~ /$search_text/ig;
+	            	} 
+	            };
+	            
+				++$i;
+					
+				$_data =~ s/^,//;
+				
+	            # Convert epoc time to
+	            # readable if requested
+	            # ====================
+	            $_time = DateTime->from_epoch( epoch => $_time )
+	              if ( $c->request->params->{time} && $c->req->params->{via_vpn} );
+	
+	            # Add log data
+	            # to new array_ref
+	            # ================
+	            push( @{$_log_object}, { id => $i , time => "$_time", message => $_data } );
+	        }
+	    }
+	    unless ( $_log_object ){
+	    	$self->status_ok( $c, entity => {
+	    		page => $page || 1,
+	    		total => 0,
+	    		rows => [],
+	    	});
+	    	$c->detach;
+	    }
+		my @result;
+	 	
+	 	if ( $sort_by && $sort_order ){
+		 	my @_sorted = 
+		 		sort {
+	                    ( $$a{$sort_by} ? $$a{$sort_by} : 0 )
+	                cmp
+	                    ( $$b{$sort_by} ? $$b{$sort_by} : 0 )
+	            } @{$_log_object};
+	        @result = lc($sort_order) eq 'asc' ? @_sorted : reverse @_sorted;
+	 	}
+	 	
+	 	#my @part = part { $i++ % 2 } 1 .. 8;   # returns [1, 3, 5, 7], [2, 4, 6, 8]
+	 	my $p = 0;
+	 	my @current_array = $sort_by && $sort_order ? @result : @{$_log_object};
+	 	
+        my @sliced = grep { defined } @current_array[ ($page - 1) * $rows .. ( $page * $rows ) + ($rows - 1) ];
 
-            # Add log data
-            # to new array_ref
-            # ================
-            push( @{$_log_object}, { $_time => $_data } );
-        }
-    }
-
-    if ( $_log_object && ref $_log_object eq 'ARRAY' ){
-        $self->status_ok( $c, entity => { resultset => $_log_object } );
-    }
-}
+	    if ( $_log_object && ref $_log_object eq 'ARRAY' ){
+	        $self->status_ok( $c, entity => {
+	        	page => $page || 1,
+	        	rows => \@sliced,
+	        	total => $i
+	        });
+	    }
+	}
 
 
 =head2 server_POST
@@ -225,76 +289,76 @@ command=[...]
 
 =cut
 
-sub server_POST : Local
-                : Args(0)
-				: Does('ACL')
-                  AllowedRole('admin')
-                  AllowedRole('can_edit')
-                  ACLDetachTo('denied')
-                : Sitemap
-{
-    my ( $self, $c, $command ) = @_;
-
-    if ( !$c->req->params->{command} && !$command ){
-        $self->_missing_params($c, 'Missing command(param: command=?)' );
-    }
-   
-
-    # Assign from post parameters
-    # will override anything in the path
-    # ==================================
-    $command = $c->request->params->{command}
-        if $c->request->params->{command};
-
-    my $_role = $self->new_with_traits(
-        traits          => ['Control'],
-        cfg             => $self->cfg,
-        app_root        => $c->config->{home},
-        app_user        => $c->user_exists ? $c->user->get("username") : '',
-    ) or die "Could not get role 'Control': $!";
-
-    # Dict of possible commands
-    # =========================
-    my $_cmds = {
-        start   => sub { $_role->start( $self->_has_vpn ? $self->vpn : undef ) },
-        stop    => sub { $_role->stop( $self->_has_vpn ? $self->vpn : undef ) },
-        restart => sub { $_role->restart( $self->_has_vpn ? $self->vpn : undef ) },
-    };
-
-    my ( $_found_command, $_ret_val );
-
-    # Run the matched command (closure)
-    # =================================
-    for my $_cmd ( keys %{$_cmds} ) {
-        if ( $_cmd eq $command ) {
-            $_ret_val       = $_cmds->{$_cmd}->();
-            $_found_command = 1;
-        }
-    }
-
-    # If command returned errors
-    # ==========================
-    if ( ref $_ret_val and $_ret_val->{error} ) {
-        $self->status_not_found( $c, message => $_ret_val->{error} );
-        $self->_disconnect_vpn;
-        $c->detach;
-    }
-
-    # If no command was matched
-    # =========================
-    unless ($_found_command) {
-        $self->status_not_found( $c,
-                message => 'Command \''
-              . $command
-              . '\' is unrecognized. Possible commands: start, stop, restart.'
-        );
-        $self->_disconnect_vpn;
-        $c->detach;
-    }
-
-    $self->status_ok( $c, entity => $_ret_val );
-    $self->_disconnect_vpn;
-}
+	sub server_POST : Local
+	                : Args(0)
+					: Does('ACL')
+	                  AllowedRole('admin')
+	                  AllowedRole('can_edit')
+	                  ACLDetachTo('denied')
+	                : Sitemap
+	{
+	    my ( $self, $c, $command ) = @_;
+	
+	    if ( !$c->req->params->{command} && !$command ){
+	        $self->_missing_params($c, 'Missing command(param: command=?)' );
+	    }
+	   
+	
+	    # Assign from post parameters
+	    # will override anything in the path
+	    # ==================================
+	    $command = $c->request->params->{command}
+	        if $c->request->params->{command};
+	
+	    my $_role = $self->new_with_traits(
+	        traits          => ['Control'],
+	        cfg             => $self->cfg,
+	        app_root        => $c->config->{home},
+	        app_user        => $c->user_exists ? $c->user->get("username") : '',
+	    ) or die "Could not get role 'Control': $!";
+	
+	    # Dict of possible commands
+	    # =========================
+	    my $_cmds = {
+	        start   => sub { $_role->start( $self->_has_vpn ? $self->vpn : undef ) },
+	        stop    => sub { $_role->stop( $self->_has_vpn ? $self->vpn : undef ) },
+	        restart => sub { $_role->restart( $self->_has_vpn ? $self->vpn : undef ) },
+	    };
+	
+	    my ( $_found_command, $_ret_val );
+	
+	    # Run the matched command (closure)
+	    # =================================
+	    for my $_cmd ( keys %{$_cmds} ) {
+	        if ( $_cmd eq $command ) {
+	            $_ret_val       = $_cmds->{$_cmd}->();
+	            $_found_command = 1;
+	        }
+	    }
+	
+	    # If command returned errors
+	    # ==========================
+	    if ( ref $_ret_val and $_ret_val->{error} ) {
+	        $self->status_not_found( $c, message => $_ret_val->{error} );
+	        $self->_disconnect_vpn;
+	        $c->detach;
+	    }
+	
+	    # If no command was matched
+	    # =========================
+	    unless ($_found_command) {
+	        $self->status_not_found( $c,
+	                message => 'Command \''
+	              . $command
+	              . '\' is unrecognized. Possible commands: start, stop, restart.'
+	        );
+	        $self->_disconnect_vpn;
+	        $c->detach;
+	    }
+	
+	    $self->status_ok( $c, entity => $_ret_val );
+	    $self->_disconnect_vpn;
+	}
 
 =head2 server_GET
 
@@ -332,6 +396,38 @@ or return server offline
         }
     }
 
+
+=head2 _read_openvpn_logfile
+
+Tail (non-actively) the openvpn log file
+
+=cut
+
+	sub _read_openvpn_logfile {
+		my ($self, $c, $lines) = @_;
+		
+		my $logfile = 
+			$c->controller('Api::Configuration')->get_openvpn_param(
+        		'LogFile', $c->config->{ovpnc_conf} );
+        
+        $logfile = $logfile =~ /^\//
+        	? $logfile
+        	: $self->cfg->{home} . '/' . $logfile;
+        
+        return { error => 'Cannot find openvpn logfile ' . $logfile }
+        	unless -f $logfile;
+        		
+        my $o = tie my @array, 'Tie::File', $logfile, mode => O_RDONLY, memory => 500_000;
+        $o->flock;
+        my @counted_array = grep { ! /MANAGEMENT/ } @array[ @array - $lines .. $#array ];
+        unless ( @counted_array ){
+        	@counted_array = grep { ! /MANAGEMENT/ } @array[ $#array - ( $lines * 10 ) .. $#array ];
+        }
+        
+        undef $o;
+        untie @array;
+		return \@counted_array;
+	}
 
 =head2 sanity
 

@@ -1,6 +1,5 @@
 /* Certificates */
 
-$.Ovpnc().count = 0;
 var total_count = 0;
 
 (function($) {

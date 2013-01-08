@@ -3,6 +3,7 @@ apt-get install build-essential \
                 libdate-calc-perl \
                 libmodule-install-perl \
                 libobject-signature-perl \
+                liblist-moreutils-perl \
                 libmath-bigint-gmp-perl \
                 libconfig-any-perl \
                 libconfig-general-perl \

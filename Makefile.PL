@@ -32,6 +32,7 @@ requires 'Time::Local';
 requires 'boolean';
 requires 'fields';
 requires 'Socket';
+requires 'List::MoreUtils';
 requires 'Tie::File';
 requires 'DateTime::Format::MySQL';
 requires 'Module::Locate';
