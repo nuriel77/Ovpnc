@@ -113,26 +113,11 @@ Add a client
         
         # Prepand a random salt to the password
         # =====================================
-        my $form_elem_password = $form->get_field( 'password' );
-        $form_elem_password->filter({
-            type     => 'Callback',
-            callback => sub {
-                # Get a random salt
-                # =================
-                my $random_data = read_random_entropy( 64,
-                    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
-                ); 
-                # "Hexify" data
-                # =============
-                my $salt = unpack("H*", $random_data);
-                # Set the salt field
-                # ==================
-                $form->add_valid( 'salt', $salt );    
-                # Return salt+password
-                # ====================
-                return $salt.shift;
-            }
-        });
+        #my $form_elem_password = $form->get_field( 'password' );
+        #$form_elem_password->filter({
+        #    type     => 'Callback',
+        #    callback => \&_get_random_salt
+        #});
     
         # Form process 
         # =============
@@ -143,15 +128,36 @@ Add a client
     		fullname
     		password
     		password2
-    		salt
     		username	
     	);
     
-    	
+        my $phone = $c->req->params->{phone};
+        my $address = $c->req->params->{address};
+        delete $c->req->params->{phone} if $c->req->params->{phone} or $c->req->params->{phone} eq '';
+        delete $c->req->params->{address} if $c->req->params->{address} or $c->req->params->{address} eq '';
+    	my @keys = sort keys %{$c->req->params};
+
         # Form submitted and valid
         # ========================
         #if ( $form->submitted_and_valid ) {
-        
+        if ( @keys ~~ @fields ){
+        	for (@keys){
+				if (! $c->req->params->{$_} or $c->req->params->{$_} eq '' ){
+					push @{$c->stash->{errors}}, "Missing parameter: " . $_;	
+				}
+			}
+			if (
+				$c->stash->{errors}
+			 && ref $c->stash->{errors} eq 'ARRAY'
+			 && @{$c->stash->{errors}} > 0
+			){
+				$c->res->status(400);
+				$c->detach('View::JSON');
+				return;
+			}
+        	$c->req->params->{phone} = $phone || undef;
+        	$c->req->params->{address} = $address || undef;
+        	
             my ($username, $email);
             try     {
                         $username = 
@@ -180,17 +186,43 @@ Add a client
                 return;
             }
 
+			if ( $c->req->params->{password} ne $c->req->params->{password2} ){
+				push @{$c->stash->{errors}}, 'Failed to create new user: password fields do not match.';
+                $form->process;
+                $c->res->headers->header('Content-Type' => 'application/json');
+                $c->detach('View::JSON');
+                return;
+			}
+			
             if ( !$email and !$username ) {
+             	
+             	$c->req->params->{salt} = $self->_get_random_salt($c);
+             	$c->req->params->{password} .= $c->req->params->{salt};
+             	delete $c->req->params->{password2};
+             	
                 # New resultset
                 # =============
                 my $_client;
-                try     { $_client = $c->model('DB::User')->new_result({}); }
-                catch   { push @{$c->stash->{errors}}, $_; };
+                #try     { $_client = $c->model('DB::User')->new_result({}); }
+                #catch   { push @{$c->stash->{errors}}, $_; };
         
                 # update dbic row with
                 # submitted values from form
                 # ==========================
-                try   { $form->model->update( $_client ) }
+                #try   { $form->model->update( $_client ) }
+                try { 
+                	$_client = $c->model('DB::User')->create({
+                		email		=> $c->req->params->{email},
+    					fullname	=> $c->req->params->{fullname},
+    					password	=> $c->req->params->{password},
+    					username	=> $c->req->params->{username},
+    					address		=> $c->req->params->{address} || '',
+    					phone		=> $c->req->params->{phone} || '',
+    					enabled		=> 0,
+    					revoked		=> 0,
+    					salt		=> $c->req->params->{salt}	
+                	})
+                }
                 catch { $self->_db_error($c, $_, $_, $form) }; 
             
                 my ( $_client_role_id, $error_clean, $error );
@@ -259,7 +291,7 @@ Add a client
     			else {
     				$c->res->status(201);
                 	$c->stash->{resultset} =
-                    	"Client \\'" . $_client->username . "\\' added successfully.";
+                    	"Client " . $_client->username . " added successfully.";
     			}
 				$c->detach('View::JSON');
                 return;
@@ -408,6 +440,34 @@ Attempt to render a view, if needed.
     
     }
 
+
+=head2 _get_random_salt
+
+Get a random salt to be prepended
+to the new password
+
+=cut
+
+	sub _get_random_salt{
+		my ($self, $c) = @_;
+    
+        # Get a random salt
+        # =================
+        my $random_data = read_random_entropy( 64,
+    	    $c->config->{really_secure_passwords}  # /dev/random and if true: /dev/urandom
+        ); 
+        # "Hexify" data
+        # =============
+        my $salt = unpack("H*", $random_data);
+
+        # Set the salt field
+        # ==================
+        #$form->add_valid( 'salt', $salt );    
+
+        # Return salt+password
+        # ====================
+        return $salt;
+	} 
 
 =head1 AUTHOR
 

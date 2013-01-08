@@ -202,32 +202,27 @@ jQuery.validator.addMethod("test_regex", function(value, element, param) {
                 		    '-moz-border-radius': '5px',
                 			'background': '#CCCCCC',
                 			'opacity': '0.4',
-                			'width': ( $('#addClient').width() ) - 3 + 'px',
-                			'height': ( $('#addClient').height() - 3 ) + 'px',
+                			'width': ( $('#addFormDialog').width() ) - 3 + 'px',
+                			'height': ( $('#addFormDialog').height() - 3 ) + 'px',
                 		});
-                $('#addClient').prepend(doDiv);
+                $('#addFormDialog').prepend(doDiv);
                 $.Ovpnc().ajaxCall({
                     url: "/clients/add",
                     data: $('#add_client_form').serialize(),
                     method: 'POST',
                     success_func: function (r){
                     	if ( window.DEBUG ) log("Got add client success: %o", r);
-                    	if ( r.rest !== undefined ){
-                    		              	    	
-                    		if ( r.error !== undefined ){
-                    			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
-                    			return;
-                    		}
-                    		
-                    		if ( r.rest.status !== undefined
-                    	      && r.rest.status === 'ok'
-                    	    ){
+                    	if ( r.error !== undefined ){
+                			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
+                			return;
+                		}
+                    	if ( r.resultset !== undefined ){
+                    		if ( r.resultset.match(/success/) ){
                     			$('#oDiv').fadeOut('slow').remove();
-                    			$('#addClient').slideUp('slow').remove();
+                    			$('#addFormDialog').slideUp('slow').remove();
                     			$('.pReload').click();
-                    	    	alert( $.Ovpnc().alertOk + ' ' + r.cert_name + ' added successfully</div><div class="clear"></div>' );
+                    	    	alert( $.Ovpnc().alertOk + ' ' + r.resultset + '</div><div class="clear"></div>' );
                     	    }
-                    	
                     	}
 
                     },

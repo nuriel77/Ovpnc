@@ -87,12 +87,6 @@ elements:
                           - type: Regex
                             regex: '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*\z'
                             message: "" 
-              # Placehoder for salt callback
-              - type: Hidden
-                name: salt
-                label: "salt"
-                attributes_xml:
-                    style: "display:none"
               # Generate password button
               - type: Block
                 tag: div
