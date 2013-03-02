@@ -1,5 +1,5 @@
 #!/bin/sh
-
+exit 0;
 # Get the md5 of the temp file
 # created by openvpn, it also
 # contains the username/pass

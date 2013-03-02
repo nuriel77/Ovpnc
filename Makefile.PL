@@ -139,6 +139,7 @@ requires 'Test::WWW::Mechanize::Catalyst';
 #
 requires 'Cache::Memcached';
 requires 'Cache::Memcached::libmemcached';
+requires 'Catalyst::Plugin::Session::Store::Memcached';
 requires 'Catalyst::Plugin::Scheduler';
 
 test_requires 'Test::More' => '0.88';

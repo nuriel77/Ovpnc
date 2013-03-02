@@ -38,7 +38,6 @@ use Catalyst qw/
   Cache
   Cache::FileCache
   PageCache
-  Cache::Memcached
   SecureCookies
   Session
   Session::Store::File

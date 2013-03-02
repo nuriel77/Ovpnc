@@ -37,6 +37,8 @@ apt-get install build-essential \
                 libcss-minifier-xs-perl \
                 libjavascript-minifier-xs-perl \
                 libxml-dumper-perl \
+                libcache-memcached-perl \
+                libcache-memcached-fast-perl \
                 libcommon-sense-perl  \
                 libjson-xs-perl  \
                 libphp-serialization-perl \

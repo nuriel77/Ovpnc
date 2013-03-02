@@ -199,8 +199,8 @@ Add a client
                 # Generate a random salt
                 # ======================
              	$c->req->params->{salt} = $self->_get_random_salt($c);
-
-             	delete $c->req->params->{password2};
+                #$c->req->params->{password} .= $c->req->params->{salt};
+             	#delete $c->req->params->{password2};
              	
                 # New resultset
                 # =============
@@ -216,7 +216,7 @@ Add a client
                 	$_client = $c->model('DB::User')->create({
                 		email		=> $c->req->params->{email},
     					fullname	=> $c->req->params->{fullname},
-    					password	=> $c->req->params->{password}.$c->req->params->{salt},
+    					password	=> $c->req->params->{password},
     					username	=> $c->req->params->{username},
     					address		=> $c->req->params->{address} || '',
     					phone		=> $c->req->params->{phone} || '',
@@ -263,7 +263,7 @@ Add a client
                 open (my $FILE, '>', $_file)
                     or $self->_error($c, "Cannot create ccd file for "
                         . $_client->username . ': ' . $! );
-                print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password} . "\n");
+                print {$FILE} '#'.md5_hex( $c->req->params->{username} . "\n" . $c->req->params->{password2} . "\n");
         
                 ## For Debug: -- remove
                 print $FILE "\n"
@@ -272,7 +272,7 @@ Add a client
                             .'#'. $c->req->params->{username}
                             . "\n"
                             . '#'
-                            . $c->req->params->{password}
+                            . $c->req->params->{password2}
                             . "\n";
                 close $FILE;
     
