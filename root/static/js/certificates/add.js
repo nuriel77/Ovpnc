@@ -319,11 +319,10 @@ jQuery.validator.setDefaults({
             if ( $('#cert_name').attr('value') != '' ){
                 $('#cert_name').focusout();
             }
-
-
+            window.cType = cType;
             $('#certtype').attr('value', cType);
             if ( cType === 'server' ){
-                $('#password2').parents('tr:first').slideUp(300);
+            	$('#password2').parents('tr:first').slideUp(300);
                 $('#password').parents('tr:first').slideUp(400);
                 $('#generatePassword').parents('tr:first').hide(100);
                 // Check if Root CA exists,
@@ -443,7 +442,7 @@ jQuery.validator.setDefaults({
             // is on certtype server or client
             // he can now create them because
             // he has a Root CA.
-            if ( window.DEBUG ) log( "ajaxCheckCASuccess got back: %o", e);
+            if ( window.DEBUG ) log( "ajaxCheckCAError got back: %o", e);
             var action = jQuery.parseJSON(e.responseText);
             if (action.rest && action.rest.locked == 1 ){
                 window.locked_ca = 1;
@@ -465,6 +464,7 @@ jQuery.validator.setDefaults({
             if ( window.DEBUG ) log( "ajaxCheckCASuccess got back: %o", r);
             if ( window.checkNoDupMessage === undefined ){
                 window.checkNoDupMessage = 1;
+                window.no_root_ca = 1;
                 alert(
                     $.Ovpnc().alertIcon + ' You must have a Root CA, only then server and client certificates can be generated.</div><div class="clear"></div>'
                 );
@@ -714,17 +714,28 @@ jQuery.validator.setDefaults({
 
                 $('#cert_name').focusout();
                 $('#username').focusout();
-                var locked_ca = $('#locked_ca');
-                if ( locked_ca !== undefined
-                  && window.lock_checked === undefined
-                  && $('#certtype').attr('value') !== 'ca'
-                ){
-                    $.addCertificate().processUnlockDialog();
-                    return false;
-                }
 
                 if ( $('#username').attr('value') == '' ) return false;
 
+                if ( window.no_root_ca !== undefined
+                  && $('#certtype').attr('value') !== 'ca'
+                ){
+                	window.checkNoDupMessage = undefined;
+                	$.Ovpnc().ajaxCall({
+                        url: "/api/certificates",
+                        data: {
+                            cert_name: 'ca',
+                            type: 'ca',
+                            name: 'anyuser',
+                            action: 'usage'
+                        },
+                        method: 'GET',
+                        success_func: $.addCertificate().ajaxCheckCASuccess,
+                        error_func: $.addCertificate().ajaxCheckCAError
+                    });
+                	if ( window.DEBUG ) log('denied, no root CA...');
+                	return false;
+                }
                 // Check password length and strength
                 if ( $('input#password').attr('value') != '' ) {
                     var _pw = $('input#password').attr('value');
@@ -759,6 +770,15 @@ jQuery.validator.setDefaults({
                 },
                 1500 );
 
+                var locked_ca = $('#locked_ca');
+                if ( locked_ca !== undefined
+                  && window.lock_checked === undefined
+                  && $('#certtype').attr('value') !== 'ca'
+                ){
+                    $.addCertificate().processUnlockDialog();
+                    return false;
+                }
+                
                 $.Ovpnc().setAjaxLoading(
                     1,
                     ( $('#certtype').attr('value') === 'ca' ? 'This might take a while...' : '' )
@@ -803,12 +823,17 @@ jQuery.validator.setDefaults({
                     method: 'POST',
                     success_func: function (r){
                     	if ( window.DEBUG ) log("Got add certificate success: %o", r);
-                    	if ( r.rest !== undefined ){
-                    		              	    	
-                    		if ( r.error !== undefined ){
-                    			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
-                    			return;
+                    	if ( r.errors !== undefined ){
+                    		for (var i in r.errors){
+                    			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.errors[i]) + '</div><div class="clear"></div>' );
                     		}
+                    		return;
+                		}
+                    	if ( r.error !== undefined ){
+                			alert( $.Ovpnc().alertErr + ' ' + decodeURIComponent(r.error) + '</div><div class="clear"></div>' );
+                			return;
+                		}
+                    	if ( r.rest !== undefined ){
                     		
                     		if ( r.rest.status !== undefined
                     	      && r.rest.status === 'ok'
@@ -1164,7 +1189,7 @@ $(document).ready(function(){
 				 });
 		$('.button').append(elem);
 		$('#back_form_page').click(function(){    	 
-	    	 $('#CADetails').hide(250);
+			 $('#CADetails').hide(250);
 	    	 $('#submitCertificateDiv').hide(250);
 	    	 $('#certDetails').show(250);
 	    	 $(this).remove();

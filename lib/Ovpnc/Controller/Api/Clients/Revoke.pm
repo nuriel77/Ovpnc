@@ -437,7 +437,7 @@ given client/ip:port
     sub kill_connection : Private {
         my ( $self, $connection, $client ) = @_;
         $connection = $client if ref $connection;
-        die "No connection?!" unless $self->_has_vpn;
+        return unless $self->_has_vpn;
         my $ret_val = $self->vpn->kill($connection);
         return $ret_val;
     }

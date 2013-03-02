@@ -74,7 +74,7 @@
 
             $( 'body' ).prepend( dDiv );
             
-            $('#addFormDialog').draggable().html(
+            $('#addFormDialog').draggable({containment:"body"}).html(
             '<div class="closeAddDialog"></div>'
 			+'<div id="addContent"><span style="font-size:1em"> Loading... ' + $.Ovpnc().ajaxLoader + '</span></div>'
             );

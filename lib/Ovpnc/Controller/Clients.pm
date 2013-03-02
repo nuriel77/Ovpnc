@@ -196,8 +196,10 @@ Add a client
 			
             if ( !$email and !$username ) {
              	
+                # Generate a random salt
+                # ======================
              	$c->req->params->{salt} = $self->_get_random_salt($c);
-             	$c->req->params->{password} .= $c->req->params->{salt};
+
              	delete $c->req->params->{password2};
              	
                 # New resultset
@@ -205,7 +207,7 @@ Add a client
                 my $_client;
                 #try     { $_client = $c->model('DB::User')->new_result({}); }
                 #catch   { push @{$c->stash->{errors}}, $_; };
-        
+
                 # update dbic row with
                 # submitted values from form
                 # ==========================
@@ -214,7 +216,7 @@ Add a client
                 	$_client = $c->model('DB::User')->create({
                 		email		=> $c->req->params->{email},
     					fullname	=> $c->req->params->{fullname},
-    					password	=> $c->req->params->{password},
+    					password	=> $c->req->params->{password}.$c->req->params->{salt},
     					username	=> $c->req->params->{username},
     					address		=> $c->req->params->{address} || '',
     					phone		=> $c->req->params->{phone} || '',

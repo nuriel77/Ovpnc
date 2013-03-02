@@ -24,7 +24,7 @@
         	$.ajaxSetup({ cache: false, async: true });
             $('#flexme').flexigrid({
                 url: url,
-                data: { lines: 2000, sortname: 'time', sortorder: 'asc' },
+                data: { lines: 2000, sortname: 'time', sortorder: 'desc' },
                 dataType: 'json',
                 method: "GET",
                 preProcess: $.Logs().formatLogsResults,
