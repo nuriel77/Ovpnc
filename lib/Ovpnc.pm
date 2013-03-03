@@ -36,7 +36,6 @@ use Catalyst qw/
   Compress::Gzip
   Compress::Deflate
   Cache
-  Cache::FileCache
   PageCache
   SecureCookies
   Session
@@ -51,6 +50,7 @@ use Catalyst qw/
   +CatalystX::SimpleLogin
   /;
 #  Session::Store::Memcached
+#  Cache::FileCache
 
 =head2 CONFIGURATION
 
