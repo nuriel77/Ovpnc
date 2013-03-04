@@ -42,6 +42,7 @@ requires 'MooseX::Traits';
 requires 'MooseX::NonMoose';
 requires 'MooseX::MarkAsMethods';
 requires 'MooseX::Types::IPv4';
+requires 'Plack::Handler::Starman';
 requires 'Scalar::Util';
 requires 'Proc::ProcessTable'; 
 requires 'Proc::Simple';
