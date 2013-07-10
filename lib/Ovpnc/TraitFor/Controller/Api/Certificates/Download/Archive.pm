@@ -120,6 +120,7 @@ certificates and keys
                 chdir $client_keys_dir
                     or push @errors, $client . ': Cannot enter directory of certificates: ' . $_;
 
+                warn "Start creating archive...\n";
                 if ( ( -f $keys_dir . '/ca.crt' && -f $keys_dir . '/ta.key' )
                   and $cert->cert_type !~ /server|ca/
                 ){
@@ -129,17 +130,21 @@ certificates and keys
 
                 # Add the files to the archive
                 # ============================
-                if ( $format ne 'zip' ){
+                unless ( $zip ){
                     $tar->add_files( $cert->name . '.crt', $cert->name . '.key', 'ca.crt', 'ta.key' )
                         or push @errors, $client . ': Failed to initialize archive class: '
                                          . $tar->error;
+                    warn "Adding " . $cert->name . " to bundle\n";
                     # Write the archive file to disk
                     # ==============================
-                    try {
-                        $tar->write( $client_keys_dir . '/' . $cert->name . '.' . $extension, $compression )
-                            or push @errors,
-                                     $client . ': Failed to create ' . $extension . ' for '
-                                    . $cert->name . ': ' . $tar->error;
+                    eval {
+                        $tar->write( $client_keys_dir . '/' . $cert->name . '.' . $extension, $compression );
+                    };
+                    if ($@){
+                        warn "Cannot write tar file: $@\n";
+                        push @errors,
+                                 $client . ': Failed to create ' . $extension . ' for '
+                                 . $cert->name . ': ' . $tar->error;
                     };
 
                     # Clear the object
@@ -214,7 +219,7 @@ certificates and keys
 
 
 =head2 _run_type_supported_check
-
+;
 Check if this type can be used
 on this system
 

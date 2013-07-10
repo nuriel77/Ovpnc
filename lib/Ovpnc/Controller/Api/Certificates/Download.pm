@@ -153,10 +153,11 @@ archived for download.
                     $format,
                     ( $certs ? $certs : undef )
                 );
-
+            
             if (     $_ret_val and !$c->stash->{error}
               and ( defined $_ret_val->{resultset}->[0] && -f $_ret_val->{resultset}->[0] )
             ){
+   
                 my ($filename) = $_ret_val->{resultset}->[0] =~ /^.*\/(.*)$/;
                 my $stat = stat($_ret_val->{resultset}->[0]);
                 $c->res->header('Content-Disposition' => qq[attachment; filename="$filename"] );
@@ -166,6 +167,7 @@ archived for download.
                 $c->res->headers->header( 'Pragma' => 'no-cache' );
                 $c->res->headers->header( 'Cache-Control' => 'no-cache' );
                 $c->response->header('Content-Description' => 'Certificate bundle');
+                $c->log->debug('Trying to force download the file');
                 $c->serve_static_file($_ret_val->{resultset}->[0]);
                 $c->stash->{content_transfer} = 'application/octet-stream';
             }
