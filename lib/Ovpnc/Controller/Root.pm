@@ -58,6 +58,10 @@ sub auto : Private {
     $c->stash->{server_poll_freq} = $c->config->{server_poll_freq}
         if $c->req->path !~ /^api.*/;
 
+=head2 cutout
+
+    $c->flash->{_db_tested} = 1;
+
     # Test DB connection
     # ==================
     unless ( $c->flash->{_db_tested} ){
@@ -115,7 +119,7 @@ sub auto : Private {
         $c->log->debug('Already connected to database.')
             if $ENV{CATALYST_DEBUG};
     }
-
+=cut
     return 1;
 
 }

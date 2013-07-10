@@ -84,6 +84,8 @@ sub start {
 
         $self->_check_management_password;
 
+        chdir $self->cfg->{openvpn_dir} or return { error => 'Cannot chdir to ' . $self->cfg->{openvpn_dir} . ': ' . $! };
+
         my @cmd = (
             '/usr/bin/sudo',        $self->cfg->{openvpn_bin},
             '--writepid',           $self->cfg->{openvpn_pid},
@@ -96,6 +98,8 @@ sub start {
             '--setenv',            'OVPNC_USER', $self->app_user,
             '--setenv',            'OVPNC_CONFIG_JSON', ( $ENV{OVPNC_CONFIG_JSON} || 'ovpnc.json' ),
             '--script-security',   '2',
+#            '--client-connect',    $self->cfg->{openvpn_dir} . '/bin/client_connect',
+#            '--client-disconnect', $self->cfg->{openvpn_dir} . '/bin/client_disconnect',
             '--client-connect',    'bin/client_connect',
             '--client-disconnect', 'bin/client_disconnect',
             '--tmp-dir',           '/tmp',
@@ -114,6 +118,8 @@ sub start {
         my $_status = $proc->start(@cmd);
 
         sleep 5;    # give it a moment, very important.
+
+        chdir ('../') or return { error => 'Cannot chdir to ../ :' . $! };
 
         return { error => "An error occured starting up the openvpn server!" }
           unless ($_status);

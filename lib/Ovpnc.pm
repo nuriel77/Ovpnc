@@ -136,6 +136,7 @@ __PACKAGE__->config(
 
 # Cache::Memcached::libmemcached
 # ==============================
+=comment
 __PACKAGE__->config(
     'Plugin::Cache' => {
         backend => {
@@ -145,6 +146,7 @@ __PACKAGE__->config(
         }
     }
 );
+=cut
 
 # Static::Simple
 # ==============
@@ -297,7 +299,7 @@ __PACKAGE__->config(
         # Default low value
         # will be extended
         # upon login
-        expires => 10,
+        expires => 1440,
 
         # Setting this to 1
         # will break ajax calls

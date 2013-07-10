@@ -181,13 +181,13 @@ Add a new certificate
 	 		if $c->req->params->{ca_password} && $c->req->params->{ca_password} ne '';
 	 	my $cert_passwd = $c->req->params->{password}
 	 		if $c->req->params->{password} && $c->req->params->{password} ne '';
-	 	delete $c->req->params->{password} if $c->req->params->{password} || $c->req->params->{password} eq '';
-	 	delete $c->req->params->{password2} if $c->req->params->{password2} || $c->req->params->{password2} eq '';
-	 	delete $c->req->params->{ca_password} if $c->req->params->{ca_password} || $c->req->params->{ca_password} eq '';
-	 	
-	 	delete $c->req->params->{back_button} if $c->req->params->{back_button} || $c->req->params->{back_button} eq '';
-	 	delete $c->req->params->{salt} if $c->req->params->{salt} || $c->req->params->{salt} eq '';
-	 	delete $c->req->params->{_} if $c->req->params->{_};
+        if ( $c->req->params ) {    
+    	 	delete $c->req->params->{password} if $c->req->params->{password} || $c->req->params->{password} eq '';
+    	 	delete $c->req->params->{password2} if $c->req->params->{password2} || $c->req->params->{password2} eq '';
+    	 	delete $c->req->params->{ca_password} if $c->req->params->{ca_password} || $c->req->params->{ca_password} eq '';
+    	 	delete $c->req->params->{salt} if $c->req->params->{salt} || $c->req->params->{salt} eq '';
+    	 	delete $c->req->params->{_} if $c->req->params->{_};
+        }
 		my @keys = sort keys %{$c->req->params};
 		warn ' keys:  '  . join "\n", @keys;
 		warn ' fields: ' . join "\n", @fields;

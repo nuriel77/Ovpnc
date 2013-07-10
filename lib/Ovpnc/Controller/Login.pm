@@ -131,7 +131,7 @@ Last auto action
             # ======================
             $c->config->{'Plugin::Session'}->{expires} = $c->config->{web_session_expires};
             my $new_sid = $c->change_session_id;
-            $c->change_session_expires( $c->config->{web_session_expires} );
+            #$c->change_session_expires( $c->config->{web_session_expires} );
             $c->session->{logged_in} = 1;
 
             # Check if there is a last location/page

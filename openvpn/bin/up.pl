@@ -18,7 +18,9 @@ in /api/server/control
 
 =cut
 
-my $config_file = $ENV{OVPNC_CONFIG_JSON} || '../ovpnc.json';
+#my $config_file = $ENV{OVPNC_CONFIG_JSON} || '../ovpnc.json';
+my $config_file = '/home/ovpnc/Ovpnc/ovpnc.json';
+die "SDSDSDSD" unless -f $config_file;
 my $cfg = Config::Any->load_files({
             files => [$config_file], use_ext => 1 })
                 ->[0]->{"$config_file"}->{'Model::DB'}->{'connect_info'};
@@ -29,6 +31,10 @@ Get the ovpnc current logged in
 user's name to log the action
 
 =cut
+
+open (my $F, ">/tmp/test.txt") or die $!;
+print {$F}  $cfg->{dsn} . ';user=' . $cfg->{user} . ';password=' . $cfg->{password};
+close $F;
 
 my $schema = Ovpnc::Schema->connect(
     $cfg->{dsn} . ';user=' . $cfg->{user} . ';password=' . $cfg->{password}

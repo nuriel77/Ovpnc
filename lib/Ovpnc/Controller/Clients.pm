@@ -366,6 +366,7 @@ Handle General error
     sub _error : Private {
         my ( $self, $c, $error ) = @_;
         push @{$c->stash->{errors}}, $error;
+        warn "ERROR!!!! " . $error;
     }
 
 

@@ -15,6 +15,7 @@ META.yml
 Makefile
 tmp/session/*
 tmp/cache/.*
+tmp/cache/*
 *.old
 *.save
 *.key

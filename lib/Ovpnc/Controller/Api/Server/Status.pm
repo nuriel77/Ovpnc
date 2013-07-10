@@ -47,7 +47,7 @@ has 'cfg' => (
 
 $REGEX = {
     client_list =>
-      'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)$',
+      'CLIENT_LIST,(.*?),(.*?),(.*?),([0-9]+),([0-9]+),(.*?),([0-9]+)[,]?.*$',
     log_line  => '^([0-9]+),(.*)\n',
     verb_line => '^SUCCESS: verb=(\d+)\n',
 };
@@ -79,8 +79,8 @@ action to run
         if ( $c->user_exists() && !$c->req->params->{_} ){
             $c->log->info('Setting session expire to '
                 . $c->config->{'api_session_expires'});
-            $c->change_session_expires(
-                $c->config->{'api_session_expires'} );
+#            $c->change_session_expires(
+#                $c->config->{'api_session_expires'} );
         }
 
     }

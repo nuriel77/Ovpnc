@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `certificates` (
   `key_email` varchar(40) NOT NULL,
   `key_serial` char(2) NOT NULL,
   `revoked` datetime NOT NULL,
+  `locked` tinyint(1) NOT NULL,
   `cert_type` varchar(12) NOT NULL,
   `cert_file` text NOT NULL,
   `key_file` text NOT NULL,

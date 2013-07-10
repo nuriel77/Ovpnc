@@ -4,7 +4,7 @@
         "connect_info" : {
             "dsn"         : "dbi:mysql:ovpnc;host=localhost",
             "user"        : "ovpnc",
-            "password"    : "",
+            "password"    : "06e53733ab74b20c1c2d02a4df56029c37fb697be2d0dcb2",
             "AutoCommit"  : "1",
             "mysql_enable_utf8" : "1",
             "options"     : {

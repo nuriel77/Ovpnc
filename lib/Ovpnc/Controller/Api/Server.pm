@@ -418,7 +418,9 @@ Tail (non-actively) the openvpn log file
         	unless -f $logfile;
         		
         my $o = tie my @array, 'Tie::File', $logfile, mode => O_RDONLY, memory => 500_000;
-        $o->flock;
+        if ( defined $o ){
+            $o->flock;
+        }
         my @counted_array = grep { ! /MANAGEMENT/ } @array[ @array - $lines .. $#array ];
         unless ( @counted_array ){
         	@counted_array = grep { ! /MANAGEMENT/ } @array[ $#array - ( $lines * 10 ) .. $#array ];

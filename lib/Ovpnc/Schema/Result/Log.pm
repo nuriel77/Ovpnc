@@ -68,8 +68,7 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->load_components("InflateColumn::DateTime","TimeStamp");
 
 __PACKAGE__->add_columns(
-   modified => { data_type => 'datetime',   set_on_create => 1 },
-   created  => { data_type => 'date',       set_on_create => 1 },
+   timestamp  => { data_type => 'datetime',       set_on_create => 1 },
 );
 
 # You can replace this text with custom content, and it will be preserved on regeneration

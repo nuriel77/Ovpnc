@@ -101,8 +101,8 @@ action to run
         if ( $c->user_exists() && !$c->req->params->{_} ){
             $c->log->info('Setting session expire to '
                 . $c->config->{'api_session_expires'});
-            $c->change_session_expires(
-                $c->config->{'api_session_expires'} );
+#            $c->change_session_expires(
+#                $c->config->{'api_session_expires'} );
         }
 
     }      
