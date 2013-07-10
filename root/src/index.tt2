@@ -14,7 +14,7 @@
 				class="hand_pointer"
 				title="Powerup OpenVPN server"
             [% ELSE %]
-                style="cursor:not-allowed"
+                style="cursor:default"
 			[% END %]
         >
 			<div id="server_status_content" >

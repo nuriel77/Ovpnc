@@ -58,10 +58,6 @@ sub auto : Private {
     $c->stash->{server_poll_freq} = $c->config->{server_poll_freq}
         if $c->req->path !~ /^api.*/;
 
-=head2 cutout
-
-    $c->flash->{_db_tested} = 1;
-
     # Test DB connection
     # ==================
     unless ( $c->flash->{_db_tested} ){
@@ -75,12 +71,16 @@ sub auto : Private {
                                ->search({ cert_type => 'ca', locked => 1  })
                                ->count
             ) {
-                $c->flash->{_db_tested} = 1;
+                $c->log->debug('Tested for locked_ca and got ' . $count );
 
                 # Check locked CA
                 # ===============
                 $c->stash->{locked_ca} = 1;
             }
+            else {
+                $c->log->debug('Tested for locked_ca, result is not locked.' );
+            }
+            $c->flash->{_db_tested} = 1;
         }
         catch {
             if ($_ =~ /(DBI Connection failed: DBI connect\(.*\) failed: Can't connect to.*MySQL server through socket '.*')/ ){
@@ -119,7 +119,7 @@ sub auto : Private {
         $c->log->debug('Already connected to database.')
             if $ENV{CATALYST_DEBUG};
     }
-=cut
+
     return 1;
 
 }

@@ -320,7 +320,7 @@ fieldset .constraint_required label:after {
 .top_menu_titles{
     text-align: left;
     float:left;
-    cursor:pointer;
+    cursor:default;
     display:-moz-box;
     -moz-box-align:center;
     margin:6px 0 0 8px;

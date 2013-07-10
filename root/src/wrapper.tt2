@@ -118,15 +118,14 @@
         [% IF geo_username %]
             <input id="geoUsername" type="hidden" name="[% geo_username %]" />
         [% END %]
-        [% IF locked_ca %]
-    		<input id="locked_ca" type="hidden" name="locked_ca" />
-        [% END %]
+        <!-- Locked CA value -->
+        <input id="locked_ca" type="hidden" name="locked_ca" value="[% IF locked_ca %]1[% ELSE %]0[% END %]"/>
 		<div id="on_off_click_area" style="display:none"
 			[% IF c.check_any_user_role('admin') %]
 				class="hand_pointer"
 				title="Powerup OpenVPN server"
             [% ELSE %]
-                style="cursor:not-allowed"
+                style="cursor:default;"
 			[% END %]
         >
 			<div id="server_status_content" >

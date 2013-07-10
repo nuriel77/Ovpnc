@@ -772,6 +772,7 @@ jQuery.validator.setDefaults({
 
                 var locked_ca = $('#locked_ca');
                 if ( locked_ca !== undefined
+                  && locked_ca === '1'
                   && window.lock_checked === undefined
                   && $('#certtype').attr('value') !== 'ca'
                 ){
@@ -838,8 +839,10 @@ jQuery.validator.setDefaults({
                     		if ( r.rest.status !== undefined
                     	      && r.rest.status === 'ok'
                     	    ){
+                            	if ( window.DEBUG ) log("Closing add certificate window");
                     			$('#oDiv').fadeOut('slow').remove();
                     			$('#addCertificate').slideUp('slow').remove();
+                                $('#addFormDialog').slideUp('slow').remove();
                     			$('.pReload').click();
                     	    	alert( $.Ovpnc().alertOk + ' ' + r.cert_name + ' added successfully</div><div class="clear"></div>' );
                     	    }
