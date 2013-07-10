@@ -285,7 +285,8 @@ var total_count = 0;
             if ( _loop == 0 ) return;
 
             var _action = function (passwd) {
-                if ( passwd === undefined || passwd == '' ){
+                var locked_ca = $('#locked_ca').val()
+                if ( ( passwd === undefined || passwd == '' ) && locked_ca == 1 ){
                     alert( $.Ovpnc().alertErr + ' No passwd?' );
                     return false;
                 }
@@ -345,14 +346,17 @@ var total_count = 0;
                 });
             };
 
-            var locked_ca = $('#locked_ca');
+            var locked_ca = $('#locked_ca').val();
+            if ( window.DEBUG ) log( 'locked_ca has value ' + locked_ca );
             if ( locked_ca !== undefined
+              && locked_ca == 1
               && window.lock_checked === undefined
+              && $('#certtype').attr('value') !== 'ca'
             ){
                 $.Certificate().processUnlockDialog( _action, 'blockUnblock' );
                 return false;
             }
-
+            _action();
         },
         //
         // Check if certificate names match
@@ -614,13 +618,18 @@ var total_count = 0;
                     });
                 };
 
-                var locked_ca = $('#locked_ca');
+                var locked_ca = $('#locked_ca').val();
+                if ( window.DEBUG ) log( 'locked_ca has value: ' + locked_ca );
+                // If CA locked, request CA password
                 if ( locked_ca !== undefined
+                  && locked_ca == 1
                   && window.lock_checked === undefined
                 ){
                     $.Certificate().processUnlockDialog(deleteCertAction, 'deleteCertificate');
                     return false;
                 }
+                // If CA not locked, simply proceed to delete the certificate(s)
+                deleteCertAction();
                 $.ajaxSetup({ cache: false, async: true });
             };
 

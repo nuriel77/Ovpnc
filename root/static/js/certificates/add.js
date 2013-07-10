@@ -770,9 +770,9 @@ jQuery.validator.setDefaults({
                 },
                 1500 );
 
-                var locked_ca = $('#locked_ca');
+                var locked_ca = $('#locked_ca').val();
                 if ( locked_ca !== undefined
-                  && locked_ca === '1'
+                  && locked_ca == 1
                   && window.lock_checked === undefined
                   && $('#certtype').attr('value') !== 'ca'
                 ){

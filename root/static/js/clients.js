@@ -418,8 +418,9 @@ var total_count = 0;
                 });
             };
 
-            var locked_ca = $('#locked_ca');
+            var locked_ca = $('#locked_ca').val();
             if ( locked_ca !== undefined
+              && locked_ca == 1
               && window.lock_checked === undefined
             ){
                 $.Client().processUnlockDialog( _action, 'blockUnblock' );
@@ -460,15 +461,18 @@ var total_count = 0;
                      loader: 1,
                      timeout: 15000
                  });
-             };
+            };
             
-             var locked_ca = $('#locked_ca');
-             if ( locked_ca !== undefined
-               && window.lock_checked === undefined
-             ){
-            	 $.Client().processUnlockDialog( _action, 'deleteCaPasswdDialog' );
-                 return false;
-             }
+            var locked_ca = $('#locked_ca').val();
+            if ( window.DEBUG ) log ( 'locked_ca has value: ' + locked_ca );
+            if ( locked_ca !== undefined
+              && locked_ca == 1
+              && window.lock_checked === undefined
+            ){
+                $.Client().processUnlockDialog( _action, 'deleteCaPasswdDialog' );
+                return false;
+            }
+            _action();
         },
         //
         // Check if client names match
